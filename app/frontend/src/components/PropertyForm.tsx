@@ -1,179 +1,337 @@
-import { FormEvent, useState } from 'react';
+// src/components/PropertyForm.tsx
+import React, { useState } from 'react';
+import { submitToN8n } from '../lib/webhook';
 
-const roles = ['Buyer', 'Seller', 'Real Estate Agent', 'Investor', 'Lender'] as const;
-const roleShort: Record<string, string> = {
-  Buyer: 'Buyer',
-  Seller: 'Seller',
-  'Real Estate Agent': 'Agent',
-  Investor: 'Investor',
-  Lender: 'Lender',
+type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
+
+interface FormState {
+  fullName: string;
+  email: string;
+  phone: string;
+  role: Role;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  notes: string;
+}
+
+type Status = 'idle' | 'loading' | 'success' | 'error';
+
+const ROLES: Role[] = ['Buyer', 'Seller', 'Agent', 'Investor', 'Lender'];
+
+const inputStyle: React.CSSProperties = {
+  fontFamily: 'Jost, sans-serif',
+  fontSize: '14px',
+  fontWeight: 300,
+  color: '#F0EBE0',
+  background: 'transparent',
+  border: 'none',
+  borderBottom: '1px solid rgba(255,255,255,0.1)',
+  padding: '8px 0 12px',
+  outline: 'none',
+  width: '100%',
 };
 
-const ENDPOINT = 'https://dillabean.app.n8n.cloud/webhook/homefax/report';
+const labelStyle: React.CSSProperties = {
+  fontFamily: 'Jost, sans-serif',
+  fontSize: '9px',
+  fontWeight: 400,
+  letterSpacing: '3px',
+  textTransform: 'uppercase',
+  color: '#6B6252',
+  marginBottom: '8px',
+  display: 'block',
+};
 
-export default function PropertyForm() {
-  const [role, setRole] = useState<string>('Buyer');
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [values, setValues] = useState({
-    name: '',
+const fieldStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  marginBottom: '28px',
+};
+
+const PropertyForm: React.FC = () => {
+  const [form, setForm] = useState<FormState>({
+    fullName: '',
     email: '',
+    phone: '',
+    role: 'Buyer',
     address: '',
     city: '',
     state: '',
     zip: '',
+    notes: '',
   });
 
-  const update = (k: keyof typeof values, v: string) =>
-    setValues((prev) => ({ ...prev, [k]: v }));
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [requestId, setRequestId] = useState('');
 
-  const onSubmit = async (e: FormEvent) => {
+  const set = (field: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm(prev => ({ ...prev, [field]: e.target.value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
 
-    const payload = { ...values, role };
-
-    try {
-      await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        mode: 'no-cors',
-      });
-    } catch {
-      // ignore
+    // Basic client-side validation
+    if (!form.email.includes('@')) {
+      setStatus('error');
+      setErrorMsg('Please enter a valid email address.');
+      return;
     }
-    setSuccess(true);
-    setSubmitting(false);
+    if (!form.address.trim()) {
+      setStatus('error');
+      setErrorMsg('Property address is required.');
+      return;
+    }
+
+    setStatus('loading');
+    setErrorMsg('');
+
+    const result = await submitToN8n('report_request', {
+      fullName: form.fullName,
+      email: form.email,
+      phone: form.phone,
+      role: form.role,
+      address: form.address,
+      city: form.city,
+      state: form.state,
+      zip: form.zip,
+      notes: form.notes,
+    });
+
+    if (result.success) {
+      setRequestId(result.requestId);
+      setStatus('success');
+    } else {
+      setStatus('error');
+      setErrorMsg(result.error);
+    }
   };
 
-  if (success) {
+  // ── SUCCESS STATE ─────────────────────────────────────
+  if (status === 'success') {
     return (
-      <div className="flex flex-col items-center justify-center text-center py-12 gap-4">
-        <div className="w-12 h-12 border border-gold rounded-full flex items-center justify-center mb-2">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" stroke="#B89355">
+      <div style={{ textAlign: 'center', padding: '48px 0' }}>
+        <div style={{
+          width: '56px', height: '56px',
+          border: '1px solid #C9A84C',
+          borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 20px',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
-        <div className="font-serif text-2xl font-light text-warmdark">Report Requested</div>
-        <div className="text-[13px] text-warmgray leading-relaxed max-w-xs">
-          Your PropertyDNA report is being compiled. Check your inbox — delivery typically takes 2–4 minutes.
+        <div style={{
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
+          fontSize: '28px', fontWeight: 300, color: '#F0EBE0', marginBottom: '12px',
+        }}>
+          Report Initiated
+        </div>
+        <div style={{
+          fontFamily: 'Jost, sans-serif',
+          fontSize: '13px', color: '#6B6252', lineHeight: 1.7, maxWidth: '320px', margin: '0 auto 16px',
+        }}>
+          Your PropertyDNA report is being sequenced. Check your inbox — typical delivery is 2–4 minutes.
+        </div>
+        <div style={{
+          fontFamily: 'Jost, sans-serif',
+          fontSize: '10px', color: 'rgba(107,98,82,0.5)', letterSpacing: '1px',
+        }}>
+          Request ID: {requestId}
         </div>
       </div>
     );
   }
 
+  // ── FORM ─────────────────────────────────────────────
   return (
-    <form className="flex flex-col" onSubmit={onSubmit} noValidate>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-        <div className="field">
-          <label htmlFor="fname">Full Name</label>
+    <form onSubmit={handleSubmit} noValidate>
+      {/* Row: Name + Email */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Full Name</label>
           <input
-            id="fname"
+            style={inputStyle}
             type="text"
-            value={values.name}
-            onChange={(e) => update('name', e.target.value)}
+            value={form.fullName}
+            onChange={set('fullName')}
             placeholder="Jordan Hayes"
             autoComplete="name"
             required
           />
-          <div className="field-line" />
         </div>
-        <div className="field">
-          <label htmlFor="femail">Email Address</label>
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Email Address</label>
           <input
-            id="femail"
+            style={inputStyle}
             type="email"
-            value={values.email}
-            onChange={(e) => update('email', e.target.value)}
+            value={form.email}
+            onChange={set('email')}
             placeholder="you@example.com"
             autoComplete="email"
             required
           />
-          <div className="field-line" />
         </div>
       </div>
 
-      <div className="pb-7">
-        <div className="font-sans text-[9px] font-normal tracking-[3px] uppercase text-warmgray mb-3">
-          I Am A
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {roles.map((r) => (
+      {/* Phone */}
+      <div style={fieldStyle}>
+        <label style={labelStyle}>Phone (optional)</label>
+        <input
+          style={inputStyle}
+          type="tel"
+          value={form.phone}
+          onChange={set('phone')}
+          placeholder="+1 (760) 555-0100"
+          autoComplete="tel"
+        />
+      </div>
+
+      {/* Role selector */}
+      <div style={{ marginBottom: '28px' }}>
+        <span style={labelStyle}>I Am A</span>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {ROLES.map(r => (
             <button
               key={r}
               type="button"
-              className={`role-btn ${role === r ? 'active' : ''}`}
-              onClick={() => setRole(r)}
+              onClick={() => setForm(prev => ({ ...prev, role: r }))}
+              style={{
+                fontFamily: 'Jost, sans-serif',
+                fontSize: '10px',
+                fontWeight: 300,
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
+                color: form.role === r ? '#000000' : '#6B6252',
+                background: form.role === r ? '#C9A84C' : 'transparent',
+                border: `1px solid ${form.role === r ? '#C9A84C' : 'rgba(255,255,255,0.08)'}`,
+                padding: '7px 14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
             >
-              {roleShort[r]}
+              {r}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="field">
-        <label htmlFor="faddress">Property Address</label>
+      {/* Address */}
+      <div style={fieldStyle}>
+        <label style={labelStyle}>Property Address</label>
         <input
-          id="faddress"
+          style={inputStyle}
           type="text"
-          value={values.address}
-          onChange={(e) => update('address', e.target.value)}
+          value={form.address}
+          onChange={set('address')}
           placeholder="100 W Andreas Rd"
           required
         />
-        <div className="field-line" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-        <div className="field">
-          <label htmlFor="fcity">City</label>
+      {/* Row: City + State */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
+        <div style={fieldStyle}>
+          <label style={labelStyle}>City</label>
           <input
-            id="fcity"
+            style={inputStyle}
             type="text"
-            value={values.city}
-            onChange={(e) => update('city', e.target.value)}
+            value={form.city}
+            onChange={set('city')}
             placeholder="Palm Springs"
             required
           />
-          <div className="field-line" />
         </div>
-        <div className="field">
-          <label htmlFor="fstate">State</label>
+        <div style={fieldStyle}>
+          <label style={labelStyle}>State</label>
           <input
-            id="fstate"
+            style={inputStyle}
             type="text"
-            value={values.state}
-            onChange={(e) => update('state', e.target.value)}
+            value={form.state}
+            onChange={set('state')}
             placeholder="CA"
             maxLength={2}
             required
           />
-          <div className="field-line" />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-        <div className="field">
-          <label htmlFor="fzip">ZIP Code</label>
-          <input
-            id="fzip"
-            type="text"
-            value={values.zip}
-            onChange={(e) => update('zip', e.target.value)}
-            placeholder="92262"
-            maxLength={10}
-            required
-          />
-          <div className="field-line" />
-        </div>
-        <div className="hidden md:block" />
+      {/* ZIP */}
+      <div style={fieldStyle}>
+        <label style={labelStyle}>ZIP Code</label>
+        <input
+          style={inputStyle}
+          type="text"
+          value={form.zip}
+          onChange={set('zip')}
+          placeholder="92262"
+          maxLength={10}
+          required
+        />
       </div>
 
-      <button type="submit" className="submit-btn" disabled={submitting}>
-        <span>{submitting ? 'Sequencing…' : 'Sequence This Property  →'}</span>
+      {/* Notes */}
+      <div style={fieldStyle}>
+        <label style={labelStyle}>Notes (optional)</label>
+        <textarea
+          style={{ ...inputStyle, resize: 'none', height: '72px' }}
+          value={form.notes}
+          onChange={set('notes')}
+          placeholder="Any additional context about the property..."
+        />
+      </div>
+
+      {/* Error message */}
+      {status === 'error' && (
+        <div style={{
+          fontFamily: 'Jost, sans-serif',
+          fontSize: '12px',
+          color: '#C94C4C',
+          marginBottom: '16px',
+          padding: '12px 16px',
+          border: '1px solid rgba(201,76,76,0.3)',
+          background: 'rgba(201,76,76,0.06)',
+        }}>
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={status === 'loading'}
+        style={{
+          fontFamily: 'Jost, sans-serif',
+          fontSize: '10px',
+          fontWeight: 500,
+          letterSpacing: '3px',
+          textTransform: 'uppercase',
+          color: '#000000',
+          background: status === 'loading' ? 'rgba(201,168,76,0.5)' : '#C9A84C',
+          border: 'none',
+          padding: '18px',
+          width: '100%',
+          cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+          transition: 'background 0.2s',
+          marginBottom: '12px',
+        }}
+      >
+        {status === 'loading' ? 'Sequencing…' : 'Sequence This Property →'}
       </button>
+
+      <div style={{
+        fontFamily: 'Jost, sans-serif',
+        fontSize: '11px', color: '#6B6252', textAlign: 'center',
+      }}>
+        Free · No account required · Delivered by email
+      </div>
     </form>
   );
-}
+};
+
+export default PropertyForm;
