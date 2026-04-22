@@ -1,0 +1,226 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: #0F0E0D;
+    color: #F4F0E8;
+    font-family: 'Jost', system-ui, -apple-system, sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* FONT UTILITIES */
+.font-serif {
+  font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+}
+.font-sans {
+  font-family: 'Jost', system-ui, sans-serif;
+}
+
+/* COLOR UTILITIES */
+.bg-canvas { background-color: #F4F0E8; }
+.text-canvas { color: #F4F0E8; }
+.bg-cream { background-color: #EDE6D6; }
+.bg-warmdark { background-color: #2C2825; }
+.text-warmdark { color: #2C2825; }
+.bg-espresso { background-color: #0F0E0D; }
+.text-espresso { color: #0F0E0D; }
+.bg-gold { background-color: #B89355; }
+.text-gold { color: #B89355; }
+.border-gold { border-color: #B89355; }
+.text-warmgray { color: #6B5F55; }
+.border-rule { border-color: rgba(44, 40, 37, 0.12); }
+
+/* EYEBROW */
+.eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #B89355;
+}
+.eyebrow-sm {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+}
+
+/* HERO DIVIDER */
+.hero-divider::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(44,40,37,0.15), transparent);
+}
+
+/* FADE UP ANIMATION */
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* FORM FIELDS */
+.field {
+  position: relative;
+  padding-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+}
+.field label {
+  font-family: 'Jost', sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #6B5F55;
+  margin-bottom: 8px;
+}
+.field input {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #2C2825;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 4px 0 10px 0;
+  border-bottom: 1px solid rgba(44,40,37,0.18);
+  transition: border-color 0.3s ease;
+  width: 100%;
+}
+.field input::placeholder {
+  color: rgba(107, 95, 85, 0.45);
+  font-style: italic;
+}
+.field input:focus {
+  border-bottom-color: #B89355;
+}
+.field-line {
+  display: none;
+}
+
+/* ROLE BUTTONS */
+.role-btn {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #6B5F55;
+  background: transparent;
+  border: 1px solid rgba(44,40,37,0.18);
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.role-btn:hover {
+  border-color: #B89355;
+  color: #2C2825;
+}
+.role-btn.active {
+  background: #2C2825;
+  border-color: #2C2825;
+  color: #F4F0E8;
+}
+
+/* SUBMIT BUTTON */
+.submit-btn {
+  margin-top: 14px;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #F4F0E8;
+  background: #2C2825;
+  border: 1px solid #2C2825;
+  padding: 18px 28px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.submit-btn:hover {
+  background: #B89355;
+  border-color: #B89355;
+}
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.submit-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+/* MARQUEE */
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* FLOAT ANIMATION */
+.float-anim {
+  animation: floaty 6s ease-in-out infinite;
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Pulse animation for hero badge dot */
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.animate-pulse {
+  animation: pulseDot 2s ease-in-out infinite;
+}
