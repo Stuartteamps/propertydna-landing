@@ -1,6 +1,6 @@
 [build]
   base = "app/frontend"
-  command = "npm install && npm run build"
+  command = "corepack enable && pnpm install --no-frozen-lockfile && pnpm run build"
   publish = "dist"
 
 [build.environment]
