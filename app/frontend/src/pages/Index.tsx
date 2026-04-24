@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import PropertyForm from '@/components/PropertyForm';
+import SignInModal from '@/components/SignInModal';
 import FadeUp from '@/components/FadeUp';
+
+type ModalTab = 'signin' | 'signup' | 'sales';
 
 const scrollTo = (id: string) => {
   const el = document.getElementById(id);
@@ -55,9 +59,20 @@ const reportFeatures = [
 ];
 
 export default function Index() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<ModalTab>('signin');
+
+  const openModal = (tab: ModalTab = 'signin') => {
+    setModalTab(tab);
+    setModalOpen(true);
+  };
+
   return (
     <div className="bg-espresso text-canvas">
-      <Nav />
+      <Nav
+        onSignInClick={() => openModal('signin')}
+        onRequestAccessClick={() => openModal('signup')}
+      />
 
       {/* HERO */}
       <section
@@ -575,22 +590,28 @@ export default function Index() {
             </div>
           </div>
 
-          <div className="bg-cream border border-rule p-8 md:p-12">
+          <div className="border border-gold/20 p-8 md:p-12" style={{ background: '#111111' }}>
             <div className="mb-8">
-              <div className="font-serif text-2xl font-light text-warmdark leading-tight mb-2">
+              <div className="font-serif text-2xl font-light leading-tight mb-2" style={{ color: '#F0EBE0' }}>
                 Submit a Property
               </div>
-              <div className="text-[13px] text-warmgray leading-relaxed font-light">
+              <div className="text-[13px] leading-relaxed font-light" style={{ color: '#6B6252' }}>
                 Free report. No account required. Delivered by email within minutes.
               </div>
             </div>
             <PropertyForm />
-            <div className="mt-6 text-center text-[11px] tracking-[1px] text-warmgray/70">
+            <div className="mt-6 text-center text-[11px] tracking-[1px]" style={{ color: 'rgba(107,98,82,0.7)' }}>
               Free · No account needed · Delivered by email
             </div>
           </div>
         </div>
       </section>
+
+      <SignInModal
+        isOpen={modalOpen}
+        initialTab={modalTab}
+        onClose={() => setModalOpen(false)}
+      />
 
       <Footer />
     </div>

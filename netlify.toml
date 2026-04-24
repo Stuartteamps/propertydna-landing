@@ -5,6 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "20.17.0"
+  VITE_N8N_WEBHOOK_URL = "https://dillabean.app.n8n.cloud/webhook/homefax/report"
 
 [[redirects]]
   from = "/*"

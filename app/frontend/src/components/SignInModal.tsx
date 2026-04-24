@@ -200,7 +200,7 @@ const SignInModal: React.FC<SignInModalProps> = ({
       <button
         onClick={() => {
           onClose();
-          const el = document.getElementById('report');
+          const el = document.getElementById('form');
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
         style={{

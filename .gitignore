@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment files (local secrets/config)
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+.output/
+
+# Lock files (project uses pnpm-lock.yaml)
+package-lock.json
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
