@@ -100,6 +100,7 @@ const PropertyForm: React.FC = () => {
       zip: form.zip,
       notes: form.notes,
     });
+    console.log('[PropertyDNA] webhook result:', result);
 
     if (result.success) {
       setRequestId(result.requestId);

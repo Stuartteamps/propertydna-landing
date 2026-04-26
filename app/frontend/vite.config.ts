@@ -35,7 +35,7 @@ export default defineConfig(({ command }) => {
       react(),
       atoms(),
       Sitemap({
-        hostname: 'https://atoms.template.com',
+        hostname: 'https://thepropertydna.com',
         lastmod: getSitemapLastmod(),
         readable: true,
         generateRobotsTxt: true,

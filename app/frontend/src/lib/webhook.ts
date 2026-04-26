@@ -101,16 +101,12 @@ export async function submitToN8n(
       };
     }
 
-    const data = (await res.json()) as WebhookResponse;
+    // Treat any 2xx as success — n8n's default response is {"message":"Workflow was started"}
+    // which has no `ok` field. Only reject on HTTP errors (handled above).
+    const data = await res.json().catch(() => ({}) as Record<string, unknown>) as Record<string, unknown>;
+    const requestId = (data.requestId as string | undefined) ?? payload.requestId;
 
-    if (!data.ok) {
-      return {
-        success: false,
-        error: data.message ?? 'Submission rejected by server',
-      };
-    }
-
-    return { success: true, requestId: data.requestId };
+    return { success: true, requestId };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Network error';
     return { success: false, error: message };
