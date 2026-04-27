@@ -34,6 +34,7 @@ export default function ReportPending() {
   const [params] = useSearchParams();
   const sessionId = params.get('session_id');
   const bypass = params.get('bypass') === '1';
+  const isSub = params.get('sub') === '1';
 
   const [status, setStatus] = useState<Status>('verifying');
   const [errorMsg, setErrorMsg] = useState('');
@@ -71,6 +72,13 @@ export default function ReportPending() {
         if (!verifyData.paid) {
           setStatus('error');
           setErrorMsg('Payment not confirmed. Please contact hello@thepropertydna.com.');
+          return;
+        }
+
+        // For subscriptions, show confirmation without re-running report
+        if (verifyData.isSubscription || isSub) {
+          setRequestId(sessionId.slice(-8).toUpperCase());
+          setStatus('done');
           return;
         }
 
@@ -116,18 +124,20 @@ export default function ReportPending() {
               </svg>
             </div>
             <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 300, color: '#F0EBE0', marginBottom: 16 }}>
-              Report Initiated.
+              {isSub ? 'Subscription Active.' : 'Report Initiated.'}
             </div>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(240,235,224,0.7)', lineHeight: 1.85, maxWidth: 480, margin: '0 auto 32px' }}>
-              Your PropertyDNA report is being sequenced across flood, valuation, crime, and permit data.
-              Check your inbox — typical delivery is <strong style={{ color: '#F0EBE0' }}>2–4 minutes</strong>.
+              {isSub
+                ? 'Your unlimited plan is now active. Run reports anytime — no limits, no waiting. Your dashboard is ready.'
+                : <>Your PropertyDNA report is being sequenced across flood, valuation, crime, and permit data. Check your inbox — typical delivery is <strong style={{ color: '#F0EBE0' }}>2–4 minutes</strong>.</>
+              }
             </div>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: 'rgba(107,98,82,0.5)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 40 }}>
               Report ID: {requestId}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-              <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '16px 36px', textDecoration: 'none', display: 'inline-block' }}>
-                Run Another Report →
+              <a href={isSub ? '/dashboard' : '/'} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '16px 36px', textDecoration: 'none', display: 'inline-block' }}>
+                {isSub ? 'Go to Dashboard →' : 'Run Another Report →'}
               </a>
               <a href="/off-market" style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', textDecoration: 'underline' }}>
                 Browse off-market listings while you wait

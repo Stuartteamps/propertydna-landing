@@ -415,100 +415,97 @@ export default function Index() {
             </div>
           </FadeUp>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* STARTER */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+            {/* FREE */}
             <FadeUp>
-              <div className="border border-white/10 p-10 h-full flex flex-col">
-                <div className="font-sans text-[10px] tracking-[3px] text-canvas/45 uppercase mb-6">
-                  Starter
-                </div>
-                <div className="font-serif text-3xl font-light text-canvas mb-1">Analyst</div>
+              <div className="border border-white/10 p-8 h-full flex flex-col">
+                <div className="font-sans text-[10px] tracking-[3px] text-canvas/45 uppercase mb-6">Free</div>
+                <div className="font-serif text-2xl font-light text-canvas mb-1">First Report</div>
                 <div className="flex items-baseline mb-2">
                   <sup className="font-serif text-lg text-canvas/60 mr-1">$</sup>
-                  <span className="font-serif text-6xl font-light text-canvas leading-none">0</span>
+                  <span className="font-serif text-5xl font-light text-canvas leading-none">0</span>
                 </div>
-                <div className="text-[13px] text-canvas/50 mb-8">Free forever</div>
+                <div className="text-[13px] text-canvas/50 mb-8">One report, on us</div>
                 <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/70 flex-1">
-                  {['5 property reports per month', 'Core valuation engine', 'Basic data quality score', 'Email delivery'].map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <span className="text-gold mt-1">—</span>
-                      <span>{f}</span>
-                    </li>
+                  {['1 complimentary report', 'Full intelligence report', 'Email capture required', 'Delivered in ~3 min'].map((f) => (
+                    <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => openModal('signup')}
-                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent"
-                >
-                  Get Started Free
+                <button type="button" onClick={() => scrollTo('form')}
+                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent">
+                  Get Free Report
                 </button>
               </div>
             </FadeUp>
 
-            {/* PROFESSIONAL */}
-            <FadeUp delay={0.08}>
-              <div
-                className="relative border-2 border-gold p-10 h-full flex flex-col"
-                style={{ background: 'linear-gradient(160deg, rgba(184,147,85,0.08), transparent)' }}
-              >
-                <div
-                  className="absolute -top-3 left-10 font-sans text-[9px] tracking-[3px] text-espresso bg-gold uppercase px-3 py-1.5"
-                >
-                  Most Popular
-                </div>
-                <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-6">
-                  Professional
-                </div>
-                <div className="font-serif text-3xl font-light text-canvas mb-1">Professional</div>
+            {/* PER REPORT */}
+            <FadeUp delay={0.05}>
+              <div className="border border-white/10 p-8 h-full flex flex-col">
+                <div className="font-sans text-[10px] tracking-[3px] text-canvas/45 uppercase mb-6">Pay-Per-Use</div>
+                <div className="font-serif text-2xl font-light text-canvas mb-1">Single Report</div>
                 <div className="flex items-baseline mb-2">
                   <sup className="font-serif text-lg text-canvas/60 mr-1">$</sup>
-                  <span className="font-serif text-6xl font-light text-canvas leading-none">149</span>
+                  <span className="font-serif text-5xl font-light text-canvas leading-none">4</span>
+                  <span className="font-serif text-2xl font-light text-canvas/80 leading-none">.99</span>
                 </div>
-                <div className="text-[13px] text-canvas/50 mb-8">per month, billed monthly</div>
-                <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/75 flex-1">
-                  {['Unlimited property reports', 'Full genetic valuation engine', 'Risk strand analysis', 'Comparative sequencing', 'Priority email + PDF delivery', 'API access (1,000 calls/mo)'].map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <span className="text-gold mt-1">—</span>
-                      <span>{f}</span>
-                    </li>
+                <div className="text-[13px] text-canvas/50 mb-8">per report</div>
+                <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/70 flex-1">
+                  {['One report, no commitment', 'Full intelligence report', 'Valuation + risk analysis', 'Email delivery'].map((f) => (
+                    <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => openModal('signup')}
-                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-6 py-3.5"
-                >
-                  Start Free Trial
+                <button type="button" onClick={() => scrollTo('form')}
+                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent">
+                  Run a Report
+                </button>
+              </div>
+            </FadeUp>
+
+            {/* SUBSCRIPTION */}
+            <FadeUp delay={0.1}>
+              <div className="relative border-2 border-gold p-8 h-full flex flex-col"
+                style={{ background: 'linear-gradient(160deg, rgba(184,147,85,0.08), transparent)' }}>
+                <div className="absolute -top-3 left-8 font-sans text-[9px] tracking-[3px] text-espresso bg-gold uppercase px-3 py-1.5">
+                  Most Popular
+                </div>
+                <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-6">Unlimited</div>
+                <div className="font-serif text-2xl font-light text-canvas mb-1">Monthly Plan</div>
+                <div className="flex items-baseline mb-2">
+                  <sup className="font-serif text-lg text-canvas/60 mr-1">$</sup>
+                  <span className="font-serif text-5xl font-light text-canvas leading-none">49</span>
+                  <span className="font-sans text-sm text-canvas/50 ml-1">/mo</span>
+                </div>
+                <div className="text-[13px] text-canvas/50 mb-8">unlimited reports</div>
+                <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/75 flex-1">
+                  {['Unlimited property reports', 'Full genetic valuation engine', 'Risk strand analysis', 'Dashboard + report history', 'Priority email + PDF delivery', 'Cancel anytime'].map((f) => (
+                    <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
+                  ))}
+                </ul>
+                <button type="button" onClick={() => scrollTo('form')}
+                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-6 py-3.5">
+                  Subscribe $49/mo
                 </button>
               </div>
             </FadeUp>
 
             {/* ENTERPRISE */}
-            <FadeUp delay={0.16}>
-              <div className="border border-white/10 p-10 h-full flex flex-col">
-                <div className="font-sans text-[10px] tracking-[3px] text-canvas/45 uppercase mb-6">
-                  Enterprise
-                </div>
-                <div className="font-serif text-3xl font-light text-canvas mb-1">Institutional</div>
+            <FadeUp delay={0.15}>
+              <div className="border border-white/10 p-8 h-full flex flex-col">
+                <div className="font-sans text-[10px] tracking-[3px] text-canvas/45 uppercase mb-6">Enterprise</div>
+                <div className="font-serif text-2xl font-light text-canvas mb-1">Institutional</div>
                 <div className="flex items-baseline mb-2">
                   <sup className="font-serif text-lg text-canvas/60 mr-1">$</sup>
-                  <span className="font-serif text-6xl font-light text-canvas leading-none">—</span>
+                  <span className="font-serif text-5xl font-light text-canvas leading-none">149</span>
+                  <span className="font-sans text-sm text-canvas/50 ml-1">/mo</span>
                 </div>
-                <div className="text-[13px] text-canvas/50 mb-8">Custom pricing</div>
+                <div className="text-[13px] text-canvas/50 mb-8">per month, billed monthly</div>
                 <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/70 flex-1">
-                  {['Everything in Professional', 'Portfolio genome mapping', 'Temporal drift modelling', 'Dedicated data team', 'Unlimited API access', 'SLA + white-label options'].map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <span className="text-gold mt-1">—</span>
-                      <span>{f}</span>
-                    </li>
+                  {['Everything in Monthly', 'Portfolio genome mapping', 'Temporal drift modelling', 'Dedicated data team', 'Unlimited API access', 'SLA + white-label options'].map((f) => (
+                    <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => openModal('sales')}
-                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent"
-                >
+                <button type="button" onClick={() => openModal('sales')}
+                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent">
                   Talk to Sales
                 </button>
               </div>
@@ -541,7 +538,7 @@ export default function Index() {
                 onClick={() => scrollTo('form')}
                 className="font-sans text-[11px] font-medium uppercase tracking-[3px] text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-8 py-4"
               >
-                Start Free Trial
+                Get Your Free Report
               </button>
               <button
                 type="button"
@@ -596,12 +593,12 @@ export default function Index() {
                 Submit a Property
               </div>
               <div className="text-[13px] leading-relaxed font-light" style={{ color: '#6B6252' }}>
-                Free report. No account required. Delivered by email within minutes.
+                First report free. $4.99/report after that, or $49/month unlimited.
               </div>
             </div>
             <PropertyForm />
             <div className="mt-6 text-center text-[11px] tracking-[1px]" style={{ color: 'rgba(107,98,82,0.7)' }}>
-              Free · No account needed · Delivered by email
+              First report free · $4.99/report · $49/month unlimited
             </div>
           </div>
         </div>

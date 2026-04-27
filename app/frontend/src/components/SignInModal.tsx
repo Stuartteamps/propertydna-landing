@@ -360,7 +360,7 @@ const SignInModal: React.FC<SignInModalProps> = ({
                 <div style={{
                   fontFamily: 'Jost, sans-serif',
                   fontSize: '13px', color: '#6B6252', marginBottom: '28px', lineHeight: 1.6,
-                }}>Free plan — 5 reports/month. No card required.</div>
+                }}>First report free. $4.99/report after, or $49/month unlimited.</div>
                 <ErrorBanner />
                 <div style={fieldStyle}>
                   <label style={labelStyle}>Full Name</label>

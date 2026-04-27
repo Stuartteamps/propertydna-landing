@@ -47,6 +47,7 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
     { label: 'Sell',          action: null, href: '/seller-valuation' },
     { label: 'Off-Market',    action: null, href: '/off-market' },
     { label: 'Property DNA',  action: null, href: '/property-dna' },
+    { label: 'Dashboard',     action: null, href: '/dashboard' },
     { label: 'About',         action: null, href: '/about' },
   ];
 
