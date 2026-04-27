@@ -316,6 +316,19 @@ export default function ReportView() {
           </Section>
         )}
 
+        {/* FBI Crime Stats */}
+        {n.crime?.available && (
+          <Section title="Crime Statistics — FBI UCR">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: '0 40px', marginBottom: 8 }}>
+              <Stat label="Violent Crime Rate" value={`${n.crime.violentCrimeRatePer100k} per 100K`} />
+              <Stat label="Property Crime Rate" value={`${n.crime.propertyCrimeRatePer100k} per 100K`} />
+              <Stat label="Reporting Agency" value={n.crime.agencyName || '—'} />
+              <Stat label="Data Year" value={n.crime.year || '2022'} />
+            </div>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252' }}>Source: {n.crime.source} · {n.crime.note}</div>
+          </Section>
+        )}
+
         {/* Crime Incidents — SpotCrime */}
         {n.incidents?.available && (
           <Section title={`Crime & Safety — ${n.incidents.radius} Radius`}>
