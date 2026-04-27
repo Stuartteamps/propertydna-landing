@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
+import SignInModal from '@/components/SignInModal';
 import { Link } from 'react-router-dom';
 
 const steps = [
@@ -11,9 +13,15 @@ const steps = [
 ];
 
 export default function HowItWorks() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<'signin'|'signup'|'sales'>('signin');
   return (
     <div className="bg-espresso text-canvas min-h-screen">
-      <Nav />
+      <Nav
+        onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
+        onRequestAccessClick={() => { setModalTab('signup'); setModalOpen(true); }}
+      />
+      <SignInModal isOpen={modalOpen} initialTab={modalTab} onClose={() => setModalOpen(false)} />
 
       <section className="pt-32 md:pt-40 px-6 md:px-12 pb-16">
         <div className="max-w-5xl mx-auto">

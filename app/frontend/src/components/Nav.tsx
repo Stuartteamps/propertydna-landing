@@ -1,13 +1,31 @@
 // src/components/Nav.tsx
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 interface NavProps {
-  onSignInClick: () => void;
-  onRequestAccessClick: () => void;
+  onSignInClick?: () => void;
+  onRequestAccessClick?: () => void;
 }
+
+const linkStyle: React.CSSProperties = {
+  fontFamily: 'Jost, sans-serif',
+  fontSize: '11px',
+  fontWeight: 400,
+  letterSpacing: '2px',
+  textTransform: 'uppercase',
+  color: '#6B6252',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  transition: 'color 0.2s',
+  padding: 0,
+  textDecoration: 'none',
+};
 
 const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -16,9 +34,21 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
   }, []);
 
   const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (isHome) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.location.href = `/#${id}`;
+    }
   };
+
+  const navLinks = [
+    { label: 'Platform',      action: () => scrollToSection('platform'), href: null },
+    { label: 'How It Works',  action: null, href: '/how-it-works' },
+    { label: 'Sample Report', action: null, href: '/sample-report' },
+    { label: 'Pricing',       action: () => scrollToSection('pricing'), href: null },
+    { label: 'About',         action: null, href: '/about' },
+  ];
 
   return (
     <nav
@@ -41,9 +71,8 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
       }}
     >
       {/* Logo */}
-      <a
-        href="#hero"
-        onClick={(e) => { e.preventDefault(); scrollToSection('hero'); }}
+      <Link
+        to="/"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -69,37 +98,31 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
           </svg>
         </div>
         PropertyDNA
-      </a>
+      </Link>
 
       {/* Center links */}
-      <ul style={{ display: 'flex', gap: '36px', listStyle: 'none', margin: 0, padding: 0 }}>
-        {[
-          { label: 'Platform', target: 'platform' },
-          { label: 'Insights', target: 'insights' },
-          { label: 'Pricing',  target: 'pricing'  },
-          { label: 'About',    target: 'about'    },
-        ].map(({ label, target }) => (
-          <li key={target}>
-            <button
-              onClick={() => scrollToSection(target)}
-              style={{
-                fontFamily: 'Jost, sans-serif',
-                fontSize: '11px',
-                fontWeight: 400,
-                letterSpacing: '2px',
-                textTransform: 'uppercase',
-                color: '#6B6252',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'color 0.2s',
-                padding: 0,
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
-            >
-              {label}
-            </button>
+      <ul style={{ display: 'flex', gap: '28px', listStyle: 'none', margin: 0, padding: 0 }}>
+        {navLinks.map(({ label, action, href }) => (
+          <li key={label}>
+            {href ? (
+              <Link
+                to={href}
+                style={linkStyle}
+                onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
+              >
+                {label}
+              </Link>
+            ) : (
+              <button
+                onClick={action ?? undefined}
+                style={linkStyle}
+                onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
+              >
+                {label}
+              </button>
+            )}
           </li>
         ))}
       </ul>
@@ -108,18 +131,7 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
         <button
           onClick={onSignInClick}
-          style={{
-            fontFamily: 'Jost, sans-serif',
-            fontSize: '11px',
-            fontWeight: 400,
-            letterSpacing: '2px',
-            textTransform: 'uppercase',
-            color: '#6B6252',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'color 0.2s',
-          }}
+          style={linkStyle}
           onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
           onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
         >

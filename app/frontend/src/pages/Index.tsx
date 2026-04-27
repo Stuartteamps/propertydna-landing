@@ -438,7 +438,7 @@ export default function Index() {
                 </ul>
                 <button
                   type="button"
-                  onClick={() => scrollTo('form')}
+                  onClick={() => openModal('signup')}
                   className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent"
                 >
                   Get Started Free
@@ -476,7 +476,7 @@ export default function Index() {
                 </ul>
                 <button
                   type="button"
-                  onClick={() => scrollTo('form')}
+                  onClick={() => openModal('signup')}
                   className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-6 py-3.5"
                 >
                   Start Free Trial
@@ -506,7 +506,7 @@ export default function Index() {
                 </ul>
                 <button
                   type="button"
-                  onClick={() => scrollTo('form')}
+                  onClick={() => openModal('sales')}
                   className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent"
                 >
                   Talk to Sales
