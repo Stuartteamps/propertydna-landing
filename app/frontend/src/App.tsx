@@ -13,6 +13,7 @@ import BuyerAccess from "./pages/BuyerAccess";
 import OffMarket from "./pages/OffMarket";
 import Newsletter from "./pages/Newsletter";
 import Contact from "./pages/Contact";
+import ReportPending from "./pages/ReportPending";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 
@@ -33,6 +34,7 @@ const AppRoutes = () => (
     <Route path="/off-market" element={<OffMarket />} />
     <Route path="/newsletter" element={<Newsletter />} />
     <Route path="/contact" element={<Contact />} />
+    <Route path="/report-pending" element={<ReportPending />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
   </Routes>

@@ -1,6 +1,5 @@
 // src/components/PropertyForm.tsx
 import React, { useState } from 'react';
-import { submitToN8n } from '../lib/webhook';
 
 type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
 
@@ -74,7 +73,6 @@ const PropertyForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic client-side validation
     if (!form.email.includes('@')) {
       setStatus('error');
       setErrorMsg('Please enter a valid email address.');
@@ -89,25 +87,32 @@ const PropertyForm: React.FC = () => {
     setStatus('loading');
     setErrorMsg('');
 
-    const result = await submitToN8n('report_request', {
-      fullName: form.fullName,
-      email: form.email,
-      phone: form.phone,
-      role: form.role,
-      address: form.address,
-      city: form.city,
-      state: form.state,
-      zip: form.zip,
-      notes: form.notes,
-    });
-    console.log('[PropertyDNA] webhook result:', result);
-
-    if (result.success) {
-      setRequestId(result.requestId);
-      setStatus('success');
-    } else {
+    try {
+      const res = await fetch('/.netlify/functions/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: form.fullName,
+          email: form.email,
+          phone: form.phone,
+          role: form.role,
+          address: form.address,
+          city: form.city,
+          state: form.state,
+          zip: form.zip,
+          notes: form.notes,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setStatus('error');
+        setErrorMsg(data.error || 'Unable to start checkout. Try again.');
+      }
+    } catch {
       setStatus('error');
-      setErrorMsg(result.error);
+      setErrorMsg('Network error. Please try again.');
     }
   };
 
@@ -322,14 +327,14 @@ const PropertyForm: React.FC = () => {
           marginBottom: '12px',
         }}
       >
-        {status === 'loading' ? 'Sequencing…' : 'Sequence This Property →'}
+        {status === 'loading' ? 'Preparing Checkout…' : 'Sequence This Property →'}
       </button>
 
       <div style={{
         fontFamily: 'Jost, sans-serif',
         fontSize: '11px', color: '#6B6252', textAlign: 'center',
       }}>
-        Free · No account required · Delivered by email
+        Secure payment via Stripe · Report delivered by email in ~3 min
       </div>
     </form>
   );
