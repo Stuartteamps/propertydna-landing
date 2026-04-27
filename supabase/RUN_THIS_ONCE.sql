@@ -3,6 +3,15 @@
 -- https://app.supabase.com/project/neccpdfhmfnvyjgyrysy/sql/new
 -- ============================================================
 
+-- Clear any conflicting pre-existing policies (safe — service role bypasses RLS anyway)
+DROP POLICY IF EXISTS "Allow public insert reports"     ON reports;
+DROP POLICY IF EXISTS "Allow public select reports"     ON reports;
+DROP POLICY IF EXISTS "Allow public update reports"     ON reports;
+DROP POLICY IF EXISTS "Allow public delete reports"     ON reports;
+DROP POLICY IF EXISTS "Enable insert for all users"     ON reports;
+DROP POLICY IF EXISTS "Enable read access for all users" ON reports;
+DROP POLICY IF EXISTS "Enable all for authenticated"    ON reports;
+
 
 -- ──────────────────────────────────────────────────────────────
 -- PART 1: TABLES
