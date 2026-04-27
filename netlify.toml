@@ -5,6 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "20.17.0"
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
   VITE_N8N_WEBHOOK_URL = "https://dillabean.app.n8n.cloud/webhook/homefax/report"
 
 [functions]
