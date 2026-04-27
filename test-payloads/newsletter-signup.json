@@ -1,0 +1,11 @@
+{
+  "funnelType": "NEWSLETTER",
+  "leadSource": "newsletter_form",
+  "firstName": "Taylor",
+  "email": "taylor.brooks@example.com",
+  "interest": "market_watch",
+  "agent": "daniel_stuart",
+  "pageUrl": "https://thepropertydna.com/newsletter",
+  "userAgent": "Mozilla/5.0",
+  "timestamp": "2026-04-27T18:00:00.000Z"
+}

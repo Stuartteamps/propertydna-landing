@@ -1,0 +1,17 @@
+{
+  "funnelType": "BUYER_KEYS",
+  "leadSource": "buyer_keys_form",
+  "interest": "buyer_access",
+  "firstName": "Sam",
+  "lastName": "Rivera",
+  "email": "sam.rivera@example.com",
+  "phone": "+17605550300",
+  "priceRange": "600-900k",
+  "bedrooms": "3",
+  "buyerTimeline": "1-3mo",
+  "message": "Looking for pool home, ideally with mountain views. Open to Indian Wells or Rancho Mirage.",
+  "agent": "daniel_stuart",
+  "pageUrl": "https://thepropertydna.com/buyer-access",
+  "userAgent": "Mozilla/5.0",
+  "timestamp": "2026-04-27T18:00:00.000Z"
+}

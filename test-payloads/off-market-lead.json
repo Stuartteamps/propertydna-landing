@@ -1,0 +1,17 @@
+{
+  "funnelType": "OFF_MARKET",
+  "leadSource": "off_market_form",
+  "interest": "off_market",
+  "firstName": "Casey",
+  "lastName": "Chen",
+  "email": "casey.chen@example.com",
+  "phone": "+17605550400",
+  "priceRange": "700k-1.2m",
+  "propertyType": "single_family",
+  "bedrooms": "4",
+  "message": "Investor looking for properties with short-term rental potential. Desert Hot Springs or Cathedral City preferred.",
+  "agent": "daniel_stuart",
+  "pageUrl": "https://thepropertydna.com/off-market",
+  "userAgent": "Mozilla/5.0",
+  "timestamp": "2026-04-27T18:00:00.000Z"
+}

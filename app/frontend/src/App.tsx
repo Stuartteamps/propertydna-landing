@@ -7,6 +7,12 @@ import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
 import SampleReport from "./pages/SampleReport";
 import ReportView from "./pages/ReportView";
+import OpenHouse from "./pages/OpenHouse";
+import SellerValuation from "./pages/SellerValuation";
+import BuyerAccess from "./pages/BuyerAccess";
+import OffMarket from "./pages/OffMarket";
+import Newsletter from "./pages/Newsletter";
+import Contact from "./pages/Contact";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 
@@ -20,6 +26,13 @@ const AppRoutes = () => (
     <Route path="/sample-report" element={<SampleReport />} />
     <Route path="/report/:id" element={<ReportView />} />
     <Route path="/report" element={<ReportView />} />
+    <Route path="/property-dna" element={<Index />} />
+    <Route path="/open-house" element={<OpenHouse />} />
+    <Route path="/seller-valuation" element={<SellerValuation />} />
+    <Route path="/buyer-access" element={<BuyerAccess />} />
+    <Route path="/off-market" element={<OffMarket />} />
+    <Route path="/newsletter" element={<Newsletter />} />
+    <Route path="/contact" element={<Contact />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
   </Routes>

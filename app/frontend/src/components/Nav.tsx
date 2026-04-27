@@ -43,10 +43,10 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
   };
 
   const navLinks = [
-    { label: 'Platform',      action: () => scrollToSection('platform'), href: null },
-    { label: 'How It Works',  action: null, href: '/how-it-works' },
-    { label: 'Sample Report', action: null, href: '/sample-report' },
-    { label: 'Pricing',       action: () => scrollToSection('pricing'), href: null },
+    { label: 'Buy',           action: null, href: '/buyer-access' },
+    { label: 'Sell',          action: null, href: '/seller-valuation' },
+    { label: 'Off-Market',    action: null, href: '/off-market' },
+    { label: 'Property DNA',  action: null, href: '/property-dna' },
     { label: 'About',         action: null, href: '/about' },
   ];
 

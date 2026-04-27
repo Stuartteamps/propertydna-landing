@@ -545,7 +545,7 @@ export default function Index() {
               </button>
               <button
                 type="button"
-                onClick={() => scrollTo('form')}
+                onClick={() => openModal('sales')}
                 className="font-sans text-[11px] font-medium uppercase tracking-[3px] text-canvas border border-canvas/30 hover:border-gold hover:text-gold transition-colors px-8 py-4 !bg-transparent hover:!bg-transparent"
               >
                 Talk to Sales →

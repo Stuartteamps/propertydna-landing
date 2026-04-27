@@ -1,0 +1,18 @@
+{
+  "source": "propertydna-site",
+  "intent": "report_request",
+  "funnelType": "PROPERTY_DNA",
+  "fullName": "Dan Stuart",
+  "email": "stuartteamps@gmail.com",
+  "phone": "760-555-0100",
+  "role": "Buyer",
+  "address": "2719 N Junipero",
+  "city": "Palm Springs",
+  "state": "CA",
+  "zip": "92262",
+  "notes": "Test submission",
+  "leadSource": "property_dna_form",
+  "pageUrl": "https://thepropertydna.com/",
+  "userAgent": "Mozilla/5.0",
+  "timestamp": "2026-04-27T18:00:00.000Z"
+}

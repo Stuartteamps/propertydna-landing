@@ -1,0 +1,15 @@
+{
+  "funnelType": "SELLER_VALUATION",
+  "leadSource": "seller_valuation_form",
+  "firstName": "Alex",
+  "lastName": "Morgan",
+  "email": "alex.morgan@example.com",
+  "phone": "+17605550200",
+  "homeAddress": "1200 S Palm Canyon Dr, Palm Springs, CA 92264",
+  "sellerTimeline": "3-6mo",
+  "message": "Thinking about selling. Renovated kitchen and pool. Want to know what it's worth.",
+  "agent": "daniel_stuart",
+  "pageUrl": "https://thepropertydna.com/seller-valuation",
+  "userAgent": "Mozilla/5.0",
+  "timestamp": "2026-04-27T18:00:00.000Z"
+}
