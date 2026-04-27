@@ -1,3 +1,27 @@
+const https = require("https");
+
+function stripeGet(path, secretKey) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        hostname: "api.stripe.com",
+        path,
+        method: "GET",
+        headers: { Authorization: `Bearer ${secretKey}` },
+      },
+      (res) => {
+        let raw = "";
+        res.on("data", (c) => (raw += c));
+        res.on("end", () => {
+          try { resolve(JSON.parse(raw)); } catch { reject(new Error("Bad JSON")); }
+        });
+      }
+    );
+    req.on("error", reject);
+    req.end();
+  });
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
@@ -10,9 +34,6 @@ exports.handler = async (event) => {
       body: JSON.stringify({ paid: true, metadata: {}, customer_email: "" }),
     };
   }
-
-  const Stripe = require("stripe");
-  const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
   let body;
   try {
@@ -27,7 +48,14 @@ exports.handler = async (event) => {
   }
 
   try {
-    const session = await stripe.checkout.sessions.retrieve(session_id);
+    const session = await stripeGet(
+      `/v1/checkout/sessions/${session_id}`,
+      process.env.STRIPE_SECRET_KEY
+    );
+
+    if (session.error) {
+      return { statusCode: 400, body: JSON.stringify({ error: session.error.message }) };
+    }
 
     if (session.payment_status !== "paid") {
       return {
@@ -48,9 +76,6 @@ exports.handler = async (event) => {
     };
   } catch (err) {
     console.error("[Stripe verify]", err.message);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
