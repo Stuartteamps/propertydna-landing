@@ -316,6 +316,55 @@ export default function ReportView() {
           </Section>
         )}
 
+        {/* Crime Incidents — SpotCrime */}
+        {n.incidents?.available && (
+          <Section title={`Crime & Safety — ${n.incidents.radius} Radius`}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0 40px', marginBottom: 20 }}>
+              <Stat label="Incidents (Last 6 Mo)" value={String(n.incidents.totalLast6Mo)} />
+              <Stat label="Monthly Average" value={n.incidents.monthlyAvg} />
+              <Stat label="Data Source" value="SpotCrime" />
+            </div>
+            {n.incidents.byType && Object.keys(n.incidents.byType).length > 0 && (
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                {Object.entries(n.incidents.byType as Record<string,number>).sort(([,a],[,b]) => b - a).map(([type, count]) => (
+                  <div key={type} style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: '8px 16px' }}>
+                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252' }}>{type}</div>
+                    <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, color: '#F0EBE0' }}>{count}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Section>
+        )}
+
+        {/* Permits — BuildZoom */}
+        {n.permits?.available && (
+          <Section title="Permit History">
+            <div style={{ marginBottom: 16, fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252' }}>
+              {n.permits.total} total permits on record · Source: BuildZoom
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  {['Description', 'Date', 'Value', 'Status'].map(h => (
+                    <th key={h} style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', textAlign: 'left', paddingBottom: 8, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(n.permits.recent || []).map((p: any, i: number) => (
+                  <tr key={i}>
+                    <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{p.description}</td>
+                    <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{p.date}</td>
+                    <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#C9A84C', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{p.value}</td>
+                    <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{p.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Section>
+        )}
+
         {/* Analysis */}
         {(dna.sellerAngle || dna.buyerAngle || dna.investmentAngle) && (
           <Section title="Analysis">
