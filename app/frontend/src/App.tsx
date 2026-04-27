@@ -6,6 +6,7 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
 import SampleReport from "./pages/SampleReport";
+import ReportView from "./pages/ReportView";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 
@@ -17,6 +18,8 @@ const AppRoutes = () => (
     <Route path="/about" element={<About />} />
     <Route path="/how-it-works" element={<HowItWorks />} />
     <Route path="/sample-report" element={<SampleReport />} />
+    <Route path="/report/:id" element={<ReportView />} />
+    <Route path="/report" element={<ReportView />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
   </Routes>
