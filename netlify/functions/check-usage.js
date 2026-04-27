@@ -1,109 +1,84 @@
-const https = require("https");
+const db = require("./_supabase");
 
-function supabaseRequest(path, query, serviceKey) {
-  const url = new URL(`https://neccpdfhmfnvyjgyrysy.supabase.co/rest/v1/${path}?${query}`);
-  return new Promise((resolve, reject) => {
-    const req = https.request(
-      {
-        hostname: url.hostname,
-        path: url.pathname + url.search,
-        method: "GET",
-        headers: {
-          apikey: serviceKey,
-          Authorization: `Bearer ${serviceKey}`,
-          "Content-Type": "application/json",
-        },
-      },
-      (res) => {
-        let raw = "";
-        res.on("data", (c) => (raw += c));
-        res.on("end", () => {
-          try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); }
-          catch { reject(new Error("Bad JSON")); }
-        });
-      }
-    );
-    req.on("error", reject);
-    req.end();
-  });
-}
+const CORS = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
 exports.handler = async (event) => {
-  const headers = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
-  }
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: "Method Not Allowed" }) };
-  }
+  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
+  if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: "Method Not Allowed" }) };
 
   let body;
-  try { body = JSON.parse(event.body || "{}"); }
-  catch { return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) }; }
+  try { body = JSON.parse(event.body || "{}"); } catch { return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Invalid JSON" }) }; }
 
   const { email } = body;
-  if (!email || !email.includes("@")) {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: "Valid email required" }) };
+  if (!email || !email.includes("@")) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Valid email required" }) };
+
+  if (!process.env.SUPABASE_SERVICE_KEY) {
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({ reportCount: 0, isSubscribed: false, plan: null }) };
   }
 
-  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
-  if (!SUPABASE_KEY) {
-    return { statusCode: 200, headers, body: JSON.stringify({ reportCount: 0, isSubscribed: false, plan: null }) };
-  }
-
-  const emailEncoded = encodeURIComponent(email.toLowerCase().trim());
+  const normalizedEmail = email.toLowerCase().trim();
 
   try {
-    // Count all property DNA reports for this email
-    const countRes = await supabaseRequest(
-      "reports",
-      `email=eq.${emailEncoded}&role=neq.SUBSCRIPTION&select=id`,
-      SUPABASE_KEY
-    );
-    const reportCount = Array.isArray(countRes.data) ? countRes.data.length : 0;
+    // Count paid + free property reports for this email
+    const reports = await db.from("property_reports")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .get();
 
-    // Check for active subscription
-    const subRes = await supabaseRequest(
-      "reports",
-      `email=eq.${emailEncoded}&role=eq.SUBSCRIPTION&select=property_dna`,
-      SUPABASE_KEY
-    );
+    const reportCount = Array.isArray(reports) ? reports.length : 0;
+
+    // Check active subscription in new subscriptions table
+    const subs = await db.from("subscriptions")
+      .select("id,plan_name,status,current_period_end,cancel_at_period_end")
+      .eq("email", normalizedEmail)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .get();
 
     let isSubscribed = false;
     let plan = null;
     let subscriptionId = null;
 
-    if (Array.isArray(subRes.data) && subRes.data.length > 0) {
-      for (const row of subRes.data) {
-        let meta = row.property_dna;
-        if (typeof meta === "string") {
-          try { meta = JSON.parse(meta); } catch { continue; }
-        }
-        if (meta && meta.status === "active") {
-          isSubscribed = true;
-          plan = meta.plan || "monthly";
-          subscriptionId = meta.stripe_subscription_id || null;
-          break;
+    if (Array.isArray(subs) && subs.length > 0) {
+      const sub = subs[0];
+      // Verify period hasn't expired
+      const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
+      if (!periodEnd || periodEnd > new Date()) {
+        isSubscribed = true;
+        plan = sub.plan_name;
+        subscriptionId = sub.id;
+      }
+    }
+
+    // Fallback: also check legacy reports table for SUBSCRIPTION records
+    if (!isSubscribed) {
+      const legacySubs = await db.from("reports")
+        .select("property_dna")
+        .eq("email", normalizedEmail)
+        .eq("role", "SUBSCRIPTION")
+        .get()
+        .catch(() => []);
+
+      if (Array.isArray(legacySubs)) {
+        for (const row of legacySubs) {
+          let meta = row.property_dna;
+          if (typeof meta === "string") { try { meta = JSON.parse(meta); } catch { continue; } }
+          if (meta && meta.status === "active") { isSubscribed = true; plan = meta.plan || "monthly"; break; }
         }
       }
     }
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ reportCount, isSubscribed, plan, subscriptionId }),
-    };
+    db.kpi("usage_check", normalizedEmail, { reportCount, isSubscribed });
+
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({ reportCount, isSubscribed, plan, subscriptionId }) };
   } catch (err) {
     console.error("[check-usage]", err.message);
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ reportCount: 0, isSubscribed: false, plan: null, error: err.message }),
-    };
+    // Fail open — don't block report generation on DB errors
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({ reportCount: 0, isSubscribed: false, plan: null }) };
   }
 };

@@ -15,8 +15,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const SUPA_URL = 'https://neccpdfhmfnvyjgyrysy.supabase.co';
-const SUPA_ANON = 'sb_publishable_KTTgVO3mROxubE_A9OQ7Kg_aRrnzPVT';
+const SUPA_URL = import.meta.env.VITE_SUPABASE_URL || 'https://neccpdfhmfnvyjgyrysy.supabase.co';
+const SUPA_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_KTTgVO3mROxubE_A9OQ7Kg_aRrnzPVT';
 
 interface ReportData {
   id: string;
