@@ -1,7 +1,8 @@
 // src/components/PropertyForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PricingGate from './PricingGate';
 import { parseIdxUrl } from '@/lib/parseIdxUrl';
+import { loadGooglePlaces, attachAutocomplete } from '@/lib/googlePlaces';
 
 type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
 
@@ -92,6 +93,25 @@ const PropertyForm: React.FC = () => {
     idxUrl: '', mlsNumber: '', listingAgent: '', listingBrokerage: '',
   });
   const [showIdxFields, setShowIdxFields] = useState(false);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+
+  // Attach Google Places autocomplete once the input is mounted
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    loadGooglePlaces().then(() => {
+      if (!addressInputRef.current) return;
+      cleanup = attachAutocomplete(addressInputRef.current, (place) => {
+        setForm(prev => ({
+          ...prev,
+          address: `${place.streetNumber} ${place.route}`.trim() || place.fullAddress,
+          city: place.city || prev.city,
+          state: place.state || prev.state,
+          zip: place.zip || prev.zip,
+        }));
+      });
+    }).catch(() => { /* Places unavailable — plain input still works */ });
+    return () => cleanup?.();
+  }, []);
 
   const isCondo = form.propertyType.toLowerCase().includes('condo')
     || form.propertyType.toLowerCase().includes('unit')
@@ -232,7 +252,12 @@ const PropertyForm: React.FC = () => {
         {/* Address */}
         <div style={fieldStyle}>
           <label style={labelStyle}>Property Address</label>
-          <input style={inputStyle} type="text" value={form.address} onChange={set('address')} placeholder="100 W Andreas Rd" required />
+          <input
+            ref={addressInputRef}
+            style={inputStyle} type="text" value={form.address}
+            onChange={set('address')} placeholder="100 W Andreas Rd" required
+            autoComplete="off"
+          />
         </div>
 
         {/* Unit number — shown always, highlighted when condo selected */}
@@ -344,7 +369,7 @@ const PropertyForm: React.FC = () => {
           cursor: status === 'loading' ? 'not-allowed' : 'pointer',
           transition: 'background 0.2s', marginBottom: '12px',
         }}>
-          {status === 'loading' ? 'Checking…' : 'Sequence This Property →'}
+          {status === 'loading' ? 'Analyzing…' : 'Analyze This Property →'}
         </button>
 
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: '11px', color: '#6B6252', textAlign: 'center' }}>

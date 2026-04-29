@@ -71,7 +71,9 @@ exports.handler = async (event) => {
   const { fullName, email, phone, role, address, unit, city, state, zip, notes, mode = "free",
     propertyType, idxUrl, mlsNumber, listingSource, listingAgent, listingBrokerage } = body;
 
-  if (!email || !address) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Email and address are required." }) };
+  const subOnlyModes = ["consumer", "realtor_pro", "investor", "subscription", "enterprise"];
+  if (!email) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Email is required." }) };
+  if (!address && !subOnlyModes.includes(mode)) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Email and address are required." }) };
 
   const normalizedEmail = email.toLowerCase().trim();
   const origin = event.headers.origin || "https://thepropertydna.com";
@@ -159,6 +161,21 @@ exports.handler = async (event) => {
       sessionMode = "subscription";
       successPath = "/report-pending?session_id={CHECKOUT_SESSION_ID}&sub=1&plan=enterprise";
       db.kpi("sub_initiated", normalizedEmail, { plan: "enterprise" });
+    } else if (mode === "consumer") {
+      priceId = process.env.STRIPE_PRICE_CONSUMER;
+      sessionMode = "subscription";
+      successPath = "/dashboard?session_id={CHECKOUT_SESSION_ID}&plan=consumer";
+      db.kpi("sub_initiated", normalizedEmail, { plan: "consumer" });
+    } else if (mode === "realtor_pro") {
+      priceId = process.env.STRIPE_PRICE_REALTOR_PRO;
+      sessionMode = "subscription";
+      successPath = "/dashboard?session_id={CHECKOUT_SESSION_ID}&plan=realtor_pro";
+      db.kpi("sub_initiated", normalizedEmail, { plan: "realtor_pro" });
+    } else if (mode === "investor") {
+      priceId = process.env.STRIPE_PRICE_INVESTOR;
+      sessionMode = "subscription";
+      successPath = "/dashboard?session_id={CHECKOUT_SESSION_ID}&plan=investor";
+      db.kpi("sub_initiated", normalizedEmail, { plan: "investor" });
     } else {
       priceId = process.env.STRIPE_PRICE_ID;
     }

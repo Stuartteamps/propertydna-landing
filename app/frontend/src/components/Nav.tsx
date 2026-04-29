@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import AuthModal from '@/components/AuthModal';
 
@@ -30,8 +30,9 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
   const [modalOpen, setModalOpen]   = useState(false);
   const [modalView, setModalView]   = useState<'signin' | 'pricing'>('signin');
   const [menuOpen, setMenuOpen]     = useState(false);
-  const location = useLocation();
-  const isHome   = location.pathname === '/';
+  const location  = useLocation();
+  const navigate  = useNavigate();
+  const isHome    = location.pathname === '/';
   const { user, signOut, tier } = useAuth();
 
   useEffect(() => {
@@ -42,11 +43,12 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
 
   const openSignIn = () => { setModalView('signin'); setModalOpen(true); onSignInClick?.(); };
   const openPricing = () => {
+    onRequestAccessClick?.();
     if (isHome) {
       const el = document.getElementById('pricing');
-      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); onRequestAccessClick?.(); return; }
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     }
-    setModalView('pricing'); setModalOpen(true); onRequestAccessClick?.();
+    navigate('/#pricing');
   };
 
   const avatarUrl   = user?.user_metadata?.avatar_url;

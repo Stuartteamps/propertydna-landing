@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import PropertyForm from '@/components/PropertyForm';
@@ -8,6 +9,7 @@ import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
 import TeaserCard from '@/components/TeaserCard';
 import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
+import { loadGooglePlaces, attachAutocomplete } from '@/lib/googlePlaces';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -63,11 +65,32 @@ export default function Landing() {
   const [teaserAddress, setTeaser]    = useState('');
   const { user, signInWithGoogle, signInWithApple, signInWithFacebook } = useAuth();
   const premium = isPremiumUser();
+  const heroInputRef = useRef<HTMLInputElement>(null);
+  const location = useLocation();
 
   const openModal = (view: ModalView = 'signin') => {
     setModalView(view);
     setModalOpen(true);
   };
+
+  // Scroll to #pricing if navigated here with that hash
+  useEffect(() => {
+    if (location.hash === '#pricing') {
+      setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    }
+  }, [location.hash]);
+
+  // Attach Google Places to hero search input
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    loadGooglePlaces().then(() => {
+      if (!heroInputRef.current) return;
+      cleanup = attachAutocomplete(heroInputRef.current, (place) => {
+        setAddress(place.fullAddress);
+      });
+    }).catch(() => {});
+    return () => cleanup?.();
+  }, []);
 
   // After sign-in resolves: scroll to form and clear teaser
   useEffect(() => {
@@ -218,10 +241,12 @@ export default function Landing() {
                   background: 'rgba(15,14,13,0.6)',
                 }}>
                   <input
+                    ref={heroInputRef}
                     type="text"
                     value={address}
                     onChange={e => setAddress(e.target.value)}
                     placeholder="Enter a property address…"
+                    autoComplete="off"
                     style={{
                       flex: 1, padding: '16px 18px',
                       background: 'transparent', border: 'none', outline: 'none',

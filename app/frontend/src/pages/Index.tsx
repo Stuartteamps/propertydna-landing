@@ -3,6 +3,7 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import PropertyForm from '@/components/PropertyForm';
 import AuthModal from '@/components/AuthModal';
+import PricingModal from '@/components/PricingModal';
 import FadeUp from '@/components/FadeUp';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
 import { isPremiumUser } from '@/lib/isPremiumUser';
@@ -61,8 +62,9 @@ const reportFeatures = [
 ];
 
 export default function Index() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<ModalTab>('signin');
+  const [modalOpen, setModalOpen]     = useState(false);
+  const [modalTab, setModalTab]       = useState<ModalTab>('signin');
+  const [pricingOpen, setPricingOpen] = useState(false);
   const premium = isPremiumUser();
 
   const openModal = (tab: ModalTab = 'signin') => {
@@ -70,12 +72,15 @@ export default function Index() {
     setModalOpen(true);
   };
 
+  const openPricing = () => setPricingOpen(true);
+
   return (
     <div className="bg-espresso text-canvas">
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('pricing')}
+        onRequestAccessClick={openPricing}
       />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
 
       {/* HERO */}
       <section
@@ -354,7 +359,7 @@ export default function Index() {
                 )}
                 {!premium ? (
                   <button
-                    onClick={() => openModal('pricing')}
+                    onClick={openPricing}
                     style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#0F0E0D', background: '#B89355', border: 'none', padding: '10px 20px', cursor: 'pointer' }}
                   >
                     Upgrade Access →
@@ -553,7 +558,7 @@ export default function Index() {
                     <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
                   ))}
                 </ul>
-                <button type="button" onClick={() => scrollTo('form')}
+                <button type="button" onClick={openPricing}
                   className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-6 py-3.5">
                   Subscribe $49/mo
                 </button>
