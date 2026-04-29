@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import { setPremiumStatus } from '@/lib/isPremiumUser';
 
 interface Report {
   id: string;
@@ -47,6 +48,11 @@ export default function Dashboard() {
       setIsSubscribed(data.isSubscribed || false);
       setPlan(data.plan || null);
       setStatus('done');
+      // Store email and subscription tier for premium gating across pages
+      try {
+        sessionStorage.setItem('pdna_email', email.toLowerCase().trim());
+        setPremiumStatus(data.isSubscribed || false, data.plan || null);
+      } catch {}
     } catch {
       setError('Network error. Please try again.');
       setStatus('error');
@@ -114,7 +120,9 @@ export default function Dashboard() {
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: isSubscribed ? '#C9A84C' : '#6B6252' }} />
                 <div>
                   <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: isSubscribed ? '#C9A84C' : '#6B6252', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                    {isSubscribed ? `${plan === 'enterprise' ? 'Enterprise' : 'Unlimited'} Plan — Active` : 'No Active Subscription'}
+                    {isSubscribed
+                    ? `${plan === 'enterprise' ? 'Enterprise' : plan === 'monthly' ? 'Pro' : 'Unlimited'} Plan — Active`
+                    : 'No Active Subscription'}
                   </div>
                   <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: 'rgba(240,235,224,0.5)', marginTop: 2 }}>
                     {email}
@@ -124,7 +132,12 @@ export default function Dashboard() {
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                 {!isSubscribed && (
                   <a href="/#pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '10px 20px', textDecoration: 'none', display: 'inline-block' }}>
-                    Upgrade → $49/mo
+                    Upgrade Pro → $49/mo
+                  </a>
+                )}
+                {isSubscribed && plan === 'monthly' && (
+                  <a href="/#pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '10px 20px', textDecoration: 'none', display: 'inline-block' }}>
+                    Enterprise →
                   </a>
                 )}
                 <button

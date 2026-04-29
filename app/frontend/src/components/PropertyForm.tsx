@@ -1,6 +1,7 @@
 // src/components/PropertyForm.tsx
 import React, { useState } from 'react';
 import PricingGate from './PricingGate';
+import { parseIdxUrl } from '@/lib/parseIdxUrl';
 
 type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
 
@@ -10,10 +11,16 @@ interface FormState {
   phone: string;
   role: Role;
   address: string;
+  unit: string;
   city: string;
   state: string;
   zip: string;
+  propertyType: string;
   notes: string;
+  idxUrl: string;
+  mlsNumber: string;
+  listingAgent: string;
+  listingBrokerage: string;
 }
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
@@ -50,11 +57,27 @@ const fieldStyle: React.CSSProperties = {
   marginBottom: '28px',
 };
 
-async function goToCheckout(formData: FormState, mode: 'free' | 'per_report' | 'subscription') {
+async function goToCheckout(formData: FormState, mode: 'free' | 'per_report' | 'subscription' | 'enterprise') {
+  // Auto-parse IDX URL if provided but MLS number not manually entered
+  let { mlsNumber, idxUrl } = formData;
+  if (idxUrl && !mlsNumber) {
+    const parsed = parseIdxUrl(idxUrl);
+    if (parsed.mlsNumber) mlsNumber = parsed.mlsNumber;
+  }
+
+  // Store email in sessionStorage so report view can check tier
+  try { sessionStorage.setItem('pdna_email', formData.email.toLowerCase().trim()); } catch {}
+
   const res = await fetch('/.netlify/functions/create-checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...formData, mode }),
+    body: JSON.stringify({
+      ...formData,
+      mlsNumber,
+      idxUrl,
+      listingSource: idxUrl ? (parseIdxUrl(idxUrl).source || '') : '',
+      mode,
+    }),
   });
   const data = await res.json();
   if (data.url) window.location.href = data.url;
@@ -64,8 +87,16 @@ async function goToCheckout(formData: FormState, mode: 'free' | 'per_report' | '
 const PropertyForm: React.FC = () => {
   const [form, setForm] = useState<FormState>({
     fullName: '', email: '', phone: '', role: 'Buyer',
-    address: '', city: '', state: '', zip: '', notes: '',
+    address: '', unit: '', city: '', state: '', zip: '',
+    propertyType: '', notes: '',
+    idxUrl: '', mlsNumber: '', listingAgent: '', listingBrokerage: '',
   });
+  const [showIdxFields, setShowIdxFields] = useState(false);
+
+  const isCondo = form.propertyType.toLowerCase().includes('condo')
+    || form.propertyType.toLowerCase().includes('unit')
+    || form.propertyType.toLowerCase().includes('townhome');
+  const unitRequired = isCondo && !form.unit.trim();
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [gateOpen, setGateOpen] = useState(false);
@@ -109,7 +140,7 @@ const PropertyForm: React.FC = () => {
     }
   };
 
-  const handleGateSelect = async (mode: 'per_report' | 'subscription') => {
+  const handleGateSelect = async (mode: 'per_report' | 'subscription' | 'enterprise') => {
     setGateLoading(true);
     try {
       const data = await goToCheckout(form, mode);
@@ -178,10 +209,55 @@ const PropertyForm: React.FC = () => {
           </div>
         </div>
 
+        {/* Property Type */}
+        <div style={{ marginBottom: '28px' }}>
+          <span style={labelStyle}>Property Type</span>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {['Single Family', 'Condo / Unit', 'Townhome', 'Multi-Family', 'Land', 'Commercial'].map(pt => (
+              <button key={pt} type="button"
+                onClick={() => setForm(prev => ({ ...prev, propertyType: pt }))}
+                style={{
+                  fontFamily: 'Jost, sans-serif', fontSize: '10px', fontWeight: 300,
+                  letterSpacing: '1.5px', textTransform: 'uppercase',
+                  color: form.propertyType === pt ? '#000000' : '#6B6252',
+                  background: form.propertyType === pt ? '#C9A84C' : 'transparent',
+                  border: `1px solid ${form.propertyType === pt ? '#C9A84C' : 'rgba(255,255,255,0.08)'}`,
+                  padding: '7px 14px', cursor: 'pointer', transition: 'all 0.2s',
+                }}
+              >{pt}</button>
+            ))}
+          </div>
+        </div>
+
         {/* Address */}
         <div style={fieldStyle}>
           <label style={labelStyle}>Property Address</label>
           <input style={inputStyle} type="text" value={form.address} onChange={set('address')} placeholder="100 W Andreas Rd" required />
+        </div>
+
+        {/* Unit number — shown always, highlighted when condo selected */}
+        <div style={fieldStyle}>
+          <label style={{
+            ...labelStyle,
+            color: unitRequired ? '#C9A84C' : '#6B6252',
+          }}>
+            Unit / Apt Number {isCondo ? '(required for condos)' : '(if applicable)'}
+          </label>
+          <input
+            style={{
+              ...inputStyle,
+              borderBottomColor: unitRequired ? 'rgba(201,168,76,0.6)' : 'rgba(255,255,255,0.1)',
+            }}
+            type="text"
+            value={form.unit}
+            onChange={set('unit')}
+            placeholder={isCondo ? 'e.g. 4B or 201' : 'e.g. Apt 4B'}
+          />
+          {unitRequired && (
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#C9A84C', marginTop: 4 }}>
+              Unit number is needed to match this condo in the MLS and county records.
+            </div>
+          )}
         </div>
 
         {/* City + State */}
@@ -207,6 +283,50 @@ const PropertyForm: React.FC = () => {
           <label style={labelStyle}>Notes (optional)</label>
           <textarea style={{ ...inputStyle, resize: 'none', height: '72px' }} value={form.notes} onChange={set('notes')} placeholder="Any additional context about the property..." />
         </div>
+
+        {/* IDX/MLS toggle */}
+        <div style={{ marginBottom: 20 }}>
+          <button
+            type="button"
+            onClick={() => setShowIdxFields(v => !v)}
+            style={{
+              fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
+              color: '#6B6252', background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            <span style={{ fontSize: 14, lineHeight: 1 }}>{showIdxFields ? '−' : '+'}</span>
+            MLS / IDX listing details (optional)
+          </button>
+        </div>
+
+        {/* IDX/MLS fields */}
+        {showIdxFields && (
+          <div style={{ borderLeft: '1px solid rgba(201,168,76,0.15)', paddingLeft: 16, marginBottom: 20 }}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>IDX / Listing URL</label>
+              <input style={inputStyle} type="url" value={form.idxUrl} onChange={set('idxUrl')} placeholder="https://flexmls.com/listing/..." />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>MLS Number</label>
+                <input style={inputStyle} type="text" value={form.mlsNumber} onChange={set('mlsNumber')} placeholder="SW24123456" />
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Listing Agent</label>
+                <input style={inputStyle} type="text" value={form.listingAgent} onChange={set('listingAgent')} placeholder="Agent name" />
+              </div>
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Listing Brokerage</label>
+              <input style={inputStyle} type="text" value={form.listingBrokerage} onChange={set('listingBrokerage')} placeholder="Brokerage name" />
+            </div>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', lineHeight: 1.6, marginBottom: 8 }}>
+              MLS data enriches your PropertyDNA report with higher-confidence feature data.
+              Only publicly available IDX metadata is used.
+            </div>
+          </div>
+        )}
 
         {/* Error */}
         {status === 'error' && (

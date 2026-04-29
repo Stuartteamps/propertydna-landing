@@ -1,29 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import SignInModal from '@/components/SignInModal';
-import { TierGate } from '@/components/valuation/TierGate';
-import { MarketTrendPanel } from '@/components/valuation/MarketTrendPanel';
-import { LocationScorePanel } from '@/components/valuation/LocationScorePanel';
-import { PropertyEventsPanel } from '@/components/valuation/PropertyEventsPanel';
-import { AdjustmentFactorPanel } from '@/components/valuation/AdjustmentFactorPanel';
-import { MlsSourcePanel } from '@/components/report/MlsSourcePanel';
-import { planToTier, fetchUserTier, TIER_LABELS, type Tier } from '@/lib/tier';
 
-// Fix Leaflet default icon issue with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
-
-const SUPA_URL = import.meta.env.VITE_SUPABASE_URL || 'https://neccpdfhmfnvyjgyrysy.supabase.co';
-const SUPA_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_KTTgVO3mROxubE_A9OQ7Kg_aRrnzPVT';
 
 interface ReportData {
   id: string;
@@ -33,13 +22,7 @@ interface ReportData {
   role: string;
   property_dna: any;
   created_at: string;
-  // IDX/MLS fields
-  idx_url?: string | null;
-  mls_number?: string | null;
-  listing_source?: string | null;
-  listing_agent?: string | null;
-  listing_brokerage?: string | null;
-  mls_enrichment_status?: string | null;
+  status: string;
 }
 
 const fmt = (v: any) => (v && v !== '—' ? v : '—');
@@ -60,87 +43,53 @@ const Stat = ({ label, value, wide }: { label: string; value: string; wide?: boo
   </div>
 );
 
-export default function ReportView() {
-  const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
-  const reportId = id || searchParams.get('id');
+const money = (v: number | null) => v ? `$${v.toLocaleString()}` : '—';
+
+export default function ReportViewByToken() {
+  const { token } = useParams<{ token: string }>();
 
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<'signin' | 'signup' | 'sales'>('signin');
 
-  // Tier state
-  const [userTier, setUserTier] = useState<Tier>('free');
-  const [tierEmail, setTierEmail] = useState('');
-  const [showTierPrompt, setShowTierPrompt] = useState(false);
-  const [tierCheckEmail, setTierCheckEmail] = useState('');
-  const [tierChecking, setTierChecking] = useState(false);
-
   useEffect(() => {
-    if (!reportId) { setError('No report ID provided.'); setLoading(false); return; }
-    fetch(`${SUPA_URL}/rest/v1/reports?id=eq.${reportId}&select=*`, {
-      headers: { apikey: SUPA_ANON, Authorization: `Bearer ${SUPA_ANON}` },
-    })
+    if (!token) { setError('No report token provided.'); setLoading(false); return; }
+    fetch(`/.netlify/functions/get-report-by-token?token=${encodeURIComponent(token)}`)
       .then(r => r.json())
-      .then((rows: ReportData[]) => {
-        if (!rows || !rows.length) { setError('Report not found.'); return; }
-        const row = rows[0];
-        if (typeof row.property_dna === 'string') {
-          try { row.property_dna = JSON.parse(row.property_dna); } catch {}
+      .then((data: any) => {
+        if (data.status === 'pending' || data.status === 'generating') {
+          setPending(true);
+          return;
         }
-        setReport(row);
+        if (data.error) { setError(data.error); return; }
+        if (typeof data.property_dna === 'string') {
+          try { data.property_dna = JSON.parse(data.property_dna); } catch {}
+        }
+        setReport(data);
       })
       .catch(() => setError('Failed to load report.'))
       .finally(() => setLoading(false));
-  }, [reportId]);
+  }, [token]);
 
-  // Tier detection: sessionStorage email → check-usage
-  useEffect(() => {
-    const urlEmail = searchParams.get('email') || '';
-    let email = '';
-    try { email = urlEmail || sessionStorage.getItem('pdna_email') || ''; } catch {}
-    if (!email) return;
-    setTierEmail(email);
-    setTierCheckEmail(email);
-    fetchUserTier(email).then(({ tier }) => setUserTier(tier));
-  }, []);
-
-  const handleTierCheck = async () => {
-    if (!tierCheckEmail.includes('@')) return;
-    setTierChecking(true);
-    const { tier } = await fetchUserTier(tierCheckEmail);
-    setUserTier(tier);
-    setTierEmail(tierCheckEmail);
-    try { sessionStorage.setItem('pdna_email', tierCheckEmail.toLowerCase().trim()); } catch {}
-    setShowTierPrompt(false);
-    setTierChecking(false);
-  };
-
-  const dna = report?.property_dna ?? {};
-  const n = dna.normalized ?? {};
+  const dna  = report?.property_dna ?? {};
+  const n    = dna.normalized ?? {};
   const comps: any[] = n.comps ?? [];
-  const flood = n.flood ?? {};
-  const demo = n.demographics ?? {};
-  const val = n.valuation ?? {};
-  const prop = n.property ?? {};
-  const sub = n.subject ?? {};
-  const sale = n.sale ?? {};
+  const flood  = n.flood ?? {};
+  const demo   = n.demographics ?? {};
+  const val    = n.valuation ?? {};
+  const prop   = n.property ?? {};
+  const sub    = n.subject ?? {};
+  const sale   = n.sale ?? {};
   const weather = n.weather ?? {};
-  const hazard = n.hazard ?? {};
-  const nwsAlerts: any[] = n.nwsAlerts ?? [];
-
-  // Extract zip for market snapshot lookup
-  const reportZip = (report?.address || sub.matchedAddress || '').match(/\b\d{5}\b/)?.[0] || '';
-  const reportNeighborhood = demo.neighborhood || n.neighborhood || '';
+  const dnaAdj = dna.dnaAdjusted ?? null;
 
   const subjectLat = sub.lat && sub.lat !== '—' ? Number(sub.lat) : null;
   const subjectLon = sub.lon && sub.lon !== '—' ? Number(sub.lon) : null;
   const hasMap = subjectLat && subjectLon;
-
   const compsWithCoords = comps.filter((c: any) => c.lat && c.lon);
-
   const priceRange = compsWithCoords.length > 0
     ? { min: Math.min(...compsWithCoords.map((c: any) => c.rawPrice || 0)), max: Math.max(...compsWithCoords.map((c: any) => c.rawPrice || 1)) }
     : { min: 0, max: 1 };
@@ -148,8 +97,8 @@ export default function ReportView() {
   const priceColor = (price: number) => {
     const pct = priceRange.max > priceRange.min ? (price - priceRange.min) / (priceRange.max - priceRange.min) : 0.5;
     const r = Math.round(201 * (1 - pct) + 45 * pct);
-    const g = Math.round(76 * (1 - pct) + 106 * pct);
-    const b = Math.round(76 * (1 - pct) + 74 * pct);
+    const g = Math.round(76  * (1 - pct) + 106 * pct);
+    const b = Math.round(76  * (1 - pct) + 74  * pct);
     return `rgb(${r},${g},${b})`;
   };
 
@@ -165,11 +114,24 @@ export default function ReportView() {
     </div>
   );
 
+  if (pending) return (
+    <div style={{ minHeight: '100vh', background: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 28, color: '#F0EBE0', marginBottom: 12 }}>Report In Progress</div>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', marginBottom: 24 }}>Your report is being generated. Please check back in a few minutes.</div>
+        <button onClick={() => window.location.reload()} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 28px', border: 'none', cursor: 'pointer' }}>
+          Refresh →
+        </button>
+      </div>
+    </div>
+  );
+
   if (error) return (
     <div style={{ minHeight: '100vh', background: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 32, color: '#F0EBE0', marginBottom: 12 }}>Report Not Found</div>
-        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252' }}>{error}</div>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', marginBottom: 20 }}>{error}</div>
+        <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#C9A84C' }}>Return home</a>
       </div>
     </div>
   );
@@ -195,7 +157,6 @@ export default function ReportView() {
             Prepared for {fmt(n.client?.name)} · {new Date(report?.created_at ?? '').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
 
-          {/* Score badge */}
           <div style={{ display: 'flex', gap: 16, marginTop: 28, flexWrap: 'wrap', alignItems: 'center' }}>
             <div style={{ background: ratingColor[dna.rating] || '#6B6252', color: '#fff', padding: '8px 20px', fontFamily: 'Cormorant Garamond, serif', fontSize: 24, fontWeight: 300 }}>
               {dna.rating || '—'}
@@ -214,7 +175,6 @@ export default function ReportView() {
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 48px 80px' }}>
 
-        {/* Would We Buy It */}
         {dna.wouldWeBuyIt && (
           <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.2)', padding: 28, marginBottom: 40 }}>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252', marginBottom: 8 }}>Would We Buy It?</div>
@@ -227,81 +187,97 @@ export default function ReportView() {
           </div>
         )}
 
-        {/* Executive Summary */}
         {dna.executiveSummary && (
           <Section title="Executive Summary">
             <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 15, fontWeight: 300, color: '#F0EBE0', lineHeight: 1.9, margin: 0 }}>{dna.executiveSummary}</p>
           </Section>
         )}
 
-        {/* Property Vitals */}
         <Section title="Property Vitals">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0 40px' }}>
             <Stat label="Property Type" value={fmt(prop.propertyType)} />
-            <Stat label="Year Built" value={fmt(prop.yearBuilt)} />
-            <Stat label="Beds / Baths" value={`${fmt(prop.beds)} bd / ${fmt(prop.baths)} ba`} />
+            <Stat label="Year Built"    value={fmt(prop.yearBuilt)} />
+            <Stat label="Beds / Baths"  value={`${fmt(prop.beds)} bd / ${fmt(prop.baths)} ba`} />
             <Stat label="Square Footage" value={prop.sqft && prop.sqft !== '—' ? `${Number(prop.sqft).toLocaleString()} sqft` : '—'} />
-            <Stat label="Lot Size" value={prop.lotSize && prop.lotSize !== '—' ? `${Number(prop.lotSize).toLocaleString()} sqft` : '—'} />
-            <Stat label="Last Sale" value={sale.lastSaleDate ? sale.lastSaleDate.slice(0, 10) : '—'} />
+            <Stat label="Lot Size"       value={prop.lotSize && prop.lotSize !== '—' ? `${Number(prop.lotSize).toLocaleString()} sqft` : '—'} />
+            <Stat label="Last Sale"      value={sale.lastSaleDate ? sale.lastSaleDate.slice(0, 10) : '—'} />
             <Stat label="Last Sale Price" value={fmt(sale.lastSalePrice)} />
           </div>
         </Section>
 
-        {/* Valuation */}
+        {/* Valuation — Raw Comp Range */}
         <Section title="Valuation">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 40px' }}>
             <Stat label="Market Value" value={fmt(val.marketValue)} />
-            <Stat label="Range Low" value={fmt(val.low)} />
-            <Stat label="Range High" value={fmt(val.high)} />
+            <Stat label="Range Low"    value={fmt(val.low)} />
+            <Stat label="Range High"   value={fmt(val.high)} />
           </div>
           <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginTop: 4 }}>
             Confidence: {fmt(val.confidence)}
           </div>
         </Section>
 
-        {/* Heat Map */}
+        {/* DNA Adjusted Valuation */}
+        {dnaAdj && (
+          <Section title="DNA Adjusted Valuation">
+            <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.15)', padding: 24, marginBottom: 24 }}>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginBottom: 16 }}>
+                Adjusted for detected property features. Raw comp range shown above.
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 40px', marginBottom: 16 }}>
+                <Stat label="DNA Adjusted Low"  value={money(dnaAdj.adjLow)} />
+                <Stat label="DNA Adjusted Mid"  value={money(dnaAdj.adjMid)} />
+                <Stat label="DNA Adjusted High" value={money(dnaAdj.adjHigh)} />
+              </div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginBottom: dnaAdj.drivers?.length ? 16 : 0 }}>
+                Confidence Score: {dnaAdj.confidence ? `${Math.round(dnaAdj.confidence * 100)}%` : '—'}
+              </div>
+              {dnaAdj.drivers && dnaAdj.drivers.length > 0 && (
+                <div>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', marginBottom: 10 }}>Key Adjustment Drivers</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {dnaAdj.drivers.map((d: any) => (
+                      <div key={d.key} style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)', padding: '6px 12px' }}>
+                        <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: d.pct > 0 ? '#74C69D' : '#A07850' }}>
+                          {d.pct > 0 ? '+' : ''}{d.pct}%
+                        </span>
+                        <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginLeft: 6 }}>
+                          {d.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Section>
+        )}
+
         {hasMap && (
           <Section title="Sales Activity Map">
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', marginBottom: 16 }}>
-              Subject property shown in gold. Comparable sales sized and colored by price — larger/darker = higher value.
+              Subject property shown in gold. Comparable sales sized and colored by price.
             </div>
             <div style={{ height: 420, borderRadius: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <MapContainer
-                center={[subjectLat!, subjectLon!]}
-                zoom={14}
-                style={{ height: '100%', width: '100%' }}
-                zoomControl={true}
-              >
+              <MapContainer center={[subjectLat!, subjectLon!]} zoom={14} style={{ height: '100%', width: '100%' }} zoomControl={true}>
                 <TileLayer
                   url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                   attribution='© <a href="https://carto.com/">CARTO</a>'
                 />
-                {/* Comparable sales */}
                 {compsWithCoords.map((comp: any, i: number) => (
-                  <CircleMarker
-                    key={i}
-                    center={[Number(comp.lat), Number(comp.lon)]}
+                  <CircleMarker key={i} center={[Number(comp.lat), Number(comp.lon)]}
                     radius={8 + Math.min(16, (comp.rawPrice || 500000) / 100000)}
-                    pathOptions={{ color: '#C9A84C', fillColor: priceColor(comp.rawPrice || 500000), fillOpacity: 0.75, weight: 1 }}
-                  >
+                    pathOptions={{ color: '#C9A84C', fillColor: priceColor(comp.rawPrice || 500000), fillOpacity: 0.75, weight: 1 }}>
                     <Popup>
                       <div style={{ fontFamily: 'sans-serif', fontSize: 13 }}>
-                        <strong>{comp.address}</strong><br />
-                        {comp.price} · {comp.sqft} · {comp.distance}
+                        <strong>{comp.address}</strong><br />{comp.price} · {comp.sqft} · {comp.distance}
                       </div>
                     </Popup>
                   </CircleMarker>
                 ))}
-                {/* Subject property */}
-                <CircleMarker
-                  center={[subjectLat!, subjectLon!]}
-                  radius={14}
-                  pathOptions={{ color: '#C9A84C', fillColor: '#C9A84C', fillOpacity: 1, weight: 2 }}
-                >
-                  <Popup>
-                    <strong>Subject Property</strong><br />
-                    {sub.matchedAddress}
-                  </Popup>
+                <CircleMarker center={[subjectLat!, subjectLon!]} radius={14}
+                  pathOptions={{ color: '#C9A84C', fillColor: '#C9A84C', fillOpacity: 1, weight: 2 }}>
+                  <Popup><strong>Subject Property</strong><br />{sub.matchedAddress}</Popup>
                 </CircleMarker>
               </MapContainer>
             </div>
@@ -332,16 +308,15 @@ export default function ReportView() {
           </Section>
         )}
 
-        {/* Neighborhood Profile */}
         {demo.medianIncome && (
           <Section title="Neighborhood Profile">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0 40px' }}>
-              <Stat label="Median Income" value={fmt(demo.medianIncome)} />
+              <Stat label="Median Income"     value={fmt(demo.medianIncome)} />
               <Stat label="Median Home Value" value={fmt(demo.medianHomeValue)} />
-              <Stat label="Population" value={fmt(demo.population)} />
-              <Stat label="Owner Occupied" value={fmt(demo.ownerOccupied)} />
-              <Stat label="Renter Occupied" value={fmt(demo.renterOccupied)} />
-              <Stat label="College Educated" value={fmt(demo.collegePct)} />
+              <Stat label="Population"        value={fmt(demo.population)} />
+              <Stat label="Owner Occupied"    value={fmt(demo.ownerOccupied)} />
+              <Stat label="Renter Occupied"   value={fmt(demo.renterOccupied)} />
+              <Stat label="College Educated"  value={fmt(demo.collegePct)} />
             </div>
             <div style={{ marginTop: 8, fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0' }}>
               {demo.neighborhoodTrend} · {demo.mobilityRate}
@@ -349,117 +324,39 @@ export default function ReportView() {
           </Section>
         )}
 
-        {/* Risk Profile — Flood + FEMA NRI Hazard + NWS Alerts */}
-        {(flood.zone || hazard.score != null || nwsAlerts.length > 0) && (
+        {flood.zone && (
           <Section title="Risk Profile">
-
-            {/* Flood */}
-            {flood.zone && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: 20 }}>
-                  <Stat label="FEMA Flood Zone" value={`Zone ${flood.zone}`} />
-                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: flood.highRisk ? '#A07850' : '#2D6A4F' }}>{flood.label}</div>
-                </div>
-                <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: 20 }}>
-                  <Stat label="Special Flood Hazard Area" value={flood.highRisk ? 'Yes — SFHA' : 'No'} />
-                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252' }}>{flood.subtype !== '—' ? flood.subtype : 'Standard zone determination'}</div>
-                </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: 24 }}>
+                <Stat label="FEMA Flood Zone" value={`Zone ${flood.zone}`} />
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: flood.highRisk ? '#A07850' : '#2D6A4F' }}>{flood.label}</div>
               </div>
-            )}
-
-            {/* FEMA NRI — 18-hazard composite */}
-            {hazard.score != null && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
-                  <div>
-                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', marginBottom: 4 }}>
-                      FEMA National Risk Index
-                    </div>
-                    <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, color: '#F0EBE0' }}>
-                      {hazard.rating || '—'}
-                      <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', marginLeft: 10 }}>
-                        {hazard.score}/100
-                      </span>
-                    </div>
-                  </div>
-                  {hazard.insuranceTier && (
-                    <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: '10px 16px' }}>
-                      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', marginBottom: 4 }}>Insurance Risk</div>
-                      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: hazard.insuranceTier?.includes('High') ? '#A07850' : '#74C69D' }}>
-                        {hazard.insuranceTier}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Per-hazard scores */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px,1fr))', gap: 12, marginBottom: 14 }}>
-                  {([
-                    ['Wildfire', hazard.wildfire],
-                    ['Earthquake', hazard.earthquake],
-                    ['Flood', hazard.flood],
-                    ['Wind', hazard.wind],
-                  ] as [string, number | undefined][]).filter(([, v]) => v != null).map(([label, score]) => {
-                    const pct = Math.min(100, Math.max(0, score!));
-                    const col = pct >= 60 ? '#A07850' : pct >= 30 ? '#C9A84C' : '#2D6A4F';
-                    return (
-                      <div key={label} style={{ background: '#111', border: '1px solid rgba(255,255,255,0.07)', padding: '12px 14px' }}>
-                        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', marginBottom: 6 }}>{label}</div>
-                        <div style={{ height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
-                          <div style={{ width: `${pct}%`, height: '100%', background: col }} />
-                        </div>
-                        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: col }}>{Math.round(pct)}/100</div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {hazard.insuranceNotes && (
-                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', lineHeight: 1.7 }}>
-                    {hazard.insuranceNotes}
-                  </div>
-                )}
+              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: 24 }}>
+                <Stat label="Special Flood Hazard Area" value={flood.highRisk ? 'Yes — SFHA' : 'No'} />
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252' }}>{flood.subtype !== '—' ? flood.subtype : 'Standard zone determination'}</div>
               </div>
-            )}
-
-            {/* NWS Active Hazard Alerts */}
-            {nwsAlerts.length > 0 && (
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
-                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#A07850', marginBottom: 12 }}>
-                  {nwsAlerts.length} Active NWS Alert{nwsAlerts.length !== 1 ? 's' : ''}
-                </div>
-                {nwsAlerts.map((alert: any, i: number) => (
-                  <div key={i} style={{ background: 'rgba(160,120,80,0.08)', border: '1px solid rgba(160,120,80,0.25)', padding: '12px 16px', marginBottom: 8 }}>
-                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#A07850', marginBottom: 4 }}>{alert.event} · {alert.severity}</div>
-                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#F0EBE0' }}>{alert.headline}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-
+            </div>
           </Section>
         )}
 
-        {/* FBI Crime Stats */}
         {n.crime?.available && (
           <Section title="Crime Statistics — FBI UCR">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: '0 40px', marginBottom: 8 }}>
-              <Stat label="Violent Crime Rate" value={`${n.crime.violentCrimeRatePer100k} per 100K`} />
-              <Stat label="Property Crime Rate" value={`${n.crime.propertyCrimeRatePer100k} per 100K`} />
-              <Stat label="Reporting Agency" value={n.crime.agencyName || '—'} />
-              <Stat label="Data Year" value={n.crime.year || '2022'} />
+              <Stat label="Violent Crime Rate"   value={`${n.crime.violentCrimeRatePer100k} per 100K`} />
+              <Stat label="Property Crime Rate"  value={`${n.crime.propertyCrimeRatePer100k} per 100K`} />
+              <Stat label="Reporting Agency"     value={n.crime.agencyName || '—'} />
+              <Stat label="Data Year"            value={n.crime.year || '2022'} />
             </div>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252' }}>Source: {n.crime.source} · {n.crime.note}</div>
           </Section>
         )}
 
-        {/* Crime Incidents — SpotCrime */}
         {n.incidents?.available && (
           <Section title={`Crime & Safety — ${n.incidents.radius} Radius`}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0 40px', marginBottom: 20 }}>
               <Stat label="Incidents (Last 6 Mo)" value={String(n.incidents.totalLast6Mo)} />
-              <Stat label="Monthly Average" value={n.incidents.monthlyAvg} />
-              <Stat label="Data Source" value="SpotCrime" />
+              <Stat label="Monthly Average"        value={n.incidents.monthlyAvg} />
+              <Stat label="Data Source"            value="SpotCrime" />
             </div>
             {n.incidents.byType && Object.keys(n.incidents.byType).length > 0 && (
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -474,7 +371,6 @@ export default function ReportView() {
           </Section>
         )}
 
-        {/* Permits — BuildZoom */}
         {n.permits?.available && (
           <Section title="Permit History">
             <div style={{ marginBottom: 16, fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252' }}>
@@ -502,7 +398,6 @@ export default function ReportView() {
           </Section>
         )}
 
-        {/* Analysis */}
         {(dna.sellerAngle || dna.buyerAngle || dna.investmentAngle) && (
           <Section title="Analysis">
             {[['Seller Angle', dna.sellerAngle], ['Buyer Angle', dna.buyerAngle], ['Investment Angle', dna.investmentAngle]].map(([label, text]) =>
@@ -516,101 +411,12 @@ export default function ReportView() {
           </Section>
         )}
 
-        {/* Location & Climate */}
         {weather.summary && weather.summary !== '—' && (
           <Section title="Location & Climate">
             <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: '#F0EBE0', lineHeight: 1.8, margin: 0 }}>{weather.summary}</p>
           </Section>
         )}
 
-        {/* MLS / IDX Source (all tiers, when data present) */}
-        {(report?.mls_number || report?.idx_url) && (
-          <MlsSourcePanel
-            mlsNumber={report?.mls_number}
-            idxUrl={report?.idx_url}
-            listingSource={report?.listing_source}
-            listingAgent={report?.listing_agent}
-            listingBrokerage={report?.listing_brokerage}
-            enrichmentStatus={report?.mls_enrichment_status}
-          />
-        )}
-
-        {/* ── TIER BANNER ── */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 28, marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: userTier === 'enterprise' ? '#C9A84C' : userTier === 'monthly' ? '#74C69D' : '#6B6252' }} />
-              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: userTier === 'free' ? '#6B6252' : '#F0EBE0' }}>
-                {tierEmail ? `${TIER_LABELS[userTier]} · ${tierEmail}` : `${TIER_LABELS[userTier]} Report`}
-              </div>
-            </div>
-            <button
-              onClick={() => setShowTierPrompt(v => !v)}
-              style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-            >
-              {tierEmail ? 'Switch account' : 'Check your plan →'}
-            </button>
-          </div>
-
-          {/* Inline tier check prompt */}
-          {showTierPrompt && (
-            <div style={{ marginTop: 16, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <input
-                type="email"
-                value={tierCheckEmail}
-                onChange={e => setTierCheckEmail(e.target.value)}
-                placeholder="your@email.com"
-                style={{
-                  fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0',
-                  background: 'transparent', border: '1px solid rgba(255,255,255,0.12)',
-                  padding: '8px 12px', outline: 'none', flex: 1, maxWidth: 280,
-                }}
-                onKeyDown={e => { if (e.key === 'Enter') handleTierCheck(); }}
-              />
-              <button
-                onClick={handleTierCheck}
-                disabled={tierChecking}
-                style={{
-                  fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
-                  color: '#000', background: tierChecking ? 'rgba(201,168,76,0.5)' : '#C9A84C',
-                  border: 'none', padding: '10px 16px', cursor: tierChecking ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {tierChecking ? '…' : 'Unlock →'}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* ── PRO TIER: Market Intelligence ── */}
-        <Section title="Market Intelligence">
-          <TierGate userTier={userTier} requiredTier="monthly">
-            <MarketTrendPanel zip={reportZip} neighborhood={reportNeighborhood || undefined} />
-          </TierGate>
-        </Section>
-
-        {/* ── ENTERPRISE: Micro-Location Scoring ── */}
-        <Section title="Micro-Location Analysis">
-          <TierGate userTier={userTier} requiredTier="enterprise">
-            <LocationScorePanel address={report?.address} lat={subjectLat} lon={subjectLon} />
-          </TierGate>
-        </Section>
-
-        {/* ── ENTERPRISE: Property Event Timeline ── */}
-        <Section title="Property Event Timeline">
-          <TierGate userTier={userTier} requiredTier="enterprise">
-            <PropertyEventsPanel address={report?.address} />
-          </TierGate>
-        </Section>
-
-        {/* ── ENTERPRISE: Full Adjustment Factors ── */}
-        <Section title="Adjustment Factor Breakdown">
-          <TierGate userTier={userTier} requiredTier="enterprise">
-            <AdjustmentFactorPanel dna={dna} comps={comps} />
-          </TierGate>
-        </Section>
-
-        {/* Data Quality */}
         {dna.dataQualityNote && (
           <Section title="Data Quality Note">
             <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, margin: 0 }}>{dna.dataQualityNote}</p>

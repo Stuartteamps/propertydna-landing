@@ -11,12 +11,20 @@ export interface WebhookPayload {
   email: string;
   phone: string;
   address: string;
+  unit?: string;
   city: string;
   state: string;
   zip: string;
+  propertyType?: string;
   company: string;
   role: string;
   notes: string;
+  // IDX/MLS fields (optional)
+  idxUrl?: string;
+  mlsNumber?: string;
+  listingSource?: string;
+  listingAgent?: string;
+  listingBrokerage?: string;
   pageUrl: string;
   userAgent: string;
   submittedAt: string;
@@ -62,12 +70,19 @@ function buildPayload(
     email: '',
     phone: '',
     address: '',
+    unit: '',
     city: '',
     state: '',
     zip: '',
+    propertyType: '',
     company: '',
     role: '',
     notes: '',
+    idxUrl: '',
+    mlsNumber: '',
+    listingSource: '',
+    listingAgent: '',
+    listingBrokerage: '',
     pageUrl: typeof window !== 'undefined' ? window.location.href : '',
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
     submittedAt: new Date().toISOString(),

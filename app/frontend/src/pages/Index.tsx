@@ -4,6 +4,8 @@ import Footer from '@/components/Footer';
 import PropertyForm from '@/components/PropertyForm';
 import SignInModal from '@/components/SignInModal';
 import FadeUp from '@/components/FadeUp';
+import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
+import { isPremiumUser } from '@/lib/isPremiumUser';
 
 type ModalTab = 'signin' | 'signup' | 'sales';
 
@@ -61,6 +63,7 @@ const reportFeatures = [
 export default function Index() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<ModalTab>('signin');
+  const premium = isPremiumUser();
 
   const openModal = (tab: ModalTab = 'signin') => {
     setModalTab(tab);
@@ -307,6 +310,75 @@ export default function Index() {
               </FadeUp>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* PREMIUM INTELLIGENCE PREVIEW */}
+      <section className="bg-espresso px-6 md:px-12 py-24 md:py-32">
+        <div className="max-w-7xl mx-auto">
+          <FadeUp>
+            <div className="mb-16">
+              <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-5">
+                Premium Intelligence
+              </div>
+              <h2
+                className="font-serif font-light text-canvas leading-[1.05] max-w-3xl"
+                style={{ fontSize: 'clamp(32px, 4vw, 56px)', letterSpacing: '-0.8px' }}
+              >
+                Go beyond the
+                <br />
+                <em className="italic text-gold">basic valuation.</em>
+              </h2>
+              <p className="font-sans text-[15px] font-light leading-[1.85] text-canvas/55 max-w-2xl mt-6">
+                Pro subscribers unlock live market movement, comparable trend charts, micro-market
+                heat maps, opportunity scoring, and saved property intelligence.
+              </p>
+            </div>
+          </FadeUp>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <FadeUp delay={0.06}>
+              <div
+                style={{ position: 'relative', border: '1px solid rgba(255,255,255,0.07)', background: '#0A0908', padding: '28px' }}
+              >
+                <div className="font-sans text-[9px] tracking-[3px] text-gold uppercase mb-3">Pro · Comparable Sales Trends</div>
+                <div className="font-serif text-xl font-light text-canvas mb-4">Neighborhood Sales Velocity</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 3, alignItems: 'flex-end', height: 60, marginBottom: 12 }}>
+                  {[65,70,62,78,80,75,82,88,79,84,90,87].map((h, i) => (
+                    <div key={i} style={{ background: `rgba(184,147,85,${premium ? 0.4 + h/200 : 0.2})`, height: `${h}%`, filter: premium ? 'none' : 'blur(1px)' }} />
+                  ))}
+                </div>
+                {!premium && (
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(244,240,232,0.45)', marginBottom: 14, lineHeight: 1.6 }}>
+                    Upgrade to view full comparable trend charts, price movement, and market velocity.
+                  </div>
+                )}
+                {!premium ? (
+                  <button
+                    onClick={() => openModal('signup')}
+                    style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#0F0E0D', background: '#B89355', border: 'none', padding: '10px 20px', cursor: 'pointer' }}
+                  >
+                    Upgrade Access →
+                  </button>
+                ) : (
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: '#B89355', letterSpacing: 1 }}>Live data · Updated weekly</div>
+                )}
+              </div>
+            </FadeUp>
+            <FadeUp delay={0.1}>
+              <MarketHeatMapPreview isPremium={premium} onUpgrade={() => openModal('signup')} />
+            </FadeUp>
+          </div>
+          <FadeUp delay={0.14}>
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => scrollTo('pricing')}
+                className="font-sans text-[10px] font-medium uppercase tracking-[3px] text-canvas border border-canvas/20 hover:border-gold hover:text-gold transition-colors px-7 py-3.5 !bg-transparent hover:!bg-transparent"
+              >
+                See All Plans →
+              </button>
+            </div>
+          </FadeUp>
         </div>
       </section>
 

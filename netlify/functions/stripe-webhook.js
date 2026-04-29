@@ -62,16 +62,31 @@ async function handleCheckoutCompleted(session) {
     }).catch((e) => console.error("[payment]", e.message));
 
     // Create property_report record
+    const unitStr = meta.unit || "";
+    const fullAddress = [
+      meta.address,
+      unitStr ? `Unit ${unitStr}` : null,
+      meta.city, meta.state, meta.zip,
+    ].filter(Boolean).join(", ");
+
     await db.insert("property_reports", {
       email,
       address: meta.address || "",
+      unit: unitStr || null,
       city: meta.city || null,
       state: meta.state || null,
       zip: meta.zip || null,
-      full_address: [meta.address, meta.city, meta.state, meta.zip].filter(Boolean).join(", "),
+      full_address: fullAddress,
+      property_type: meta.propertyType || null,
       role: meta.role || "Buyer",
       stripe_session_id: session.id,
       status: "pending",
+      idx_url: meta.idxUrl || null,
+      mls_number: meta.mlsNumber || null,
+      listing_source: meta.listingSource || null,
+      listing_agent: meta.listingAgent || null,
+      listing_brokerage: meta.listingBrokerage || null,
+      mls_enrichment_status: meta.idxUrl || meta.mlsNumber ? "pending" : null,
     }).catch((e) => console.error("[report create]", e.message));
 
     db.kpi("paid_report", email, { session_id: session.id, amount: session.amount_total });

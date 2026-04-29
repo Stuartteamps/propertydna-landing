@@ -68,7 +68,8 @@ exports.handler = async (event) => {
   let body;
   try { body = JSON.parse(event.body || "{}"); } catch { return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Invalid JSON" }) }; }
 
-  const { fullName, email, phone, role, address, city, state, zip, notes, mode = "free" } = body;
+  const { fullName, email, phone, role, address, unit, city, state, zip, notes, mode = "free",
+    propertyType, idxUrl, mlsNumber, listingSource, listingAgent, listingBrokerage } = body;
 
   if (!email || !address) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Email and address are required." }) };
 
@@ -81,11 +82,18 @@ exports.handler = async (event) => {
     "metadata[phone]": phone || "",
     "metadata[role]": role || "Buyer",
     "metadata[address]": address,
+    "metadata[unit]": unit || "",
     "metadata[city]": city || "",
     "metadata[state]": state || "",
     "metadata[zip]": zip || "",
+    "metadata[propertyType]": propertyType || "",
     "metadata[notes]": notes || "",
     "metadata[mode]": mode,
+    "metadata[idxUrl]": (idxUrl || "").slice(0, 500),
+    "metadata[mlsNumber]": (mlsNumber || "").slice(0, 100),
+    "metadata[listingSource]": (listingSource || "").slice(0, 100),
+    "metadata[listingAgent]": (listingAgent || "").slice(0, 100),
+    "metadata[listingBrokerage]": (listingBrokerage || "").slice(0, 100),
   };
 
   // ── FREE path ────────────────────────────────────────────────
@@ -98,7 +106,8 @@ exports.handler = async (event) => {
       bypass: "1", mode: "free",
       fullName: fullName || "", email: normalizedEmail,
       phone: phone || "", role: role || "Buyer",
-      address, city: city || "", state: state || "", zip: zip || "", notes: notes || "",
+      address, unit: unit || "", city: city || "", state: state || "", zip: zip || "",
+      propertyType: propertyType || "", notes: notes || "",
     });
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ url: `${origin}/report-pending?${params.toString()}` }) };
   }

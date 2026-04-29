@@ -14,19 +14,24 @@ export default function FadeUp({ children, delay = 0, className = '', style }: F
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    // Fallback: always show after 600ms even if IntersectionObserver never fires
+    const fallback = setTimeout(() => setVisible(true), 600);
+
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
             setVisible(true);
             obs.unobserve(e.target);
+            clearTimeout(fallback);
           }
         });
       },
-      { threshold: 0.15 },
+      { threshold: 0.1 },
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    return () => { obs.disconnect(); clearTimeout(fallback); };
   }, []);
 
   return (

@@ -7,7 +7,7 @@ const https = require("https");
 const SUPA_URL = process.env.SUPABASE_URL || "https://neccpdfhmfnvyjgyrysy.supabase.co";
 const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-function _req(method, path, body, key) {
+function _req(method, path, body, key, extraHeaders = {}) {
   const url = new URL(SUPA_URL + path);
   const payload = body ? JSON.stringify(body) : null;
   return new Promise((resolve, reject) => {
@@ -20,8 +20,8 @@ function _req(method, path, body, key) {
           apikey: key || SUPA_KEY,
           Authorization: `Bearer ${key || SUPA_KEY}`,
           "Content-Type": "application/json",
-          Prefer: method === "POST" ? "return=representation" : undefined,
           ...(payload ? { "Content-Length": Buffer.byteLength(payload) } : {}),
+          ...extraHeaders,
         },
       },
       (res) => {
@@ -45,7 +45,7 @@ function _req(method, path, body, key) {
 }
 
 const db = {
-  /** GET from a table with query string filters */
+  /** Chainable query builder */
   from(table) {
     return {
       _table: table,
@@ -66,51 +66,68 @@ const db = {
         for (const f of this._filters) qs += `&${f}`;
         if (this._order) qs += `&order=${this._order}`;
         if (this._limit) qs += `&limit=${this._limit}`;
-        return _req("GET", `/rest/v1/${this._table}?${qs}`, null);
+        return _req("GET", `/rest/v1/${this._table}?${qs}`, null, null, {});
       },
 
       async insert(row) {
-        return _req("POST", `/rest/v1/${this._table}`, row);
+        return _req("POST", `/rest/v1/${this._table}`, row, null, {
+          Prefer: "return=representation",
+        });
       },
 
       async upsert(row, { onConflict } = {}) {
-        const qs = onConflict ? `?on_conflict=${onConflict}` : "";
-        return _req("POST", `/rest/v1/${this._table}${qs}`, row, null);
+        const qs = onConflict ? `?on_conflict=${encodeURIComponent(onConflict)}` : "";
+        return _req("POST", `/rest/v1/${this._table}${qs}`, row, null, {
+          Prefer: "resolution=merge-duplicates,return=representation",
+        });
       },
 
       async update(data) {
         let qs = "?";
         for (const f of this._filters) qs += `${f}&`;
-        return _req("PATCH", `/rest/v1/${this._table}${qs}`, data);
+        qs = qs.replace(/&$/, "");
+        return _req("PATCH", `/rest/v1/${this._table}${qs}`, data, null, {
+          Prefer: "return=representation",
+        });
+      },
+
+      async delete() {
+        let qs = "?";
+        for (const f of this._filters) qs += `${f}&`;
+        qs = qs.replace(/&$/, "");
+        return _req("DELETE", `/rest/v1/${this._table}${qs}`, null, null, {});
       },
     };
   },
 
   /** Shorthand: insert a single row */
   async insert(table, row) {
-    return _req("POST", `/rest/v1/${table}`, row);
+    return _req("POST", `/rest/v1/${table}`, row, null, {
+      Prefer: "return=representation",
+    });
   },
 
-  /** Shorthand: upsert a single row */
+  /** Shorthand: upsert a single row (merge on conflict) */
   async upsert(table, row, onConflict) {
-    const qs = onConflict ? `?on_conflict=${onConflict}` : "";
-    return _req("POST", `/rest/v1/${table}${qs}`, row);
+    const qs = onConflict ? `?on_conflict=${encodeURIComponent(onConflict)}` : "";
+    return _req("POST", `/rest/v1/${table}${qs}`, row, null, {
+      Prefer: "resolution=merge-duplicates,return=representation",
+    });
   },
 
   /** Shorthand: update rows matching filters */
   async update(table, filters, data) {
     const qs = "?" + Object.entries(filters).map(([k, v]) => `${k}=eq.${encodeURIComponent(v)}`).join("&");
-    return _req("PATCH", `/rest/v1/${table}${qs}`, data);
+    return _req("PATCH", `/rest/v1/${table}${qs}`, data, null, {
+      Prefer: "return=representation",
+    });
   },
 
   /** KPI helper — fire and forget */
   kpi(eventType, email, metadata = {}, value = 1) {
     if (!SUPA_KEY) return;
-    _req("POST", "/rest/v1/kpi_events", {
-      event_type: eventType,
-      email: email || null,
-      value,
-      metadata,
+    _req("POST", "/rest/v1/kpi_events", { event_type: eventType, email: email || null, value, metadata }, null, {
+      Prefer: "return=minimal",
     }).catch((e) => console.warn("[kpi]", e.message));
   },
 };

@@ -7,6 +7,9 @@ import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
 import SampleReport from "./pages/SampleReport";
 import ReportView from "./pages/ReportView";
+import ReportViewByToken from "./pages/ReportViewByToken";
+import Professionals from "./pages/Professionals";
+import MarketHeatMap from "./pages/MarketHeatMap";
 import OpenHouse from "./pages/OpenHouse";
 import SellerValuation from "./pages/SellerValuation";
 import BuyerAccess from "./pages/BuyerAccess";
@@ -26,7 +29,10 @@ const AppRoutes = () => (
     <Route path="/about" element={<About />} />
     <Route path="/how-it-works" element={<HowItWorks />} />
     <Route path="/sample-report" element={<SampleReport />} />
+    <Route path="/report/view/:token" element={<ReportViewByToken />} />
     <Route path="/report/:id" element={<ReportView />} />
+    <Route path="/professionals" element={<Professionals />} />
+    <Route path="/market-heatmaps" element={<MarketHeatMap />} />
     <Route path="/report" element={<ReportView />} />
     <Route path="/property-dna" element={<Index />} />
     <Route path="/open-house" element={<OpenHouse />} />

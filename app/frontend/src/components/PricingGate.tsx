@@ -6,7 +6,7 @@ interface PricingGateProps {
   address: string;
   formData: Record<string, string>;
   onClose: () => void;
-  onSelect: (mode: 'per_report' | 'subscription') => void;
+  onSelect: (mode: 'per_report' | 'subscription' | 'enterprise') => void;
   loading: boolean;
 }
 
@@ -47,10 +47,10 @@ const PricingGate: React.FC<PricingGateProps> = ({ isOpen, onClose, onSelect, lo
           Choose how to continue.
         </div>
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.75, marginBottom: 36 }}>
-          You've already used your complimentary report. Run unlimited reports for $49/month, or pay $4.99 for this one.
+          You've used your complimentary report. Choose $4.99 for this report, $49/month for unlimited Pro access, or Enterprise for full intelligence.
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
           {/* Per Report */}
           <div style={{ border: '1px solid rgba(255,255,255,0.1)', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#6B6252' }}>
@@ -81,45 +81,74 @@ const PricingGate: React.FC<PricingGateProps> = ({ isOpen, onClose, onSelect, lo
             </button>
           </div>
 
-          {/* Subscription */}
+          {/* Subscription / Pro */}
           <div style={{
-            border: '2px solid #C9A84C', padding: '24px 20px',
-            display: 'flex', flexDirection: 'column', gap: 12,
+            border: '2px solid #C9A84C', padding: '20px 16px',
+            display: 'flex', flexDirection: 'column', gap: 10,
             background: 'linear-gradient(160deg, rgba(184,147,85,0.08), transparent)',
             position: 'relative',
           }}>
             <div style={{
-              position: 'absolute', top: -11, left: 16,
+              position: 'absolute', top: -11, left: 12,
               fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px',
               textTransform: 'uppercase', color: '#0A0908', background: '#C9A84C',
-              padding: '4px 10px',
+              padding: '4px 8px',
             }}>Best Value</div>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#C9A84C' }}>
-              Unlimited
+              Pro
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-              <sup style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 14, color: 'rgba(240,235,224,0.6)', alignSelf: 'flex-start', marginTop: 8 }}>$</sup>
-              <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 48, fontWeight: 300, color: '#F0EBE0', lineHeight: 1 }}>49</span>
-              <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', marginLeft: 4 }}>/mo</span>
+              <sup style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 12, color: 'rgba(240,235,224,0.6)', alignSelf: 'flex-start', marginTop: 6 }}>$</sup>
+              <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 36, fontWeight: 300, color: '#F0EBE0', lineHeight: 1 }}>49</span>
+              <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginLeft: 3 }}>/mo</span>
             </div>
-            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', lineHeight: 1.6 }}>
-              Unlimited reports + dashboard access.
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', lineHeight: 1.5 }}>
+              Unlimited reports + market trends + moving averages.
             </div>
             <button
               disabled={loading}
               onClick={() => onSelect('subscription')}
               style={{
-                fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px',
+                fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px',
                 textTransform: 'uppercase', color: '#000',
                 background: loading ? 'rgba(201,168,76,0.5)' : '#C9A84C',
-                border: 'none', padding: '12px 16px',
+                border: 'none', padding: '11px 12px',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 marginTop: 'auto', transition: 'background 0.2s',
               }}
               onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#cfa366'; }}
               onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#C9A84C'; }}
             >
-              {loading ? 'Loading…' : 'Subscribe $49/mo →'}
+              {loading ? 'Loading…' : 'Pro $49/mo →'}
+            </button>
+          </div>
+
+          {/* Enterprise */}
+          <div style={{ border: '1px solid rgba(255,255,255,0.1)', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#6B6252' }}>
+              Enterprise
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
+              <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 300, color: '#F0EBE0', lineHeight: 1 }}>Custom</span>
+            </div>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', lineHeight: 1.5 }}>
+              Micro-location scoring, heat maps, adjustment factor breakdowns.
+            </div>
+            <button
+              disabled={loading}
+              onClick={() => onSelect('enterprise')}
+              style={{
+                fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px',
+                textTransform: 'uppercase', color: '#F0EBE0',
+                background: loading ? 'rgba(255,255,255,0.05)' : 'transparent',
+                border: '1px solid rgba(255,255,255,0.2)', padding: '11px 12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                marginTop: 'auto', transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C'; } }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#F0EBE0'; }}
+            >
+              {loading ? 'Loading…' : 'Enterprise →'}
             </button>
           </div>
         </div>
