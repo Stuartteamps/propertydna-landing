@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 import PremiumPreviewCard from '@/components/PremiumPreviewCard';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
 import { Link } from 'react-router-dom';
@@ -10,16 +10,16 @@ import { isPremiumUser } from '@/lib/isPremiumUser';
 
 export default function SampleReport() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<'signin'|'signup'|'sales'>('signin');
+  const [modalTab, setModalTab] = useState<'signin'|'pricing'>('signin');
   const premium = isPremiumUser();
-  const openModal = (tab: 'signin'|'signup'|'sales' = 'signup') => { setModalTab(tab); setModalOpen(true); };
+  const openModal = (tab: 'signin'|'pricing' = 'pricing') => { setModalTab(tab); setModalOpen(true); };
   return (
     <div className="bg-espresso text-canvas min-h-screen">
       <Nav
         onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
-        onRequestAccessClick={() => { setModalTab('signup'); setModalOpen(true); }}
+        onRequestAccessClick={() => { setModalTab('pricing'); setModalOpen(true); }}
       />
-      <SignInModal isOpen={modalOpen} initialTab={modalTab} onClose={() => setModalOpen(false)} />
+      <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
 
       <section className="pt-32 md:pt-40 px-6 md:px-12 pb-12">
         <div className="max-w-5xl mx-auto">
@@ -182,7 +182,7 @@ export default function SampleReport() {
                 ctaLabel="Upgrade Access"
                 isPremium={premium}
                 revealPct={40}
-                onUpgrade={() => openModal('signup')}
+                onUpgrade={() => openModal('pricing')}
                 preview={
                   <div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(24, 1fr)', gap: 2, alignItems: 'flex-end', height: 72, marginBottom: 8 }}>
@@ -209,7 +209,7 @@ export default function SampleReport() {
                 ctaLabel="Upgrade to Pro"
                 isPremium={premium}
                 revealPct={30}
-                onUpgrade={() => openModal('signup')}
+                onUpgrade={() => openModal('pricing')}
                 preview={
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                     {[['Days on Market', '18', '↓ 6 from prior mo'],['Absorption Rate', '94%', '↑ strong demand'],['Demand Score', '88/100', 'Highly competitive']].map(([l, v, s]) => (
@@ -227,7 +227,7 @@ export default function SampleReport() {
 
             {/* Heat map preview */}
             <FadeUp delay={0.15}>
-              <MarketHeatMapPreview isPremium={premium} onUpgrade={() => openModal('signup')} />
+              <MarketHeatMapPreview isPremium={premium} onUpgrade={() => openModal('pricing')} />
             </FadeUp>
 
             {/* Risk signals */}
@@ -240,7 +240,7 @@ export default function SampleReport() {
                 ctaLabel="Unlock Risk Signals"
                 isPremium={premium}
                 revealPct={25}
-                onUpgrade={() => openModal('signup')}
+                onUpgrade={() => openModal('pricing')}
                 preview={
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {[['Road Noise Index','Low — 38 dB avg'],['Proximity: Power Lines','None within 500ft'],['Soil Stability','Stable · Low subsidence'],['Air Quality Index','47 — Good'],['Wildfire Risk','Minimal · Zone W0']].map(([l, v]) => (

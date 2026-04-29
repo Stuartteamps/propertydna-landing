@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
+import { useAuth } from '@/lib/auth';
 
 interface Report {
   id: string;
@@ -23,8 +24,16 @@ const lbl: React.CSSProperties = {
 };
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
+
+  // Auto-lookup when signed in via Google
+  useEffect(() => {
+    if (user?.email && status === 'idle') {
+      setEmail(user.email);
+    }
+  }, [user]);
   const [reports, setReports] = useState<Report[]>([]);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [plan, setPlan] = useState<string | null>(null);

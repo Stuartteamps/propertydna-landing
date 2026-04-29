@@ -2,12 +2,12 @@ import { useState } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import PropertyForm from '@/components/PropertyForm';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 import FadeUp from '@/components/FadeUp';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
 import { isPremiumUser } from '@/lib/isPremiumUser';
 
-type ModalTab = 'signin' | 'signup' | 'sales';
+type ModalTab = 'signin' | 'pricing';
 
 const scrollTo = (id: string) => {
   const el = document.getElementById(id);
@@ -74,7 +74,7 @@ export default function Index() {
     <div className="bg-espresso text-canvas">
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('signup')}
+        onRequestAccessClick={() => openModal('pricing')}
       />
 
       {/* HERO */}
@@ -354,7 +354,7 @@ export default function Index() {
                 )}
                 {!premium ? (
                   <button
-                    onClick={() => openModal('signup')}
+                    onClick={() => openModal('pricing')}
                     style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#0F0E0D', background: '#B89355', border: 'none', padding: '10px 20px', cursor: 'pointer' }}
                   >
                     Upgrade Access →
@@ -365,7 +365,7 @@ export default function Index() {
               </div>
             </FadeUp>
             <FadeUp delay={0.1}>
-              <MarketHeatMapPreview isPremium={premium} onUpgrade={() => openModal('signup')} />
+              <MarketHeatMapPreview isPremium={premium} onUpgrade={() => openModal('pricing')} />
             </FadeUp>
           </div>
           <FadeUp delay={0.14}>
@@ -576,7 +576,7 @@ export default function Index() {
                     <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
                   ))}
                 </ul>
-                <button type="button" onClick={() => openModal('sales')}
+                <button type="button" onClick={() => openModal('pricing')}
                   className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent">
                   Talk to Sales
                 </button>
@@ -614,7 +614,7 @@ export default function Index() {
               </button>
               <button
                 type="button"
-                onClick={() => openModal('sales')}
+                onClick={() => openModal('pricing')}
                 className="font-sans text-[11px] font-medium uppercase tracking-[3px] text-canvas border border-canvas/30 hover:border-gold hover:text-gold transition-colors px-8 py-4 !bg-transparent hover:!bg-transparent"
               >
                 Talk to Sales →
@@ -676,9 +676,9 @@ export default function Index() {
         </div>
       </section>
 
-      <SignInModal
+      <AuthModal
         isOpen={modalOpen}
-        initialTab={modalTab}
+        initialView={modalTab}
         onClose={() => setModalOpen(false)}
       />
 

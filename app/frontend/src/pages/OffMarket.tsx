@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { submitLead } from '@/lib/submitLead';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 
 const inp: React.CSSProperties = { fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300, color: '#F0EBE0', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.12)', padding: '10px 0 12px', outline: 'none', width: '100%' };
 const lbl: React.CSSProperties = { fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 400, letterSpacing: '3px', textTransform: 'uppercase', color: '#6B6252', marginBottom: 6, display: 'block' };
@@ -13,7 +13,7 @@ export default function OffMarket() {
   const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle');
   const [error, setError] = useState('');
   const [modal, setModal] = useState(false);
-  const [modalTab, setModalTab] = useState<'signin'|'signup'|'sales'>('signin');
+  const [modalTab, setModalTab] = useState<'signin'|'pricing'>('signin');
 
   const set = (k: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -30,8 +30,8 @@ export default function OffMarket() {
 
   return (
     <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
-      <Nav onSignInClick={() => { setModalTab('signin'); setModal(true); }} onRequestAccessClick={() => { setModalTab('signup'); setModal(true); }} />
-      <SignInModal isOpen={modal} initialTab={modalTab} onClose={() => setModal(false)} />
+      <Nav onSignInClick={() => { setModalTab('signin'); setModal(true); }} onRequestAccessClick={() => { setModalTab('pricing'); setModal(true); }} />
+      <AuthModal isOpen={modal} initialView={modalTab} onClose={() => setModal(false)} />
 
       <section style={{ padding: 'clamp(100px,12vw,160px) clamp(24px,6vw,80px) clamp(48px,6vw,80px)', maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 'clamp(40px,6vw,100px)', alignItems: 'start' }}>

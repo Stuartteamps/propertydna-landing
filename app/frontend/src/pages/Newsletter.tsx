@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { submitLead } from '@/lib/submitLead';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
@@ -11,7 +11,7 @@ export default function Newsletter() {
   const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle');
   const [error, setError] = useState('');
   const [modal, setModal] = useState(false);
-  const [modalTab, setModalTab] = useState<'signin'|'signup'|'sales'>('signin');
+  const [modalTab, setModalTab] = useState<'signin'|'pricing'>('signin');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +26,8 @@ export default function Newsletter() {
 
   return (
     <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
-      <Nav onSignInClick={() => { setModalTab('signin'); setModal(true); }} onRequestAccessClick={() => { setModalTab('signup'); setModal(true); }} />
-      <SignInModal isOpen={modal} initialTab={modalTab} onClose={() => setModal(false)} />
+      <Nav onSignInClick={() => { setModalTab('signin'); setModal(true); }} onRequestAccessClick={() => { setModalTab('pricing'); setModal(true); }} />
+      <AuthModal isOpen={modal} initialView={modalTab} onClose={() => setModal(false)} />
 
       <section style={{ padding: 'clamp(100px,14vw,180px) clamp(24px,6vw,80px)', maxWidth: 680, margin: '0 auto', textAlign: 'center' }}>
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 20 }}>

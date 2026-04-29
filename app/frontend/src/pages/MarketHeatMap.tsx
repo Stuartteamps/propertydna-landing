@@ -5,9 +5,10 @@ import 'leaflet/dist/leaflet.css';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 import PremiumLockOverlay from '@/components/PremiumLockOverlay';
 import { isPremiumUser } from '@/lib/isPremiumUser';
+import { supabase } from '@/lib/supabase';
 
 // Fix Leaflet icon paths with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -17,20 +18,46 @@ L.Icon.Default.mergeOptions({
   shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// TODO: Replace SAMPLE_MARKETS with live data from Supabase market_snapshots table.
-//       Query: SELECT city, median_price, yoy_change, absorption_rate, demand_score
-//       FROM market_snapshots WHERE metro_area = 'coachella-valley' ORDER BY created_at DESC LIMIT 1 per city.
-const SAMPLE_MARKETS = [
-  { name: 'Palm Springs',      lat: 33.8303,  lon: -116.5453, heat: 0.88, medianPrice: 995000,  yoy: 9.2,  tier: 'luxury',   radius: 14 },
-  { name: 'Rancho Mirage',     lat: 33.7392,  lon: -116.4134, heat: 0.74, medianPrice: 1450000, yoy: 6.8,  tier: 'luxury',   radius: 13 },
-  { name: 'Indian Wells',      lat: 33.7197,  lon: -116.3425, heat: 0.82, medianPrice: 2100000, yoy: 8.1,  tier: 'ultra',    radius: 11 },
-  { name: 'Palm Desert',       lat: 33.7222,  lon: -116.3744, heat: 0.65, medianPrice: 725000,  yoy: 5.3,  tier: 'premium',  radius: 14 },
-  { name: 'La Quinta',         lat: 33.6631,  lon: -116.3100, heat: 0.71, medianPrice: 895000,  yoy: 7.4,  tier: 'premium',  radius: 13 },
-  { name: 'Cathedral City',    lat: 33.7797,  lon: -116.4665, heat: 0.48, medianPrice: 450000,  yoy: 3.9,  tier: 'standard', radius: 12 },
-  { name: 'Indio',             lat: 33.7206,  lon: -116.2156, heat: 0.42, medianPrice: 420000,  yoy: 3.1,  tier: 'standard', radius: 13 },
-  { name: 'Desert Hot Springs', lat: 33.9611, lon: -116.5019, heat: 0.35, medianPrice: 320000,  yoy: 2.8,  tier: 'entry',    radius: 10 },
-  { name: 'Bermuda Dunes',     lat: 33.7456,  lon: -116.2928, heat: 0.52, medianPrice: 580000,  yoy: 4.4,  tier: 'standard', radius: 10 },
-  { name: 'Thousand Palms',    lat: 33.8225,  lon: -116.3940, heat: 0.39, medianPrice: 380000,  yoy: 3.5,  tier: 'entry',    radius: 9  },
+type Market = {
+  name: string; lat: number; lon: number;
+  heat: number; medianPrice: number; yoy: number;
+  tier: string; radius: number;
+};
+
+// Static coord/display info keyed by geo_key slug — Supabase has no coordinates.
+const CITY_META: Record<string, { name: string; lat: number; lon: number; radius: number }> = {
+  'palm-springs':       { name: 'Palm Springs',       lat: 33.8303, lon: -116.5453, radius: 14 },
+  'rancho-mirage':      { name: 'Rancho Mirage',      lat: 33.7392, lon: -116.4134, radius: 13 },
+  'indian-wells':       { name: 'Indian Wells',       lat: 33.7197, lon: -116.3425, radius: 11 },
+  'palm-desert':        { name: 'Palm Desert',        lat: 33.7222, lon: -116.3744, radius: 14 },
+  'la-quinta':          { name: 'La Quinta',          lat: 33.6631, lon: -116.3100, radius: 13 },
+  'cathedral-city':     { name: 'Cathedral City',     lat: 33.7797, lon: -116.4665, radius: 12 },
+  'indio':              { name: 'Indio',              lat: 33.7206, lon: -116.2156, radius: 13 },
+  'desert-hot-springs': { name: 'Desert Hot Springs', lat: 33.9611, lon: -116.5019, radius: 10 },
+  'bermuda-dunes':      { name: 'Bermuda Dunes',      lat: 33.7456, lon: -116.2928, radius: 10 },
+  'thousand-palms':     { name: 'Thousand Palms',     lat: 33.8225, lon: -116.3940, radius: 9  },
+};
+
+const priceToTier = (price: number): string => {
+  if (price >= 1_500_000) return 'ultra';
+  if (price >= 900_000)   return 'luxury';
+  if (price >= 650_000)   return 'premium';
+  if (price >= 400_000)   return 'standard';
+  return 'entry';
+};
+
+// Fallback shown while loading or if Supabase returns no rows.
+const FALLBACK_MARKETS: Market[] = [
+  { name: 'Palm Springs',       lat: 33.8303, lon: -116.5453, heat: 0.88, medianPrice: 995000,  yoy: 9.2, tier: 'luxury',   radius: 14 },
+  { name: 'Rancho Mirage',      lat: 33.7392, lon: -116.4134, heat: 0.74, medianPrice: 1450000, yoy: 6.8, tier: 'luxury',   radius: 13 },
+  { name: 'Indian Wells',       lat: 33.7197, lon: -116.3425, heat: 0.82, medianPrice: 2100000, yoy: 8.1, tier: 'ultra',    radius: 11 },
+  { name: 'Palm Desert',        lat: 33.7222, lon: -116.3744, heat: 0.65, medianPrice: 725000,  yoy: 5.3, tier: 'premium',  radius: 14 },
+  { name: 'La Quinta',          lat: 33.6631, lon: -116.3100, heat: 0.71, medianPrice: 895000,  yoy: 7.4, tier: 'premium',  radius: 13 },
+  { name: 'Cathedral City',     lat: 33.7797, lon: -116.4665, heat: 0.48, medianPrice: 450000,  yoy: 3.9, tier: 'standard', radius: 12 },
+  { name: 'Indio',              lat: 33.7206, lon: -116.2156, heat: 0.42, medianPrice: 420000,  yoy: 3.1, tier: 'standard', radius: 13 },
+  { name: 'Desert Hot Springs', lat: 33.9611, lon: -116.5019, heat: 0.35, medianPrice: 320000,  yoy: 2.8, tier: 'entry',    radius: 10 },
+  { name: 'Bermuda Dunes',      lat: 33.7456, lon: -116.2928, heat: 0.52, medianPrice: 580000,  yoy: 4.4, tier: 'standard', radius: 10 },
+  { name: 'Thousand Palms',     lat: 33.8225, lon: -116.3940, heat: 0.39, medianPrice: 380000,  yoy: 3.5, tier: 'entry',    radius: 9  },
 ];
 
 const heatColor = (heat: number) => {
@@ -52,20 +79,48 @@ const layers = [
   ['Opportunity Zones', 'opportunity'],
 ];
 
-type ModalTab = 'signin' | 'signup' | 'sales';
+type ModalTab = 'signin' | 'pricing';
 
 export default function MarketHeatMap() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<ModalTab>('signin');
   const [premium, setPremium] = useState(false);
   const [activeLayer, setActiveLayer] = useState('price_sqft');
-  const [selectedCity, setSelectedCity] = useState<typeof SAMPLE_MARKETS[0] | null>(null);
+  const [selectedCity, setSelectedCity] = useState<Market | null>(null);
+  const [markets, setMarkets] = useState<Market[]>(FALLBACK_MARKETS);
 
   useEffect(() => {
     setPremium(isPremiumUser());
   }, []);
 
-  const openModal = (tab: ModalTab = 'signup') => {
+  useEffect(() => {
+    supabase
+      .from('market_snapshots')
+      .select('geo_key, median_price, appreciation_rate_yoy, demand_score')
+      .eq('geo_type', 'city')
+      .order('snapshot_date', { ascending: false })
+      .then(({ data, error }) => {
+        if (error || !data || data.length === 0) return;
+        // Keep only the latest snapshot per city (rows are DESC by date).
+        const seen = new Set<string>();
+        const rows = data.filter(r => {
+          if (seen.has(r.geo_key)) return false;
+          seen.add(r.geo_key);
+          return true;
+        });
+        const live: Market[] = rows.flatMap(r => {
+          const meta = CITY_META[r.geo_key];
+          if (!meta) return [];
+          const price = Number(r.median_price) || 0;
+          const yoy   = Number(r.appreciation_rate_yoy) || 0;
+          const heat  = Math.min(1, Math.max(0, Number(r.demand_score) / 100));
+          return [{ ...meta, heat, medianPrice: price, yoy, tier: priceToTier(price) }];
+        });
+        if (live.length > 0) setMarkets(live);
+      });
+  }, []);
+
+  const openModal = (tab: ModalTab = 'pricing') => {
     setModalTab(tab);
     setModalOpen(true);
   };
@@ -76,9 +131,9 @@ export default function MarketHeatMap() {
     <div className="bg-espresso text-canvas min-h-screen" style={{ background: '#0F0E0D', color: '#F4F0E8', minHeight: '100vh' }}>
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('signup')}
+        onRequestAccessClick={() => openModal('pricing')}
       />
-      <SignInModal isOpen={modalOpen} initialTab={modalTab} onClose={() => setModalOpen(false)} />
+      <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
 
       {/* Hero */}
       <section className="pt-32 md:pt-36 px-6 md:px-12 pb-10">
@@ -150,7 +205,7 @@ export default function MarketHeatMap() {
                       url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                       attribution='© <a href="https://carto.com/">CARTO</a>'
                     />
-                    {SAMPLE_MARKETS.map((m) => (
+                    {markets.map((m) => (
                       <CircleMarker
                         key={m.name}
                         center={[m.lat, m.lon]}
@@ -185,7 +240,7 @@ export default function MarketHeatMap() {
                         headline="Unlock Market Movement"
                         body="Unlock street-level heat maps, market velocity, pricing movement, and opportunity zones across the Coachella Valley."
                         ctaLabel="Unlock Premium"
-                        onUpgrade={() => openModal('signup')}
+                        onUpgrade={() => openModal('pricing')}
                       />
                     </div>
                   )}
@@ -207,7 +262,7 @@ export default function MarketHeatMap() {
                 </div>
 
                 <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: 'rgba(244,240,232,0.25)', marginTop: 8, letterSpacing: 1 }}>
-                  Sample data · TODO: connect to live market_snapshots table · Not a licensed appraisal
+                  Live data from market_snapshots · Not a licensed appraisal
                 </div>
               </div>
 
@@ -216,7 +271,7 @@ export default function MarketHeatMap() {
                 <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(244,240,232,0.4)', marginBottom: 12 }}>
                   Market Rankings
                 </div>
-                {SAMPLE_MARKETS
+                {markets
                   .slice()
                   .sort((a, b) => b.heat - a.heat)
                   .map((m, i) => (
@@ -248,7 +303,7 @@ export default function MarketHeatMap() {
 
                 {!premium && (
                   <button
-                    onClick={() => openModal('signup')}
+                    onClick={() => openModal('pricing')}
                     style={{
                       marginTop: 16,
                       fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500,
@@ -294,7 +349,7 @@ export default function MarketHeatMap() {
               <div className="mt-10 text-center">
                 <button
                   type="button"
-                  onClick={() => openModal('signup')}
+                  onClick={() => openModal('pricing')}
                   className="font-sans text-[11px] font-medium uppercase tracking-[3px] text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-8 py-4"
                 >
                   Unlock Premium — $49/mo

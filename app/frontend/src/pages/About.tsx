@@ -2,10 +2,10 @@ import { useState } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 import { Link } from 'react-router-dom';
 
-type ModalTab = 'signin' | 'signup' | 'sales';
+type ModalTab = 'signin' | 'pricing';
 
 const sources = [
   ['RentCast', 'Property data & AVM valuations'],
@@ -38,9 +38,9 @@ export default function About() {
     <div className="bg-espresso text-canvas min-h-screen">
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('signup')}
+        onRequestAccessClick={() => openModal('pricing')}
       />
-      <SignInModal isOpen={modalOpen} initialTab={modalTab} onClose={() => setModalOpen(false)} />
+      <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
 
       {/* Hero */}
       <section

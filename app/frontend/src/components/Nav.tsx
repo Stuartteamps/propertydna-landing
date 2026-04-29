@@ -41,7 +41,13 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
   }, []);
 
   const openSignIn = () => { setModalView('signin'); setModalOpen(true); onSignInClick?.(); };
-  const openPricing = () => { setModalView('pricing'); setModalOpen(true); onRequestAccessClick?.(); };
+  const openPricing = () => {
+    if (isHome) {
+      const el = document.getElementById('pricing');
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); onRequestAccessClick?.(); return; }
+    }
+    setModalView('pricing'); setModalOpen(true); onRequestAccessClick?.();
+  };
 
   const avatarUrl   = user?.user_metadata?.avatar_url;
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';

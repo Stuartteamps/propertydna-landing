@@ -10,12 +10,16 @@ interface AuthState {
   plan: string | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
+  signInWithFacebook: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState>({
   user: null, session: null, tier: 'free', plan: null, loading: true,
   signInWithGoogle: async () => {},
+  signInWithApple: async () => {},
+  signInWithFacebook: async () => {},
   signOut: async () => {},
 });
 
@@ -69,6 +73,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
+  // Requires Apple Developer account + Service ID configured in Supabase Auth → Providers → Apple
+  async function signInWithApple() {
+    await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+  }
+
+  // Requires Meta app with Facebook Login enabled in Supabase Auth → Providers → Facebook
+  async function signInWithFacebook() {
+    await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     setTier('free');
@@ -81,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, tier, plan, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, session, tier, plan, loading, signInWithGoogle, signInWithApple, signInWithFacebook, signOut }}>
       {children}
     </AuthContext.Provider>
   );

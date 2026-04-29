@@ -2,11 +2,11 @@ import { useState } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 import PremiumFeatureGrid from '@/components/PremiumFeatureGrid';
 import { Link } from 'react-router-dom';
 
-type ModalTab = 'signin' | 'signup' | 'sales';
+type ModalTab = 'signin' | 'pricing';
 
 const scrollTo = (id: string) => {
   const el = document.getElementById(id);
@@ -74,7 +74,7 @@ export default function Professionals() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<ModalTab>('signin');
 
-  const openModal = (tab: ModalTab = 'signup') => {
+  const openModal = (tab: ModalTab = 'pricing') => {
     setModalTab(tab);
     setModalOpen(true);
   };
@@ -83,9 +83,9 @@ export default function Professionals() {
     <div className="bg-espresso text-canvas min-h-screen">
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('signup')}
+        onRequestAccessClick={() => openModal('pricing')}
       />
-      <SignInModal isOpen={modalOpen} initialTab={modalTab} onClose={() => setModalOpen(false)} />
+      <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
 
       {/* Hero */}
       <section
@@ -113,14 +113,14 @@ export default function Professionals() {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 type="button"
-                onClick={() => openModal('signup')}
+                onClick={() => openModal('pricing')}
                 className="font-sans text-[11px] font-medium uppercase tracking-[3px] text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-7 py-4"
               >
                 Request Access
               </button>
               <button
                 type="button"
-                onClick={() => openModal('sales')}
+                onClick={() => openModal('pricing')}
                 className="font-sans text-[11px] font-medium uppercase tracking-[3px] text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-7 py-4 !bg-transparent hover:!bg-transparent"
               >
                 Talk to Sales →
@@ -233,7 +233,7 @@ export default function Professionals() {
           <FadeUp delay={0.1}>
             <PremiumFeatureGrid
               features={proFeatures}
-              onUpgrade={() => openModal('signup')}
+              onUpgrade={() => openModal('pricing')}
             />
           </FadeUp>
         </div>
@@ -265,7 +265,7 @@ export default function Professionals() {
               </Link>
               <button
                 type="button"
-                onClick={() => openModal('sales')}
+                onClick={() => openModal('pricing')}
                 className="font-sans text-[11px] font-medium uppercase tracking-[3px] text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-8 py-4 !bg-transparent hover:!bg-transparent"
               >
                 Discuss Enterprise →

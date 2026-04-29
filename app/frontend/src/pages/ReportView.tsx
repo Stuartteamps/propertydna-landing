@@ -5,7 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 import { TierGate } from '@/components/valuation/TierGate';
 import { MarketTrendPanel } from '@/components/valuation/MarketTrendPanel';
 import { LocationScorePanel } from '@/components/valuation/LocationScorePanel';
@@ -13,6 +13,7 @@ import { PropertyEventsPanel } from '@/components/valuation/PropertyEventsPanel'
 import { AdjustmentFactorPanel } from '@/components/valuation/AdjustmentFactorPanel';
 import { MlsSourcePanel } from '@/components/report/MlsSourcePanel';
 import { planToTier, fetchUserTier, TIER_LABELS, type Tier } from '@/lib/tier';
+import { computeDNAScore } from '@/lib/dnaScore';
 
 // Fix Leaflet default icon issue with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -69,7 +70,7 @@ export default function ReportView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<'signin' | 'signup' | 'sales'>('signin');
+  const [modalTab, setModalTab] = useState<'signin' | 'pricing'>('signin');
 
   // Tier state
   const [userTier, setUserTier] = useState<Tier>('free');
@@ -119,6 +120,7 @@ export default function ReportView() {
   };
 
   const dna = report?.property_dna ?? {};
+  const dnaScore = computeDNAScore(dna);
   const n = dna.normalized ?? {};
   const comps: any[] = n.comps ?? [];
   const flood = n.flood ?? {};
@@ -178,9 +180,9 @@ export default function ReportView() {
     <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
       <Nav
         onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
-        onRequestAccessClick={() => { setModalTab('signup'); setModalOpen(true); }}
+        onRequestAccessClick={() => { setModalTab('pricing'); setModalOpen(true); }}
       />
-      <SignInModal isOpen={modalOpen} initialTab={modalTab} onClose={() => setModalOpen(false)} />
+      <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
 
       {/* Header */}
       <section style={{ background: '#111', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '100px 48px 48px' }}>
@@ -195,18 +197,45 @@ export default function ReportView() {
             Prepared for {fmt(n.client?.name)} · {new Date(report?.created_at ?? '').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
 
-          {/* Score badge */}
-          <div style={{ display: 'flex', gap: 16, marginTop: 28, flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ background: ratingColor[dna.rating] || '#6B6252', color: '#fff', padding: '8px 20px', fontFamily: 'Cormorant Garamond, serif', fontSize: 24, fontWeight: 300 }}>
-              {dna.rating || '—'}
+          {/* PropertyDNA Score */}
+          <div style={{ display: 'flex', gap: 24, marginTop: 28, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            {dna.rating && (
+              <div style={{ background: ratingColor[dna.rating] || '#6B6252', color: '#fff', padding: '8px 20px', fontFamily: 'Cormorant Garamond, serif', fontSize: 24, fontWeight: 300, alignSelf: 'center' }}>
+                {dna.rating}
+              </div>
+            )}
+            {/* Score ring */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ position: 'relative', width: 64, height: 64 }}>
+                <svg width="64" height="64" viewBox="0 0 64 64" style={{ transform: 'rotate(-90deg)' }}>
+                  <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4"/>
+                  <circle cx="32" cy="32" r="26" fill="none" stroke={dnaScore.hex} strokeWidth="4"
+                    strokeDasharray={`${2 * Math.PI * 26}`}
+                    strokeDashoffset={`${2 * Math.PI * 26 * (1 - dnaScore.total / 100)}`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18, fontWeight: 300, color: '#F0EBE0' }}>{dnaScore.total}</span>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', marginBottom: 3 }}>PropertyDNA Score</div>
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, color: dnaScore.hex }}>{dnaScore.total}<span style={{ fontSize: 12, color: '#6B6252' }}>/100</span></div>
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: 'rgba(244,240,232,0.4)', marginTop: 2 }}>{dna.confidence || '—'}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252' }}>Data Quality Score</div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, color: '#F0EBE0' }}>{dna.score || '—'}<span style={{ fontSize: 14, color: '#6B6252' }}>/100</span></div>
-            </div>
-            <div style={{ marginLeft: 16 }}>
-              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252' }}>Confidence</div>
-              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: '#F0EBE0' }}>{dna.confidence || '—'}</div>
+            {/* Category breakdown */}
+            <div style={{ flex: 1, minWidth: 200 }}>
+              {dnaScore.categories.map(cat => (
+                <div key={cat.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: '#6B6252', width: 160, flexShrink: 0 }}>{cat.name}</div>
+                  <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ width: `${cat.score}%`, height: '100%', background: cat.score >= 70 ? '#2D9142' : cat.score >= 45 ? '#C9A84C' : '#B85245', transition: 'width 0.6s ease' }} />
+                  </div>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, color: '#6B6252', width: 24, textAlign: 'right' }}>{cat.score}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

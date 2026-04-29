@@ -2,12 +2,12 @@ import { useState } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
-import SignInModal from '@/components/SignInModal';
+import AuthModal from '@/components/AuthModal';
 import PremiumPreviewCard from '@/components/PremiumPreviewCard';
 import { Link } from 'react-router-dom';
 import { isPremiumUser } from '@/lib/isPremiumUser';
 
-type ModalTab = 'signin' | 'signup' | 'sales';
+type ModalTab = 'signin' | 'pricing';
 
 const steps = [
   ['01', 'INPUT', 'Submit an Address', 'Enter a single property address, upload a CSV of your portfolio, or integrate via our REST API. PropertyDNA accepts any scale of input — one unit or one thousand.'],
@@ -55,7 +55,7 @@ export default function HowItWorks() {
   const [modalTab, setModalTab] = useState<ModalTab>('signin');
   const premium = isPremiumUser();
 
-  const openModal = (tab: ModalTab = 'signup') => {
+  const openModal = (tab: ModalTab = 'pricing') => {
     setModalTab(tab);
     setModalOpen(true);
   };
@@ -64,9 +64,9 @@ export default function HowItWorks() {
     <div className="bg-espresso text-canvas min-h-screen">
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('signup')}
+        onRequestAccessClick={() => openModal('pricing')}
       />
-      <SignInModal isOpen={modalOpen} initialTab={modalTab} onClose={() => setModalOpen(false)} />
+      <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
 
       {/* Hero */}
       <section className="pt-32 md:pt-40 px-6 md:px-12 pb-16">
@@ -220,7 +220,7 @@ export default function HowItWorks() {
                   <div className="font-sans text-[13px] font-light text-canvas/50 leading-[1.7]">{desc as string}</div>
                   {locked ? (
                     <button
-                      onClick={() => openModal('signup')}
+                      onClick={() => openModal('pricing')}
                       style={{
                         fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
                         color: '#B89355', background: 'transparent', border: '1px solid rgba(184,147,85,0.35)',
@@ -268,7 +268,7 @@ export default function HowItWorks() {
               ctaLabel="Upgrade Access"
               isPremium={premium}
               revealPct={35}
-              onUpgrade={() => openModal('signup')}
+              onUpgrade={() => openModal('pricing')}
               preview={
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 4, alignItems: 'flex-end', height: 80 }}>
                   {[65,70,62,78,80,75,82,88,79,84,90,87].map((h, i) => (
