@@ -12,6 +12,7 @@ interface AuthState {
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
+  signInWithEmail: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthState>({
   signInWithGoogle: async () => {},
   signInWithApple: async () => {},
   signInWithFacebook: async () => {},
+  signInWithEmail: async () => {},
   signOut: async () => {},
 });
 
@@ -64,29 +66,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function signInWithGoogle() {
-    await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },
     });
+    if (error) throw error;
+    if (!data?.url) throw new Error('Google sign-in is not configured. Please use email or Facebook.');
   }
 
-  // Requires Apple Developer account + Service ID configured in Supabase Auth → Providers → Apple
   async function signInWithApple() {
-    await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+    if (error) throw error;
+    if (!data?.url) throw new Error('Apple sign-in is not configured yet. Please use email or Facebook.');
   }
 
-  // Requires Meta app with Facebook Login enabled in Supabase Auth → Providers → Facebook
   async function signInWithFacebook() {
-    await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'facebook',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+    if (error) throw error;
+    if (!data?.url) throw new Error('Facebook sign-in is not configured. Please use email.');
+  }
+
+  async function signInWithEmail(email: string) {
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.toLowerCase().trim(),
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) throw error;
   }
 
   async function signOut() {
@@ -101,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, tier, plan, loading, signInWithGoogle, signInWithApple, signInWithFacebook, signOut }}>
+    <AuthContext.Provider value={{ user, session, tier, plan, loading, signInWithGoogle, signInWithApple, signInWithFacebook, signInWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );
