@@ -63,6 +63,8 @@ export default function Landing() {
   const [address, setAddress]         = useState('');
   const [pendingSubmit, setPending]   = useState(false);
   const [teaserAddress, setTeaser]    = useState('');
+  const [oauthError, setOauthError]   = useState('');
+  const [oauthLoading, setOauthLoading] = useState('');
   const { user, signInWithGoogle, signInWithApple, signInWithFacebook } = useAuth();
   const premium = isPremiumUser();
   const location = useLocation();

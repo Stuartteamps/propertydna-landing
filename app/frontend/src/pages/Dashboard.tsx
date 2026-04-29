@@ -1,230 +1,259 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import AuthModal from '@/components/AuthModal';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
 import { useAuth } from '@/lib/auth';
 
 interface Report {
   id: string;
   address: string;
-  createdAt: string;
+  status: string;
   reportUrl: string | null;
+  reportPdfUrl: string | null;
+  createdAt: string;
+  source: string;
 }
 
-type Status = 'idle' | 'loading' | 'done' | 'error';
-
-const inp: React.CSSProperties = {
-  fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300, color: '#F0EBE0',
-  background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.12)',
-  padding: '10px 0 12px', outline: 'none', width: '100%',
-};
-const lbl: React.CSSProperties = {
-  fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 400, letterSpacing: '3px',
-  textTransform: 'uppercase', color: '#6B6252', marginBottom: 6, display: 'block',
-};
+type LoadStatus = 'idle' | 'loading' | 'done' | 'error';
 
 export default function Dashboard() {
-  const { user } = useAuth();
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<Status>('idle');
+  const { user, signOut } = useAuth();
+  const [loadStatus, setLoadStatus]   = useState<LoadStatus>('idle');
+  const [reports, setReports]         = useState<Report[]>([]);
+  const [isSubscribed, setSubscribed] = useState(false);
+  const [plan, setPlan]               = useState<string | null>(null);
+  const [error, setError]             = useState('');
+  const [modalOpen, setModalOpen]     = useState(false);
+  const [modalTab, setModalTab]       = useState<'signin' | 'pricing'>('signin');
 
-  // Auto-lookup when signed in via Google
-  useEffect(() => {
-    if (user?.email && status === 'idle') {
-      setEmail(user.email);
-    }
-  }, [user]);
-  const [reports, setReports] = useState<Report[]>([]);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [plan, setPlan] = useState<string | null>(null);
-  const [error, setError] = useState('');
+  const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
+  const avatarUrl   = user?.user_metadata?.avatar_url;
 
-  const handleLookup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.includes('@')) { setError('Please enter a valid email address.'); return; }
-    setStatus('loading');
+  const loadReports = useCallback(async (email: string) => {
+    setLoadStatus('loading');
     setError('');
-
     try {
-      const res = await fetch('/.netlify/functions/get-reports', {
+      const res  = await fetch('/.netlify/functions/get-reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (data.error) { setError(data.error); setStatus('error'); return; }
+      if (data.error) { setError(data.error); setLoadStatus('error'); return; }
       setReports(data.reports || []);
-      setIsSubscribed(data.isSubscribed || false);
+      setSubscribed(data.isSubscribed || false);
       setPlan(data.plan || null);
-      setStatus('done');
-      // Store email and subscription tier for premium gating across pages
+      setLoadStatus('done');
       try {
-        sessionStorage.setItem('pdna_email', email.toLowerCase().trim());
         setPremiumStatus(data.isSubscribed || false, data.plan || null);
+        sessionStorage.setItem('pdna_email', email.toLowerCase().trim());
       } catch {}
     } catch {
       setError('Network error. Please try again.');
-      setStatus('error');
+      setLoadStatus('error');
     }
-  };
+  }, []);
 
-  const formatDate = (iso: string) => {
+  // Auto-load when signed in
+  useEffect(() => {
+    if (user?.email && loadStatus === 'idle') loadReports(user.email);
+  }, [user, loadStatus, loadReports]);
+
+  const fmt = (iso: string) => {
     try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
     catch { return iso; }
   };
 
+  const planLabel = (p: string | null) => {
+    if (!p) return 'Pro';
+    if (p.includes('enterprise') || p.includes('investor')) return 'Enterprise';
+    if (p.includes('realtor') || p.includes('pro')) return 'Realtor Pro';
+    if (p.includes('consumer')) return 'Consumer';
+    return 'Pro';
+  };
+
+  /* ── Not signed in ──────────────────────────────────────────────── */
+  if (!user) {
+    return (
+      <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
+        <Nav
+          onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
+          onRequestAccessClick={() => { setModalTab('pricing'); setModalOpen(true); }}
+        />
+        <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+        <section style={{ padding: 'clamp(120px,14vw,180px) clamp(24px,6vw,80px) 80px', maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: '#C9A84C', marginBottom: 16 }}>Dashboard</div>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 300, color: '#F0EBE0', marginBottom: 16, lineHeight: 1.1 }}>
+            Sign in to view<br />your reports.
+          </div>
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: '#6B6252', lineHeight: 1.8, marginBottom: 32 }}>
+            Your full report history and subscription status live here.
+          </div>
+          <button
+            onClick={() => { setModalTab('signin'); setModalOpen(true); }}
+            style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '16px 32px', cursor: 'pointer' }}
+          >
+            Sign In →
+          </button>
+        </section>
+        <Footer />
+      </div>
+    );
+  }
+
+  /* ── Loading ────────────────────────────────────────────────────── */
+  if (loadStatus === 'loading') {
+    return (
+      <div style={{ background: '#0A0908', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: 48, height: 48, border: '1px solid rgba(201,168,76,0.3)', borderRadius: '50%', margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" style={{ animation: 'spin 1.2s linear infinite' }}>
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          </div>
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252' }}>Loading your reports…</div>
+        </div>
+        <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+      </div>
+    );
+  }
+
+  /* ── Signed in ──────────────────────────────────────────────────── */
   return (
     <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
-      <Nav />
-      <section style={{ padding: 'clamp(100px,12vw,140px) clamp(24px,6vw,80px) 80px', maxWidth: 860, margin: '0 auto' }}>
+      <Nav
+        onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
+        onRequestAccessClick={() => { setModalTab('pricing'); setModalOpen(true); }}
+      />
+      <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-        <div style={{ marginBottom: 48 }}>
-          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 16 }}>
-            Report Dashboard
+      <section style={{ padding: 'clamp(100px,12vw,140px) clamp(24px,6vw,80px) 80px', maxWidth: 900, margin: '0 auto' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, marginBottom: 40 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" style={{ width: 52, height: 52, borderRadius: '50%', border: '1px solid rgba(201,168,76,0.3)' }} />
+            ) : (
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 300, color: '#000' }}>
+                {displayName[0]?.toUpperCase() || '?'}
+              </div>
+            )}
+            <div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: '#C9A84C', marginBottom: 6 }}>Dashboard</div>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(22px,3vw,34px)', fontWeight: 300, color: '#F0EBE0', lineHeight: 1.1 }}>
+                {displayName ? `Welcome back, ${displayName}.` : 'Your intelligence history.'}
+              </div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', marginTop: 3 }}>{user.email}</div>
+            </div>
           </div>
-          <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(32px,5vw,56px)', fontWeight: 300, lineHeight: 1.05, color: '#F0EBE0', marginBottom: 16 }}>
-            Your property<br /><em style={{ color: '#C9A84C' }}>intelligence history.</em>
-          </h1>
-          <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300, color: 'rgba(240,235,224,0.6)', lineHeight: 1.8, maxWidth: 480 }}>
-            Enter your email to view all reports you've run and re-open any past analysis.
-          </p>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '11px 20px', textDecoration: 'none', display: 'inline-block' }}>
+              + New Report
+            </a>
+            <button onClick={signOut} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', background: 'none', border: '1px solid rgba(255,255,255,0.08)', padding: '11px 16px', cursor: 'pointer' }}>
+              Sign Out
+            </button>
+          </div>
         </div>
 
-        {/* Email lookup form */}
-        {status !== 'done' && (
-          <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.15)', padding: 'clamp(28px,4vw,44px)', maxWidth: 480, marginBottom: 40 }}>
-            <form onSubmit={handleLookup} noValidate>
-              <div style={{ marginBottom: 24 }}>
-                <label style={lbl}>Your Email Address</label>
-                <input
-                  style={inp} type="email" value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com" required
-                />
+        {/* Subscription bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 36, padding: '16px 20px', border: `1px solid ${isSubscribed ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.07)'}`, background: isSubscribed ? 'rgba(201,168,76,0.04)' : 'transparent' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSubscribed ? '#C9A84C' : '#6B6252' }} />
+            <div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: isSubscribed ? '#C9A84C' : '#6B6252', letterSpacing: 2, textTransform: 'uppercase' }}>
+                {isSubscribed ? `${planLabel(plan)} — Active` : 'Free Account'}
               </div>
-              {error && (
-                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#C94C4C', border: '1px solid rgba(201,76,76,0.3)', background: 'rgba(201,76,76,0.06)', padding: '10px 14px', marginBottom: 16 }}>
-                  {error}
-                </div>
-              )}
-              <button type="submit" disabled={status === 'loading'} style={{
-                fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px',
-                textTransform: 'uppercase', color: '#000',
-                background: status === 'loading' ? 'rgba(201,168,76,0.5)' : '#C9A84C',
-                border: 'none', padding: 16, width: '100%',
-                cursor: status === 'loading' ? 'not-allowed' : 'pointer',
-              }}>
-                {status === 'loading' ? 'Looking up…' : 'View My Reports →'}
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(240,235,224,0.3)', marginTop: 2 }}>
+                {reports.length} report{reports.length !== 1 ? 's' : ''} on file
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {!isSubscribed && (
+              <button onClick={() => { setModalTab('pricing'); setModalOpen(true); }} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '10px 18px', cursor: 'pointer' }}>
+                Upgrade Pro →
               </button>
-            </form>
+            )}
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#C94C4C', border: '1px solid rgba(201,76,76,0.25)', background: 'rgba(201,76,76,0.05)', padding: '12px 16px', marginBottom: 24 }}>
+            {error} —{' '}
+            <button onClick={() => loadReports(user.email!)} style={{ color: '#C9A84C', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Jost, sans-serif', fontSize: 12 }}>
+              retry
+            </button>
           </div>
         )}
 
-        {/* Results */}
-        {status === 'done' && (
-          <>
-            {/* Subscription status */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 32, padding: '16px 20px', border: `1px solid ${isSubscribed ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.08)'}`, background: isSubscribed ? 'rgba(201,168,76,0.05)' : 'transparent' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: isSubscribed ? '#C9A84C' : '#6B6252' }} />
-                <div>
-                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: isSubscribed ? '#C9A84C' : '#6B6252', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                    {isSubscribed
-                    ? `${plan === 'enterprise' ? 'Enterprise' : plan === 'monthly' ? 'Pro' : 'Unlimited'} Plan — Active`
-                    : 'No Active Subscription'}
-                  </div>
-                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: 'rgba(240,235,224,0.5)', marginTop: 2 }}>
-                    {email}
-                  </div>
-                </div>
+        {/* Reports list */}
+        {loadStatus === 'done' && (
+          reports.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 0' }}>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 32, fontWeight: 300, color: '#F0EBE0', marginBottom: 12 }}>No reports yet.</div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: '#6B6252', lineHeight: 1.8, marginBottom: 28 }}>
+                Run your first PropertyDNA report — it's free.
               </div>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                {!isSubscribed && (
-                  <a href="/#pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '10px 20px', textDecoration: 'none', display: 'inline-block' }}>
-                    Upgrade Pro → $49/mo
-                  </a>
-                )}
-                {isSubscribed && plan === 'monthly' && (
-                  <a href="/#pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '10px 20px', textDecoration: 'none', display: 'inline-block' }}>
-                    Enterprise →
-                  </a>
-                )}
-                <button
-                  onClick={() => { setStatus('idle'); setReports([]); setEmail(''); }}
-                  style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: '#6B6252', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '1px' }}
-                >
-                  Switch email
-                </button>
-              </div>
+              <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 28px', textDecoration: 'none', display: 'inline-block' }}>
+                Sequence a Property →
+              </a>
             </div>
-
-            {/* Reports list */}
-            {reports.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, fontWeight: 300, color: '#F0EBE0', marginBottom: 12 }}>No reports yet.</div>
-                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.8, marginBottom: 28 }}>Run your first PropertyDNA report — it's free.</div>
-                <a href="/#form" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 28px', textDecoration: 'none', display: 'inline-block' }}>
-                  Sequence a Property →
-                </a>
+          ) : (
+            <>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252', marginBottom: 12 }}>
+                Recent Reports
               </div>
-            ) : (
-              <div>
-                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#6B6252', marginBottom: 16 }}>
-                  {reports.length} report{reports.length !== 1 ? 's' : ''} found
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                  {reports.map((report) => {
-                    const canOpen = isSubscribed && report.reportUrl;
-                    return (
-                      <div key={report.id} style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                        <div>
-                          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, fontWeight: 400, color: '#F0EBE0', marginBottom: 4 }}>
-                            {report.address}
-                          </div>
-                          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252' }}>
-                            {formatDate(report.createdAt)}
-                          </div>
-                        </div>
-                        <div>
-                          {canOpen ? (
-                            <a
-                              href={report.reportUrl!}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.4)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block' }}
-                            >
-                              Open Report →
-                            </a>
-                          ) : !isSubscribed ? (
-                            <a
-                              href="/#pricing"
-                              style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: '#6B6252', border: '1px solid rgba(255,255,255,0.08)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block' }}
-                            >
-                              Subscribe to Open
-                            </a>
-                          ) : (
-                            <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(107,98,82,0.5)' }}>
-                              Delivered by email
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 28, marginTop: 8, display: 'flex', gap: 16 }}>
-                    <a href="/#form" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 24px', textDecoration: 'none', display: 'inline-block' }}>
-                      New Report →
-                    </a>
-                    {!isSubscribed && (
-                      <a href="/#pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '14px 24px', textDecoration: 'none', display: 'inline-block' }}>
-                        Unlimited $49/mo
+              {reports.map(report => (
+                <div key={report.id} style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {report.address}
+                    </div>
+                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252' }}>
+                      {fmt(report.createdAt)}
+                      {report.status && report.status !== 'completed' && (
+                        <span style={{ marginLeft: 10, color: '#C9A84C' }}>· {report.status}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+                    {report.reportUrl ? (
+                      <a
+                        href={report.reportUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.4)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(201,168,76,0.08)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                      >
+                        Open Report →
                       </a>
+                    ) : (
+                      <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(107,98,82,0.5)' }}>Delivered by email</span>
                     )}
                   </div>
                 </div>
+              ))}
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 28, marginTop: 8, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 24px', textDecoration: 'none', display: 'inline-block' }}>
+                  New Report →
+                </a>
+                {!isSubscribed && (
+                  <button onClick={() => { setModalTab('pricing'); setModalOpen(true); }} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#F0EBE0', background: 'none', border: '1px solid rgba(255,255,255,0.15)', padding: '14px 24px', cursor: 'pointer' }}>
+                    Unlimited $49/mo
+                  </button>
+                )}
+                <button onClick={() => loadReports(user.email!)} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  ↻ Refresh
+                </button>
               </div>
-            )}
-          </>
+            </>
+          )
         )}
       </section>
       <Footer />

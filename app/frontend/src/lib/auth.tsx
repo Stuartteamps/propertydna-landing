@@ -33,9 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   async function loadTier(email: string) {
-    try {
-      sessionStorage.setItem('pdna_email', email.toLowerCase().trim());
-    } catch {}
+    try { sessionStorage.setItem('pdna_email', email.toLowerCase().trim()); } catch {}
     const { tier: t, plan: p } = await fetchUserTier(email);
     setTier(t);
     setPlan(p);
@@ -43,6 +41,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       sessionStorage.setItem('pdna_subscribed', t !== 'free' ? 'true' : 'false');
       sessionStorage.setItem('pdna_plan', p ?? '');
     } catch {}
+  }
+
+  async function upsertProfile(authUser: User) {
+    try {
+      await fetch('/.netlify/functions/upsert-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:          authUser.email,
+          fullName:       authUser.user_metadata?.full_name || authUser.user_metadata?.name || null,
+          avatarUrl:      authUser.user_metadata?.avatar_url || null,
+          provider:       authUser.app_metadata?.provider || 'email',
+          supabaseUserId: authUser.id,
+        }),
+      });
+    } catch { /* non-blocking */ }
   }
 
   useEffect(() => {
@@ -55,11 +69,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user?.email) loadTier(s.user.email);
-      else { setTier('free'); setPlan(null); }
+      if (s?.user?.email) {
+        loadTier(s.user.email);
+        // Capture every sign-in in our database
+        if (event === 'SIGNED_IN' && s.user) upsertProfile(s.user);
+      } else {
+        setTier('free');
+        setPlan(null);
+      }
     });
 
     return () => subscription.unsubscribe();
