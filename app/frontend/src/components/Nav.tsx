@@ -1,168 +1,186 @@
-// src/components/Nav.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/lib/auth';
+import AuthModal from '@/components/AuthModal';
+
+const linkStyle: React.CSSProperties = {
+  fontFamily: 'Jost, sans-serif', fontSize: '11px', fontWeight: 400,
+  letterSpacing: '2px', textTransform: 'uppercase', color: '#6B6252',
+  background: 'none', border: 'none', cursor: 'pointer',
+  transition: 'color 0.2s', padding: 0, textDecoration: 'none',
+};
+
+const navLinks = [
+  { label: 'Buy',           href: '/buyer-access' },
+  { label: 'Sell',          href: '/seller-valuation' },
+  { label: 'Off-Market',    href: '/off-market' },
+  { label: 'Property DNA',  href: '/property-dna' },
+  { label: 'Heat Maps',     href: '/market-heatmaps' },
+  { label: 'Professionals', href: '/professionals' },
+  { label: 'About',         href: '/about' },
+];
 
 interface NavProps {
   onSignInClick?: () => void;
   onRequestAccessClick?: () => void;
 }
 
-const linkStyle: React.CSSProperties = {
-  fontFamily: 'Jost, sans-serif',
-  fontSize: '11px',
-  fontWeight: 400,
-  letterSpacing: '2px',
-  textTransform: 'uppercase',
-  color: '#6B6252',
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  transition: 'color 0.2s',
-  padding: 0,
-  textDecoration: 'none',
-};
-
 const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
+  const [modalOpen, setModalOpen]   = useState(false);
+  const [modalView, setModalView]   = useState<'signin' | 'pricing'>('signin');
+  const [menuOpen, setMenuOpen]     = useState(false);
   const location = useLocation();
-  const isHome = location.pathname === '/';
+  const isHome   = location.pathname === '/';
+  const { user, signOut, tier } = useAuth();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    if (isHome) {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.location.href = `/#${id}`;
-    }
-  };
+  const openSignIn = () => { setModalView('signin'); setModalOpen(true); onSignInClick?.(); };
+  const openPricing = () => { setModalView('pricing'); setModalOpen(true); onRequestAccessClick?.(); };
 
-  const navLinks = [
-    { label: 'Buy',           action: null, href: '/buyer-access' },
-    { label: 'Sell',          action: null, href: '/seller-valuation' },
-    { label: 'Off-Market',    action: null, href: '/off-market' },
-    { label: 'Property DNA',  action: null, href: '/property-dna' },
-    { label: 'Heat Maps',     action: null, href: '/market-heatmaps' },
-    { label: 'Professionals', action: null, href: '/professionals' },
-    { label: 'Dashboard',     action: null, href: '/dashboard' },
-    { label: 'About',         action: null, href: '/about' },
-  ];
+  const avatarUrl   = user?.user_metadata?.avatar_url;
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
+  const initial     = displayName[0]?.toUpperCase() || '?';
 
   return (
-    <nav
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 500,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 48px',
-        height: '64px',
-        background: scrolled ? 'rgba(0,0,0,0.96)' : 'rgba(0,0,0,0.88)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+    <>
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 500,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 clamp(20px,4vw,48px)', height: '64px',
+        background: scrolled ? 'rgba(0,0,0,0.97)' : 'rgba(0,0,0,0.88)',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255,255,255,0.07)',
         transition: 'background 0.3s ease',
-      }}
-    >
-      {/* Logo */}
-      <Link
-        to="/"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          fontFamily: 'Jost, sans-serif',
-          fontSize: '12px',
-          fontWeight: 500,
-          letterSpacing: '3px',
-          textTransform: 'uppercase',
-          color: '#F0EBE0',
-          textDecoration: 'none',
-        }}
-      >
-        <div style={{
-          width: '28px', height: '28px',
-          border: '1px solid #C9A84C',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {/* Logo */}
+        <Link to="/" style={{
+          display: 'flex', alignItems: 'center', gap: '10px',
+          fontFamily: 'Jost, sans-serif', fontSize: '12px', fontWeight: 500,
+          letterSpacing: '3px', textTransform: 'uppercase', color: '#F0EBE0', textDecoration: 'none',
         }}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect x="1" y="1" width="12" height="12" stroke="#C9A84C" strokeWidth="1"/>
-            <line x1="7" y1="1" x2="7" y2="13" stroke="#C9A84C" strokeWidth="0.75"/>
-            <line x1="1" y1="7" x2="13" y2="7" stroke="#C9A84C" strokeWidth="0.75"/>
-          </svg>
-        </div>
-        PropertyDNA
-      </Link>
+          <div style={{ width: 28, height: 28, border: '1px solid #C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1" y="1" width="12" height="12" stroke="#C9A84C" strokeWidth="1"/>
+              <line x1="7" y1="1" x2="7" y2="13" stroke="#C9A84C" strokeWidth="0.75"/>
+              <line x1="1" y1="7" x2="13" y2="7" stroke="#C9A84C" strokeWidth="0.75"/>
+            </svg>
+          </div>
+          PropertyDNA
+        </Link>
 
-      {/* Center links */}
-      <ul style={{ display: 'flex', gap: '28px', listStyle: 'none', margin: 0, padding: 0 }}>
-        {navLinks.map(({ label, action, href }) => (
-          <li key={label}>
-            {href ? (
-              <Link
-                to={href}
-                style={linkStyle}
+        {/* Center links — desktop */}
+        <ul style={{ display: 'flex', gap: '24px', listStyle: 'none', margin: 0, padding: 0 }}>
+          {navLinks.map(({ label, href }) => (
+            <li key={label} style={{ display: window.innerWidth < 900 ? 'none' : undefined }}>
+              <Link to={href} style={linkStyle}
                 onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
-              >
-                {label}
-              </Link>
-            ) : (
+              >{label}</Link>
+            </li>
+          ))}
+        </ul>
+
+        {/* Right — auth */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {user ? (
+            /* Signed-in state */
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Tier badge */}
+              {tier !== 'free' && (
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.3)', padding: '4px 8px' }}>
+                  {tier === 'enterprise' ? 'Enterprise' : 'Pro'}
+                </div>
+              )}
+              {/* Avatar button */}
               <button
-                onClick={action ?? undefined}
-                style={linkStyle}
+                onClick={() => setMenuOpen(v => !v)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, position: 'relative' }}
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={displayName} style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid rgba(201,168,76,0.4)', display: 'block' }} />
+                ) : (
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Cormorant Garamond, serif', fontSize: 14, fontWeight: 300, color: '#000' }}>
+                    {initial}
+                  </div>
+                )}
+              </button>
+
+              {/* Dropdown */}
+              {menuOpen && (
+                <div style={{
+                  position: 'absolute', top: 58, right: 'clamp(20px,4vw,48px)',
+                  background: '#111', border: '1px solid rgba(255,255,255,0.1)',
+                  minWidth: 200, zIndex: 600, padding: '8px 0',
+                }}>
+                  <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#F0EBE0' }}>{displayName}</div>
+                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: '#6B6252' }}>{user.email}</div>
+                  </div>
+                  {[
+                    { label: 'Dashboard', href: '/dashboard' },
+                    { label: 'Manage Plan', action: openPricing },
+                  ].map(item => (
+                    <div key={item.label}>
+                      {item.href ? (
+                        <Link to={item.href} onClick={() => setMenuOpen(false)} style={{ display: 'block', padding: '10px 16px', fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#F0EBE0', textDecoration: 'none', transition: 'color 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget.style.color = '#C9A84C')}
+                          onMouseLeave={e => (e.currentTarget.style.color = '#F0EBE0')}
+                        >{item.label}</Link>
+                      ) : (
+                        <button onClick={() => { item.action?.(); setMenuOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 16px', fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#F0EBE0', background: 'none', border: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget.style.color = '#C9A84C')}
+                          onMouseLeave={e => (e.currentTarget.style.color = '#F0EBE0')}
+                        >{item.label}</button>
+                      )}
+                    </div>
+                  ))}
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: 4 }}>
+                    <button onClick={() => { signOut(); setMenuOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 16px', fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Signed-out state */
+            <>
+              <button onClick={openSignIn} style={linkStyle}
                 onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
+              >Sign In</button>
+              <button
+                onClick={openPricing}
+                style={{
+                  fontFamily: 'Jost, sans-serif', fontSize: '10px', fontWeight: 500,
+                  letterSpacing: '2px', textTransform: 'uppercase',
+                  color: '#000', background: '#C9A84C', border: 'none',
+                  padding: '10px 20px', cursor: 'pointer', transition: 'background 0.2s',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#E8C96A')}
+                onMouseLeave={e => (e.currentTarget.style.background = '#C9A84C')}
               >
-                {label}
+                Get Started
               </button>
-            )}
-          </li>
-        ))}
-      </ul>
+            </>
+          )}
+        </div>
+      </nav>
 
-      {/* Right actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-        <button
-          onClick={onSignInClick}
-          style={linkStyle}
-          onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
-          onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
-        >
-          Sign In
-        </button>
-
-        <button
-          onClick={onRequestAccessClick}
-          style={{
-            fontFamily: 'Jost, sans-serif',
-            fontSize: '10px',
-            fontWeight: 500,
-            letterSpacing: '2px',
-            textTransform: 'uppercase',
-            color: '#000000',
-            background: '#C9A84C',
-            border: 'none',
-            padding: '10px 22px',
-            cursor: 'pointer',
-            transition: 'background 0.2s',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#E8C96A')}
-          onMouseLeave={e => (e.currentTarget.style.background = '#C9A84C')}
-        >
-          Request Access
-        </button>
-      </div>
-    </nav>
+      {/* Auth modal — managed here so it persists across pages */}
+      <AuthModal
+        isOpen={modalOpen}
+        onClose={() => { setModalOpen(false); setMenuOpen(false); }}
+        initialView={modalView}
+      />
+    </>
   );
 };
 
