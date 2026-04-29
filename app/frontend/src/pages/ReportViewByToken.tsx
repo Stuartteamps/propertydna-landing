@@ -46,6 +46,19 @@ const Stat = ({ label, value, wide }: { label: string; value: string; wide?: boo
 
 const money = (v: number | null) => v ? `$${v.toLocaleString()}` : '—';
 
+const ConfidenceBadge = ({ pct }: { pct?: number }) => {
+  if (pct == null) return null;
+  const color = pct >= 66 ? '#2D9142' : pct >= 33 ? '#C9A84C' : '#B85245';
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14, background: '#111', border: `1px solid ${color}33`, padding: '4px 10px' }}>
+      <div style={{ width: 5, height: 5, borderRadius: '50%', background: color }} />
+      <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color }}>
+        {pct}% data confidence
+      </span>
+    </div>
+  );
+};
+
 export default function ReportViewByToken() {
   const { token } = useParams<{ token: string }>();
 
@@ -87,6 +100,10 @@ export default function ReportViewByToken() {
   const sale   = n.sale ?? {};
   const weather = n.weather ?? {};
   const dnaAdj = dna.dnaAdjusted ?? null;
+
+  // v3 enrichment data (populated asynchronously by enrich-property.js)
+  const enr = dna.enrichment ?? null;
+  const hasEnrichment = !!enr?.v3_enriched;
 
   const subjectLat = sub.lat && sub.lat !== '—' ? Number(sub.lat) : null;
   const subjectLon = sub.lon && sub.lon !== '—' ? Number(sub.lon) : null;
@@ -448,6 +465,162 @@ export default function ReportViewByToken() {
         {dna.dataQualityNote && (
           <Section title="Data Quality Note">
             <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, margin: 0 }}>{dna.dataQualityNote}</p>
+          </Section>
+        )}
+
+        {/* ── v3 ENRICHMENT SECTIONS ── */}
+
+        {/* Location Intelligence */}
+        {hasEnrichment && (
+          <Section title="Location Intelligence">
+            <ConfidenceBadge pct={enr.locationIntelligence?._confidence} />
+            <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.8, margin: '0 0 20px' }}>
+              {enr.locationIntelligence?._interpretation || 'Location data unavailable.'}
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0 40px' }}>
+              {enr.locationIntelligence?.walkScore?.walkScore != null && (
+                <Stat label="Walk Score" value={`${enr.locationIntelligence.walkScore.walkScore}/100`} />
+              )}
+              {enr.locationIntelligence?.walkScore?.transitScore != null && (
+                <Stat label="Transit Score" value={`${enr.locationIntelligence.walkScore.transitScore}/100`} />
+              )}
+              {enr.locationIntelligence?.walkScore?.bikeScore != null && (
+                <Stat label="Bike Score" value={`${enr.locationIntelligence.walkScore.bikeScore}/100`} />
+              )}
+              {enr.locationIntelligence?.amenities?.schoolsNearby != null && (
+                <Stat label="Schools Nearby (1mi)" value={String(enr.locationIntelligence.amenities.schoolsNearby)} />
+              )}
+              {enr.locationIntelligence?.amenities?.parksNearby != null && (
+                <Stat label="Parks Nearby (1.5mi)" value={String(enr.locationIntelligence.amenities.parksNearby)} />
+              )}
+              {enr.locationIntelligence?.amenities?.transitStopsNearby != null && (
+                <Stat label="Transit Stops" value={String(enr.locationIntelligence.amenities.transitStopsNearby)} />
+              )}
+              {enr.locationIntelligence?.amenities?.groceryStoresNearby != null && (
+                <Stat label="Grocery Stores" value={String(enr.locationIntelligence.amenities.groceryStoresNearby)} />
+              )}
+            </div>
+          </Section>
+        )}
+
+        {/* Market & Rental Analysis */}
+        {hasEnrichment && (
+          <Section title="Market & Rental Analysis">
+            <ConfidenceBadge pct={enr.marketData?._confidence} />
+            <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.8, margin: '0 0 20px' }}>
+              {enr.marketData?._interpretation || 'Market data unavailable.'}
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0 40px', marginBottom: 16 }}>
+              {enr.marketData?.fred?.mortgage30YrRate != null && (
+                <Stat label="30-Yr Mortgage Rate (FRED)" value={`${enr.marketData.fred.mortgage30YrRate}%`} />
+              )}
+              {enr.marketData?.fred?.nationalHPIYoyPct != null && (
+                <Stat label="National HPI YoY (Case-Shiller)" value={`${enr.marketData.fred.nationalHPIYoyPct > 0 ? '+' : ''}${enr.marketData.fred.nationalHPIYoyPct}%`} />
+              )}
+              {enr.marketData?.hud?.fmrTwoBed != null && (
+                <Stat label="HUD Fair Market Rent (2-bed)" value={`$${Number(enr.marketData.hud.fmrTwoBed).toLocaleString()}/mo`} />
+              )}
+              {enr.marketData?.hud?.fmrThreeBed != null && (
+                <Stat label="HUD Fair Market Rent (3-bed)" value={`$${Number(enr.marketData.hud.fmrThreeBed).toLocaleString()}/mo`} />
+              )}
+              {enr.marketData?.census?.medianHouseholdIncome != null && (
+                <Stat label="Census Median HH Income" value={`$${Number(enr.marketData.census.medianHouseholdIncome).toLocaleString()}`} />
+              )}
+              {enr.marketData?.census?.medianHomeValue != null && (
+                <Stat label="Census Median Home Value" value={`$${Number(enr.marketData.census.medianHomeValue).toLocaleString()}`} />
+              )}
+              {enr.marketData?.census?.medianGrossRent != null && (
+                <Stat label="Census Median Gross Rent" value={`$${Number(enr.marketData.census.medianGrossRent).toLocaleString()}/mo`} />
+              )}
+              {enr.marketData?.census?.totalPopulation != null && (
+                <Stat label="Tract Population (ZIP)" value={Number(enr.marketData.census.totalPopulation).toLocaleString()} />
+              )}
+            </div>
+            {/* Rental yield card */}
+            {enr.rentalAnalysis?._interpretation && (
+              <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.15)', padding: 20, marginTop: 8 }}>
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', marginBottom: 8 }}>Rental Yield Estimate</div>
+                <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.8, margin: 0 }}>
+                  {enr.rentalAnalysis._interpretation}
+                </p>
+              </div>
+            )}
+          </Section>
+        )}
+
+        {/* Extended Hazard & Environmental */}
+        {hasEnrichment && (
+          <Section title="Extended Hazard & Environmental Profile">
+            <ConfidenceBadge pct={enr.hazardEnrichment?._confidence} />
+            <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.8, margin: '0 0 20px' }}>
+              {enr.hazardEnrichment?._interpretation || 'Extended hazard data unavailable.'}
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0 40px' }}>
+              {enr.hazardEnrichment?.seismic?.seismicRiskLevel && (
+                <Stat label="Seismic Risk (USGS)" value={enr.hazardEnrichment.seismic.seismicRiskLevel} />
+              )}
+              {enr.hazardEnrichment?.seismic?.peakGroundAcceleration != null && (
+                <Stat label="Peak Ground Accel." value={`${enr.hazardEnrichment.seismic.peakGroundAcceleration}g`} />
+              )}
+              {enr.hazardEnrichment?.environmental?.ejIndexPctile != null && (
+                <Stat label="EPA EJ Index Pctile" value={`${enr.hazardEnrichment.environmental.ejIndexPctile.toFixed(0)}th`} />
+              )}
+              {enr.hazardEnrichment?.environmental?.pm25Pctile != null && (
+                <Stat label="PM2.5 Percentile" value={`${enr.hazardEnrichment.environmental.pm25Pctile.toFixed(0)}th`} />
+              )}
+              {enr.hazardEnrichment?.airQuality?.aqi != null && (
+                <Stat label="Air Quality Index (AirNow)" value={`${enr.hazardEnrichment.airQuality.aqi} — ${enr.hazardEnrichment.airQuality.aqiCategory || ''}`.trim()} />
+              )}
+              {enr.hazardEnrichment?.femaFlood?.zone && (
+                <Stat label="FEMA Flood Zone (v3)" value={`Zone ${enr.hazardEnrichment.femaFlood.zone}`} />
+              )}
+            </div>
+          </Section>
+        )}
+
+        {/* Neighborhood Trajectory */}
+        {hasEnrichment && enr.neighborhoodTrajectory?._interpretation && (
+          <Section title="Neighborhood Trajectory">
+            <ConfidenceBadge pct={enr.neighborhoodTrajectory?._confidence} />
+            <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.8, margin: '0 0 20px' }}>
+              {enr.neighborhoodTrajectory._interpretation}
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0 40px' }}>
+              {enr.neighborhoodTrajectory?.laborMarket?.stateUnemploymentRate != null && (
+                <Stat label={`${enr.neighborhoodTrajectory.laborMarket.stateAbbr} Unemployment Rate (BLS)`} value={`${enr.neighborhoodTrajectory.laborMarket.stateUnemploymentRate}%`} />
+              )}
+              {enr.neighborhoodTrajectory?.nationalHousing?.hpiYoyPct != null && (
+                <Stat label="National HPI Change YoY" value={`${enr.neighborhoodTrajectory.nationalHousing.hpiYoyPct > 0 ? '+' : ''}${enr.neighborhoodTrajectory.nationalHousing.hpiYoyPct}%`} />
+              )}
+            </div>
+          </Section>
+        )}
+
+        {/* Data Source Confidence Panel */}
+        {hasEnrichment && enr.sourceStatuses && (
+          <Section title="v3 Data Source Status">
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', marginBottom: 16 }}>
+              All sources queried in parallel. Failed sources do not affect report generation.
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {Object.entries(enr.sourceStatuses as Record<string, string>).map(([src, status]) => (
+                <div key={src} style={{
+                  background: '#111', border: `1px solid ${status === 'success' ? 'rgba(45,145,66,0.3)' : status === 'unavailable' ? 'rgba(255,255,255,0.08)' : 'rgba(184,82,69,0.3)'}`,
+                  padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 8,
+                }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: status === 'success' ? '#2D9142' : status === 'unavailable' ? '#6B6252' : '#B85245', flexShrink: 0 }} />
+                  <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: '#6B6252', letterSpacing: 1 }}>
+                    {src.replace(/_/g, ' ').toUpperCase()}
+                  </span>
+                  <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: status === 'success' ? '#2D9142' : status === 'unavailable' ? '#6B6252' : '#B85245' }}>
+                    {status}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 12, fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252' }}>
+              Enriched {enr.enriched_at ? new Date(enr.enriched_at).toLocaleString() : ''}
+            </div>
           </Section>
         )}
 

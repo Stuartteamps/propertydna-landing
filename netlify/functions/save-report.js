@@ -12,6 +12,7 @@
 const crypto = require("crypto");
 const db = require("./_supabase");
 const { ingestProperty } = require("./property-ingest");
+const { enrichProperty } = require("./enrich-property");
 
 const CORS = {
   "Content-Type": "application/json",
@@ -229,6 +230,24 @@ exports.handler = async (event) => {
 
     if (status === "completed") {
       db.kpi("report_completed", normalizedEmail, { address, has_pdf: !!reportPdfUrl, has_dna: !!dnaAdjusted });
+
+      // Extract lat/lon for enrichment (comes from RentCast via n8n)
+      const lat = enrichedReportData?.normalized?.subject?.lat ? Number(enrichedReportData.normalized.subject.lat) : null;
+      const lon = enrichedReportData?.normalized?.subject?.lon ? Number(enrichedReportData.normalized.subject.lon) : null;
+      const existingValue = (() => { const { low, mid, high } = extractValuation(enrichedReportData); return mid || low || high || null; })();
+      const existingRent  = enrichedReportData?.normalized?.rent?.estimate ? Number(enrichedReportData.normalized.rent.estimate) : null;
+
+      // Fire-and-forget v3 enrichment — fetches 11+ APIs in parallel, stores raw
+      // responses to report_data_sources, and populates enrichment_data on the report.
+      if (lat && lon && reportId) {
+        enrichProperty({
+          lat, lon, zip, address, city, state,
+          reportId,
+          propertyId: null, // updated by ingestProperty below
+          existingValue,
+          existingRent,
+        }).catch(e => console.warn("[save-report:enrich]", e.message));
+      }
 
       // Fire-and-forget: permanently map all report data into the sovereignty layer.
       // This is what makes PropertyDNA the source of truth over time.

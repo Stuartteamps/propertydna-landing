@@ -28,7 +28,7 @@ exports.handler = async (event) => {
 
   try {
     const rows = await db.from("property_reports")
-      .select("id,email,address,city,state,zip,full_address,role,report_data,view_token,status,created_at")
+      .select("id,email,address,city,state,zip,full_address,role,report_data,enrichment_data,view_token,status,created_at")
       .eq("view_token", token)
       .limit(1)
       .get();
@@ -51,6 +51,11 @@ exports.handler = async (event) => {
     const dna = row.report_data || {};
     const client = dna?.normalized?.client || {};
 
+    // Merge enrichment_data into property_dna so the report view can render
+    // all sections from a single object without a second fetch.
+    const enrichment = row.enrichment_data || null;
+    const mergedDna = enrichment ? { ...dna, enrichment } : dna;
+
     return {
       statusCode: 200,
       headers: CORS,
@@ -60,7 +65,7 @@ exports.handler = async (event) => {
         full_name:   client.name  || null,
         email:       row.email,
         role:        row.role     || "Buyer",
-        property_dna: dna,
+        property_dna: mergedDna,
         created_at:  row.created_at,
         status:      row.status,
       }),

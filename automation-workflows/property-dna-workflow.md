@@ -28,7 +28,25 @@
       ↓
 [10] SpotCrime ← [NEEDS KEY]
       ↓
+[10b] ★ NEW v3: PropertyDNA Enrichment Engine (HTTP → Netlify enrich-property)
+         Method: POST
+         URL: https://thepropertydna.com/.netlify/functions/enrich-property
+         Headers: x-internal-key: {{ $env.INTERNAL_API_KEY }}
+         Body: {
+           lat:    {{ $('RentCast Property').item.json.latitude }},
+           lon:    {{ $('RentCast Property').item.json.longitude }},
+           zip:    {{ $('Normalize Intake').item.json.zip }},
+           address: {{ $('Normalize Intake').item.json.address }},
+           city:   {{ $('Normalize Intake').item.json.city }},
+           state:  {{ $('Normalize Intake').item.json.state }}
+         }
+         Response: { enriched: true, locationIntelligence, marketData, hazardEnrichment,
+                     rentalAnalysis, neighborhoodTrajectory, categoryScores, sourceStatuses }
+         Note: This call runs in parallel with the existing nodes (use a Merge node).
+               If it fails, the report still generates — error handling built-in.
+      ↓
 [11] Merge Normalize Score (Code) — build full normalized object
+     Add to merge node: normalized.enrichment = $('Enrichment Engine').item.json
       ↓
 [12] OpenAI/Claude Narrative (Anthropic API)
       ↓
