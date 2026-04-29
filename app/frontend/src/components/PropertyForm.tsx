@@ -1,8 +1,8 @@
 // src/components/PropertyForm.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import PricingGate from './PricingGate';
+import AddressAutocomplete from './AddressAutocomplete';
 import { parseIdxUrl } from '@/lib/parseIdxUrl';
-import { loadGooglePlaces, attachAutocomplete } from '@/lib/googlePlaces';
 
 type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
 
@@ -93,25 +93,6 @@ const PropertyForm: React.FC = () => {
     idxUrl: '', mlsNumber: '', listingAgent: '', listingBrokerage: '',
   });
   const [showIdxFields, setShowIdxFields] = useState(false);
-  const addressInputRef = useRef<HTMLInputElement>(null);
-
-  // Attach Google Places autocomplete once the input is mounted
-  useEffect(() => {
-    let cleanup: (() => void) | undefined;
-    loadGooglePlaces().then(() => {
-      if (!addressInputRef.current) return;
-      cleanup = attachAutocomplete(addressInputRef.current, (place) => {
-        setForm(prev => ({
-          ...prev,
-          address: `${place.streetNumber} ${place.route}`.trim() || place.fullAddress,
-          city: place.city || prev.city,
-          state: place.state || prev.state,
-          zip: place.zip || prev.zip,
-        }));
-      });
-    }).catch(() => { /* Places unavailable — plain input still works */ });
-    return () => cleanup?.();
-  }, []);
 
   const isCondo = form.propertyType.toLowerCase().includes('condo')
     || form.propertyType.toLowerCase().includes('unit')
@@ -249,14 +230,21 @@ const PropertyForm: React.FC = () => {
           </div>
         </div>
 
-        {/* Address */}
+        {/* Address with autocomplete */}
         <div style={fieldStyle}>
           <label style={labelStyle}>Property Address</label>
-          <input
-            ref={addressInputRef}
-            style={inputStyle} type="text" value={form.address}
-            onChange={set('address')} placeholder="100 W Andreas Rd" required
-            autoComplete="off"
+          <AddressAutocomplete
+            value={form.address}
+            onChange={v => setForm(prev => ({ ...prev, address: v }))}
+            onSelect={r => setForm(prev => ({
+              ...prev,
+              address: r.street || r.display,
+              city:  r.city  || prev.city,
+              state: r.state || prev.state,
+              zip:   r.zip   || prev.zip,
+            }))}
+            placeholder="100 W Andreas Rd"
+            inputStyle={{ ...inputStyle }}
           />
         </div>
 

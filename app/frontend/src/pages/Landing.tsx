@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
@@ -7,9 +7,9 @@ import AuthModal from '@/components/AuthModal';
 import FadeUp from '@/components/FadeUp';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
 import TeaserCard from '@/components/TeaserCard';
+import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
-import { loadGooglePlaces, attachAutocomplete } from '@/lib/googlePlaces';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -65,7 +65,6 @@ export default function Landing() {
   const [teaserAddress, setTeaser]    = useState('');
   const { user, signInWithGoogle, signInWithApple, signInWithFacebook } = useAuth();
   const premium = isPremiumUser();
-  const heroInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
 
   const openModal = (view: ModalView = 'signin') => {
@@ -79,18 +78,6 @@ export default function Landing() {
       setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
     }
   }, [location.hash]);
-
-  // Attach Google Places to hero search input
-  useEffect(() => {
-    let cleanup: (() => void) | undefined;
-    loadGooglePlaces().then(() => {
-      if (!heroInputRef.current) return;
-      cleanup = attachAutocomplete(heroInputRef.current, (place) => {
-        setAddress(place.fullAddress);
-      });
-    }).catch(() => {});
-    return () => cleanup?.();
-  }, []);
 
   // After sign-in resolves: scroll to form and clear teaser
   useEffect(() => {
@@ -240,15 +227,14 @@ export default function Landing() {
                   border: '1px solid rgba(184,147,85,0.3)',
                   background: 'rgba(15,14,13,0.6)',
                 }}>
-                  <input
-                    ref={heroInputRef}
-                    type="text"
+                  <AddressAutocomplete
                     value={address}
-                    onChange={e => setAddress(e.target.value)}
+                    onChange={setAddress}
+                    onSelect={r => setAddress(r.display)}
                     placeholder="Enter a property address…"
-                    autoComplete="off"
-                    style={{
-                      flex: 1, padding: '16px 18px',
+                    containerStyle={{ flex: 1 }}
+                    inputStyle={{
+                      width: '100%', padding: '16px 18px',
                       background: 'transparent', border: 'none', outline: 'none',
                       fontFamily: 'Jost, sans-serif', fontSize: 13, fontWeight: 300,
                       color: '#F4F0E8',
@@ -266,7 +252,7 @@ export default function Landing() {
                     onMouseEnter={e => (e.currentTarget.style.background = '#cfa366')}
                     onMouseLeave={e => (e.currentTarget.style.background = '#B89355')}
                   >
-                    Analyse →
+                    Analyze →
                   </button>
                 </div>
                 <div style={{
