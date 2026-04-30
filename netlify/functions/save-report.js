@@ -11,8 +11,9 @@
  */
 const crypto = require("crypto");
 const db = require("./_supabase");
-const { ingestProperty } = require("./property-ingest");
-const { enrichProperty } = require("./enrich-property");
+const { ingestProperty }   = require("./property-ingest");
+const { enrichProperty }   = require("./enrich-property");
+const { rentcastEnrich }   = require("./rentcast-enrich");
 
 const CORS = {
   "Content-Type": "application/json",
@@ -240,11 +241,30 @@ exports.handler = async (event) => {
       const existingValue = (() => { const { low, mid, high } = extractValuation(enrichedReportData); return mid || low || high || null; })();
       const existingRent  = enrichedReportData?.normalized?.rent?.estimate ? Number(enrichedReportData.normalized.rent.estimate) : null;
 
-      // Fire-and-forget v3 enrichment — fetches 11+ APIs in parallel, stores raw
-      // responses to report_data_sources, and populates enrichment_data on the report.
-      const enrichZip = zip || enrichedReportData?.normalized?.subject?.zip || enrichedReportData?.normalized?.location?.zip || null;
-      const enrichCity = city || enrichedReportData?.normalized?.subject?.city || null;
+      const enrichZip   = zip || enrichedReportData?.normalized?.subject?.zip   || enrichedReportData?.normalized?.location?.zip   || null;
+      const enrichCity  = city  || enrichedReportData?.normalized?.subject?.city  || null;
       const enrichState = state || enrichedReportData?.normalized?.subject?.state || null;
+
+      // Extract bed/bath/sqft/type from report data for RentCast rental estimate
+      const propN      = enrichedReportData?.normalized?.property || {};
+      const rcBeds     = propN.beds     ? Number(propN.beds)     : null;
+      const rcBaths    = propN.baths    ? Number(propN.baths)    : null;
+      const rcSqft     = propN.sqft     ? Number(propN.sqft)     : null;
+      const rcType     = propN.propertyType || body.propertyType || null;
+
+      // STEP 1 — RentCast deep enrichment: APN lookup + rental/sale comps +
+      // assessment history + market data + rental estimate range.
+      // Runs first so APN is written to property_master before ingest starts.
+      rentcastEnrich({
+        address, city: enrichCity, state: enrichState, zip: enrichZip,
+        reportId,
+        beds: rcBeds, baths: rcBaths, sqft: rcSqft, propertyType: rcType,
+      }).then(r => {
+        if (r?.apn) db.kpi("rentcast_enriched", normalizedEmail, { address, apn: r.apn, sources: r.sources });
+      }).catch(e => console.warn("[save-report:rentcast]", e.message));
+
+      // STEP 2 — v3 multi-source enrichment (13→18 APIs): FEMA, Census, USGS,
+      // EPA, AirNow, HUD, FRED, BLS, FBI, OSM, Walk Score, elevation, solar, broadband.
       if (lat && lon && !isNaN(lat) && !isNaN(lon) && reportId) {
         enrichProperty({
           lat, lon, zip: enrichZip, address, city: enrichCity, state: enrichState,
@@ -255,8 +275,7 @@ exports.handler = async (event) => {
         }).catch(e => console.warn("[save-report:enrich]", e.message));
       }
 
-      // Fire-and-forget: permanently map all report data into the sovereignty layer.
-      // This is what makes PropertyDNA the source of truth over time.
+      // STEP 3 — permanently map all report data into the sovereignty layer.
       ingestProperty({
         reportData:  enrichedReportData,
         address,

@@ -534,6 +534,243 @@ async function fetchBLSUnemployment(stateAbbr) {
   }
 }
 
+// ── NEW: USGS Recent Earthquake Events ───────────────────────────────────────
+// Distinct from existing USGS NEHRP design-maps call (which gives design-code
+// ground acceleration). This returns actual recorded earthquake events within
+// a 1-degree radius in the past 365 days.
+
+async function fetchUSGSEarthquakeEvents(lat, lon) {
+  try {
+    const end   = new Date().toISOString().slice(0, 10);
+    const start = new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${lat}&longitude=${lon}&maxradius=1&minmagnitude=2.5&starttime=${start}&endtime=${end}&limit=20&orderby=magnitude`;
+    const res = await fetchJSON(url, {}, 10000);
+    if (res.statusCode !== 200 || !res.data) return { status: "failed", statusCode: res.statusCode };
+    const features = res.data.features || [];
+    const maxMag = features.length ? Math.max(...features.map(f => f.properties?.mag || 0)) : 0;
+    return {
+      status: "success",
+      data: {
+        count1yr:   features.length,
+        maxMag:     parseFloat(maxMag.toFixed(1)),
+        events:     features.slice(0, 5).map(f => ({
+          mag:   f.properties?.mag || null,
+          place: f.properties?.place || null,
+          time:  f.properties?.time ? new Date(f.properties.time).toISOString().slice(0, 10) : null,
+        })),
+      },
+      raw: { count: features.length, maxMag },
+    };
+  } catch (e) {
+    return { status: "failed", error: e.message };
+  }
+}
+
+// ── NEW: FCC Broadband Availability ──────────────────────────────────────────
+// Uses the FCC National Broadband Map availability endpoint.
+// Distinct from existing FCC Block lookup (which only returns census FIPS).
+
+async function fetchFCCBroadband(lat, lon) {
+  try {
+    const url = `https://broadbandmap.fcc.gov/api/public/map/listAvailability?latitude=${lat}&longitude=${lon}&unit=location&limit=25`;
+    const res = await fetchJSON(url, { Accept: "application/json" }, 10000);
+    if (res.statusCode !== 200 || !res.data) return { status: "failed", statusCode: res.statusCode };
+    const avail = res.data?.availability || res.data?.data || [];
+    const providers = new Set(avail.map(a => a.brand_name || a.provider_id).filter(Boolean));
+    const speeds = avail.map(a => parseFloat(a.max_advertised_download_speed || 0)).filter(s => s > 0);
+    const maxDl = speeds.length ? Math.max(...speeds) : null;
+    const hasFiber = avail.some(a =>
+      (a.technology || 0) === 50 || // 50 = Fiber
+      (a.technology_description || "").toLowerCase().includes("fiber")
+    );
+    return {
+      status: "success",
+      data: {
+        providerCount: providers.size,
+        maxDownloadMbps: maxDl,
+        hasFiber,
+        technologies: [...new Set(avail.map(a => a.technology_description).filter(Boolean))].slice(0, 5),
+      },
+      raw: { count: avail.length },
+    };
+  } catch (e) {
+    return { status: "failed", error: e.message };
+  }
+}
+
+// ── NEW: Elevation (USGS National Elevation Dataset — free, no key) ───────────
+
+async function fetchElevation(lat, lon) {
+  try {
+    // Try USGS EPQS first (most accurate)
+    const url = `https://epqs.nationalmap.gov/v1/json?x=${lon}&y=${lat}&wkid=4326&includeDate=false`;
+    const res = await fetchJSON(url, {}, 8000);
+    if (res.statusCode === 200 && res.data) {
+      const elev = res.data?.value != null ? parseFloat(res.data.value) : null;
+      if (elev !== null && !isNaN(elev)) {
+        return {
+          status: "success",
+          data: { elevationM: parseFloat((elev * 0.3048).toFixed(1)), elevationFt: parseFloat(elev.toFixed(1)), source: "usgs_epqs" },
+          raw: res.data,
+        };
+      }
+    }
+    // Fallback: Google Elevation API if key present
+    const googleKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_PLACES_API_KEY;
+    if (googleKey) {
+      const gRes = await fetchJSON(`https://maps.googleapis.com/maps/api/elevation/json?locations=${lat},${lon}&key=${googleKey}`, {}, 8000);
+      if (gRes.statusCode === 200 && gRes.data?.results?.[0]) {
+        const elevM = gRes.data.results[0].elevation;
+        return {
+          status: "success",
+          data: { elevationM: parseFloat(elevM.toFixed(1)), elevationFt: parseFloat((elevM / 0.3048).toFixed(1)), source: "google_elevation" },
+          raw: gRes.data.results[0],
+        };
+      }
+    }
+    return { status: "failed", reason: "elevation unavailable from USGS or Google" };
+  } catch (e) {
+    return { status: "failed", error: e.message };
+  }
+}
+
+// ── NEW: Solar Potential (derived from latitude + no API required) ────────────
+// Uses NREL/NASA solar irradiance model approximation.
+// Formula: annual kWh/kWp ≈ 1800 - 11.5 * (lat - 25) for US latitudes.
+// Capped to realistic range 900–1900 kWh/kWp.
+
+function deriveSolarScore(lat) {
+  if (!lat) return { status: "failed", reason: "no lat" };
+  const latN = parseFloat(lat);
+  // Peak sun hours per day — US continental average model
+  const peakSunHours = Math.max(3.5, Math.min(6.5, 6.5 - (latN - 25) * 0.075));
+  // Annual kWh from a standard 5kW system
+  const annualKwh = Math.round(peakSunHours * 365 * 5 * 0.8); // 0.8 = system efficiency
+  // Score 0-100: perfect solar = ~10,000 kWh/yr for 5kW system
+  const score = Math.round(Math.min(100, Math.max(0, (annualKwh / 10000) * 100)));
+  return {
+    status: "success",
+    data: {
+      solarScore:          score,
+      peakSunHoursPerDay:  parseFloat(peakSunHours.toFixed(2)),
+      estimatedAnnualKwh:  annualKwh,
+      latitude:            latN,
+      note: "Derived from latitude-based irradiance model. Use NREL PVWatts for site-specific estimate.",
+    },
+    raw: null,
+  };
+}
+
+// ── NEW: OSM Roads, Rail, Water proximity ────────────────────────────────────
+// Separate from the existing fetchOSMAmenities to avoid enlarging that query.
+// Returns distance to nearest highway, railway, and open water.
+
+async function fetchOSMRoadRailWater(lat, lon) {
+  try {
+    const query = `[out:json][timeout:25];
+(
+  way["highway"~"^(motorway|trunk|primary)$"](around:1000,${lat},${lon});
+  way["railway"="rail"](around:1000,${lat},${lon});
+  way["natural"~"^(water|coastline|riverbank)$"](around:2000,${lat},${lon});
+  relation["natural"="water"](around:2000,${lat},${lon});
+  way["waterway"~"^(river|canal|stream)$"](around:1500,${lat},${lon});
+);
+out geom qt 50;`;
+    const bodyStr = `data=${encodeURIComponent(query)}`;
+    const res = await postJSON("overpass-api.de", "/api/interpreter", bodyStr, {}, 20000);
+    if (res.statusCode !== 200 || !res.data?.elements) return { status: "failed", statusCode: res.statusCode };
+
+    let highwayDistM = null, railDistM = null, waterDistM = null;
+
+    // Haversine distance from a lat/lon point to a way's nearest node
+    const haversine = (lat1, lon1, lat2, lon2) => {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    };
+
+    const nearestDist = (el) => {
+      if (!el.geometry?.length) return null;
+      return Math.min(...el.geometry.map(n => haversine(lat, lon, n.lat, n.lon)));
+    };
+
+    for (const el of res.data.elements) {
+      if (el.type !== "way") continue;
+      const dist = nearestDist(el);
+      if (dist === null) continue;
+      const hw = el.tags?.highway;
+      const rw = el.tags?.railway;
+      const nat = el.tags?.natural;
+      const ww = el.tags?.waterway;
+      if (["motorway","trunk","primary"].includes(hw)) {
+        if (highwayDistM === null || dist < highwayDistM) highwayDistM = dist;
+      }
+      if (rw === "rail") {
+        if (railDistM === null || dist < railDistM) railDistM = dist;
+      }
+      if (nat || ww) {
+        if (waterDistM === null || dist < waterDistM) waterDistM = dist;
+      }
+    }
+
+    // Noise score: penalize proximity to highways (<200m = high noise), railways (<150m)
+    let noiseScore = 85;
+    if (highwayDistM !== null) {
+      if (highwayDistM < 100)  noiseScore = Math.min(noiseScore, 30);
+      else if (highwayDistM < 200) noiseScore = Math.min(noiseScore, 50);
+      else if (highwayDistM < 400) noiseScore = Math.min(noiseScore, 70);
+    }
+    if (railDistM !== null) {
+      if (railDistM < 150)  noiseScore = Math.min(noiseScore, 25);
+      else if (railDistM < 300) noiseScore = Math.min(noiseScore, 55);
+    }
+
+    return {
+      status: "success",
+      data: {
+        highwayDistM:  highwayDistM !== null ? Math.round(highwayDistM) : null,
+        railwayDistM:  railDistM    !== null ? Math.round(railDistM)    : null,
+        waterDistM:    waterDistM   !== null ? Math.round(waterDistM)   : null,
+        noiseScore,
+        waterView: waterDistM !== null && waterDistM < 400,
+      },
+      raw: { elementCount: res.data.elements.length },
+    };
+  } catch (e) {
+    return { status: "failed", error: e.message };
+  }
+}
+
+// ── NEW: NOAA NCDC Weather Events (requires free NOAA_TOKEN) ─────────────────
+
+async function fetchNOAAWeatherEvents(zip) {
+  const token = process.env.NOAA_TOKEN;
+  if (!token) return { status: "unavailable", reason: "NOAA_TOKEN not set" };
+  try {
+    const end   = new Date().toISOString().slice(0, 10);
+    const start = new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    const url = `https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&locationid=ZIP:${zip}&startdate=${start}&enddate=${end}&limit=10&datatypeid=PRCP,SNOW,TMAX,TMIN`;
+    const res = await fetchJSON(url, { token }, 10000);
+    if (res.statusCode !== 200 || !res.data) return { status: "failed", statusCode: res.statusCode };
+    const results = res.data.results || [];
+    const precip = results.filter(r => r.datatype === "PRCP").map(r => r.value);
+    const totalPrecip = precip.length ? precip.reduce((a, b) => a + b, 0) / 10 : null; // tenths of mm → mm
+    return {
+      status: "success",
+      data: {
+        recordCount:    results.length,
+        totalPrecipMm:  totalPrecip !== null ? parseFloat(totalPrecip.toFixed(1)) : null,
+        hasSnow:        results.some(r => r.datatype === "SNOW" && r.value > 0),
+      },
+      raw: { count: results.length },
+    };
+  } catch (e) {
+    return { status: "failed", error: e.message };
+  }
+}
+
 // ── Sub-score calculators ────────────────────────────────────────────────────
 
 function scoreLocation(osm, walkScore) {
@@ -652,6 +889,7 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
   // Fire all API calls in parallel — Promise.allSettled never rejects
   const [
     censusR, fredR, hudR, femaR, epaR, usgsR, airNowR, walkR, osmR, fccR, blsR, crimeR, permitsR,
+    quakeR, broadbandR, elevR, roadRailR, noaaR,
   ] = await Promise.allSettled([
     fetchCensusACS(zip),
     fetchFRED(),
@@ -666,25 +904,51 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
     fetchBLSUnemployment(state),
     fetchFBICrime(state),
     fetchRivcoPermits(latN, lonN),
+    // New v3.1 sources
+    fetchUSGSEarthquakeEvents(latN, lonN),
+    fetchFCCBroadband(latN, lonN),
+    fetchElevation(latN, lonN),
+    fetchOSMRoadRailWater(latN, lonN),
+    fetchNOAAWeatherEvents(zip),
   ]);
 
   // Unwrap — if the promise itself rejected, treat as failed
   const unwrap = (r) => r.status === "fulfilled" ? r.value : { status: "failed", error: r.reason?.message };
-  const census  = unwrap(censusR);
-  const fred    = unwrap(fredR);
-  const hud     = unwrap(hudR);
-  const fema    = unwrap(femaR);
-  const epa     = unwrap(epaR);
-  const usgs    = unwrap(usgsR);
-  const airNow  = unwrap(airNowR);
-  const walk    = unwrap(walkR);
+  const census    = unwrap(censusR);
+  const fred      = unwrap(fredR);
+  const hud       = unwrap(hudR);
+  const fema      = unwrap(femaR);
+  const epa       = unwrap(epaR);
+  const usgs      = unwrap(usgsR);
+  const airNow    = unwrap(airNowR);
+  const walk      = unwrap(walkR);
+  // new
+  const quake     = unwrap(quakeR);
+  const broadband = unwrap(broadbandR);
+  const elev      = unwrap(elevR);
+  const roadRail  = unwrap(roadRailR);
+  const noaa      = unwrap(noaaR);
+  const solar     = deriveSolarScore(latN);
   const osm     = unwrap(osmR);
   const fcc     = unwrap(fccR);
   const bls     = unwrap(blsR);
   const crime   = unwrap(crimeR);
   const permits = unwrap(permitsR);
 
-  const allSources = { census, fred, hud, fema_flood_v3: fema, epa_ejscreen: epa, usgs_seismic: usgs, airnow: airNow, walk_score: walk, osm_amenities: osm, fcc_broadband: fcc, bls_unemployment: bls, fbi_crime: crime, rivco_permits: permits };
+  const allSources = {
+    census, fred, hud,
+    fema_flood_v3: fema, epa_ejscreen: epa, usgs_seismic: usgs,
+    airnow: airNow, walk_score: walk, osm_amenities: osm,
+    fcc_block: fcc, bls_unemployment: bls, fbi_crime: crime,
+    rivco_permits: permits,
+    // v3.1
+    usgs_earthquake_events: quake,
+    fcc_broadband:          broadband,
+    usgs_elevation:         elev,
+    osm_road_rail_water:    roadRail,
+    noaa_weather:           noaa,
+    solar_derived:          solar,
+  };
 
   // Persist all raw responses for our database-building
   await storeDataSources(reportId, allSources);
@@ -844,6 +1108,52 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
       };
     })(),
 
+    // ── Physical + Environmental Intelligence (v3.1) ──
+    physicalIntelligence: {
+      elevation:  elev?.status  === "success" ? elev.data  : null,
+      solar:      solar?.status === "success" ? solar.data : null,
+      proximity:  roadRail?.status === "success" ? {
+        highwayDistM: roadRail.data.highwayDistM,
+        railwayDistM: roadRail.data.railwayDistM,
+        waterDistM:   roadRail.data.waterDistM,
+        waterView:    roadRail.data.waterView,
+        noiseScore:   roadRail.data.noiseScore,
+        _interpretation: [
+          roadRail.data.highwayDistM != null ? `Nearest major highway: ${roadRail.data.highwayDistM}m.` : null,
+          roadRail.data.railwayDistM != null ? `Nearest railway: ${roadRail.data.railwayDistM}m.` : null,
+          roadRail.data.waterDistM   != null ? `Nearest water: ${roadRail.data.waterDistM}m${roadRail.data.waterView ? " (potential water view)" : ""}.` : null,
+        ].filter(Boolean).join(" ") || "Road/rail/water proximity data unavailable.",
+      } : null,
+    },
+
+    // ── Seismic Events (v3.1) ──
+    seismicEvents: quake?.status === "success" ? {
+      count1yr: quake.data.count1yr,
+      maxMag:   quake.data.maxMag,
+      events:   quake.data.events,
+      _interpretation: quake.data.count1yr === 0
+        ? "No recorded earthquakes ≥ M2.5 within 1° in the past year."
+        : `${quake.data.count1yr} earthquake(s) ≥ M2.5 in past year. Largest: M${quake.data.maxMag}.`,
+    } : null,
+
+    // ── Broadband (v3.1) ──
+    broadband: broadband?.status === "success" ? {
+      providerCount:    broadband.data.providerCount,
+      maxDownloadMbps:  broadband.data.maxDownloadMbps,
+      hasFiber:         broadband.data.hasFiber,
+      technologies:     broadband.data.technologies,
+      _interpretation: broadband.data.providerCount > 0
+        ? `${broadband.data.providerCount} broadband provider(s). Max speed: ${broadband.data.maxDownloadMbps || "?"}Mbps. Fiber: ${broadband.data.hasFiber ? "Yes" : "No"}.`
+        : "No broadband availability data found.",
+    } : null,
+
+    // ── Weather (v3.1) ──
+    weatherHistory: noaa?.status === "success" ? {
+      recordCount:   noaa.data.recordCount,
+      totalPrecipMm: noaa.data.totalPrecipMm,
+      hasSnow:       noaa.data.hasSnow,
+    } : null,
+
     // ── Source status map (for UI display) ──
     sourceStatuses: Object.fromEntries(
       Object.entries(allSources).map(([k, v]) => [k, v?.status || "failed"])
@@ -899,6 +1209,21 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
       v3_rental_score:       rentalScore,
       v3_trajectory_score:   trajScore,
       v3_enriched_at:        new Date().toISOString(),
+      // v3.1 new columns
+      elevation_m:            elev?.data?.elevationM       ?? null,
+      solar_score:            solar?.status === "success" ? solar.data.solarScore : null,
+      solar_kwh_per_day:      solar?.status === "success" ? parseFloat((solar.data.peakSunHoursPerDay * 5 * 0.8).toFixed(2)) : null,
+      highway_distance_m:     roadRail?.data?.highwayDistM ?? null,
+      railway_distance_m:     roadRail?.data?.railwayDistM ?? null,
+      water_distance_m:       roadRail?.data?.waterDistM   ?? null,
+      noise_score:            roadRail?.data?.noiseScore   ?? null,
+      earthquake_events_1yr:  quake?.data?.count1yr        ?? null,
+      earthquake_max_mag:     quake?.data?.maxMag          ?? null,
+      broadband_providers:    broadband?.data?.providerCount   ?? null,
+      broadband_max_dl_mbps:  broadband?.data?.maxDownloadMbps ?? null,
+      broadband_has_fiber:    broadband?.data?.hasFiber        ?? null,
+      noaa_hazard_events_1yr: noaa?.data?.recordCount          ?? null,
+      noaa_precip_inches_yr:  noaa?.data?.totalPrecipMm != null ? parseFloat((noaa.data.totalPrecipMm / 25.4).toFixed(1)) : null,
     };
     db.from("property_intelligence").eq("property_id", propertyId).update(piUpdate)
       .catch(e => console.warn("[enrich:pi update]", e.message));
