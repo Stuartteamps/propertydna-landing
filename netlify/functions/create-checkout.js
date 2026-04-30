@@ -78,6 +78,19 @@ exports.handler = async (event) => {
   const normalizedEmail = email.toLowerCase().trim();
   const origin = event.headers.origin || "https://thepropertydna.com";
 
+  // ── Owner bypass — platform owner is never charged ────────────────
+  const OWNER_EMAIL = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
+  if (normalizedEmail === OWNER_EMAIL) {
+    db.upsert("subscriptions", {
+      email: OWNER_EMAIL,
+      plan_name: "enterprise",
+      status: "active",
+      current_period_end: null,
+    }, "email").catch(() => {});
+    db.kpi("owner_bypass", OWNER_EMAIL, { mode });
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({ url: `${origin}/dashboard?plan=enterprise&bypass=owner` }) };
+  }
+
   const meta = {
     "metadata[fullName]": fullName || "",
     "metadata[email]": normalizedEmail,

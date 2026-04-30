@@ -56,7 +56,14 @@ exports.handler = async (event) => {
     let isSubscribed = false;
     let plan = null;
 
-    if (Array.isArray(subs) && subs.length > 0) {
+    // Owner always has enterprise access — no charge
+    const OWNER_EMAIL = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
+    if (normalizedEmail === OWNER_EMAIL) {
+      isSubscribed = true;
+      plan = "enterprise";
+    }
+
+    if (!isSubscribed && Array.isArray(subs) && subs.length > 0) {
       const sub = subs[0];
       const end = sub.current_period_end ? new Date(sub.current_period_end) : null;
       if (!end || end > new Date()) { isSubscribed = true; plan = sub.plan_name; }
