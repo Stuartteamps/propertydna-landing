@@ -42,13 +42,16 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
   }, []);
 
   const openSignIn = () => { setModalView('signin'); setModalOpen(true); onSignInClick?.(); };
+
+  // "Get Started" — always goes to root with the form visible, no intermediate modal
   const openPricing = () => {
     onRequestAccessClick?.();
     if (isHome) {
-      const el = document.getElementById('pricing');
-      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+      // Scroll to address form so user can run a report immediately
+      const form = document.getElementById('form') || document.getElementById('pricing');
+      if (form) { form.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     }
-    navigate('/#pricing');
+    navigate('/');
   };
 
   const avatarUrl   = user?.user_metadata?.avatar_url;
