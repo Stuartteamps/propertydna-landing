@@ -1,5 +1,6 @@
 /**
- * Looks up a property_report by its secure view_token.
+ * Looks up a report by its secure view_token.
+ * Checks both property_reports (new) and reports (legacy) tables.
  * No authentication required — the token is the access credential.
  *
  * GET /.netlify/functions/get-report-by-token?token=<view_token>
@@ -27,49 +28,82 @@ exports.handler = async (event) => {
   }
 
   try {
-    const rows = await db.from("property_reports")
-      .select("id,email,address,city,state,zip,full_address,role,report_data,enrichment_data,view_token,status,created_at")
-      .eq("view_token", token)
-      .limit(1)
-      .get();
+    // Check new property_reports table first
+    const [newRows, legacyRows] = await Promise.all([
+      db.from("property_reports")
+        .select("id,email,address,city,state,zip,full_address,report_data,enrichment_data,view_token,status,created_at")
+        .eq("view_token", token)
+        .limit(1)
+        .get()
+        .catch(() => []),
+      db.from("reports")
+        .select("id,email,address,full_name,role,property_dna,view_token,created_at")
+        .eq("view_token", token)
+        .limit(1)
+        .get()
+        .catch(() => []),
+    ]);
 
-    if (!Array.isArray(rows) || rows.length === 0) {
-      return { statusCode: 404, headers: CORS, body: JSON.stringify({ error: "Report not found" }) };
-    }
+    // Prefer new table
+    if (Array.isArray(newRows) && newRows.length > 0) {
+      const row = newRows[0];
 
-    const row = rows[0];
+      if (row.status === "pending" || row.status === "generating") {
+        return {
+          statusCode: 202,
+          headers: CORS,
+          body: JSON.stringify({ status: row.status, message: "Report is still being generated. Please check back in a moment." }),
+        };
+      }
 
-    if (row.status === "pending" || row.status === "generating") {
+      const fullAddress = row.full_address || [row.address, row.city, row.state].filter(Boolean).join(", ");
+      const dna = row.report_data || {};
+      const client = dna?.normalized?.client || {};
+      const enrichment = row.enrichment_data || null;
+      const mergedDna = enrichment ? { ...dna, enrichment } : dna;
+
       return {
-        statusCode: 202,
+        statusCode: 200,
         headers: CORS,
-        body: JSON.stringify({ status: row.status, message: "Report is still being generated. Please check back in a moment." }),
+        body: JSON.stringify({
+          id:           row.id,
+          address:      fullAddress,
+          full_name:    client.name || null,
+          email:        row.email,
+          role:         row.role || "Buyer",
+          property_dna: mergedDna,
+          created_at:   row.created_at,
+          status:       row.status,
+        }),
       };
     }
 
-    const fullAddress = row.full_address || [row.address, row.city, row.state].filter(Boolean).join(", ");
-    const dna = row.report_data || {};
-    const client = dna?.normalized?.client || {};
+    // Fall back to legacy reports table
+    if (Array.isArray(legacyRows) && legacyRows.length > 0) {
+      const row = legacyRows[0];
+      let dna = row.property_dna;
+      if (typeof dna === "string") { try { dna = JSON.parse(dna); } catch { dna = {}; } }
+      dna = dna || {};
 
-    // Merge enrichment_data into property_dna so the report view can render
-    // all sections from a single object without a second fetch.
-    const enrichment = row.enrichment_data || null;
-    const mergedDna = enrichment ? { ...dna, enrichment } : dna;
+      const fullAddress = row.address || dna?.normalized?.subject?.address || "";
 
-    return {
-      statusCode: 200,
-      headers: CORS,
-      body: JSON.stringify({
-        id:          row.id,
-        address:     fullAddress,
-        full_name:   client.name  || null,
-        email:       row.email,
-        role:        row.role     || "Buyer",
-        property_dna: mergedDna,
-        created_at:  row.created_at,
-        status:      row.status,
-      }),
-    };
+      return {
+        statusCode: 200,
+        headers: CORS,
+        body: JSON.stringify({
+          id:           row.id,
+          address:      fullAddress,
+          full_name:    row.full_name || null,
+          email:        row.email,
+          role:         row.role || "Buyer",
+          property_dna: dna,
+          created_at:   row.created_at,
+          status:       "completed",
+        }),
+      };
+    }
+
+    return { statusCode: 404, headers: CORS, body: JSON.stringify({ error: "Report not found" }) };
   } catch (err) {
     console.error("[get-report-by-token]", err.message);
     return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "Internal error" }) };

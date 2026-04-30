@@ -36,7 +36,7 @@ exports.handler = async (event) => {
 
     // ── Fetch from legacy reports table (has property_dna, view_token may exist) ──
     const legacyReports = await db.from("reports")
-      .select("id,address,email,property_dna,created_at")
+      .select("id,address,email,property_dna,view_token,created_at")
       .eq("email", normalizedEmail)
       .order("created_at", { ascending: false })
       .limit(50)
@@ -103,8 +103,8 @@ exports.handler = async (event) => {
       .map(r => {
         let dna = r.property_dna;
         if (typeof dna === "string") { try { dna = JSON.parse(dna); } catch { dna = {}; } }
-        // Try to build view URL from view_token inside dna or report URL
-        const viewToken = dna?.viewToken || dna?.view_token || null;
+        // Build view URL from row-level view_token (after migration 008), then dna fallback
+        const viewToken = r.view_token || dna?.viewToken || dna?.view_token || null;
         const viewUrl = viewToken
           ? `${BASE_URL}/report/view/${viewToken}`
           : `${BASE_URL}/report/${r.id}`;

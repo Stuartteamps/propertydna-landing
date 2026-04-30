@@ -600,7 +600,7 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
   // Per-section confidence (% sources that returned data)
   const locConf    = confidencePct([osm, walk, fcc]);
   const mktConf    = confidencePct([census, fred, hud]);
-  const riskConf   = confidencePct([fema, usgs, epa, airNow]);
+  const riskConf   = confidencePct([fema, usgs, epa, airNow, crime]);
   const rentalConf = confidencePct([hud, census]);
   const trajConf   = confidencePct([bls, fred, census]);
 
@@ -608,6 +608,7 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
   const femaZone   = fema?.data?.zone || null;
   const floodLabel = fema?.data?.label || "Flood zone not determined";
   const seismicLevel = usgs?.data?.seismicRiskLevel || "Unknown";
+  const crimeData  = crime?.status === "success" ? crime.data : null;
   const aqiCat     = airNow?.data?.aqiCategory || null;
   const walkDesc   = walk?.data?.walkDescription || null;
   const mortgageRate = fred?.data?.mortgage30YrRate;
@@ -656,11 +657,13 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
         seismicLevel !== "Unknown" ? `Seismic risk: ${seismicLevel}.` : null,
         epa?.data?.ejIndexPctile != null ? `Environmental Justice Index at ${epa.data.ejIndexPctile.toFixed(0)}th percentile nationally.` : null,
         aqiCat ? `Air quality: ${aqiCat} (AQI ${airNow.data.aqi}).` : null,
+        crime?.status === "success" && crime.data.violentCrimePer100k != null ? `State violent crime: ${crime.data.violentCrimePer100k}/100k (${crime.data.crimeRating} risk).` : null,
       ].filter(Boolean).join(" ") || "Extended hazard data unavailable.",
       femaFlood:        fema?.status  === "success" ? fema.data  : null,
       seismic:          usgs?.status  === "success" ? usgs.data  : null,
       environmental:    epa?.status   === "success" ? epa.data   : null,
       airQuality:       airNow?.status === "success" ? airNow.data : null,
+      crime:            crime?.status  === "success" ? crime.data  : null,
     },
 
     // ── Rental Yield Analysis ──
@@ -734,6 +737,8 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
       airnow_aqi:            airNow?.data?.aqi         ?? null,
       airnow_aqi_category:   airNow?.data?.aqiCategory ?? null,
       bls_state_unemployment: bls?.data?.stateUnemploymentRate ?? null,
+      fbi_violent_crime_per100k: crimeData?.violentCrimePer100k ?? null,
+      fbi_crime_rating:      crimeData?.crimeRating       ?? null,
       census_block_fips:     fcc?.data?.censusFIPS     ?? null,
       v3_location_score:     locScore,
       v3_market_score:       mktScore,
