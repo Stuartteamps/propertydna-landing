@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type FC } from 'react';
 import * as THREE from 'three';
 import Nav from '@/components/Nav';
 import AuthModal from '@/components/AuthModal';
@@ -143,12 +143,15 @@ export default function TerraGraph() {
   const [clock,       setClock]       = useState('');
   const [mode,        setMode]        = useState<'global' | 'national' | 'regional'>('global');
   const [timeframe,   setTimeframe]   = useState<'1Y' | '3Y' | '5Y' | '10Y'>('1Y');
-  const [searchQuery, setSearchQuery] = useState('');
 
   const canvasRef     = useRef<HTMLCanvasElement>(null);
-  const scoreCanvasRef= useRef<HTMLCanvasElement>(null);
-  const sparkCanvasRef= useRef<HTMLCanvasElement>(null);
-  const marketsRef    = useRef<GlobeMarket[]>(BASE_MARKETS);
+  const scoreCanvasRef  = useRef<HTMLCanvasElement>(null);
+  const sparkCanvasRef  = useRef<HTMLCanvasElement>(null);
+  const searchInputRef  = useRef<HTMLInputElement>(null);
+  const globeContainerRef = useRef<HTMLDivElement>(null);
+  const marketsRef      = useRef<GlobeMarket[]>(BASE_MARKETS);
+  const selectedRef     = useRef<GlobeMarket | null>(null);
+  const timeframeRef    = useRef<'1Y' | '3Y' | '5Y' | '10Y'>('1Y');
 
   const three = useRef<ThreeState>({
     renderer: null, scene: null, camera: null, globeMesh: null, markers: [],
@@ -231,8 +234,9 @@ export default function TerraGraph() {
 
   // Init Three.js globe after loading screen fades
   useEffect(() => {
-    if (showLoading || !canvasRef.current) return;
-    const canvas = canvasRef.current;
+    if (showLoading || !canvasRef.current || !globeContainerRef.current) return;
+    const canvas    = canvasRef.current;
+    const container = globeContainerRef.current;
     const W = window.innerWidth;
     const H = window.innerHeight - NAV_H;
     canvas.width  = W;
@@ -393,8 +397,18 @@ export default function TerraGraph() {
     };
     animate();
 
-    // Mouse / touch handlers
-    const onDown  = (e: MouseEvent) => { t.isDragging = true; t.prevMouse = { x: e.clientX, y: e.clientY }; t.targetCameraZ = 2.8; };
+    // Globe drag/zoom — attached to the container so panels always win via z-index,
+    // and we guard against clicks that originate inside a UI panel element.
+    const isUIPanel = (el: EventTarget | null) => {
+      if (!el || !(el instanceof Element)) return false;
+      return el.closest('[data-globe-ui]') !== null;
+    };
+
+    const onDown  = (e: MouseEvent) => {
+      if (isUIPanel(e.target)) return;
+      t.isDragging = true;
+      t.prevMouse = { x: e.clientX, y: e.clientY };
+    };
     const onMove  = (e: MouseEvent) => {
       if (!t.isDragging) return;
       t.targetRotY  += (e.clientX - t.prevMouse.x) * 0.005;
@@ -402,7 +416,10 @@ export default function TerraGraph() {
       t.prevMouse    = { x: e.clientX, y: e.clientY };
     };
     const onUp    = () => { t.isDragging = false; };
-    const onWheel = (e: WheelEvent) => { t.targetCameraZ = Math.max(1.4, Math.min(5, t.targetCameraZ + e.deltaY * 0.003)); };
+    const onWheel = (e: WheelEvent) => {
+      if (isUIPanel(e.target)) return;
+      t.targetCameraZ = Math.max(1.4, Math.min(5, t.targetCameraZ + e.deltaY * 0.003));
+    };
     const onResize = () => {
       if (!t.camera || !t.renderer) return;
       const nW = window.innerWidth, nH = window.innerHeight - NAV_H;
@@ -411,21 +428,21 @@ export default function TerraGraph() {
       t.renderer.setSize(nW, nH);
     };
 
-    canvas.addEventListener('mousedown', onDown);
-    canvas.addEventListener('mousemove', onMove);
-    canvas.addEventListener('mouseup',   onUp);
-    canvas.addEventListener('mouseleave',onUp);
-    canvas.addEventListener('wheel',     onWheel, { passive: true });
-    window.addEventListener('resize',    onResize);
+    container.addEventListener('mousedown', onDown);
+    container.addEventListener('mousemove', onMove);
+    container.addEventListener('mouseup',   onUp);
+    container.addEventListener('mouseleave',onUp);
+    container.addEventListener('wheel',     onWheel, { passive: true });
+    window.addEventListener('resize',       onResize);
 
     return () => {
       cancelAnimationFrame(t.animFrame);
-      canvas.removeEventListener('mousedown', onDown);
-      canvas.removeEventListener('mousemove', onMove);
-      canvas.removeEventListener('mouseup',   onUp);
-      canvas.removeEventListener('mouseleave',onUp);
-      canvas.removeEventListener('wheel',     onWheel);
-      window.removeEventListener('resize',    onResize);
+      container.removeEventListener('mousedown', onDown);
+      container.removeEventListener('mousemove', onMove);
+      container.removeEventListener('mouseup',   onUp);
+      container.removeEventListener('mouseleave',onUp);
+      container.removeEventListener('wheel',     onWheel);
+      window.removeEventListener('resize',       onResize);
       if (t.renderer) { t.renderer.dispose(); t.renderer = null; }
       t.markers.forEach(mk => {
         mk.ring.geometry.dispose();
@@ -439,42 +456,52 @@ export default function TerraGraph() {
     };
   }, [showLoading]);
 
-  // Redraw score ring when selection changes
-  useEffect(() => {
-    if (!selected || !scoreCanvasRef.current) return;
-    const ctx   = scoreCanvasRef.current.getContext('2d')!;
-    const color = scoreColor(selected.score);
+  // Keep refs in sync for canvas drawing callbacks
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
+  useEffect(() => { timeframeRef.current = timeframe; }, [timeframe]);
+
+  // Draw (or redraw) the score ring — called imperatively
+  const drawScoreRing = useCallback((m: GlobeMarket) => {
+    const c = scoreCanvasRef.current;
+    if (!c) return;
+    const ctx   = c.getContext('2d')!;
+    const color = scoreColor(m.score);
     const start = -Math.PI * 0.75;
-    const end   = start + Math.PI * 1.5 * (selected.score / 100);
+    const end   = start + Math.PI * 1.5 * (m.score / 100);
     ctx.clearRect(0, 0, 120, 120);
     ctx.beginPath(); ctx.arc(60, 60, 50, -Math.PI * 0.75, Math.PI * 0.75);
     ctx.strokeStyle = 'rgba(0,255,136,0.1)'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.stroke();
     ctx.beginPath(); ctx.arc(60, 60, 50, start, end);
     ctx.strokeStyle = color; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.stroke();
-  }, [selected]);
+  }, []);
 
-  // Redraw sparkline when selection or timeframe changes
-  useEffect(() => {
-    if (!selected || !sparkCanvasRef.current) return;
+  // Draw (or redraw) the sparkline — called imperatively
+  const drawSparkline = useCallback((m: GlobeMarket, tf: string) => {
     const canvas = sparkCanvasRef.current;
-    const ctx    = canvas.getContext('2d')!;
-    canvas.width  = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-    const W = canvas.width, H = canvas.height;
-    if (!W || !H) return;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d')!;
 
-    const pts    = 13;
-    const tfMult = timeframe === '3Y' ? 3 : timeframe === '5Y' ? 5 : timeframe === '10Y' ? 10 : 1;
-    const data   = Array.from({ length: pts }, (_, i) => {
+    // Use parent bounds for reliable dimensions
+    const rect = canvas.parentElement?.getBoundingClientRect();
+    const headerH = 32; // chart header height
+    const W = rect ? Math.round(rect.width)  : 600;
+    const H = rect ? Math.round(rect.height - headerH) : 88;
+    canvas.width  = W;
+    canvas.height = H;
+    if (W <= 0 || H <= 0) return;
+
+    const tfMult = tf === '3Y' ? 3 : tf === '5Y' ? 5 : tf === '10Y' ? 10 : 1;
+    const pts = 13;
+    const data = Array.from({ length: pts }, (_, i) => {
       const frac = (i - pts + 1) / (pts - 1) * tfMult;
-      return selected.price * (1 + frac * (selected.yoy / 100) + (Math.random() - 0.5) * 0.02);
+      return m.price * (1 + frac * (m.yoy / 100) + (Math.random() - 0.5) * 0.018);
     });
 
     const mn  = Math.min(...data) * 0.99, mx = Math.max(...data) * 1.01;
-    const pad = { l: 52, r: 16, t: 12, b: 20 };
+    const pad = { l: 52, r: 16, t: 10, b: 18 };
     const W2  = W - pad.l - pad.r, H2 = H - pad.t - pad.b;
     const px  = (i: number) => pad.l + (i / (pts - 1)) * W2;
-    const py  = (v: number) => pad.t + H2 - ((v - mn) / (mx - mn)) * H2;
+    const py  = (v: number) => pad.t + H2 - ((v - mn) / (mx - mn || 1)) * H2;
 
     ctx.clearRect(0, 0, W, H);
     ctx.strokeStyle = 'rgba(0,255,136,0.06)'; ctx.lineWidth = 0.5;
@@ -482,7 +509,7 @@ export default function TerraGraph() {
       ctx.beginPath(); ctx.moveTo(pad.l, pad.t + H2 * (1 - f)); ctx.lineTo(W - pad.r, pad.t + H2 * (1 - f)); ctx.stroke();
     });
 
-    const color = scoreColor(selected.score);
+    const color = scoreColor(m.score);
     const grad  = ctx.createLinearGradient(0, pad.t, 0, pad.t + H2);
     grad.addColorStop(0, GRADIENT_ALPHA[color] || 'rgba(0,255,136,0.15)');
     grad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -501,26 +528,43 @@ export default function TerraGraph() {
 
     ctx.fillStyle = T_M; ctx.font = '9px Share Tech Mono, monospace'; ctx.textAlign = 'right';
     [mn, (mn + mx) / 2, mx].forEach(v => ctx.fillText(fmt(v), pad.l - 4, py(v) + 3));
-  }, [selected, timeframe]);
+  }, []);
+
+  // Redraw when selection changes
+  useEffect(() => {
+    if (!selected) return;
+    drawScoreRing(selected);
+    // defer sparkline one frame so canvas has layout dimensions
+    requestAnimationFrame(() => drawSparkline(selected, timeframeRef.current));
+  }, [selected, drawScoreRing, drawSparkline]);
+
+  // Redraw sparkline when timeframe changes (selection stays the same)
+  useEffect(() => {
+    const m = selectedRef.current;
+    if (!m) return;
+    requestAnimationFrame(() => drawSparkline(m, timeframe));
+  }, [timeframe, drawSparkline]);
 
   // ── Interactions ─────────────────────────────────────────────────────────────
 
-  const selectMarket = useCallback((city: string) => {
+  // Always reads from refs — no stale-closure risk
+  const selectMarket = (city: string) => {
     const m = marketsRef.current.find(x => x.city === city);
     if (!m) return;
     setSelected(m);
-    three.current.flyTarget      = { lat: m.lat, lng: m.lng };
-    three.current.targetCameraZ  = 1.6;
-  }, []);
+    three.current.flyTarget     = { lat: m.lat, lng: m.lng };
+    three.current.targetCameraZ = 1.6;
+  };
 
-  const handleSearch = useCallback(() => {
-    const q = searchQuery.trim().toLowerCase();
+  // Reads directly from the uncontrolled input element
+  const handleSearch = () => {
+    const q = (searchInputRef.current?.value ?? '').trim().toLowerCase();
     if (!q) return;
     const m = marketsRef.current.find(x =>
       x.city.toLowerCase().includes(q) || x.state.toLowerCase().includes(q)
     );
     if (m) selectMarket(m.city);
-  }, [searchQuery, selectMarket]);
+  };
 
   const zoomIn    = () => { three.current.targetCameraZ = Math.max(1.4, three.current.targetCameraZ - 0.4); };
   const zoomOut   = () => { three.current.targetCameraZ = Math.min(5,   three.current.targetCameraZ + 0.4); };
@@ -529,6 +573,7 @@ export default function TerraGraph() {
     three.current.targetRotX    = 0;
     three.current.targetRotY    = -2.0;
     three.current.flyTarget     = null;
+    setSelected(null);
   };
 
   const setViewMode = (m: typeof mode) => {
@@ -562,13 +607,13 @@ export default function TerraGraph() {
 
       {/* ── Globe UI (shown after loading) ── */}
       {!showLoading && (
-        <div style={{ position: 'fixed', top: NAV_H, left: 0, right: 0, bottom: 0, background: '#020408', overflow: 'hidden', zIndex: 10 }}>
+        <div ref={globeContainerRef} style={{ position: 'fixed', top: NAV_H, left: 0, right: 0, bottom: 0, background: '#020408', overflow: 'hidden', zIndex: 10 }}>
 
           {/* Three.js canvas */}
           <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, zIndex: 1 }} />
 
           {/* ── LEFT PANEL: Market Rankings ── */}
-          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 40, width: 260, background: BG, borderRight: `1px solid ${BORDER}`, zIndex: 90, display: 'flex', flexDirection: 'column', backdropFilter: 'blur(12px)' }}>
+          <div data-globe-ui style={{ position: 'absolute', top: 0, left: 0, bottom: 40, width: 260, background: BG, borderRight: `1px solid ${BORDER}`, zIndex: 90, display: 'flex', flexDirection: 'column', backdropFilter: 'blur(12px)' }}>
             <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, fontSize: 10, letterSpacing: 3, color: G, fontFamily: MONO, textTransform: 'uppercase' }}>
               Market Rankings
             </div>
@@ -616,7 +661,7 @@ export default function TerraGraph() {
           </div>
 
           {/* ── RIGHT PANEL: Property Intelligence ── */}
-          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 40, width: 280, background: BG, borderLeft: `1px solid ${BORDER}`, zIndex: 90, display: 'flex', flexDirection: 'column', backdropFilter: 'blur(12px)' }}>
+          <div data-globe-ui style={{ position: 'absolute', top: 0, right: 0, bottom: 40, width: 280, background: BG, borderLeft: `1px solid ${BORDER}`, zIndex: 90, display: 'flex', flexDirection: 'column', backdropFilter: 'blur(12px)' }}>
             <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, fontSize: 10, letterSpacing: 3, color: G, fontFamily: MONO, textTransform: 'uppercase' }}>
               Property Intelligence
             </div>
@@ -694,7 +739,7 @@ export default function TerraGraph() {
           </div>
 
           {/* ── CHART PANEL ── */}
-          <div style={{ position: 'absolute', bottom: 40, left: 260, right: 280, height: 140, background: BG, borderTop: `1px solid ${BORDER}`, zIndex: 90, backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column' }}>
+          <div data-globe-ui style={{ position: 'absolute', bottom: 40, left: 260, right: 280, height: 140, background: BG, borderTop: `1px solid ${BORDER}`, zIndex: 90, backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px', borderBottom: '1px solid rgba(0,255,136,0.06)' }}>
               <div style={{ fontSize: 10, letterSpacing: 2, color: G, fontFamily: MONO }}>
                 PRICE TREND — {selected ? `${selected.city.toUpperCase()}, ${selected.state}` : 'SELECT A MARKET'}
@@ -715,7 +760,7 @@ export default function TerraGraph() {
           </div>
 
           {/* ── BOTTOM BAR ── */}
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 40, background: BG, borderTop: `1px solid ${BORDER}`, zIndex: 100, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 24, backdropFilter: 'blur(12px)' }}>
+          <div data-globe-ui style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 40, background: BG, borderTop: `1px solid ${BORDER}`, zIndex: 100, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 24, backdropFilter: 'blur(12px)' }}>
             {([
               ['MARKETS',  markets.length.toString()],
               ['AVG SCORE', Math.round(markets.reduce((s, m) => s + m.score, 0) / markets.length).toString()],
@@ -736,7 +781,7 @@ export default function TerraGraph() {
           </div>
 
           {/* ── ZOOM CONTROLS ── */}
-          <div style={{ position: 'absolute', bottom: 196, left: 270, zIndex: 95, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div data-globe-ui style={{ position: 'absolute', bottom: 196, left: 270, zIndex: 95, display: 'flex', flexDirection: 'column', gap: 4 }}>
             {([
               ['+',  zoomIn],
               ['−',  zoomOut],
@@ -753,10 +798,11 @@ export default function TerraGraph() {
           </div>
 
           {/* ── SEARCH BAR ── */}
-          <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 150, display: 'flex', width: 360 }}>
+          <div data-globe-ui style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 150, display: 'flex', width: 360 }}>
             <input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              ref={searchInputRef}
+              type="text"
+              defaultValue=""
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               placeholder="ENTER CITY OR MARKET..."
               style={{ flex: 1, background: BG, border: `1px solid ${BORDER}`, borderRight: 'none', color: T_P, fontFamily: MONO, fontSize: 12, padding: '8px 14px', outline: 'none', backdropFilter: 'blur(12px)' }}
@@ -770,7 +816,7 @@ export default function TerraGraph() {
           </div>
 
           {/* ── MODE TABS ── */}
-          <div style={{ position: 'absolute', top: 12, right: 'calc(280px + 12px)', zIndex: 150, display: 'flex', gap: 1 }}>
+          <div data-globe-ui style={{ position: 'absolute', top: 12, right: 'calc(280px + 12px)', zIndex: 150, display: 'flex', gap: 1 }}>
             {(['global','national','regional'] as const).map(m => (
               <button
                 key={m}
