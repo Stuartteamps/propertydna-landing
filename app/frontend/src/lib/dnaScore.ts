@@ -143,7 +143,7 @@ export function computeDNAScore(dna: any): DNAScoreResult {
   }
   traj = clamp(traj);
 
-  // 6. Property Condition (10%)
+  // 6. Property Condition (10%) — age baseline + permit-based upgrades
   let cond = 60;
   const yr = Number(prop.yearBuilt || prop.year_built || 0);
   if (yr > 0) {
@@ -155,6 +155,16 @@ export function computeDNAScore(dna: any): DNAScoreResult {
     else cond = 48;
   }
   if (prop.type && prop.type !== '—') cond = clamp(cond + 5);
+
+  // Boost from permit history (Riverside County public data)
+  const permitData = enr?.permitHistory;
+  if (permitData) {
+    const autoFeats = permitData.autoDetectedFeatures || {};
+    if (autoFeats.fully_remodeled) cond = clamp(cond + 15);
+    else if ((permitData.recentPermits || 0) >= 2) cond = clamp(cond + 8);
+    else if ((permitData.recentPermits || 0) >= 1) cond = clamp(cond + 4);
+    if (autoFeats.addition) cond = clamp(cond + 5);
+  }
   cond = clamp(cond);
 
   // 7. Unique / Prestige (5%)

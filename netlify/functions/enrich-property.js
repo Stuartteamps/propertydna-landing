@@ -356,6 +356,103 @@ async function fetchFCCBlock(lat, lon) {
   }
 }
 
+// ── Riverside County & Palm Springs permit data ───────────────────────────────
+// Uses Riverside County ArcGIS open data (no key, public).
+// Covers unincorporated Riverside County. Incorporated cities (Palm Springs,
+// Palm Desert, Indian Wells, La Quinta, etc.) use their own city permit systems
+// and require BuildZoom or Shovels.ai integration for automated access.
+
+function classifyPermit(caseType, caseWorkClass, description) {
+  const t = (caseType || "").toLowerCase();
+  const w = (caseWorkClass || "").toLowerCase();
+  const d = (description || "").toLowerCase();
+  if (d.includes("kitchen") || d.includes("bath") || d.includes("remodel") || w.includes("remodel") || w.includes("alteration")) return "remodel";
+  if (d.includes("addition") || d.includes("adu") || d.includes("accessory") || w.includes("addition")) return "addition";
+  if (d.includes("pool") || d.includes("spa")) return "pool";
+  if (d.includes("roof") || d.includes("hvac") || d.includes("mechanical") || d.includes("plumb") || d.includes("electric") || d.includes("solar")) return "mechanical";
+  if (d.includes("new construction") || d.includes("new build") || w.includes("new")) return "new_construction";
+  if (t.includes("demolition") || d.includes("demol")) return "demolition";
+  return "general";
+}
+
+function permitValueAdjustment(permits) {
+  // Returns { fullyRemodeled, recentPool, recentAddition, estimatedValuePct }
+  const now = Date.now();
+  const fiveYears = 5 * 365.25 * 24 * 3600 * 1000;
+  const tenYears  = 10 * 365.25 * 24 * 3600 * 1000;
+  let remodels = 0, pools = 0, additions = 0, recentAny = 0;
+  for (const p of permits) {
+    const age = now - (p.appliedMs || 0);
+    if (p.category === "remodel"  && age < fiveYears) remodels++;
+    if (p.category === "pool"     && age < tenYears)  pools++;
+    if (p.category === "addition" && age < fiveYears) additions++;
+    if (age < fiveYears) recentAny++;
+  }
+  return {
+    fullyRemodeled:  remodels >= 2,
+    recentPool:      pools > 0,
+    recentAddition:  additions > 0,
+    recentPermits:   recentAny,
+    totalPermits:    permits.length,
+    estimatedValuePct: Math.min(15, remodels * 4 + pools * 4 + additions * 5),
+  };
+}
+
+async function fetchRivcoPermits(lat, lon) {
+  try {
+    const baseUrl = "https://gis.countyofriverside.us/arcgis_mapping/rest/services/OpenData/General/MapServer/280/query";
+    const params = new URLSearchParams({
+      geometry: `${lon},${lat}`,
+      geometryType: "esriGeometryPoint",
+      inSR: "4326",
+      spatialRel: "esriSpatialRelIntersects",
+      outFields: "APN,CASE_ID,CASE_DESCR,CASE_TYPE,CASE_WORK_CLASS,CASE_STATUS,APPLIED_DATE,APPROVED_DATE,COMPLETED_DATE",
+      returnGeometry: "false",
+      resultRecordCount: "20",
+      f: "json",
+    });
+    const res = await fetchJSON(`${baseUrl}?${params}`, {}, 12000);
+    if (res.statusCode !== 200 || !res.data?.features) return { status: "failed", statusCode: res.statusCode };
+    const features = res.data.features;
+    if (!features.length) {
+      // Unincorporated Riverside County parcel with no permits, or incorporated city (no data in this layer)
+      return { status: "success", data: { source: "rivco_arcgis", jurisdiction: "unincorporated", permits: [], note: "No permits on file in Riverside County public layer. Incorporated cities require city-level lookup." } };
+    }
+    const apn = features[0]?.attributes?.APN || null;
+    const permits = features.map(f => {
+      const a = f.attributes;
+      const appliedMs = a.APPLIED_DATE ? Number(a.APPLIED_DATE) : null;
+      const category = classifyPermit(a.CASE_TYPE, a.CASE_WORK_CLASS, a.CASE_DESCR);
+      return {
+        caseId:    a.CASE_ID     || null,
+        type:      a.CASE_TYPE   || null,
+        workClass: a.CASE_WORK_CLASS || null,
+        description: a.CASE_DESCR || null,
+        status:    a.CASE_STATUS || null,
+        appliedMs,
+        appliedDate: appliedMs ? new Date(appliedMs).toISOString().slice(0, 10) : null,
+        approvedDate: a.APPROVED_DATE ? new Date(Number(a.APPROVED_DATE)).toISOString().slice(0, 10) : null,
+        completedDate: a.COMPLETED_DATE ? new Date(Number(a.COMPLETED_DATE)).toISOString().slice(0, 10) : null,
+        category,
+      };
+    });
+    const valAdj = permitValueAdjustment(permits);
+    return {
+      status: "success",
+      data: {
+        source:        "rivco_arcgis",
+        jurisdiction:  "riverside_county",
+        apn,
+        permits,
+        ...valAdj,
+      },
+      raw: { featureCount: features.length },
+    };
+  } catch (e) {
+    return { status: "failed", error: e.message };
+  }
+}
+
 async function fetchFBICrime(stateAbbr) {
   const key = process.env.FBI_CRIME_API_KEY;
   if (!key) return { status: "unavailable", reason: "FBI_CRIME_API_KEY not set" };
@@ -554,7 +651,7 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
 
   // Fire all API calls in parallel — Promise.allSettled never rejects
   const [
-    censusR, fredR, hudR, femaR, epaR, usgsR, airNowR, walkR, osmR, fccR, blsR, crimeR,
+    censusR, fredR, hudR, femaR, epaR, usgsR, airNowR, walkR, osmR, fccR, blsR, crimeR, permitsR,
   ] = await Promise.allSettled([
     fetchCensusACS(zip),
     fetchFRED(),
@@ -568,6 +665,7 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
     fetchFCCBlock(latN, lonN),
     fetchBLSUnemployment(state),
     fetchFBICrime(state),
+    fetchRivcoPermits(latN, lonN),
   ]);
 
   // Unwrap — if the promise itself rejected, treat as failed
@@ -584,11 +682,34 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
   const fcc     = unwrap(fccR);
   const bls     = unwrap(blsR);
   const crime   = unwrap(crimeR);
+  const permits = unwrap(permitsR);
 
-  const allSources = { census, fred, hud, fema_flood_v3: fema, epa_ejscreen: epa, usgs_seismic: usgs, airnow: airNow, walk_score: walk, osm_amenities: osm, fcc_broadband: fcc, bls_unemployment: bls, fbi_crime: crime };
+  const allSources = { census, fred, hud, fema_flood_v3: fema, epa_ejscreen: epa, usgs_seismic: usgs, airnow: airNow, walk_score: walk, osm_amenities: osm, fcc_broadband: fcc, bls_unemployment: bls, fbi_crime: crime, rivco_permits: permits };
 
   // Persist all raw responses for our database-building
   await storeDataSources(reportId, allSources);
+
+  // Write Riverside County permits to permit_registry (fire-and-forget)
+  if (reportId && permits?.status === "success" && Array.isArray(permits.data?.permits) && permits.data.permits.length > 0) {
+    const permitInserts = permits.data.permits.map(p => db.insert("permit_registry", {
+      report_id:       reportId,
+      address:         address || null,
+      city:            city || null,
+      state:           state || null,
+      zip:             zip || null,
+      permit_number:   p.caseId || null,
+      permit_type:     p.type || p.category || null,
+      permit_category: p.category || "general",
+      description:     p.description || null,
+      issued_date:     p.appliedDate || null,
+      status:          p.status || "unknown",
+      estimated_value: null,
+      jurisdiction:    "riverside_county",
+      source:          "rivco_arcgis",
+      raw_data:        p,
+    }).catch(() => {}));
+    Promise.all(permitInserts).catch(() => {});
+  }
 
   // Compute weighted category scores
   const locScore     = scoreLocation(osm, walk);
@@ -690,6 +811,38 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
       laborMarket:      bls?.status  === "success" ? bls.data  : null,
       nationalHousing:  fred?.status === "success" ? { hpiYoyPct: fred.data.nationalHPIYoyPct, mortgage30YrRate: fred.data.mortgage30YrRate } : null,
     },
+
+    // ── Permit History (Riverside County public layer + auto-detected DNA features) ──
+    permitHistory: (() => {
+      const pd = permits?.status === "success" ? permits.data : null;
+      if (!pd) {
+        return {
+          _confidence: 0,
+          _interpretation: "Permit data unavailable for this parcel. Riverside County public layer covers unincorporated areas; city-level permits (Palm Springs, Palm Desert, etc.) require BuildZoom or Shovels.ai integration.",
+          permits: [],
+          autoDetectedFeatures: {},
+        };
+      }
+      const hasList = Array.isArray(pd.permits) && pd.permits.length > 0;
+      const interp = hasList
+        ? `${pd.totalPermits} permit(s) on file (${pd.recentPermits} in past 5 years). ${pd.fullyRemodeled ? "Property appears fully remodeled based on permit history." : ""} ${pd.recentPool ? "Pool permit detected." : ""} ${pd.recentAddition ? "Addition/ADU permit detected." : ""}`.trim()
+        : `No permits found in Riverside County public layer. ${pd.note || ""}`.trim();
+      return {
+        _confidence: hasList ? 80 : 10,
+        _interpretation: interp,
+        source: pd.source || "rivco_arcgis",
+        apn: pd.apn || null,
+        permits: pd.permits || [],
+        totalPermits: pd.totalPermits || 0,
+        recentPermits: pd.recentPermits || 0,
+        autoDetectedFeatures: {
+          fully_remodeled: pd.fullyRemodeled || false,
+          pool:            pd.recentPool || false,
+          addition:        pd.recentAddition || false,
+        },
+        estimatedPermitValuePct: pd.estimatedValuePct || 0,
+      };
+    })(),
 
     // ── Source status map (for UI display) ──
     sourceStatuses: Object.fromEntries(
