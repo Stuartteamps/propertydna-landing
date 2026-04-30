@@ -1,20 +1,17 @@
 /**
- * PropertyDNA — Coachella Valley Property Indexer
+ * PropertyDNA — Riverside County Full Property Indexer
  *
  * Queries Riverside County Assessor CREST tables (public ArcGIS REST, no key needed)
- * to build our sovereign property database for all ~150k Coachella Valley parcels.
+ * to build our sovereign property database for ALL ~700k Riverside County parcels.
  *
  * Works with EXISTING Supabase schema (migrations 001-009):
  *   - property_master  → core columns (apn, address, beds, baths, sqft, year_built, etc.)
  *   - property_history → full assessor data + DNA scores as JSONB event
  *   - kpi_events       → progress tracking (no new tables needed)
  *
- * City order: Palm Springs → Rancho Mirage → Indian Wells → La Quinta →
- *             Palm Desert → Cathedral City → Desert Hot Springs → Indio → Coachella
- *
  * POST /.netlify/functions/index-properties
  * Headers: x-internal-key: $INTERNAL_API_KEY
- * Body: { city?: string, batchSize?: number, dryRun?: boolean, resetCity?: boolean }
+ * Body: { city?: string, batchSize?: number, dryRun?: boolean, offset?: number }
  */
 
 const https = require("https");
@@ -29,17 +26,66 @@ const CORS = {
   "Access-Control-Allow-Headers": "Content-Type, x-internal-key",
 };
 
+// All Riverside County cities in processing order.
+// Coachella Valley done first, then inland cities, then western Riverside.
 const CITY_QUEUE = [
-  "PALM SPRINGS",
-  "RANCHO MIRAGE",
-  "INDIAN WELLS",
-  "LA QUINTA",
-  "PALM DESERT",
-  "CATHEDRAL CITY",
-  "DESERT HOT SPRINGS",
-  "INDIO",
-  "COACHELLA",
+  // Coachella Valley (completed)
+  "PALM SPRINGS", "RANCHO MIRAGE", "INDIAN WELLS", "LA QUINTA",
+  "PALM DESERT", "CATHEDRAL CITY", "DESERT HOT SPRINGS", "INDIO", "COACHELLA",
+  // Coachella Valley adjacent
+  "CABAZON", "THERMAL", "MECCA", "NORTH SHORE", "BERMUDA DUNES",
+  "THOUSAND PALMS", "SKY VALLEY", "WHITEWATER", "NORTH PALM SPRINGS",
+  // Desert communities
+  "BLYTHE", "DESERT CENTER", "RIPLEY",
+  // Mountain / rural
+  "IDYLLWILD", "MOUNTAIN CENTER", "ANZA", "AGUANGA",
+  // Pass area
+  "BANNING", "BEAUMONT", "CHERRY VALLEY", "CALIMESA", "YUCAIPA",
+  // San Jacinto Valley
+  "HEMET", "SAN JACINTO",
+  // Southwest Riverside
+  "TEMECULA", "MURRIETA", "MENIFEE", "WILDOMAR", "LAKE ELSINORE",
+  "CANYON LAKE", "QUAIL VALLEY",
+  // Inland communities
+  "PERRIS", "SUN CITY", "ROMOLAND", "HOMELAND", "NUEVO", "MIRA LOMA", "LAKEVIEW",
+  // Northwest Riverside / Corona area
+  "NORCO", "EASTVALE", "JURUPA VALLEY",
+  // Moreno Valley / Riverside city
+  "MORENO VALLEY", "RIVERSIDE",
+  // Corona / other
+  "CORONA", "LAKE MATTHEWS",
 ];
+
+// City name aliases — CREST has many typos/variations in the CITY field.
+// Query uses IN clause covering all known spellings.
+const CITY_ALIASES = {
+  "BANNING":           ["BANNING", "BANNINB", "BANNING CA"],
+  "BEAUMONT":          ["BEAUMONT", "BAEUMONT", "BEUAMONT", "BEAUMONT1"],
+  "CALIMESA":          ["CALIMESA", "CALIMES", "CALIMESSA"],
+  "CATHEDRAL CITY":    ["CATHEDRAL CITY", "CATHEDAL CITY", "CATHEDRAL", "CAT", "CATHEDRAL CTIY"],
+  "DESERT HOT SPRINGS":["DESERT HOT SPRINGS","DESERT  HOT SPRINGS","DESERT HOT PRINGS",
+                         "DESERT HOT SPRING","DESERT HOT SPRINGA","DESERT HOT SPRINGSCA",
+                         "DESERT HOT SPRINIGS","DESERT HOT SRPINGS","DESERTHOT SPRINGS",
+                         "DESET HOT SPRINGS","DSRT HOT SPG","DSRT HOT SPGS","DC"],
+  "EASTVALE":          ["EASTVALE", "ESATVALE"],
+  "INDIAN WELLS":      ["INDIAN WELLS", "INDAIN WELLS", "INDIAN WELL", "INDAIN WELLS"],
+  "INDIO":             ["INDIO", "INDO"],
+  "JURUPA VALLEY":     ["JURUPA VALLEY", "JURUPA  VALLEY", "JURURPA VALLEY"],
+  "LA QUINTA":         ["LA QUINTA", "LA QUIJNTA", "LA QUIN", "LA QUITA", "LA QUNTA"],
+  "LAKE ELSINORE":     ["LAKE ELSINORE", "LAKE ELISNORE", "LAKE ESLINORE", "LAKES ELSINORE", "LAKE ELISNORE"],
+  "LAKE MATTHEWS":     ["LAKE MATTHEWS", "LAKE MATHEWS"],
+  "MENIFEE":           ["MENIFEE", "MEENIFEE", "MENFEE", "MENFIEE", "MENIFE", "MENIFFEE", "MENOFEE", "MNEIFE"],
+  "MORENO VALLEY":     ["MORENO VALLEY", "MORENO VALLE", "MORNEO VALLEY"],
+  "MOUNTAIN CENTER":   ["MOUNTAIN CENTER", "MTN CENTER"],
+  "MURRIETA":          ["MURRIETA", "MURIETA", "MURIETTA", "MURREITA", "MURRETA", "MURRIET", "NURRIETA"],
+  "PALM DESERT":       ["PALM DESERT", "PAL DESERT", "PLAM DESERT"],
+  "PALM SPRINGS":      ["PALM SPRINGS", "PALM  SPRINGS", "PALM SPINGS", "PALM SPRINS"],
+  "PERRIS":            ["PERRIS", "PARRIS", "PERR", "PERRS"],
+  "RANCHO MIRAGE":     ["RANCHO MIRAGE", "RANCHO  MIRAGE", "PANCHO MIRAGE"],
+  "SAN JACINTO":       ["SAN JACINTO", "SAN JACINT0", "SAN JACTINTO"],
+  "WHITEWATER":        ["WHITEWATER", "WHITE WATER"],
+  "AGUANGA":           ["AGUANGA", "AGUANGUA"],
+};
 
 const RESIDENTIAL_CODES = [
   "Single Family Dwelling", "SFD with Secondary Unit(s)", "Condo or PUD",
@@ -99,7 +145,11 @@ async function arcgisCount(where) {
 
 function residentialWhere(city) {
   const cc = RESIDENTIAL_CODES.map(c => `CLASS_CODE='${c.replace(/'/g, "''")}'`).join(" OR ");
-  return `CITY='${city}' AND (${cc})`;
+  const aliases = CITY_ALIASES[city] || [city];
+  const cityClause = aliases.length === 1
+    ? `CITY='${aliases[0].replace(/'/g, "''")}'`
+    : `CITY IN (${aliases.map(a => `'${a.replace(/'/g, "''")}'`).join(",")})`;
+  return `${cityClause} AND (${cc})`;
 }
 
 async function fetchGeneralBatch(city, offset, size) {
