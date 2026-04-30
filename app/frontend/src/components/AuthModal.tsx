@@ -98,16 +98,35 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
       setTimeout(() => document.getElementById('form')?.scrollIntoView({ behavior: 'smooth' }), 100);
       return;
     }
+    const checkoutEmail = (user?.email || email).trim().toLowerCase();
+    if (!checkoutEmail || !checkoutEmail.includes('@')) {
+      setErrorMsg('Enter your email address to continue to checkout.');
+      return;
+    }
     setCheckout(plan.id);
+    setErrorMsg('');
     try {
       const res = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user?.email || email, fullName: displayName, address: '', mode: plan.mode }),
+        body: JSON.stringify({
+          email: checkoutEmail,
+          fullName: displayName || '',
+          address: 'subscription-only',
+          mode: plan.mode,
+        }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch { setCheckout(null); }
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setErrorMsg(data.error || 'Checkout unavailable — please try again.');
+        setCheckout(null);
+      }
+    } catch {
+      setErrorMsg('Network error — please try again.');
+      setCheckout(null);
+    }
   }
 
   const btnBase: React.CSSProperties = {
@@ -295,10 +314,31 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
         {/* ── PRICING ── */}
         {view === 'pricing' && (
           <div style={{ padding: 'clamp(32px,4vw,48px)' }}>
-            {isSignedIn && (
+            {isSignedIn ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
                 {avatarUrl && <img src={avatarUrl} alt="" style={{ width: 30, height: 30, borderRadius: '50%' }} />}
                 <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252' }}>Signed in as {user?.email}</div>
+              </div>
+            ) : (
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252', display: 'block', marginBottom: 8 }}>
+                  Your Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  style={{ width: '100%', fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300, color: '#F0EBE0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', padding: '11px 14px', outline: 'none', boxSizing: 'border-box' }}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'rgba(201,168,76,0.5)')}
+                  onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
+                />
+              </div>
+            )}
+            {errorMsg && (
+              <div style={{ background: 'rgba(185,82,69,0.12)', border: '1px solid rgba(185,82,69,0.3)', padding: '10px 14px', marginBottom: 16, fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#E8897B', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                <span>{errorMsg}</span>
+                <button onClick={clearError} style={{ background: 'none', border: 'none', color: '#E8897B', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
               </div>
             )}
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#C9A84C', marginBottom: 8 }}>Choose Your Plan</div>

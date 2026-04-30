@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
+import PricingModal from '@/components/PricingModal';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
 import { useAuth } from '@/lib/auth';
 
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const [error, setError]             = useState('');
   const [modalOpen, setModalOpen]     = useState(false);
   const [modalTab, setModalTab]       = useState<'signin' | 'pricing'>('signin');
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
   const avatarUrl   = user?.user_metadata?.avatar_url;
@@ -79,9 +81,10 @@ export default function Dashboard() {
       <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
         <Nav
           onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
-          onRequestAccessClick={() => { setModalTab('pricing'); setModalOpen(true); }}
+          onRequestAccessClick={() => setPricingOpen(true)}
         />
         <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
         <section style={{ padding: 'clamp(120px,14vw,180px) clamp(24px,6vw,80px) 80px', maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: '#C9A84C', marginBottom: 16 }}>Dashboard</div>
           <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 300, color: '#F0EBE0', marginBottom: 16, lineHeight: 1.1 }}>
@@ -124,9 +127,10 @@ export default function Dashboard() {
     <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
       <Nav
         onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
-        onRequestAccessClick={() => { setModalTab('pricing'); setModalOpen(true); }}
+        onRequestAccessClick={() => setPricingOpen(true)}
       />
       <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       <section style={{ padding: 'clamp(100px,12vw,140px) clamp(24px,6vw,80px) 80px', maxWidth: 900, margin: '0 auto' }}>
@@ -174,7 +178,7 @@ export default function Dashboard() {
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             {!isSubscribed && (
-              <button onClick={() => { setModalTab('pricing'); setModalOpen(true); }} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '10px 18px', cursor: 'pointer' }}>
+              <button onClick={() => setPricingOpen(true)} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '10px 18px', cursor: 'pointer' }}>
                 Upgrade Pro →
               </button>
             )}
@@ -244,7 +248,7 @@ export default function Dashboard() {
                   New Report →
                 </a>
                 {!isSubscribed && (
-                  <button onClick={() => { setModalTab('pricing'); setModalOpen(true); }} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#F0EBE0', background: 'none', border: '1px solid rgba(255,255,255,0.15)', padding: '14px 24px', cursor: 'pointer' }}>
+                  <button onClick={() => setPricingOpen(true)} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#F0EBE0', background: 'none', border: '1px solid rgba(255,255,255,0.15)', padding: '14px 24px', cursor: 'pointer' }}>
                     Unlimited $49/mo
                   </button>
                 )}

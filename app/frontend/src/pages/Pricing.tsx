@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
-import AuthModal from '@/components/AuthModal';
+import PricingModal from '@/components/PricingModal';
 import FadeUp from '@/components/FadeUp';
 
 const plans = [
@@ -76,15 +76,12 @@ const plans = [
 ];
 
 export default function Pricing() {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleCta = (action: 'analyze' | 'subscribe') => {
-    if (action === 'analyze') {
-      navigate('/analyze');
-    } else {
-      setModalOpen(true);
-    }
+    if (action === 'analyze') navigate('/analyze');
+    else setPricingOpen(true);
   };
 
   return (
@@ -294,11 +291,7 @@ export default function Pricing() {
         </div>
       </section>
 
-      <AuthModal
-        isOpen={modalOpen}
-        initialView="pricing"
-        onClose={() => setModalOpen(false)}
-      />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
 
       <Footer />
     </div>

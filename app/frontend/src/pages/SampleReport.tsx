@@ -3,6 +3,7 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
 import AuthModal from '@/components/AuthModal';
+import PricingModal from '@/components/PricingModal';
 import PremiumPreviewCard from '@/components/PremiumPreviewCard';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
 import { Link } from 'react-router-dom';
@@ -10,6 +11,7 @@ import { isPremiumUser } from '@/lib/isPremiumUser';
 
 export default function SampleReport() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
   const [modalTab, setModalTab] = useState<'signin'|'pricing'>('signin');
   const premium = isPremiumUser();
   const openModal = (tab: 'signin'|'pricing' = 'pricing') => { setModalTab(tab); setModalOpen(true); };
@@ -17,9 +19,10 @@ export default function SampleReport() {
     <div className="bg-espresso text-canvas min-h-screen">
       <Nav
         onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
-        onRequestAccessClick={() => { setModalTab('pricing'); setModalOpen(true); }}
+        onRequestAccessClick={() => setPricingOpen(true)}
       />
       <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
 
       <section className="pt-32 md:pt-40 px-6 md:px-12 pb-12">
         <div className="max-w-5xl mx-auto">

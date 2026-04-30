@@ -3,6 +3,7 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
 import AuthModal from '@/components/AuthModal';
+import PricingModal from '@/components/PricingModal';
 import { Link } from 'react-router-dom';
 
 type ModalTab = 'signin' | 'pricing';
@@ -28,6 +29,7 @@ const timeline = [
 export default function About() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<ModalTab>('signin');
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   const openModal = (tab: ModalTab = 'signin') => {
     setModalTab(tab);
@@ -38,9 +40,10 @@ export default function About() {
     <div className="bg-espresso text-canvas min-h-screen">
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('pricing')}
+        onRequestAccessClick={() => setPricingOpen(true)}
       />
       <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
 
       {/* Hero */}
       <section

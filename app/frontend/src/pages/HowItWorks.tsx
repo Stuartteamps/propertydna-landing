@@ -3,6 +3,7 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
 import AuthModal from '@/components/AuthModal';
+import PricingModal from '@/components/PricingModal';
 import PremiumPreviewCard from '@/components/PremiumPreviewCard';
 import { Link } from 'react-router-dom';
 import { isPremiumUser } from '@/lib/isPremiumUser';
@@ -53,9 +54,10 @@ const integrations = [
 export default function HowItWorks() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<ModalTab>('signin');
+  const [pricingOpen, setPricingOpen] = useState(false);
   const premium = isPremiumUser();
 
-  const openModal = (tab: ModalTab = 'pricing') => {
+  const openModal = (tab: ModalTab = 'signin') => {
     setModalTab(tab);
     setModalOpen(true);
   };
@@ -64,9 +66,10 @@ export default function HowItWorks() {
     <div className="bg-espresso text-canvas min-h-screen">
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('pricing')}
+        onRequestAccessClick={() => setPricingOpen(true)}
       />
       <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
 
       {/* Hero */}
       <section className="pt-32 md:pt-40 px-6 md:px-12 pb-16">
@@ -220,7 +223,7 @@ export default function HowItWorks() {
                   <div className="font-sans text-[13px] font-light text-canvas/50 leading-[1.7]">{desc as string}</div>
                   {locked ? (
                     <button
-                      onClick={() => openModal('pricing')}
+                      onClick={() => setPricingOpen(true)}
                       style={{
                         fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
                         color: '#B89355', background: 'transparent', border: '1px solid rgba(184,147,85,0.35)',
@@ -268,7 +271,7 @@ export default function HowItWorks() {
               ctaLabel="Upgrade Access"
               isPremium={premium}
               revealPct={35}
-              onUpgrade={() => openModal('pricing')}
+              onUpgrade={() => setPricingOpen(true)}
               preview={
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 4, alignItems: 'flex-end', height: 80 }}>
                   {[65,70,62,78,80,75,82,88,79,84,90,87].map((h, i) => (

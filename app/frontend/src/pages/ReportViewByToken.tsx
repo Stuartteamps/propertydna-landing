@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
+import PricingModal from '@/components/PricingModal';
 import { computeDNAScore } from '@/lib/dnaScore';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -159,9 +160,10 @@ export default function ReportViewByToken() {
     <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
       <Nav
         onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
-        onRequestAccessClick={() => { setModalTab('pricing'); setModalOpen(true); }}
+        onRequestAccessClick={() => setPricingOpen(true)}
       />
       <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
 
       {/* Header */}
       <section style={{ background: '#111', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '100px 48px 48px' }}>
