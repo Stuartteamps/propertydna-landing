@@ -12,6 +12,9 @@
   directory = "../../netlify/functions"
   node_bundler = "esbuild"
 
+[functions."index-properties"]
+  timeout = 26
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

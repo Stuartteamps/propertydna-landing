@@ -224,63 +224,66 @@ async function getNextCity() {
   return null;
 }
 
-// ── Write to existing schema ──────────────────────────────────────────────────
+// ── Bulk write to existing schema (2 Supabase calls for entire batch) ─────────
 
-async function writeProperty(address, g, pc, ty, dna) {
-  const pin = g.PIN;
-  // property_master: use only columns from migration 009
-  const masterRow = {
-    apn:                pin,
+function buildMasterRow(address, g, pc, dna) {
+  return {
+    apn:                g.PIN,
     county_fips:        "06065",
     address,
     city:               g.CITY || null,
     state:              "CA",
     zip:                g.POSTAL_CD || null,
     property_type:      pc?.DESIGN_TYPE || g.CLASS_CODE || null,
-    beds:               pc?.BEDROOM_COUNT || null,
-    baths:              pc?.BATH_COUNT    || null,
-    sqft:               pc?.LIVING_AREA   || pc?.ACTUAL_AREA || null,
-    year_built:         pc?.YEAR_BUILT    || null,
+    beds:               pc?.BEDROOM_COUNT  || null,
+    baths:              pc?.BATH_COUNT     || null,
+    sqft:               pc?.LIVING_AREA    || pc?.ACTUAL_AREA || null,
+    year_built:         pc?.YEAR_BUILT     || null,
     tax_assessed_value: dna.assessorTotalValue || null,
     last_updated:       new Date().toISOString(),
   };
+}
 
-  await db.upsert("property_master", masterRow, "apn")
-    .catch(e => console.warn(`[index:pm] ${pin}: ${e.message}`));
-
-  // property_history: full assessor snapshot + proprietary DNA scores
-  const today = new Date().toISOString().slice(0, 10);
-  await db.insert("property_history", {
-    apn:        pin,
+function buildHistoryRow(address, g, pc, dna, today) {
+  return {
+    apn:        g.PIN,
     event_type: "assessment",
     event_date: today,
     source:     "rivco_assessor_crest",
     data: {
-      // Raw assessor fields
-      yearBuilt:       pc?.YEAR_BUILT       || null,
-      sqft:            pc?.LIVING_AREA      || null,
-      qualityCode:     pc?.QUALITY_CODE     || null,
-      designType:      pc?.DESIGN_TYPE      || null,
-      stories:         pc?.NUMBER_OF_STORIES || null,
-      hasFireplace:    pc?.HAS_FIREPLACE === "Y",
-      centralCooling:  pc?.CENTRAL_COOLING === "Y",
-      garageType:      pc?.GARAGE_TYPE     || null,
-      classCode:       g.CLASS_CODE        || null,
-      primeBaseYear:   g.PRIME_BASE_YEAR   || null,
-      postalCode:      g.POSTAL_CD         || null,
-      // Assessor values
-      landValue:       dna.assessorLandValue,
-      improvValue:     dna.assessorImprovValue,
-      totalValue:      dna.assessorTotalValue,
-      // Proprietary DNA scores
-      renovationRatio: dna.renovationRatio,
-      conditionScore:  dna.conditionScore,
-      reassessYear:    dna.reassessmentYear,
-      dataQuality:     dna.dataQuality,
-      // Auto-detected DNA features
+      address,
+      yearBuilt:        pc?.YEAR_BUILT        || null,
+      sqft:             pc?.LIVING_AREA        || null,
+      qualityCode:      pc?.QUALITY_CODE       || null,
+      designType:       pc?.DESIGN_TYPE        || null,
+      stories:          pc?.NUMBER_OF_STORIES  || null,
+      hasFireplace:     pc?.HAS_FIREPLACE === "Y",
+      centralCooling:   pc?.CENTRAL_COOLING === "Y",
+      garageType:       pc?.GARAGE_TYPE        || null,
+      classCode:        g.CLASS_CODE           || null,
+      primeBaseYear:    g.PRIME_BASE_YEAR      || null,
+      postalCode:       g.POSTAL_CD            || null,
+      landValue:        dna.assessorLandValue,
+      improvValue:      dna.assessorImprovValue,
+      totalValue:       dna.assessorTotalValue,
+      renovationRatio:  dna.renovationRatio,
+      conditionScore:   dna.conditionScore,
+      reassessYear:     dna.reassessmentYear,
+      dataQuality:      dna.dataQuality,
       detectedFeatures: dna.detectedFeatures,
     },
-  }).catch(() => {}); // ignore duplicate events (unique index on apn+type+date+source)
+  };
+}
+
+async function bulkWrite(masterRows, historyRows) {
+  const errors = [];
+  await Promise.all([
+    db.upsert("property_master", masterRows, "apn")
+      .catch(e => errors.push(`master: ${e.message.slice(0, 80)}`)),
+    db.insert("property_history", historyRows)
+      .catch(e => { /* duplicate events are expected — ignore */ }),
+  ]);
+  return errors;
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -351,35 +354,26 @@ exports.handler = async (event) => {
       fetchTaxYears(pins),
     ]);
 
-    // Process each property
-    let processed = 0, errors = 0;
-    const sample  = [];
+    // Build all rows in memory first, then bulk-write in 2 Supabase calls
+    const masterRows  = [];
+    const historyRows = [];
+    const sample      = [];
+    const today       = new Date().toISOString().slice(0, 10);
 
     for (const g of generalBatch) {
-      const pin = g.PIN;
-      if (!pin) continue;
-      const pc  = propChars[pin] || {};
-      const ty  = taxYears[pin]  || {};
+      if (!g.PIN) continue;
+      const pc   = propChars[g.PIN] || {};
+      const ty   = taxYears[g.PIN]  || {};
       const addr = buildAddress(g);
       if (!addr) continue;
 
       const dna = computeAssessorDNA(g, pc, ty);
-
-      if (!dryRun) {
-        try {
-          await writeProperty(addr, g, pc, ty, dna);
-          processed++;
-        } catch (e) {
-          errors++;
-          console.warn(`[index:write] ${pin}:`, e.message);
-        }
-      } else {
-        processed++;
-      }
+      masterRows.push(buildMasterRow(addr, g, pc, dna));
+      historyRows.push(buildHistoryRow(addr, g, pc, dna, today));
 
       if (sample.length < 3) {
         sample.push({
-          pin, address: addr, city: g.CITY,
+          pin: g.PIN, address: addr, city: g.CITY,
           yearBuilt: pc?.YEAR_BUILT, sqft: pc?.LIVING_AREA,
           renovRatio: dna.renovationRatio, condScore: dna.conditionScore,
           features: dna.detectedFeatures,
@@ -387,6 +381,13 @@ exports.handler = async (event) => {
       }
     }
 
+    let writeErrors = [];
+    if (!dryRun && masterRows.length > 0) {
+      writeErrors = await bulkWrite(masterRows, historyRows);
+    }
+
+    const processed = masterRows.length;
+    const errors    = writeErrors.length;
     const newOffset = offset + generalBatch.length;
     const cityDone  = generalBatch.length < runSize || newOffset >= total;
     const pct       = total > 0 ? Math.round((newOffset / total) * 100) : null;
