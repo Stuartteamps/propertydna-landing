@@ -338,12 +338,23 @@ exports.handler = async (event) => {
 
     // Fetch batch of general records
     const generalBatch = await fetchGeneralBatch(city, offset, runSize);
+
+    // Guard: only mark city done if we've actually reached the end (offset >= total),
+    // not on a transient empty response from ArcGIS outage.
     if (!generalBatch.length) {
-      await saveProgress(city, 0, total, true);
-      const nextIdx  = CITY_QUEUE.indexOf(city) + 1;
-      const nextCity = CITY_QUEUE[nextIdx] || null;
+      const trulyDone = total > 0 && offset >= total;
+      if (trulyDone) {
+        await saveProgress(city, 0, total, true);
+        const nextIdx  = CITY_QUEUE.indexOf(city) + 1;
+        const nextCity = CITY_QUEUE[nextIdx] || null;
+        return { statusCode: 200, headers: CORS,
+          body: JSON.stringify({ city, done: true, nextCity, total, dryRun }) };
+      }
+      // Empty batch but not at end = ArcGIS blip, return retry signal
       return { statusCode: 200, headers: CORS,
-        body: JSON.stringify({ city, done: true, nextCity, total, dryRun }) };
+        body: JSON.stringify({ city, offset, newOffset: offset, total, processed: 0, errors: 0,
+          cityDone: false, nextCity: city, dryRun, retryable: true,
+          message: `Empty batch at offset ${offset} — ArcGIS may be temporarily slow, retry` }) };
     }
 
     const pins = generalBatch.map(g => g.PIN).filter(Boolean);
