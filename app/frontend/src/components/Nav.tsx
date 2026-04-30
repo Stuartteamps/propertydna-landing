@@ -15,6 +15,7 @@ const navLinks = [
   { label: 'How It Works', href: '/how-it-works' },
   { label: 'Pricing',      href: '/pricing' },
   { label: 'Heat Maps',    href: '/market-heatmaps' },
+  { label: 'TerraGraph',   href: '/terragraph' },
   { label: 'About',        href: '/about' },
 ];
 
