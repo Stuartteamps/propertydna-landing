@@ -1,0 +1,257 @@
+{
+  "name": "PropertyDNA — Nightly Property Indexer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule_trigger",
+      "name": "Schedule: 2am Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://thepropertydna.com/.netlify/functions/index-properties",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-internal-key",
+              "value": "={{ $env.INTERNAL_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "batchSize",
+              "value": "200"
+            },
+            {
+              "name": "dryRun",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "index_batch_1",
+      "name": "Index Batch 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://thepropertydna.com/.netlify/functions/index-properties",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "x-internal-key", "value": "={{ $env.INTERNAL_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "batchSize", "value": "200" },
+            { "name": "dryRun", "value": "false" }
+          ]
+        },
+        "options": { "timeout": 30000 }
+      },
+      "id": "index_batch_2",
+      "name": "Index Batch 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://thepropertydna.com/.netlify/functions/index-properties",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "x-internal-key", "value": "={{ $env.INTERNAL_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "batchSize", "value": "200" },
+            { "name": "dryRun", "value": "false" }
+          ]
+        },
+        "options": { "timeout": 30000 }
+      },
+      "id": "index_batch_3",
+      "name": "Index Batch 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://thepropertydna.com/.netlify/functions/index-properties",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "x-internal-key", "value": "={{ $env.INTERNAL_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "batchSize", "value": "200" },
+            { "name": "dryRun", "value": "false" }
+          ]
+        },
+        "options": { "timeout": 30000 }
+      },
+      "id": "index_batch_4",
+      "name": "Index Batch 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://thepropertydna.com/.netlify/functions/index-properties",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "x-internal-key", "value": "={{ $env.INTERNAL_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "batchSize", "value": "200" },
+            { "name": "dryRun", "value": "false" }
+          ]
+        },
+        "options": { "timeout": 30000 }
+      },
+      "id": "index_batch_5",
+      "name": "Index Batch 5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1420, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check_all_done",
+              "leftValue": "={{ $json.allDone }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check_done",
+      "name": "All Cities Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1660, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://thepropertydna.com/.netlify/functions/send-report-email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "x-internal-key", "value": "={{ $env.INTERNAL_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "recipientEmail", "value": "stuartteamps@gmail.com" },
+            { "name": "recipientName", "value": "Dan" },
+            { "name": "propertyAddress", "value": "PropertyDNA System" },
+            { "name": "summary", "value": "All ~150k Coachella Valley properties have been indexed into property_master. The sovereignty layer is complete." }
+          ]
+        }
+      },
+      "id": "notify_done",
+      "name": "Notify: All Done",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1900, 200]
+    }
+  ],
+  "connections": {
+    "Schedule: 2am Daily": {
+      "main": [[{ "node": "Index Batch 1", "type": "main", "index": 0 }]]
+    },
+    "Index Batch 1": {
+      "main": [[{ "node": "Index Batch 2", "type": "main", "index": 0 }]]
+    },
+    "Index Batch 2": {
+      "main": [[{ "node": "Index Batch 3", "type": "main", "index": 0 }]]
+    },
+    "Index Batch 3": {
+      "main": [[{ "node": "Index Batch 4", "type": "main", "index": 0 }]]
+    },
+    "Index Batch 4": {
+      "main": [[{ "node": "Index Batch 5", "type": "main", "index": 0 }]]
+    },
+    "Index Batch 5": {
+      "main": [[{ "node": "All Cities Done?", "type": "main", "index": 0 }]]
+    },
+    "All Cities Done?": {
+      "main": [
+        [{ "node": "Notify: All Done", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "_instructions": {
+    "import": "n8n → Workflows → Import from file → select this JSON",
+    "env_required": "INTERNAL_API_KEY must be set in n8n Settings → Variables",
+    "note": "Runs 5 batches × 200 properties = 1,000 properties per night. Automatically advances city by city (Palm Springs → Rancho Mirage → Indian Wells → La Quinta → Palm Desert → Cathedral City → Desert Hot Springs → Indio → Coachella). Sends email when all ~150k properties are indexed.",
+    "to_increase_throughput": "Add more 'Index Batch N' nodes chained sequentially before the IF check"
+  }
+}
