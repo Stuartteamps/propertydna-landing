@@ -17,7 +17,7 @@ function apiGet(hostname, path, headers) {
 }
 
 function rentcast(path) {
-  const key = process.env.RENTCAST_API_KEY || '6f422758923c4c3392272eb71c035db6';
+  const key = process.env.RENTCAST_API_KEY;
   return apiGet('api.rentcast.io', path, { 'X-Api-Key': key, Accept: 'application/json' });
 }
 
