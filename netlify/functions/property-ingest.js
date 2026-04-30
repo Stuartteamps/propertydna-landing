@@ -116,7 +116,7 @@ function estimatePermitValueAdd(category, rawValue) {
 
 // ── Main ingest function ─────────────────────────────────────────────────────
 
-async function ingestProperty({ reportData, address, unit, city, state, zip, reportId, features, dnaAdjusted }) {
+async function ingestProperty({ reportData, address, unit, city, state, zip, reportId, features, dnaAdjusted, email, apn }) {
   if (!reportData || !address) return { skipped: true, reason: "no reportData or address" };
 
   const n = reportData.normalized ?? {};
@@ -139,6 +139,7 @@ async function ingestProperty({ reportData, address, unit, city, state, zip, rep
     city:                      city || null,
     state:                     state || null,
     zip:                       zip || null,
+    apn:                       apn || prop.apn || null,
     property_type_normalized:  prop.propertyType || null,
     beds:                      parseNum(prop.beds),
     baths:                     parseNum(prop.baths),

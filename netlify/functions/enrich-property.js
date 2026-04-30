@@ -79,13 +79,11 @@ function postJSON(hostname, path, bodyStr, headers = {}, timeoutMs = 20000) {
 // ── Individual API fetchers ───────────────────────────────────────────────────
 
 async function fetchCensusACS(zip) {
-  const key = process.env.CENSUS_API_KEY;
-  if (!key) return { status: "unavailable", reason: "CENSUS_API_KEY not set" };
+  const key = process.env.CENSUS_API_KEY || ""; // Census works without a key at rate limits
+  if (!zip) return { status: "unavailable", reason: "no zip provided" };
   try {
-    // B19013_001E=median household income, B25077_001E=median home value,
-    // B01003_001E=total population, B25003_002E=owner occupied, B25003_003E=renter,
-    // B25064_001E=median gross rent, B15003_022E=bachelor's degree holders
-    const url = `https://api.census.gov/data/2022/acs/acs5?get=B19013_001E,B25077_001E,B01003_001E,B25003_002E,B25003_003E,B25064_001E,B15003_022E&for=zip+code+tabulation+area:${zip}&key=${key}`;
+    const keyParam = key ? `&key=${key}` : "";
+    const url = `https://api.census.gov/data/2022/acs/acs5?get=B19013_001E,B25077_001E,B01003_001E,B25003_002E,B25003_003E,B25064_001E,B15003_022E&for=zip+code+tabulation+area:${zip}${keyParam}`;
     const res = await fetchJSON(url);
     if (res.statusCode !== 200 || !Array.isArray(res.data) || res.data.length < 2) {
       return { status: "failed", statusCode: res.statusCode };
@@ -880,7 +878,7 @@ async function storeDataSources(reportId, sources) {
 
 // ── Main enrichment function ──────────────────────────────────────────────────
 
-async function enrichProperty({ lat, lon, zip, address, city, state, reportId, propertyId, existingValue, existingRent }) {
+async function enrichProperty({ lat, lon, zip, address, city, state, reportId, propertyId, existingValue, existingRent, apn }) {
   if (!lat || !lon) return { error: "lat and lon required" };
 
   const latN = Number(lat);
@@ -973,6 +971,24 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
       raw_data:        p,
     }).catch(() => {}));
     Promise.all(permitInserts).catch(() => {});
+  }
+
+  // If Rivco permits returned an APN and property_master doesn't have it yet,
+  // write it so downstream ingest can cross-reference. This covers the case where
+  // rentcastEnrich hasn't run yet or RENTCAST_API_KEY is not set.
+  const rivcoApn = permits?.status === "success" ? (permits.data?.apn || null) : null;
+  const effectiveApn = apn || rivcoApn;
+  if (effectiveApn && address) {
+    db.upsert("property_master", {
+      apn:           effectiveApn,
+      address_line1: address,
+      city:          city || null,
+      state:         state || null,
+      zip:           zip || null,
+      lat:           Number(lat) || null,
+      lng:           Number(lon) || null,
+      last_updated:  new Date().toISOString(),
+    }, "apn").catch(() => {});
   }
 
   // Compute weighted category scores
@@ -1254,13 +1270,13 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Invalid JSON" }) };
   }
 
-  const { lat, lon, zip, address, city, state, reportId, propertyId, existingValue, existingRent } = body;
+  const { lat, lon, zip, address, city, state, reportId, propertyId, existingValue, existingRent, apn } = body;
   if (!lat || !lon) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "lat and lon required" }) };
   }
 
   try {
-    const result = await enrichProperty({ lat, lon, zip, address, city, state, reportId, propertyId, existingValue, existingRent });
+    const result = await enrichProperty({ lat, lon, zip, address, city, state, reportId, propertyId, existingValue, existingRent, apn });
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ enriched: true, ...result }) };
   } catch (err) {
     console.error("[enrich-property]", err.message);

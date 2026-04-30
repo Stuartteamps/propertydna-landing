@@ -60,8 +60,13 @@
            reportData: {{ $json.reportObject }},
            status: "completed",
            features: {{ $json.detectedFeatures }},   ← DNA adjustment flags
-           n8nRequestId: {{ $execution.id }}
+           n8nRequestId: {{ $execution.id }},
+           apn: {{ $('RentCast Property').item.json.assessorID || '' }}   ← ★ APN PRIMARY KEY
          }
+         ★ IMPORTANT: The apn field passes the APN extracted by node [3] RentCast Property
+           directly to save-report. This eliminates a second RentCast API call and ensures
+           APN is immediately available for property_master and property_history writes.
+           assessorID is the field name in the RentCast /v1/properties response.
          Response includes: { viewToken, viewUrl, dnaAdjusted }
       ↓
 [15] IF: Email Present?

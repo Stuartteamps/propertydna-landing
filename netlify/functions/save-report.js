@@ -252,19 +252,33 @@ exports.handler = async (event) => {
       const rcSqft     = propN.sqft     ? Number(propN.sqft)     : null;
       const rcType     = propN.propertyType || body.propertyType || null;
 
-      // STEP 1 — RentCast deep enrichment: APN lookup + rental/sale comps +
-      // assessment history + market data + rental estimate range.
-      // Runs first so APN is written to property_master before ingest starts.
-      rentcastEnrich({
-        address, city: enrichCity, state: enrichState, zip: enrichZip,
-        reportId,
-        beds: rcBeds, baths: rcBaths, sqft: rcSqft, propertyType: rcType,
-      }).then(r => {
-        if (r?.apn) db.kpi("rentcast_enriched", normalizedEmail, { address, apn: r.apn, sources: r.sources });
-      }).catch(e => console.warn("[save-report:rentcast]", e.message));
+      // STEP 1 — RentCast deep enrichment: APN lookup (awaited with 20s timeout)
+      // We await just long enough to get the APN so all downstream writes use it.
+      // If RentCast is slow or the key is not set, apn stays null and we proceed anyway.
+      let apn = body.apn || null; // n8n may pass it directly if available
+      if (!apn && process.env.RENTCAST_API_KEY) {
+        const rcResult = await Promise.race([
+          rentcastEnrich({
+            address, city: enrichCity, state: enrichState, zip: enrichZip,
+            reportId,
+            beds: rcBeds, baths: rcBaths, sqft: rcSqft, propertyType: rcType,
+          }),
+          new Promise(res => setTimeout(() => res({ apn: null, status: "timeout" }), 20000)),
+        ]).catch(() => ({ apn: null }));
+        apn = rcResult?.apn || null;
+        if (apn) {
+          db.kpi("rentcast_enriched", normalizedEmail, { address, apn, sources: rcResult?.sources });
+        }
+      }
 
-      // STEP 2 — v3 multi-source enrichment (13→18 APIs): FEMA, Census, USGS,
-      // EPA, AirNow, HUD, FRED, BLS, FBI, OSM, Walk Score, elevation, solar, broadband.
+      // Write APN to property_reports immediately so all downstream lookups can use it
+      if (apn && reportId) {
+        db.from("property_reports").eq("id", reportId).update({ apn }).catch(() => {});
+      }
+
+      // STEP 2 — v3 multi-source enrichment (18 APIs): FEMA, Census (keyless), USGS,
+      // EPA, AirNow, HUD, FRED, BLS, FBI, OSM, Walk Score, elevation, solar, broadband,
+      // earthquake events, road/rail/water proximity, NOAA weather.
       if (lat && lon && !isNaN(lat) && !isNaN(lon) && reportId) {
         enrichProperty({
           lat, lon, zip: enrichZip, address, city: enrichCity, state: enrichState,
@@ -272,6 +286,7 @@ exports.handler = async (event) => {
           propertyId: null, // updated by ingestProperty below
           existingValue,
           existingRent,
+          apn,
         }).catch(e => console.warn("[save-report:enrich]", e.message));
       }
 
@@ -287,6 +302,7 @@ exports.handler = async (event) => {
         features,
         dnaAdjusted,
         email:       normalizedEmail,
+        apn,
       }).then(result => {
         if (result.propertyId) {
           db.kpi("property_mapped", normalizedEmail, {
@@ -294,6 +310,7 @@ exports.handler = async (event) => {
             propertyId:   result.propertyId,
             permits:      result.permitsIngested,
             desirability: result.desirabilityScore,
+            apn:          apn || null,
           });
         }
       }).catch(e => console.warn("[save-report:ingest]", e.message));
