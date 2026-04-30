@@ -122,9 +122,9 @@ export default function ReportViewByToken() {
   };
 
   const ratingColor: Record<string, string> = {
-    'A+': '#2D6A4F', A: '#2D6A4F', 'A-': '#40916C',
+    'A+': '#2D9142', A: '#2D9142', 'A-': '#52B788',
     'B+': '#74C69D', B: '#95D5B2', 'B-': '#B7E4C7',
-    'C+': '#C9A96E', C: '#A07850',
+    'C+': '#C9A96E', C: '#B85245',
   };
 
   if (loading) return (
@@ -223,7 +223,7 @@ export default function ReportViewByToken() {
         {dna.wouldWeBuyIt && (
           <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.2)', padding: 28, marginBottom: 40 }}>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252', marginBottom: 8 }}>Would We Buy It?</div>
-            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, color: dna.wouldWeBuyIt === 'Yes' ? '#2D6A4F' : dna.wouldWeBuyIt === 'Maybe' ? '#C9A84C' : '#A07850', marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, color: dna.wouldWeBuyIt === 'Yes' ? '#2D9142' : dna.wouldWeBuyIt === 'Maybe' ? '#C9A84C' : '#B85245', marginBottom: 12 }}>
               {dna.wouldWeBuyIt}
             </div>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300, color: '#F0EBE0', lineHeight: 1.8 }}>
@@ -283,7 +283,7 @@ export default function ReportViewByToken() {
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {dnaAdj.drivers.map((d: any) => (
                       <div key={d.key} style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)', padding: '6px 12px' }}>
-                        <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: d.pct > 0 ? '#74C69D' : '#A07850' }}>
+                        <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: d.pct > 0 ? '#74C69D' : '#B85245' }}>
                           {d.pct > 0 ? '+' : ''}{d.pct}%
                         </span>
                         <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginLeft: 6 }}>
@@ -374,7 +374,7 @@ export default function ReportViewByToken() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
               <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: 24 }}>
                 <Stat label="FEMA Flood Zone" value={`Zone ${flood.zone}`} />
-                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: flood.highRisk ? '#A07850' : '#2D6A4F' }}>{flood.label}</div>
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: flood.highRisk ? '#B85245' : '#2D9142' }}>{flood.label}</div>
               </div>
               <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: 24 }}>
                 <Stat label="Special Flood Hazard Area" value={flood.highRisk ? 'Yes — SFHA' : 'No'} />

@@ -26,6 +26,10 @@ interface FormState {
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
+interface PropertyFormProps {
+  initialAddress?: string;
+}
+
 const ROLES: Role[] = ['Buyer', 'Seller', 'Agent', 'Investor', 'Lender'];
 
 const inputStyle: React.CSSProperties = {
@@ -85,10 +89,10 @@ async function goToCheckout(formData: FormState, mode: 'free' | 'per_report' | '
   return data;
 }
 
-const PropertyForm: React.FC = () => {
+const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
   const [form, setForm] = useState<FormState>({
     fullName: '', email: '', phone: '', role: 'Buyer',
-    address: '', unit: '', city: '', state: '', zip: '',
+    address: initialAddress, unit: '', city: '', state: '', zip: '',
     propertyType: '', notes: '',
     idxUrl: '', mlsNumber: '', listingAgent: '', listingBrokerage: '',
   });
@@ -188,7 +192,7 @@ const PropertyForm: React.FC = () => {
         {/* Phone */}
         <div style={fieldStyle}>
           <label style={labelStyle}>Phone (optional)</label>
-          <input style={inputStyle} type="tel" value={form.phone} onChange={set('phone')} placeholder="+1 (760) 555-0100" autoComplete="tel" />
+          <input style={inputStyle} type="tel" value={form.phone} onChange={set('phone')} placeholder="+1 (555) 000-0000" autoComplete="tel" />
         </div>
 
         {/* Role */}
@@ -277,7 +281,7 @@ const PropertyForm: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
           <div style={fieldStyle}>
             <label style={labelStyle}>City</label>
-            <input style={inputStyle} type="text" value={form.city} onChange={set('city')} placeholder="Palm Springs" />
+            <input style={inputStyle} type="text" value={form.city} onChange={set('city')} placeholder="City" />
           </div>
           <div style={fieldStyle}>
             <label style={labelStyle}>State</label>
@@ -288,7 +292,7 @@ const PropertyForm: React.FC = () => {
         {/* ZIP */}
         <div style={fieldStyle}>
           <label style={labelStyle}>ZIP Code</label>
-          <input style={inputStyle} type="text" value={form.zip} onChange={set('zip')} placeholder="92262" maxLength={10} />
+          <input style={inputStyle} type="text" value={form.zip} onChange={set('zip')} placeholder="ZIP" maxLength={10} />
         </div>
 
         {/* Notes */}

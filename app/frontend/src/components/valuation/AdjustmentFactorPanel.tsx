@@ -23,7 +23,7 @@ function AdjRow({ label, value, adjustment, source, confidence }: {
 }) {
   const isPositive = adjustment?.startsWith('+');
   const isNegative = adjustment?.startsWith('-');
-  const adjColor = isPositive ? '#2D6A4F' : isNegative ? '#A07850' : '#6B6252';
+  const adjColor = isPositive ? '#2D9142' : isNegative ? '#B85245' : '#6B6252';
 
   return (
     <tr>

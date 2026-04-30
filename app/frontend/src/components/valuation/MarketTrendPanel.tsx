@@ -42,7 +42,7 @@ const fmt = (v: number | null | undefined, prefix = '', suffix = '') =>
 
 function scoreBar(score: number | null) {
   const pct = score != null ? Math.min(100, Math.max(0, score)) : 0;
-  const color = pct >= 70 ? '#2D6A4F' : pct >= 45 ? '#C9A84C' : '#A07850';
+  const color = pct >= 70 ? '#2D9142' : pct >= 45 ? '#C9A84C' : '#B85245';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden' }}>

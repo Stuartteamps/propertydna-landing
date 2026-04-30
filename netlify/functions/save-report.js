@@ -231,17 +231,23 @@ exports.handler = async (event) => {
     if (status === "completed") {
       db.kpi("report_completed", normalizedEmail, { address, has_pdf: !!reportPdfUrl, has_dna: !!dnaAdjusted });
 
-      // Extract lat/lon for enrichment (comes from RentCast via n8n)
-      const lat = enrichedReportData?.normalized?.subject?.lat ? Number(enrichedReportData.normalized.subject.lat) : null;
-      const lon = enrichedReportData?.normalized?.subject?.lon ? Number(enrichedReportData.normalized.subject.lon) : null;
+      // Extract lat/lon — check multiple possible locations in reportData
+      const d = enrichedReportData;
+      const rawLat = d?.normalized?.subject?.lat ?? d?.normalized?.location?.lat ?? d?.subject?.lat ?? d?.lat ?? null;
+      const rawLon = d?.normalized?.subject?.lon ?? d?.normalized?.location?.lon ?? d?.subject?.lon ?? d?.lon ?? null;
+      const lat = rawLat ? Number(rawLat) : null;
+      const lon = rawLon ? Number(rawLon) : null;
       const existingValue = (() => { const { low, mid, high } = extractValuation(enrichedReportData); return mid || low || high || null; })();
       const existingRent  = enrichedReportData?.normalized?.rent?.estimate ? Number(enrichedReportData.normalized.rent.estimate) : null;
 
       // Fire-and-forget v3 enrichment — fetches 11+ APIs in parallel, stores raw
       // responses to report_data_sources, and populates enrichment_data on the report.
-      if (lat && lon && reportId) {
+      const enrichZip = zip || enrichedReportData?.normalized?.subject?.zip || enrichedReportData?.normalized?.location?.zip || null;
+      const enrichCity = city || enrichedReportData?.normalized?.subject?.city || null;
+      const enrichState = state || enrichedReportData?.normalized?.subject?.state || null;
+      if (lat && lon && !isNaN(lat) && !isNaN(lon) && reportId) {
         enrichProperty({
-          lat, lon, zip, address, city, state,
+          lat, lon, zip: enrichZip, address, city: enrichCity, state: enrichState,
           reportId,
           propertyId: null, // updated by ingestProperty below
           existingValue,

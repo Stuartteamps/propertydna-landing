@@ -31,29 +31,33 @@ interface Market {
 }
 
 const CITY_META: Record<string, { name: string; lat: number; lon: number; radius: number }> = {
-  'palm-springs':       { name: 'Palm Springs',       lat: 33.8303, lon: -116.5453, radius: 14 },
-  'rancho-mirage':      { name: 'Rancho Mirage',      lat: 33.7392, lon: -116.4134, radius: 13 },
-  'indian-wells':       { name: 'Indian Wells',       lat: 33.7197, lon: -116.3425, radius: 11 },
-  'palm-desert':        { name: 'Palm Desert',        lat: 33.7222, lon: -116.3744, radius: 14 },
-  'la-quinta':          { name: 'La Quinta',          lat: 33.6631, lon: -116.3100, radius: 13 },
-  'cathedral-city':     { name: 'Cathedral City',     lat: 33.7797, lon: -116.4665, radius: 12 },
-  'indio':              { name: 'Indio',              lat: 33.7206, lon: -116.2156, radius: 13 },
-  'desert-hot-springs': { name: 'Desert Hot Springs', lat: 33.9611, lon: -116.5019, radius: 10 },
-  'bermuda-dunes':      { name: 'Bermuda Dunes',      lat: 33.7456, lon: -116.2928, radius: 10 },
-  'thousand-palms':     { name: 'Thousand Palms',     lat: 33.8225, lon: -116.3940, radius: 9  },
+  'miami-fl':        { name: 'Miami, FL',        lat: 25.7617, lon: -80.1918,  radius: 18 },
+  'austin-tx':       { name: 'Austin, TX',        lat: 30.2672, lon: -97.7431,  radius: 18 },
+  'scottsdale-az':   { name: 'Scottsdale, AZ',    lat: 33.4942, lon: -111.9261, radius: 16 },
+  'nashville-tn':    { name: 'Nashville, TN',     lat: 36.1627, lon: -86.7816,  radius: 17 },
+  'seattle-wa':      { name: 'Seattle, WA',       lat: 47.6062, lon: -122.3321, radius: 18 },
+  'denver-co':       { name: 'Denver, CO',        lat: 39.7392, lon: -104.9903, radius: 18 },
+  'dallas-tx':       { name: 'Dallas, TX',        lat: 32.7767, lon: -96.7970,  radius: 20 },
+  'charlotte-nc':    { name: 'Charlotte, NC',     lat: 35.2271, lon: -80.8431,  radius: 18 },
+  'tampa-fl':        { name: 'Tampa, FL',         lat: 27.9506, lon: -82.4572,  radius: 17 },
+  'phoenix-az':      { name: 'Phoenix, AZ',       lat: 33.4484, lon: -112.0740, radius: 20 },
+  'chicago-il':      { name: 'Chicago, IL',       lat: 41.8781, lon: -87.6298,  radius: 20 },
+  'los-angeles-ca':  { name: 'Los Angeles, CA',   lat: 34.0522, lon: -118.2437, radius: 22 },
 };
 
 const FALLBACK_MARKETS: Market[] = [
-  { name: 'Palm Springs', lat: 33.8303, lon: -116.5453, heat: 0.88, medianPrice: 995000, yoy: 9.2, dom: 18, inventory: 124, tier: 'luxury', radius: 14 },
-  { name: 'Rancho Mirage', lat: 33.7392, lon: -116.4134, heat: 0.74, medianPrice: 1450000, yoy: 6.8, dom: 24, inventory: 87, tier: 'luxury', radius: 13 },
-  { name: 'Indian Wells', lat: 33.7197, lon: -116.3425, heat: 0.82, medianPrice: 2100000, yoy: 8.1, dom: 21, inventory: 52, tier: 'ultra', radius: 11 },
-  { name: 'Palm Desert', lat: 33.7222, lon: -116.3744, heat: 0.65, medianPrice: 725000, yoy: 5.3, dom: 31, inventory: 198, tier: 'premium', radius: 14 },
-  { name: 'La Quinta', lat: 33.6631, lon: -116.3100, heat: 0.71, medianPrice: 895000, yoy: 7.4, dom: 27, inventory: 143, tier: 'premium', radius: 13 },
-  { name: 'Cathedral City', lat: 33.7797, lon: -116.4665, heat: 0.48, medianPrice: 450000, yoy: 3.9, dom: 42, inventory: 211, tier: 'standard', radius: 12 },
-  { name: 'Indio', lat: 33.7206, lon: -116.2156, heat: 0.42, medianPrice: 420000, yoy: 3.1, dom: 45, inventory: 266, tier: 'standard', radius: 13 },
-  { name: 'Desert Hot Springs', lat: 33.9611, lon: -116.5019, heat: 0.35, medianPrice: 320000, yoy: 2.8, dom: 52, inventory: 178, tier: 'entry', radius: 10 },
-  { name: 'Bermuda Dunes', lat: 33.7456, lon: -116.2928, heat: 0.52, medianPrice: 580000, yoy: 4.4, dom: 38, inventory: 95, tier: 'standard', radius: 10 },
-  { name: 'Thousand Palms', lat: 33.8225, lon: -116.3940, heat: 0.39, medianPrice: 380000, yoy: 3.5, dom: 49, inventory: 134, tier: 'entry', radius: 9 },
+  { name: 'Miami, FL',        lat: 25.7617, lon: -80.1918,  heat: 0.91, medianPrice: 650000,  yoy: 12.4, dom: 22, inventory: 4800,  tier: 'luxury',   radius: 18 },
+  { name: 'Austin, TX',       lat: 30.2672, lon: -97.7431,  heat: 0.82, medianPrice: 548000,  yoy: 8.6,  dom: 28, inventory: 8200,  tier: 'premium',  radius: 18 },
+  { name: 'Scottsdale, AZ',   lat: 33.4942, lon: -111.9261, heat: 0.78, medianPrice: 895000,  yoy: 7.2,  dom: 31, inventory: 2100,  tier: 'luxury',   radius: 16 },
+  { name: 'Nashville, TN',    lat: 36.1627, lon: -86.7816,  heat: 0.75, medianPrice: 485000,  yoy: 9.1,  dom: 26, inventory: 5400,  tier: 'premium',  radius: 17 },
+  { name: 'Seattle, WA',      lat: 47.6062, lon: -122.3321, heat: 0.73, medianPrice: 798000,  yoy: 7.4,  dom: 19, inventory: 3800,  tier: 'luxury',   radius: 18 },
+  { name: 'Denver, CO',       lat: 39.7392, lon: -104.9903, heat: 0.71, medianPrice: 612000,  yoy: 6.8,  dom: 33, inventory: 6100,  tier: 'premium',  radius: 18 },
+  { name: 'Los Angeles, CA',  lat: 34.0522, lon: -118.2437, heat: 0.69, medianPrice: 920000,  yoy: 5.2,  dom: 38, inventory: 11200, tier: 'luxury',   radius: 22 },
+  { name: 'Dallas, TX',       lat: 32.7767, lon: -96.7970,  heat: 0.68, medianPrice: 425000,  yoy: 5.9,  dom: 37, inventory: 14200, tier: 'standard', radius: 20 },
+  { name: 'Charlotte, NC',    lat: 35.2271, lon: -80.8431,  heat: 0.65, medianPrice: 398000,  yoy: 8.3,  dom: 29, inventory: 7200,  tier: 'standard', radius: 18 },
+  { name: 'Tampa, FL',        lat: 27.9506, lon: -82.4572,  heat: 0.62, medianPrice: 412000,  yoy: 6.1,  dom: 34, inventory: 9400,  tier: 'standard', radius: 17 },
+  { name: 'Phoenix, AZ',      lat: 33.4484, lon: -112.0740, heat: 0.58, medianPrice: 452000,  yoy: 4.8,  dom: 41, inventory: 18600, tier: 'standard', radius: 20 },
+  { name: 'Chicago, IL',      lat: 41.8781, lon: -87.6298,  heat: 0.54, medianPrice: 328000,  yoy: 3.9,  dom: 45, inventory: 16400, tier: 'standard', radius: 20 },
 ];
 
 const priceToTier = (p: number) => p >= 1_500_000 ? 'ultra' : p >= 900_000 ? 'luxury' : p >= 650_000 ? 'premium' : p >= 400_000 ? 'standard' : 'entry';
@@ -131,7 +135,7 @@ export default function MarketHeatMap() {
   });
 
   const tickerItems = [...properties, ...properties]; // double for seamless loop
-  const center: [number, number] = [33.765, -116.390];
+  const center: [number, number] = [38.5, -96.5];
 
   return (
     <div style={{ background: '#080808', color: '#e0e0e0', minHeight: '100vh', fontFamily: 'Jost, sans-serif' }}>
@@ -169,7 +173,7 @@ export default function MarketHeatMap() {
       <section style={{ paddingTop: 120, paddingBottom: 20, paddingLeft: 'clamp(16px,4vw,48px)', paddingRight: 'clamp(16px,4vw,48px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 8, letterSpacing: '4px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.7)', marginBottom: 6 }}>Market Intelligence · Coachella Valley</div>
+            <div style={{ fontSize: 8, letterSpacing: '4px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.7)', marginBottom: 6 }}>Market Intelligence · United States</div>
             <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(26px,4vw,48px)', fontWeight: 300, color: '#f0f0f0', margin: 0, letterSpacing: '-0.5px', lineHeight: 1.1 }}>
               Live Property <em style={{ color: '#00ff88' }}>Heat Map</em>
             </h1>
@@ -196,7 +200,7 @@ export default function MarketHeatMap() {
           {/* Map */}
           <div style={{ position: 'relative' }}>
             <div style={{ height: 'clamp(400px,58vh,620px)', border: '1px solid rgba(255,255,255,0.07)', position: 'relative', overflow: 'hidden', filter: premium ? 'none' : 'brightness(0.5) saturate(0.4)' }}>
-              <MapContainer center={center} zoom={10} style={{ height: '100%', width: '100%' }} zoomControl={premium} dragging={premium} scrollWheelZoom={false}>
+              <MapContainer center={center} zoom={4} style={{ height: '100%', width: '100%' }} zoomControl={premium} dragging={premium} scrollWheelZoom={false}>
                 <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" attribution="© CARTO" />
 
                 {/* City heat circles */}
@@ -236,7 +240,7 @@ export default function MarketHeatMap() {
 
               {!premium && (
                 <div style={{ position: 'absolute', inset: 0, zIndex: 1000 }}>
-                  <PremiumLockOverlay headline="Unlock Live Market Intelligence" body="Street-level property tickers, pricing velocity, and opportunity zones across the full valley." ctaLabel="Unlock Premium" onUpgrade={() => setPricingOpen(true)} />
+                  <PremiumLockOverlay headline="Unlock Live Market Intelligence" body="Street-level property tickers, pricing velocity, and opportunity zones across 2,800+ US markets." ctaLabel="Unlock Premium" onUpgrade={() => setPricingOpen(true)} />
                 </div>
               )}
             </div>

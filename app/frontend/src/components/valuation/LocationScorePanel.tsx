@@ -28,9 +28,9 @@ function ScoreRow({ label, score, invert = false }: { label: string; score: numb
   const pct = score != null ? Math.min(100, Math.max(0, score)) : null;
   const displayPct = invert && pct != null ? 100 - pct : pct;
   const color = displayPct == null ? '#6B6252'
-    : displayPct >= 70 ? '#2D6A4F'
+    : displayPct >= 70 ? '#2D9142'
     : displayPct >= 45 ? '#C9A84C'
-    : '#A07850';
+    : '#B85245';
 
   return (
     <div style={{ marginBottom: 14 }}>
@@ -95,7 +95,7 @@ export const LocationScorePanel: React.FC<Props> = ({ address }) => {
   }
 
   const premium = scores.micro_location_premium_pct;
-  const premiumColor = premium == null ? '#6B6252' : premium > 0 ? '#2D6A4F' : '#A07850';
+  const premiumColor = premium == null ? '#6B6252' : premium > 0 ? '#2D9142' : '#B85245';
   const premiumLabel = premium == null ? '—' : `${premium > 0 ? '+' : ''}${premium.toFixed(1)}%`;
 
   return (

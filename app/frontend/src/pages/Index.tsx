@@ -167,15 +167,15 @@ export default function Index() {
                   DNA Profile
                 </div>
                 <div className="font-sans text-[9px] tracking-[2px] text-canvas/40">
-                  33.8°N · 116.5°W
+                  30.3°N · 97.7°W
                 </div>
               </div>
 
               <div className="font-serif text-2xl md:text-3xl font-light text-canvas leading-tight mb-1">
-                100 W Andreas Rd
+                2847 Sunset Blvd
               </div>
               <div className="text-xs text-canvas/50 tracking-wide mb-8">
-                Palm Springs · CA · 92262
+                Austin · TX · 78704
               </div>
 
               <div className="grid grid-cols-2 gap-5 mb-8">

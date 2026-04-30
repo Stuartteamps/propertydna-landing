@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
-import PropertyForm from '@/components/PropertyForm';
 import AuthModal from '@/components/AuthModal';
 import FadeUp from '@/components/FadeUp';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
@@ -58,52 +57,47 @@ const OAuthBtn = ({
 );
 
 export default function Landing() {
-  const [modalOpen, setModalOpen]     = useState(false);
-  const [modalView, setModalView]     = useState<ModalView>('signin');
-  const [address, setAddress]         = useState('');
-  const [pendingSubmit, setPending]   = useState(false);
-  const [teaserAddress, setTeaser]    = useState('');
-  const [oauthError, setOauthError]   = useState('');
-  const [oauthLoading, setOauthLoading] = useState('');
+  const [modalOpen, setModalOpen]       = useState(false);
+  const [modalView, setModalView]       = useState<ModalView>('signin');
+  const [address, setAddress]           = useState('');
+  const [pendingSubmit, setPending]     = useState(false);
+  const [teaserAddress, setTeaser]      = useState('');
   const { user, signInWithGoogle, signInWithApple, signInWithFacebook } = useAuth();
   const premium = isPremiumUser();
-  const location = useLocation();
+  const navigate = useNavigate();
 
   const openModal = (view: ModalView = 'signin') => {
     setModalView(view);
     setModalOpen(true);
   };
 
-  // Scroll to #pricing if navigated here with that hash
-  useEffect(() => {
-    if (location.hash === '#pricing') {
-      setTimeout(() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
-    }
-  }, [location.hash]);
-
-  // After sign-in resolves: scroll to form and clear teaser
+  // After sign-in: navigate to /analyze, carrying the address
   useEffect(() => {
     if (user && (pendingSubmit || teaserAddress)) {
       setPending(false);
-      setTeaser('');
       setModalOpen(false);
-      setTimeout(() => {
-        document.getElementById('form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 150);
+      const addr = teaserAddress || address;
+      setTeaser('');
+      if (addr.trim().length > 2) {
+        navigate(`/analyze?address=${encodeURIComponent(addr.trim())}`);
+      } else {
+        navigate('/analyze');
+      }
     }
   }, [user, pendingSubmit, teaserAddress]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = address.trim();
     if (!user) {
-      if (address.trim().length > 4) {
-        setTeaser(address.trim());
+      if (trimmed.length > 4) {
+        setTeaser(trimmed);
       } else {
         setPending(true);
         openModal('signin');
       }
     } else {
-      document.getElementById('form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      navigate(`/analyze${trimmed.length > 2 ? `?address=${encodeURIComponent(trimmed)}` : ''}`);
     }
   };
 
@@ -113,7 +107,7 @@ export default function Landing() {
     <div className="bg-espresso text-canvas">
       <Nav
         onSignInClick={() => openModal('signin')}
-        onRequestAccessClick={() => openModal('pricing')}
+        onRequestAccessClick={() => navigate('/analyze')}
       />
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
@@ -222,7 +216,7 @@ export default function Landing() {
           <FadeUp delay={0.12}>
             <div style={{ width: '100%', maxWidth: 420 }}>
 
-              {/* Address search — gated, triggers auth on submit */}
+              {/* Address search — gated, triggers auth or teaser on submit */}
               <form onSubmit={handleSearch} style={{ marginBottom: 24 }}>
                 <div style={{
                   display: 'flex',
@@ -285,7 +279,6 @@ export default function Landing() {
 
               {/* OAuth buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-
                 <OAuthBtn onClick={signInWithGoogle} bg="#fff" hoverBg="#f5f5f5" color="#1a1a1a">
                   <svg width="17" height="17" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
                     <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -415,176 +408,57 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── PROPERTY FORM (target for hero search) ─────────────────── */}
+      {/* ── BOTTOM CTA ─────────────────────────────────────────────── */}
       <section
-        id="form"
-        className="bg-canvas text-warmdark px-6 md:px-12 py-24 md:py-32"
+        style={{
+          padding: 'clamp(60px,8vw,100px) clamp(24px,6vw,80px)',
+          background: 'radial-gradient(ellipse at 50% 50%, rgba(184,147,85,0.10), transparent 65%), #0A0908',
+          textAlign: 'center',
+        }}
       >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-20 items-start">
-          <div>
-            <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-5">
-              Request Intelligence
-            </div>
-            <h2
-              className="font-serif font-light text-warmdark leading-[1.05] mb-8"
-              style={{ fontSize: 'clamp(36px, 4.5vw, 64px)', letterSpacing: '-1px' }}
+        <FadeUp>
+          <div style={{
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
+            fontSize: 'clamp(32px, 4vw, 56px)',
+            fontWeight: 300, letterSpacing: '-0.8px',
+            color: '#F4F0E8', marginBottom: 32,
+          }}>
+            Ready to decode your{' '}
+            <em style={{ fontStyle: 'italic', color: '#B89355' }}>first property?</em>
+          </div>
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/analyze')}
+              style={{
+                fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500,
+                letterSpacing: '3px', textTransform: 'uppercase',
+                color: '#0F0E0D', background: '#B89355',
+                border: 'none', padding: '18px 36px', cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#cfa366')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#B89355')}
             >
-              Sequence any<br />
-              <em className="italic text-gold">property.</em>
-            </h2>
-            <p className="font-sans text-[15px] font-light leading-[1.85] text-warmgray max-w-lg">
-              Submit an address and receive a fully formatted intelligence report — property vitals,
-              verified valuation, buyer and seller analysis, climate context, and a direct verdict
-              on whether we'd buy it.
-            </p>
-          </div>
-
-          <div className="border border-gold/20 p-8 md:p-12" style={{ background: '#111111' }}>
-            <div className="mb-8">
-              <div
-                className="font-serif text-2xl font-light leading-tight mb-2"
-                style={{ color: '#F0EBE0' }}
-              >
-                Submit a Property
-              </div>
-              <div className="text-[13px] leading-relaxed font-light" style={{ color: '#6B6252' }}>
-                First report free. $4.99/report after that, or $49/month unlimited.
-              </div>
-            </div>
-            <PropertyForm />
-            <div
-              className="mt-6 text-center text-[11px] tracking-[1px]"
-              style={{ color: 'rgba(107,98,82,0.7)' }}
+              Get Your Free Report →
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/pricing')}
+              style={{
+                fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500,
+                letterSpacing: '3px', textTransform: 'uppercase',
+                color: 'rgba(244,240,232,0.7)',
+                background: 'transparent', border: '1px solid rgba(255,255,255,0.15)',
+                padding: '18px 36px', cursor: 'pointer', transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#B89355'; e.currentTarget.style.color = '#B89355'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(244,240,232,0.7)'; }}
             >
-              First report free · $4.99/report · $49/month unlimited
-            </div>
+              View Pricing
+            </button>
           </div>
-        </div>
-      </section>
-
-      {/* ── PRICING ─────────────────────────────────────────────── */}
-      <section
-        id="pricing"
-        className="px-6 md:px-12 py-24 md:py-32"
-        style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(184,147,85,0.10), transparent 60%), #0A0908' }}
-      >
-        <div className="max-w-5xl mx-auto">
-          <FadeUp>
-            <div className="text-center mb-16">
-              <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-5">Plans</div>
-              <h2
-                className="font-serif font-light text-canvas leading-[1.05] mb-5"
-                style={{ fontSize: 'clamp(32px, 4vw, 56px)', letterSpacing: '-0.8px' }}
-              >
-                Start free.<br />
-                <em className="italic text-gold">Upgrade when you're ready.</em>
-              </h2>
-              <p className="font-sans text-[14px] font-light leading-[1.85] text-canvas/55 max-w-xl mx-auto">
-                Every account gets one free report. Pro unlocks unlimited reports and premium intelligence.
-              </p>
-            </div>
-          </FadeUp>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/5">
-            {[
-              {
-                tier: 'Free',
-                price: '$0',
-                period: 'forever',
-                highlight: false,
-                features: [
-                  '1 free property report',
-                  'Full DNA analysis & valuation',
-                  'Flood + risk profile',
-                  'Buyer & seller narrative',
-                  'Email delivery',
-                ],
-                cta: 'Get Started Free',
-                action: () => openModal('signin'),
-              },
-              {
-                tier: 'Pro',
-                price: '$49',
-                period: '/ month',
-                highlight: true,
-                features: [
-                  'Unlimited property reports',
-                  'Everything in Free',
-                  'Comparable trend charts',
-                  'Market velocity index',
-                  'Saved property dashboard',
-                  'Priority report delivery',
-                ],
-                cta: 'Start Pro',
-                action: () => openModal('pricing'),
-              },
-              {
-                tier: 'Enterprise',
-                price: '$149',
-                period: '/ month',
-                highlight: false,
-                features: [
-                  'Everything in Pro',
-                  'Portfolio genome mapping',
-                  'Bulk report API access',
-                  'White-label export',
-                  'Dedicated account manager',
-                ],
-                cta: 'Contact Sales',
-                action: () => openModal('pricing'),
-              },
-            ].map(plan => (
-              <FadeUp key={plan.tier}>
-                <div
-                  className="p-10 h-full flex flex-col"
-                  style={{
-                    background: plan.highlight ? '#131210' : '#0A0908',
-                    border: plan.highlight ? '1px solid rgba(184,147,85,0.35)' : '1px solid transparent',
-                    position: 'relative',
-                  }}
-                >
-                  {plan.highlight && (
-                    <div className="font-sans text-[8px] tracking-[3px] uppercase text-espresso bg-gold px-3 py-1 absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap">
-                      Most Popular
-                    </div>
-                  )}
-                  <div className="font-sans text-[9px] tracking-[3px] uppercase text-gold mb-4">{plan.tier}</div>
-                  <div className="flex items-baseline gap-1 mb-8">
-                    <div className="font-serif font-light text-canvas" style={{ fontSize: 'clamp(36px,4vw,48px)', letterSpacing: '-1px' }}>{plan.price}</div>
-                    <div className="font-sans text-[11px] text-canvas/40">{plan.period}</div>
-                  </div>
-                  <div className="flex flex-col gap-3 mb-10 flex-1">
-                    {plan.features.map(f => (
-                      <div key={f} className="flex items-center gap-3">
-                        <div className="w-1 h-1 bg-gold rounded-full flex-shrink-0" />
-                        <div className="font-sans text-[13px] font-light text-canvas/65">{f}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={plan.action}
-                    className="font-sans text-[10px] font-medium uppercase tracking-[3px] py-4 transition-colors"
-                    style={{
-                      background: plan.highlight ? '#B89355' : 'transparent',
-                      color: plan.highlight ? '#0F0E0D' : 'rgba(244,240,232,0.7)',
-                      border: plan.highlight ? 'none' : '1px solid rgba(255,255,255,0.15)',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = plan.highlight ? '#cfa366' : 'rgba(255,255,255,0.05)';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = plan.highlight ? '#B89355' : 'transparent';
-                    }}
-                  >
-                    {plan.cta}
-                  </button>
-                </div>
-              </FadeUp>
-            ))}
-          </div>
-        </div>
+        </FadeUp>
       </section>
 
       <AuthModal

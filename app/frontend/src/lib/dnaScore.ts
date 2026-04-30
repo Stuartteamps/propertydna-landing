@@ -82,7 +82,7 @@ export function computeDNAScore(dna: any): DNAScoreResult {
     if (cc >= 5) mva += 30;
     else if (cc >= 3) mva += 20;
     else if (cc >= 1) mva += 10;
-    if (val.estimate && val.estimate !== '—') mva += 20;
+    if ((val.estimate || val.marketValue) && (val.estimate || val.marketValue) !== '—') mva += 20;
     if (dna.confidence) {
       const c = String(dna.confidence).toLowerCase();
       if (c.includes('high')) mva += 10;

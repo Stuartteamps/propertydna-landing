@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
+import Analyze from "./pages/Analyze";
+import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
 import SampleReport from "./pages/SampleReport";
@@ -29,6 +31,8 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Landing />} />
     <Route path="/home" element={<Index />} />
+    <Route path="/analyze" element={<Analyze />} />
+    <Route path="/pricing" element={<Pricing />} />
     <Route path="/about" element={<About />} />
     <Route path="/how-it-works" element={<HowItWorks />} />
     <Route path="/sample-report" element={<SampleReport />} />

@@ -11,13 +11,11 @@ const linkStyle: React.CSSProperties = {
 };
 
 const navLinks = [
-  { label: 'Buy',           href: '/buyer-access' },
-  { label: 'Sell',          href: '/seller-valuation' },
-  { label: 'Off-Market',    href: '/off-market' },
-  { label: 'Property DNA',  href: '/property-dna' },
-  { label: 'Heat Maps',     href: '/market-heatmaps' },
-  { label: 'Professionals', href: '/professionals' },
-  { label: 'About',         href: '/about' },
+  { label: 'Analyze',      href: '/analyze' },
+  { label: 'How It Works', href: '/how-it-works' },
+  { label: 'Pricing',      href: '/pricing' },
+  { label: 'Heat Maps',    href: '/market-heatmaps' },
+  { label: 'About',        href: '/about' },
 ];
 
 interface NavProps {
@@ -43,15 +41,10 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
 
   const openSignIn = () => { setModalView('signin'); setModalOpen(true); onSignInClick?.(); };
 
-  // "Get Started" — always goes to root with the form visible, no intermediate modal
+  // "Get Started" — always goes to /analyze
   const openPricing = () => {
     onRequestAccessClick?.();
-    if (isHome) {
-      // Scroll to address form so user can run a report immediately
-      const form = document.getElementById('form') || document.getElementById('pricing');
-      if (form) { form.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
-    }
-    navigate('/');
+    navigate('/analyze');
   };
 
   const avatarUrl   = user?.user_metadata?.avatar_url;

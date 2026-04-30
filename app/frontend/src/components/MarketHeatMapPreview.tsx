@@ -13,21 +13,27 @@ const heatColor = (h: number) => {
 };
 
 const FALLBACK: Zone[] = [
-  { label: 'Palm Springs',   heat: 0.88, yoy: 9.2, color: '#ff4444' },
-  { label: 'Rancho Mirage',  heat: 0.74, yoy: 6.8, color: '#ff8800' },
-  { label: 'Indian Wells',   heat: 0.82, yoy: 8.1, color: '#ff4444' },
-  { label: 'Palm Desert',    heat: 0.65, yoy: 5.3, color: '#ffbb00' },
-  { label: 'La Quinta',      heat: 0.71, yoy: 7.4, color: '#ff8800' },
-  { label: 'Cathedral City', heat: 0.48, yoy: 3.9, color: '#4A7EC9' },
-  { label: 'Indio',          heat: 0.42, yoy: 3.1, color: '#4A7EC9' },
-  { label: 'Desert Hot Springs', heat: 0.35, yoy: 2.8, color: '#4A7EC9' },
+  { label: 'Miami, FL',       heat: 0.91, yoy: 12.4, color: '#ff4444' },
+  { label: 'Austin, TX',      heat: 0.82, yoy: 8.6,  color: '#ff4444' },
+  { label: 'Scottsdale, AZ',  heat: 0.78, yoy: 7.2,  color: '#ff8800' },
+  { label: 'Nashville, TN',   heat: 0.75, yoy: 9.1,  color: '#ff8800' },
+  { label: 'Seattle, WA',     heat: 0.73, yoy: 7.4,  color: '#ff8800' },
+  { label: 'Denver, CO',      heat: 0.71, yoy: 6.8,  color: '#ff8800' },
+  { label: 'Dallas, TX',      heat: 0.68, yoy: 5.9,  color: '#ffbb00' },
+  { label: 'Charlotte, NC',   heat: 0.65, yoy: 8.3,  color: '#ffbb00' },
+  { label: 'Tampa, FL',       heat: 0.62, yoy: 6.1,  color: '#ffbb00' },
+  { label: 'Phoenix, AZ',     heat: 0.58, yoy: 4.8,  color: '#ffbb00' },
+  { label: 'Chicago, IL',     heat: 0.54, yoy: 3.9,  color: '#4A7EC9' },
+  { label: 'Los Angeles, CA', heat: 0.69, yoy: 5.2,  color: '#ffbb00' },
 ];
 
 const GEO_KEYS: Record<string, string> = {
-  'palm-springs': 'Palm Springs', 'rancho-mirage': 'Rancho Mirage',
-  'indian-wells': 'Indian Wells', 'palm-desert': 'Palm Desert',
-  'la-quinta': 'La Quinta', 'cathedral-city': 'Cathedral City',
-  'indio': 'Indio', 'desert-hot-springs': 'Desert Hot Springs',
+  'miami-fl': 'Miami, FL', 'austin-tx': 'Austin, TX',
+  'scottsdale-az': 'Scottsdale, AZ', 'nashville-tn': 'Nashville, TN',
+  'seattle-wa': 'Seattle, WA', 'denver-co': 'Denver, CO',
+  'dallas-tx': 'Dallas, TX', 'charlotte-nc': 'Charlotte, NC',
+  'tampa-fl': 'Tampa, FL', 'phoenix-az': 'Phoenix, AZ',
+  'chicago-il': 'Chicago, IL', 'los-angeles-ca': 'Los Angeles, CA',
 };
 
 export default function MarketHeatMapPreview({ isPremium = false, onUpgrade }: Props) {
@@ -58,7 +64,7 @@ export default function MarketHeatMapPreview({ isPremium = false, onUpgrade }: P
       <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(0,255,136,0.7)', marginBottom: 4 }}>Market Intelligence</div>
-          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 300, color: '#F4F0E8' }}>Coachella Valley Heat Index</div>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 300, color: '#F4F0E8' }}>US Market Heat Index</div>
         </div>
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252' }}>
           {isPremium ? 'Live Data' : 'Preview'}

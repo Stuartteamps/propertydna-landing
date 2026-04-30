@@ -356,6 +356,50 @@ async function fetchFCCBlock(lat, lon) {
   }
 }
 
+async function fetchFBICrime(stateAbbr) {
+  const key = process.env.FBI_CRIME_API_KEY;
+  if (!key) return { status: "unavailable", reason: "FBI_CRIME_API_KEY not set" };
+  if (!stateAbbr) return { status: "unavailable", reason: "no state provided" };
+  try {
+    const yr = new Date().getFullYear() - 1; // FBI data lags 1 year
+    const url = `https://api.usa.gov/crime/fbi/cde/summarized/state/${stateAbbr.toUpperCase()}/violent-crime?from=${yr - 2}&to=${yr}&API_KEY=${key}`;
+    const res = await fetchJSON(url, {}, 10000);
+    if (res.statusCode !== 200 || !res.data) return { status: "failed", statusCode: res.statusCode };
+    const results = res.data?.data || res.data?.results || [];
+    if (!results.length) return { status: "failed", reason: "no FBI data" };
+    const latest = results[results.length - 1];
+    const population = latest.population || 1;
+    const violentTotal = (latest.violent_crime || 0) + (latest.homicide || 0) + (latest.rape || 0) + (latest.robbery || 0) + (latest.aggravated_assault || 0);
+    const violentPer100k = population > 0 ? Math.round((violentTotal / population) * 100000) : null;
+    // National average violent crime rate ~380/100k; score inversely
+    let crimeScore = 60;
+    if (violentPer100k !== null) {
+      if (violentPer100k < 150)      crimeScore = 90;
+      else if (violentPer100k < 280) crimeScore = 75;
+      else if (violentPer100k < 400) crimeScore = 60;
+      else if (violentPer100k < 600) crimeScore = 42;
+      else                           crimeScore = 25;
+    }
+    return {
+      status: "success",
+      data: {
+        stateAbbr:        stateAbbr.toUpperCase(),
+        year:             latest.year || yr,
+        violentCrimePer100k: violentPer100k,
+        homicideCount:    latest.homicide || null,
+        rapeCount:        latest.rape || null,
+        robberyCount:     latest.robbery || null,
+        assaultCount:     latest.aggravated_assault || null,
+        crimeScore,
+        crimeRating:      crimeScore >= 75 ? "Low" : crimeScore >= 50 ? "Moderate" : "High",
+      },
+      raw: results,
+    };
+  } catch (e) {
+    return { status: "failed", error: e.message };
+  }
+}
+
 async function fetchBLSUnemployment(stateAbbr) {
   if (!stateAbbr) return { status: "unavailable", reason: "no state provided" };
   const STATE_CODES = {
@@ -417,7 +461,7 @@ function scoreMarket(census, fred, hud, existingVal) {
   return Math.min(100, Math.max(0, score));
 }
 
-function scoreRisk(fema, usgs, epa, airNow) {
+function scoreRisk(fema, usgs, epa, airNow, crime) {
   let score = 65;
   if (fema?.status === "success") {
     const z = (fema.data.zone || "X").toUpperCase();
@@ -437,6 +481,9 @@ function scoreRisk(fema, usgs, epa, airNow) {
   if (airNow?.status === "success" && airNow.data.aqi != null) {
     const aqiScore = airNow.data.aqi <= 50 ? 90 : airNow.data.aqi <= 100 ? 72 : airNow.data.aqi <= 150 ? 45 : 20;
     score = Math.round((score + aqiScore) / 2);
+  }
+  if (crime?.status === "success" && crime.data.crimeScore != null) {
+    score = Math.round((score + crime.data.crimeScore) / 2);
   }
   return Math.min(100, Math.max(0, score));
 }
@@ -507,7 +554,7 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
 
   // Fire all API calls in parallel — Promise.allSettled never rejects
   const [
-    censusR, fredR, hudR, femaR, epaR, usgsR, airNowR, walkR, osmR, fccR, blsR,
+    censusR, fredR, hudR, femaR, epaR, usgsR, airNowR, walkR, osmR, fccR, blsR, crimeR,
   ] = await Promise.allSettled([
     fetchCensusACS(zip),
     fetchFRED(),
@@ -520,6 +567,7 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
     fetchOSMAmenities(latN, lonN),
     fetchFCCBlock(latN, lonN),
     fetchBLSUnemployment(state),
+    fetchFBICrime(state),
   ]);
 
   // Unwrap — if the promise itself rejected, treat as failed
@@ -535,8 +583,9 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
   const osm     = unwrap(osmR);
   const fcc     = unwrap(fccR);
   const bls     = unwrap(blsR);
+  const crime   = unwrap(crimeR);
 
-  const allSources = { census, fred, hud, fema_flood_v3: fema, epa_ejscreen: epa, usgs_seismic: usgs, airnow: airNow, walk_score: walk, osm_amenities: osm, fcc_broadband: fcc, bls_unemployment: bls };
+  const allSources = { census, fred, hud, fema_flood_v3: fema, epa_ejscreen: epa, usgs_seismic: usgs, airnow: airNow, walk_score: walk, osm_amenities: osm, fcc_broadband: fcc, bls_unemployment: bls, fbi_crime: crime };
 
   // Persist all raw responses for our database-building
   await storeDataSources(reportId, allSources);
@@ -544,7 +593,7 @@ async function enrichProperty({ lat, lon, zip, address, city, state, reportId, p
   // Compute weighted category scores
   const locScore     = scoreLocation(osm, walk);
   const mktScore     = scoreMarket(census, fred, hud, existingValue);
-  const riskScore    = scoreRisk(fema, usgs, epa, airNow);
+  const riskScore    = scoreRisk(fema, usgs, epa, airNow, crime);
   const rentalScore  = scoreRentalYield(census, hud, existingRent, existingValue);
   const trajScore    = scoreTrajectory(census, bls, fred);
 

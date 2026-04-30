@@ -82,7 +82,7 @@ export default function Footer() {
               Property<span className="text-gold">DNA</span>
             </div>
             <div className="font-sans text-[11px] text-canvas/40 leading-relaxed max-w-xs">
-              Luxury real estate intelligence for buyers, sellers, and investors in Palm Springs and the Coachella Valley.
+              Property intelligence for buyers, sellers, and investors — valuation, risk, and market data for any address in the US.
             </div>
           </div>
           <div className="flex flex-wrap gap-x-8 gap-y-3">
