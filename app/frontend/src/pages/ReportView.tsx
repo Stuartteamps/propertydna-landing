@@ -163,16 +163,38 @@ export default function ReportView() {
   };
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252' }}>Loading Report…</div>
+    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+      <div style={{ width: 40, height: 40, border: '2px solid rgba(201,168,76,0.3)', borderTopColor: '#C9A84C', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#C9A84C' }}>Loading Report…</div>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 
   if (error) return (
-    <div style={{ minHeight: '100vh', background: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: 480, padding: '0 24px' }}>
         <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 32, color: '#F0EBE0', marginBottom: 12 }}>Report Not Found</div>
-        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252' }}>{error}</div>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: 'rgba(244,240,232,0.5)', marginBottom: 24, lineHeight: 1.7 }}>{error}</div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>My Dashboard →</a>
+          <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>New Report</a>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Guard: no report data
+  if (!report || !report.property_dna || Object.keys(report.property_dna).length === 0) return (
+    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: 480, padding: '0 24px' }}>
+        <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 32, color: '#F0EBE0', marginBottom: 12 }}>Report Processing</div>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(244,240,232,0.55)', lineHeight: 1.7, marginBottom: 28 }}>
+          Your report has been queued and will be delivered to your email shortly.
+        </div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => window.location.reload()} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '12px 24px', border: 'none', cursor: 'pointer' }}>Check Again →</button>
+          <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>My Dashboard</a>
+        </div>
       </div>
     </div>
   );

@@ -129,29 +129,57 @@ export default function ReportViewByToken() {
   };
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252' }}>Loading Report…</div>
+    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+      <div style={{ width: 40, height: 40, border: '2px solid rgba(201,168,76,0.3)', borderTopColor: '#C9A84C', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#C9A84C' }}>Loading Report…</div>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 
   if (pending) return (
-    <div style={{ minHeight: '100vh', background: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 28, color: '#F0EBE0', marginBottom: 12 }}>Report In Progress</div>
-        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', marginBottom: 24 }}>Your report is being generated. Please check back in a few minutes.</div>
+    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: 480, padding: '0 24px' }}>
+        <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 32, color: '#F0EBE0', marginBottom: 12 }}>Report In Progress</div>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(244,240,232,0.55)', lineHeight: 1.7, marginBottom: 28 }}>
+          Your PropertyDNA report is being generated. This typically takes 2–4 minutes.<br />Check your email — we'll send it directly to your inbox.
+        </div>
         <button onClick={() => window.location.reload()} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 28px', border: 'none', cursor: 'pointer' }}>
-          Refresh →
+          Check Again →
         </button>
+        <div style={{ marginTop: 16 }}>
+          <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(201,168,76,0.6)', textDecoration: 'none' }}>← Back to Dashboard</a>
+        </div>
       </div>
     </div>
   );
 
   if (error) return (
-    <div style={{ minHeight: '100vh', background: '#0A0908', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: 480, padding: '0 24px' }}>
         <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 32, color: '#F0EBE0', marginBottom: 12 }}>Report Not Found</div>
-        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', marginBottom: 20 }}>{error}</div>
-        <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#C9A84C' }}>Return home</a>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: 'rgba(244,240,232,0.5)', marginBottom: 24, lineHeight: 1.7 }}>{error}</div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>My Dashboard →</a>
+          <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>New Report</a>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Guard: report loaded but has no DNA data
+  if (!report || !report.property_dna || Object.keys(report.property_dna).length === 0) return (
+    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: 480, padding: '0 24px' }}>
+        <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 32, color: '#F0EBE0', marginBottom: 12 }}>Report Processing</div>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(244,240,232,0.55)', lineHeight: 1.7, marginBottom: 28 }}>
+          Your report has been queued and will be ready shortly.<br />Check your email — we'll send it directly when complete.
+        </div>
+        <button onClick={() => window.location.reload()} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 28px', border: 'none', cursor: 'pointer' }}>
+          Check Again →
+        </button>
+        <div style={{ marginTop: 16 }}>
+          <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(201,168,76,0.6)', textDecoration: 'none' }}>← Back to Dashboard</a>
+        </div>
       </div>
     </div>
   );
@@ -268,14 +296,34 @@ export default function ReportViewByToken() {
         {dnaAdj && (
           <Section title="DNA Adjusted Valuation">
             <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.15)', padding: 24, marginBottom: 24 }}>
+              {dnaAdj.baseAdjustment && (
+                <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(201,168,76,0.07)', borderLeft: '2px solid rgba(201,168,76,0.4)' }}>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', marginBottom: 4 }}>
+                    Sale-Anchored Base
+                  </div>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: 'rgba(244,240,232,0.65)', lineHeight: 1.6 }}>
+                    {dnaAdj.baseAdjustment.label}
+                  </div>
+                  {dnaAdj.baseAdjustment.gapPct != null && (
+                    <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginTop: 4 }}>
+                      AVM was {Math.abs(dnaAdj.baseAdjustment.gapPct)}% below appreciated sale — smart base applied
+                    </div>
+                  )}
+                </div>
+              )}
               <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginBottom: 16 }}>
-                Adjusted for detected property features. Raw comp range shown above.
+                Adjusted for detected property features, sale history, and market appreciation.
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 40px', marginBottom: 16 }}>
                 <Stat label="DNA Adjusted Low"  value={money(dnaAdj.adjLow)} />
                 <Stat label="DNA Adjusted Mid"  value={money(dnaAdj.adjMid)} />
                 <Stat label="DNA Adjusted High" value={money(dnaAdj.adjHigh)} />
               </div>
+              {dnaAdj.aduUplift && (
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#74C69D', marginBottom: 12 }}>
+                  Includes ADU/Casita uplift: +{money(dnaAdj.aduUplift)}
+                </div>
+              )}
               <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginBottom: dnaAdj.drivers?.length ? 16 : 0 }}>
                 Confidence Score: {dnaAdj.confidence ? `${Math.round(dnaAdj.confidence * 100)}%` : '—'}
               </div>
@@ -285,9 +333,15 @@ export default function ReportViewByToken() {
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {dnaAdj.drivers.map((d: any) => (
                       <div key={d.key} style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.07)', padding: '6px 12px' }}>
-                        <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: d.pct > 0 ? '#74C69D' : '#B85245' }}>
-                          {d.pct > 0 ? '+' : ''}{d.pct}%
-                        </span>
+                        {d.pct != null ? (
+                          <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: d.pct > 0 ? '#74C69D' : '#B85245' }}>
+                            {d.pct > 0 ? '+' : ''}{d.pct}%
+                          </span>
+                        ) : d.dollar != null ? (
+                          <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#74C69D' }}>
+                            +{money(d.dollar)}
+                          </span>
+                        ) : null}
                         <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginLeft: 6 }}>
                           {d.label}
                         </span>

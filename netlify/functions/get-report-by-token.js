@@ -57,7 +57,17 @@ exports.handler = async (event) => {
       }
 
       const fullAddress = row.full_address || [row.address, row.city, row.state].filter(Boolean).join(", ");
-      const dna = row.report_data || {};
+      const dna = row.report_data || null;
+
+      // No report data yet — treat as still generating
+      if (!dna || Object.keys(dna).length === 0) {
+        return {
+          statusCode: 202,
+          headers: CORS,
+          body: JSON.stringify({ status: "generating", message: "Your report is being generated. Please check back in a few minutes." }),
+        };
+      }
+
       const client = dna?.normalized?.client || {};
       const enrichment = row.enrichment_data || null;
       const mergedDna = enrichment ? { ...dna, enrichment } : dna;
