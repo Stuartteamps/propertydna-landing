@@ -79,7 +79,7 @@ export default function Pricing() {
   const [pricingOpen, setPricingOpen] = useState(false);
   const navigate = useNavigate();
 
-  const CALENDLY_URL = 'https://calendly.com/thepropertydna/enterprise';
+  const CALENDLY_URL = 'https://calendly.com/stuartteamps-vls6/30min';
 
   const handleCta = (action: 'analyze' | 'subscribe', tier?: string) => {
     if (action === 'analyze') navigate('/analyze');
