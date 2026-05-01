@@ -10,10 +10,10 @@ exports.handler = async (event) => {
 
   await db.upsert('campaign_unsubscribes', { email: normalized }, 'email').catch(() => {});
   if (cid) {
-    await db.supabase.from('campaign_contacts')
-      .update({ status: 'unsubscribed' })
+    await db.from('campaign_contacts')
       .eq('campaign_id', cid)
       .eq('email', normalized)
+      .update({ status: 'unsubscribed' })
       .catch(() => {});
   }
 
