@@ -285,7 +285,7 @@ exports.handler = async (event) => {
 
   const {
     email, address, city, state, zip,
-    reportUrl, reportPdfUrl, reportData,
+    reportUrl, reportPdfUrl,
     stripeSessionId, status = "completed",
     generationError = null, n8nRequestId = null,
     features = {},  // DNA feature flags from n8n
@@ -300,6 +300,24 @@ exports.handler = async (event) => {
 
   const normalizedEmail = email.toLowerCase().trim();
   const viewToken = crypto.randomUUID();
+
+  // n8n sometimes double-encodes the report object as a JSON string — parse it here
+  let reportData = body.reportData || body.reportObject || null;
+  if (typeof reportData === "string") {
+    try { reportData = JSON.parse(reportData); } catch {
+      console.warn("[save-report] reportData was a string but failed JSON.parse — discarding");
+      reportData = null;
+    }
+  }
+
+  // Log what we received for diagnostics
+  console.log("[save-report] received:", {
+    email: normalizedEmail, address, status,
+    hasReportData: !!reportData,
+    reportDataKeys: reportData ? Object.keys(reportData).slice(0, 8) : [],
+    hasNormalized: !!(reportData?.normalized),
+    n8nRequestId,
+  });
 
   // Compute DNA adjusted valuation if reportData is present
   let dnaAdjusted = null;

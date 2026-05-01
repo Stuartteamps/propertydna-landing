@@ -57,10 +57,21 @@ exports.handler = async (event) => {
       }
 
       const fullAddress = row.full_address || [row.address, row.city, row.state].filter(Boolean).join(", ");
-      const dna = row.report_data || null;
 
-      // No report data yet — treat as still generating
-      if (!dna || Object.keys(dna).length === 0) {
+      // Parse report_data — n8n may have double-encoded it as a JSON string
+      let dna = row.report_data || null;
+      if (typeof dna === "string") {
+        try { dna = JSON.parse(dna); } catch { dna = null; }
+      }
+
+      // No usable report data yet — treat as still generating
+      const hasData = dna && typeof dna === "object" && (
+        dna.normalized || dna.rating || dna.wouldWeBuyIt || dna.narrative
+        || dna.sellerAngle || dna.buyerAngle || dna.dnaAdjusted
+      );
+
+      if (!hasData) {
+        console.log("[get-report-by-token] report_data null or empty for token:", token?.slice(0, 8));
         return {
           statusCode: 202,
           headers: CORS,

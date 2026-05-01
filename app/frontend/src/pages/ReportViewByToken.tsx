@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -63,15 +63,16 @@ const ConfidenceBadge = ({ pct }: { pct?: number }) => {
 export default function ReportViewByToken() {
   const { token } = useParams<{ token: string }>();
 
-  const [report, setReport] = useState<ReportData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<'signin' | 'pricing'>('signin');
-  const [pricingOpen, setPricingOpen] = useState(false);
+  const [report,     setReport]     = useState<ReportData | null>(null);
+  const [loading,    setLoading]    = useState(true);
+  const [pending,    setPending]    = useState(false);
+  const [error,      setError]      = useState('');
+  const [pollCount,  setPollCount]  = useState(0);
+  const [modalOpen,  setModalOpen]  = useState(false);
+  const [modalTab,   setModalTab]   = useState<'signin' | 'pricing'>('signin');
+  const [pricingOpen,setPricingOpen]= useState(false);
 
-  useEffect(() => {
+  const fetchReport = useCallback(() => {
     if (!token) { setError('No report token provided.'); setLoading(false); return; }
     fetch(`/.netlify/functions/get-report-by-token?token=${encodeURIComponent(token)}`)
       .then(r => r.json())
@@ -81,14 +82,30 @@ export default function ReportViewByToken() {
           return;
         }
         if (data.error) { setError(data.error); return; }
+        // Parse if n8n double-encoded the DNA as a string
         if (typeof data.property_dna === 'string') {
           try { data.property_dna = JSON.parse(data.property_dna); } catch {}
         }
+        setPending(false);
         setReport(data);
       })
       .catch(() => setError('Failed to load report.'))
       .finally(() => setLoading(false));
   }, [token]);
+
+  // Initial load
+  useEffect(() => { fetchReport(); }, [fetchReport]);
+
+  // Auto-poll every 20s while pending (up to 15 attempts = 5 min)
+  useEffect(() => {
+    if (!pending || pollCount >= 15) return;
+    const t = setTimeout(() => {
+      setPollCount(c => c + 1);
+      setLoading(true);
+      fetchReport();
+    }, 20_000);
+    return () => clearTimeout(t);
+  }, [pending, pollCount, fetchReport]);
 
   const dna      = report?.property_dna ?? {};
   const dnaScore = computeDNAScore(dna);
@@ -148,16 +165,21 @@ export default function ReportViewByToken() {
   if (pending) return (
     <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', maxWidth: 480, padding: '0 24px' }}>
+        <div style={{ width: 36, height: 36, border: '2px solid rgba(201,168,76,0.3)', borderTopColor: '#C9A84C', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 24px' }} />
         <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 32, color: '#F0EBE0', marginBottom: 12 }}>Report In Progress</div>
-        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(244,240,232,0.55)', lineHeight: 1.7, marginBottom: 28 }}>
-          Your PropertyDNA report is being generated. This typically takes 2–4 minutes.<br />Check your email — we'll send it directly to your inbox.
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(244,240,232,0.55)', lineHeight: 1.7, marginBottom: 8 }}>
+          Your PropertyDNA report is being generated. This typically takes 2–4 minutes.
         </div>
-        <button onClick={() => window.location.reload()} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 28px', border: 'none', cursor: 'pointer' }}>
-          Check Again →
-        </button>
-        <div style={{ marginTop: 16 }}>
-          <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(201,168,76,0.6)', textDecoration: 'none' }}>← Back to Dashboard</a>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: 'rgba(201,168,76,0.5)', marginBottom: 28 }}>
+          {pollCount > 0 ? `Auto-checking… (${pollCount}/15)` : 'This page checks automatically every 20 seconds.'}
         </div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => { setLoading(true); setPollCount(0); fetchReport(); }} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '12px 24px', border: 'none', cursor: 'pointer' }}>
+            Check Now →
+          </button>
+          <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>My Dashboard</a>
+        </div>
+        <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       </div>
     </div>
   );
