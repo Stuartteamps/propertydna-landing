@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 
@@ -30,6 +30,36 @@ async function fireReport(data: Record<string, string>, sessionId?: string) {
   }).then(r => r.json()).catch(() => ({}));
 }
 
+function DoneAndRedirect({ requestId, isSub, navigate }: { requestId: string; isSub: boolean; navigate: (path: string) => void }) {
+  useEffect(() => {
+    const t = setTimeout(() => navigate('/dashboard'), 2000);
+    return () => clearTimeout(t);
+  }, [navigate]);
+
+  return (
+    <>
+      <div style={{ width: 56, height: 56, border: '1px solid rgba(201,168,76,0.4)', borderRadius: '50%', margin: '0 auto 28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(24px,4vw,36px)', fontWeight: 300, marginBottom: 12 }}>
+        {isSub ? 'Subscription active.' : 'Report queued.'}
+      </div>
+      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.8, marginBottom: 28 }}>
+        {isSub
+          ? 'Your subscription is now active. Redirecting to your dashboard…'
+          : 'Your report is being generated. Redirecting to your dashboard…'}
+      </div>
+      {requestId && (
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: 'rgba(107,98,82,0.4)', letterSpacing: '1px' }}>
+          Ref: {requestId}
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function ReportPending() {
   const [params] = useSearchParams();
   const sessionId = params.get('session_id');
@@ -39,6 +69,7 @@ export default function ReportPending() {
   const [status, setStatus] = useState<Status>('verifying');
   const [errorMsg, setErrorMsg] = useState('');
   const [requestId, setRequestId] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -117,33 +148,7 @@ export default function ReportPending() {
         )}
 
         {status === 'done' && (
-          <>
-            <div style={{ width: 64, height: 64, border: '1px solid #C9A84C', borderRadius: '50%', margin: '0 auto 28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
-            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 300, color: '#F0EBE0', marginBottom: 16 }}>
-              {isSub ? 'Subscription Active.' : 'Report Initiated.'}
-            </div>
-            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(240,235,224,0.7)', lineHeight: 1.85, maxWidth: 480, margin: '0 auto 32px' }}>
-              {isSub
-                ? 'Your unlimited plan is now active. Run reports anytime — no limits, no waiting. Your dashboard is ready.'
-                : <>Your PropertyDNA report is being sequenced across flood, valuation, crime, and permit data. Check your inbox — typical delivery is <strong style={{ color: '#F0EBE0' }}>2–4 minutes</strong>.</>
-              }
-            </div>
-            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: 'rgba(107,98,82,0.5)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 40 }}>
-              Report ID: {requestId}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-              <a href={isSub ? '/dashboard' : '/'} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '16px 36px', textDecoration: 'none', display: 'inline-block' }}>
-                {isSub ? 'Go to Dashboard →' : 'Run Another Report →'}
-              </a>
-              <a href="/off-market" style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', textDecoration: 'underline' }}>
-                Browse off-market listings while you wait
-              </a>
-            </div>
-          </>
+          <DoneAndRedirect requestId={requestId} isSub={isSub} navigate={navigate} />
         )}
 
         {status === 'error' && (

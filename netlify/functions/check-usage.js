@@ -26,6 +26,18 @@ exports.handler = async (event) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
+  // Owner bypass — always subscribed, upsert subscription so DB is authoritative
+  const OWNER_EMAIL = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
+  if (normalizedEmail === OWNER_EMAIL) {
+    db.upsert("subscriptions", {
+      email: OWNER_EMAIL,
+      plan_name: "enterprise",
+      status: "active",
+      current_period_end: null,
+    }, "email").catch(() => {});
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({ reportCount: 0, isSubscribed: true, plan: "enterprise" }) };
+  }
+
   try {
     // Count from property_reports (new schema)
     const newReports = await db.from("property_reports")

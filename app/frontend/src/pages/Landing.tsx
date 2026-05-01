@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
+import PricingModal from '@/components/PricingModal';
 import FadeUp from '@/components/FadeUp';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
 import TeaserCard from '@/components/TeaserCard';
-import AddressAutocomplete from '@/components/AddressAutocomplete';
+import AddressAutocomplete, { type AddressResult } from '@/components/AddressAutocomplete';
 import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
+import { fireReport } from '@/lib/fireReport';
 import PropertyTicker from '@/components/PropertyTicker';
 
 type ModalView = 'signin' | 'pricing';
@@ -58,47 +60,74 @@ const OAuthBtn = ({
 );
 
 export default function Landing() {
-  const [modalOpen, setModalOpen]       = useState(false);
-  const [modalView, setModalView]       = useState<ModalView>('signin');
-  const [address, setAddress]           = useState('');
-  const [pendingSubmit, setPending]     = useState(false);
-  const [teaserAddress, setTeaser]      = useState('');
+  const [modalOpen,   setModalOpen]   = useState(false);
+  const [modalView,   setModalView]   = useState<ModalView>('signin');
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [address,     setAddress]     = useState('');
+  const [addrResult,  setAddrResult]  = useState<AddressResult | null>(null);
+  const [teaserAddr,  setTeaserAddr]  = useState('');
+  const [submitting,  setSubmitting]  = useState(false);
+  const pendingFire = useRef(false);
   const { user, signInWithGoogle, signInWithApple, signInWithFacebook } = useAuth();
   const premium = isPremiumUser();
   const navigate = useNavigate();
 
-  const openModal = (view: ModalView = 'signin') => {
-    setModalView(view);
-    setModalOpen(true);
+  const openModal = (view: ModalView = 'signin') => { setModalView(view); setModalOpen(true); };
+
+  // Core submit: check usage then fire n8n or open pricing
+  const submitReport = async (addr: string, result?: AddressResult | null) => {
+    if (!user?.email || !addr.trim()) return;
+    setSubmitting(true);
+    try {
+      const usageRes = await fetch('/.netlify/functions/check-usage', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const usage = await usageRes.json().catch(() => ({ reportCount: 0, isSubscribed: false }));
+      if (!usage.isSubscribed && (usage.reportCount || 0) > 0) {
+        setPricingOpen(true);
+        setSubmitting(false);
+        return;
+      }
+      await fireReport({
+        email:    user.email,
+        fullName: user.user_metadata?.full_name || user.user_metadata?.name || '',
+        address:  result?.street || addr,
+        city:     result?.city   || '',
+        state:    result?.state  || '',
+        zip:      result?.zip    || '',
+      });
+      navigate('/dashboard?new=1');
+    } catch {
+      // Fail open
+      await fireReport({ email: user.email, fullName: '', address: addr });
+      navigate('/dashboard?new=1');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // After sign-in: navigate to /analyze, carrying the address
+  // After sign-in fires if user had a pending address
   useEffect(() => {
-    if (user && (pendingSubmit || teaserAddress)) {
-      setPending(false);
+    if (user && pendingFire.current && teaserAddr) {
+      pendingFire.current = false;
       setModalOpen(false);
-      const addr = teaserAddress || address;
-      setTeaser('');
-      if (addr.trim().length > 2) {
-        navigate(`/analyze?address=${encodeURIComponent(addr.trim())}`);
-      } else {
-        navigate('/analyze');
-      }
+      const addr = teaserAddr;
+      setTeaserAddr('');
+      submitReport(addr, addrResult);
     }
-  }, [user, pendingSubmit, teaserAddress]);
+  }, [user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = address.trim();
+    if (!trimmed) return;
     if (!user) {
-      if (trimmed.length > 4) {
-        setTeaser(trimmed);
-      } else {
-        setPending(true);
-        openModal('signin');
-      }
+      setTeaserAddr(trimmed);
+      pendingFire.current = true;
+      openModal('signin');
     } else {
-      navigate(`/analyze${trimmed.length > 2 ? `?address=${encodeURIComponent(trimmed)}` : ''}`);
+      submitReport(trimmed, addrResult);
     }
   };
 
@@ -161,27 +190,20 @@ export default function Landing() {
         {/* ── Signed-in state ── */}
         {user ? (
           <FadeUp delay={0.12}>
-            <div style={{ width: '100%', maxWidth: 520 }}>
-              <div style={{
-                fontFamily: 'Jost, sans-serif', fontSize: 11,
-                letterSpacing: '2px', textTransform: 'uppercase',
-                color: 'rgba(184,147,85,0.7)', marginBottom: 20,
-              }}>
-                Welcome back{displayName ? `, ${displayName}` : ''} —
+            <div style={{ width: '100%', maxWidth: 560 }}>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(184,147,85,0.7)', marginBottom: 20 }}>
+                Welcome back{displayName ? `, ${displayName}` : ''} — enter any address to run a report
               </div>
               <form onSubmit={handleSearch}>
-                <div style={{
-                  display: 'flex',
-                  border: '1px solid rgba(184,147,85,0.4)',
-                  background: 'rgba(15,14,13,0.7)',
-                }}>
-                  <input
-                    type="text"
+                <div style={{ display: 'flex', border: '1px solid rgba(184,147,85,0.4)', background: 'rgba(15,14,13,0.7)' }}>
+                  <AddressAutocomplete
                     value={address}
-                    onChange={e => setAddress(e.target.value)}
+                    onChange={setAddress}
+                    onSelect={r => { setAddress(r.display); setAddrResult(r); }}
                     placeholder="Enter a property address…"
-                    style={{
-                      flex: 1, padding: '17px 20px',
+                    containerStyle={{ flex: 1 }}
+                    inputStyle={{
+                      width: '100%', padding: '17px 20px',
                       background: 'transparent', border: 'none', outline: 'none',
                       fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300,
                       color: '#F4F0E8',
@@ -190,25 +212,24 @@ export default function Landing() {
                   />
                   <button
                     type="submit"
+                    disabled={submitting}
                     style={{
                       padding: '17px 28px', flexShrink: 0,
-                      background: '#B89355', border: 'none', cursor: 'pointer',
+                      background: submitting ? 'rgba(184,147,85,0.5)' : '#B89355',
+                      border: 'none', cursor: submitting ? 'not-allowed' : 'pointer',
                       fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 500,
                       letterSpacing: '3px', textTransform: 'uppercase', color: '#0F0E0D',
                       transition: 'background 0.15s',
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#cfa366')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '#B89355')}
+                    onMouseEnter={e => { if (!submitting) e.currentTarget.style.background = '#cfa366'; }}
+                    onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = '#B89355'; }}
                   >
-                    Analyse →
+                    {submitting ? 'Submitting…' : 'Analyze →'}
                   </button>
                 </div>
               </form>
-              <div style={{
-                fontFamily: 'Jost, sans-serif', fontSize: 10,
-                color: 'rgba(244,240,232,0.25)', marginTop: 12, letterSpacing: '1px',
-              }}>
-                First report free · $4.99/report · $49/month unlimited
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: 'rgba(244,240,232,0.25)', marginTop: 12, letterSpacing: '1px' }}>
+                Report delivered to your inbox + saved to your dashboard
               </div>
             </div>
           </FadeUp>
@@ -227,7 +248,7 @@ export default function Landing() {
                   <AddressAutocomplete
                     value={address}
                     onChange={setAddress}
-                    onSelect={r => setAddress(r.display)}
+                    onSelect={r => { setAddress(r.display); setAddrResult(r); }}
                     placeholder="Enter a property address…"
                     containerStyle={{ flex: 1 }}
                     inputStyle={{
@@ -468,8 +489,9 @@ export default function Landing() {
       <AuthModal
         isOpen={modalOpen}
         initialView={modalView}
-        onClose={() => { setModalOpen(false); setPending(false); }}
+        onClose={() => { setModalOpen(false); pendingFire.current = false; }}
       />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
 
       <Footer />
     </div>

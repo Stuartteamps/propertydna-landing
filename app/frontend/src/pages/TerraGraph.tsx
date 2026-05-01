@@ -5,6 +5,7 @@ import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import PremiumLockOverlay from '@/components/PremiumLockOverlay';
 import { isPremiumUser } from '@/lib/isPremiumUser';
+import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -133,6 +134,7 @@ const GRADIENT_ALPHA: Record<string, string> = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TerraGraph() {
+  const { tier } = useAuth();
   const [modalOpen,   setModalOpen]   = useState(false);
   const [modalTab,    setModalTab]    = useState<ModalTab>('signin');
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -163,7 +165,8 @@ export default function TerraGraph() {
   // ── Side effects ────────────────────────────────────────────────────────────
 
   useEffect(() => { marketsRef.current = markets; }, [markets]);
-  useEffect(() => { setPremium(isPremiumUser()); }, []);
+  // Use live auth tier — covers direct navigation where sessionStorage isn't populated yet
+  useEffect(() => { setPremium(isPremiumUser() || tier !== 'free'); }, [tier]);
 
   // Load TerraGraph fonts into document head
   useEffect(() => {
