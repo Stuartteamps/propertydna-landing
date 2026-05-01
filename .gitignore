@@ -27,3 +27,5 @@ npm-debug.log*
 
 # Local Netlify folder
 .netlify
+AuthKey_*.p8
+*.p8

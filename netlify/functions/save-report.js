@@ -56,7 +56,135 @@ const FEATURE_LABELS = {
   short_term_rental_friendly: "STR Friendly Zone",
 };
 
-function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}) {
+// ── Smart base value: anchors AVM to last sale + time appreciation ────────────
+
+function monthsBetween(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return Math.max(0, (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+}
+
+// Scan listing text for ADU / casita presence and estimate sqft
+function detectADU(reportData) {
+  const parts = [
+    reportData?.normalized?.property?.description,
+    reportData?.normalized?.listing?.remarks,
+    reportData?.normalized?.listing?.publicRemarks,
+    reportData?.normalized?.listing?.privateRemarks,
+    reportData?.normalized?.subject?.description,
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  if (!parts) return null;
+
+  const ADU_KEYWORDS = [
+    "casita", "guest house", "guesthouse", "guest casita", "adu",
+    "accessory dwelling", "in-law suite", "granny flat", "second unit",
+    "studio suite", "pool house", "poolhouse", "guest quarters",
+  ];
+  const found = ADU_KEYWORDS.filter(kw => parts.includes(kw));
+  if (!found.length) return null;
+
+  // Try to extract casita sqft from nearby text
+  const sqftPatterns = [
+    /casita[^.]{0,60}?(\d{3,4})\s*(?:sq\.?\s*ft|square)/i,
+    /(\d{3,4})\s*(?:sq\.?\s*ft|square)[^.]{0,60}?casita/i,
+    /guest\s*house[^.]{0,60}?(\d{3,4})\s*(?:sq\.?\s*ft|square)/i,
+    /adu[^.]{0,60}?(\d{3,4})\s*(?:sq\.?\s*ft|square)/i,
+  ];
+  let aduSqft = null;
+  for (const pat of sqftPatterns) {
+    const m = parts.match(pat);
+    if (m) { aduSqft = parseInt(m[1]); break; }
+  }
+
+  return { keywords: found, sqft: aduSqft || 480 }; // 480 sqft default if not found
+}
+
+// Compute sale-anchored smart base values
+// Returns corrected {smartLow, smartMid, smartHigh, baseAdjustment}
+function computeSmartBase(avmLow, avmMid, avmHigh, {
+  lastSalePrice = null,
+  lastSaleDate = null,
+  marketPriceYoY = null,
+} = {}) {
+  if (!avmMid) return { smartLow: avmLow, smartMid: avmMid, smartHigh: avmHigh, baseAdjustment: null };
+
+  // Default annual appreciation: 4.8% (long-run US luxury home average)
+  const annualRate = (marketPriceYoY != null && !isNaN(marketPriceYoY))
+    ? Math.max(-0.10, Math.min(0.25, marketPriceYoY / 100))
+    : 0.048;
+
+  let smartLow = avmLow, smartMid = avmMid, smartHigh = avmHigh;
+  let baseAdjustment = null;
+
+  if (lastSalePrice && lastSaleDate) {
+    const months = monthsBetween(lastSaleDate);
+    // Only anchor if sale was within the last 3.5 years
+    if (months !== null && months < 42) {
+      const yearsFrac = months / 12;
+      const appreciated = Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac));
+      const gap = (avmMid - appreciated) / appreciated; // negative means AVM is below
+
+      // Sale weight declines as the sale gets older
+      let saleWeight;
+      if (months < 12)      saleWeight = 0.85;
+      else if (months < 24) saleWeight = 0.80;
+      else if (months < 36) saleWeight = 0.70;
+      else                  saleWeight = 0.60;
+      const avmWeight = 1 - saleWeight;
+
+      if (gap < -0.10) {
+        // AVM is >10% below appreciated sale — apply sale-anchored blend
+        const blendMid = Math.round(appreciated * saleWeight + avmMid * avmWeight);
+        const scale = blendMid / avmMid;
+        smartMid  = blendMid;
+        smartLow  = avmLow  ? Math.round(avmLow  * scale) : Math.round(blendMid * 0.82);
+        smartHigh = avmHigh ? Math.round(avmHigh * scale) : Math.round(blendMid * 1.18);
+        baseAdjustment = {
+          type: "sale_anchor_override",
+          lastSalePrice,
+          lastSaleDate,
+          appreciated,
+          months: Math.round(months),
+          gapPct: Math.round(gap * 100),
+          saleWeight: Math.round(saleWeight * 100),
+          label: `Sale anchor: $${(lastSalePrice / 1e6).toFixed(2)}M → $${(appreciated / 1e6).toFixed(2)}M after ${Math.round(months)}mo`,
+        };
+      } else if (gap < 0) {
+        // AVM is 0–10% below — softer blend to nudge upward
+        const blendMid = Math.round(avmMid * 0.70 + appreciated * 0.30);
+        const scale = blendMid / avmMid;
+        smartMid  = blendMid;
+        smartLow  = avmLow  ? Math.round(avmLow  * scale) : null;
+        smartHigh = avmHigh ? Math.round(avmHigh * scale) : null;
+        baseAdjustment = {
+          type: "sale_anchor_soft",
+          lastSalePrice,
+          lastSaleDate,
+          appreciated,
+          months: Math.round(months),
+          gapPct: Math.round(gap * 100),
+          label: `Soft blend: AVM + $${(lastSalePrice / 1e6).toFixed(2)}M sale`,
+        };
+      }
+      // If gap >= 0 (AVM already above appreciated sale), no adjustment needed
+    }
+  }
+
+  return { smartLow, smartMid, smartHigh, baseAdjustment };
+}
+
+function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
+  lastSalePrice = null, lastSaleDate = null, marketPriceYoY = null,
+  aduSqft = null,       // explicit casita sqft (from n8n or auto-detected)
+  luxuryTier = false,   // true if smart base > $1.5M
+} = {}) {
+  // Phase 1 — correct the AVM base using recent sale anchor
+  const base = computeSmartBase(rawLow, rawMid, rawHigh, { lastSalePrice, lastSaleDate, marketPriceYoY });
+  const { smartLow, smartMid, smartHigh, baseAdjustment } = base;
+
+  // Phase 2 — percentage adjustments from DNA feature flags
   let totalLow = 0, totalMid = 0, totalHigh = 0;
   const drivers = [];
 
@@ -74,26 +202,52 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}) {
     });
   }
 
-  // Cap total adjustment at +/-35%
-  totalLow  = Math.max(-35, Math.min(35, totalLow));
-  totalMid  = Math.max(-35, Math.min(35, totalMid));
-  totalHigh = Math.max(-35, Math.min(35, totalHigh));
+  // Luxury market premium: AVM confidence degrades above $1.5M due to sparse comps
+  if (luxuryTier) {
+    const LUXURY_PCT = { pct_low: 2, pct_mid: 4, pct_high: 8 };
+    totalLow  += LUXURY_PCT.pct_low;
+    totalMid  += LUXURY_PCT.pct_mid;
+    totalHigh += LUXURY_PCT.pct_high;
+    drivers.push({ key: "luxury_sparse_comps", label: "Luxury Market Premium", pct: LUXURY_PCT.pct_mid });
+  }
 
-  const apply = (base, pct) => (base ? Math.round(base * (1 + pct / 100)) : null);
+  // Cap total % adjustment at +/-40%
+  totalLow  = Math.max(-40, Math.min(40, totalLow));
+  totalMid  = Math.max(-40, Math.min(40, totalMid));
+  totalHigh = Math.max(-40, Math.min(40, totalHigh));
 
-  const featureCount = Object.values(features).filter(Boolean).length;
-  const confidence = Math.max(0.55, 0.85 - featureCount * 0.03);
+  const applyPct = (base, pct) => (base ? Math.round(base * (1 + pct / 100)) : null);
+
+  let adjLow  = applyPct(smartLow,  totalLow);
+  let adjMid  = applyPct(smartMid,  totalMid);
+  let adjHigh = applyPct(smartHigh, totalHigh);
+
+  // Phase 3 — ADU/casita dollar uplift (added after %, since it's a fixed improvement)
+  let aduUplift = 0;
+  if (aduSqft && aduSqft > 100) {
+    // Luxury market: ~$300/sqft for standalone casita space; standard: ~$220/sqft
+    const pricePerSqft = luxuryTier ? 300 : 220;
+    aduUplift = Math.round(Math.min(aduSqft, 1200) * pricePerSqft);
+    aduUplift = Math.min(aduUplift, 450000); // hard cap at $450K
+    adjMid  = adjMid  ? adjMid  + aduUplift : aduUplift;
+    adjLow  = adjLow  ? adjLow  + Math.round(aduUplift * 0.70) : null;
+    adjHigh = adjHigh ? adjHigh + Math.round(aduUplift * 1.30) : null;
+    drivers.push({ key: "adu_casita", label: `ADU/Casita (~${aduSqft} sqft)`, dollar: aduUplift, pct: null });
+  }
+
+  const featureCount = Object.values(features).filter(Boolean).length + (luxuryTier ? 1 : 0) + (aduSqft ? 1 : 0);
+  const confidence = Math.max(0.52, 0.88 - featureCount * 0.03);
 
   return {
-    adjLow:    apply(rawLow,  totalLow),
-    adjMid:    apply(rawMid,  totalMid),
-    adjHigh:   apply(rawHigh, totalHigh),
-    rawLow,
-    rawMid,
-    rawHigh,
+    adjLow, adjMid, adjHigh,
+    rawLow, rawMid, rawHigh,
+    smartLow, smartMid, smartHigh,
     confidence: Math.round(confidence * 100) / 100,
-    drivers: drivers.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct)).slice(0, 5),
+    drivers: drivers.sort((a, b) => Math.abs(b.pct ?? 0) - Math.abs(a.pct ?? 0)).slice(0, 6),
     totalPctMid: totalMid,
+    aduUplift: aduUplift || null,
+    baseAdjustment: baseAdjustment || null,
+    luxuryTier,
   };
 }
 
@@ -135,6 +289,11 @@ exports.handler = async (event) => {
     stripeSessionId, status = "completed",
     generationError = null, n8nRequestId = null,
     features = {},  // DNA feature flags from n8n
+    // Valuation accuracy inputs — n8n should pass these from RentCast property data
+    lastSalePrice = null,   // number, e.g. 2300000
+    lastSaleDate  = null,   // ISO string, e.g. "2023-08-15"
+    marketPriceYoY = null,  // number, e.g. 5.2 (percentage)
+    aduSqft = null,         // explicit casita sqft; auto-detected from reportData if null
   } = body;
 
   if (!email) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "email required" }) };
@@ -145,13 +304,38 @@ exports.handler = async (event) => {
   // Compute DNA adjusted valuation if reportData is present
   let dnaAdjusted = null;
   let featureProfile = null;
-  const hasFeatures = Object.values(features).some(Boolean);
 
   if (reportData) {
     const { low, mid, high } = extractValuation(reportData);
     if (low || mid || high) {
-      dnaAdjusted = computeDnaAdjustment(low, mid, high, features);
+      // Auto-detect casita/ADU from listing text when not explicitly provided
+      const autoADU = (!aduSqft) ? detectADU(reportData) : null;
+      const effectiveAduSqft = aduSqft || autoADU?.sqft || null;
+
+      // Extract last sale from reportData fallback when not in body
+      const parseSalePrice = (v) => { const n = parseFloat(String(v || "").replace(/[^0-9.]/g, "")); return isNaN(n) ? null : n; };
+      const effectiveLastSalePrice = lastSalePrice
+        || parseSalePrice(reportData?.normalized?.subject?.lastSalePrice)
+        || null;
+      const effectiveLastSaleDate  = lastSaleDate
+        || reportData?.normalized?.subject?.lastSaleDate
+        || null;
+
+      // Luxury tier: base AVM (mid) above $1.5M
+      const luxuryTier = !!(mid && mid >= 1500000);
+
+      dnaAdjusted = computeDnaAdjustment(low, mid, high, features, {
+        lastSalePrice:  effectiveLastSalePrice ? Number(effectiveLastSalePrice) : null,
+        lastSaleDate:   effectiveLastSaleDate,
+        marketPriceYoY: marketPriceYoY != null ? Number(marketPriceYoY) : null,
+        aduSqft:        effectiveAduSqft ? Number(effectiveAduSqft) : null,
+        luxuryTier,
+      });
       featureProfile = { low, mid, high, dnaAdjusted };
+
+      if (autoADU) {
+        console.log(`[save-report] auto-detected ADU: ${autoADU.keywords.join(",")} sqft=${autoADU.sqft}`);
+      }
     }
   }
 

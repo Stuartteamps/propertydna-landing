@@ -61,13 +61,30 @@
            status: "completed",
            features: {{ $json.detectedFeatures }},   ← DNA adjustment flags
            n8nRequestId: {{ $execution.id }},
-           apn: {{ $('RentCast Property').item.json.assessorID || '' }}   ← ★ APN PRIMARY KEY
+           apn: {{ $('RentCast Property').item.json.assessorID || '' }},   ← ★ APN PRIMARY KEY
+
+           ★ VALUATION ACCURACY — pass these for high-precision luxury adjustments:
+           lastSalePrice:  {{ $('RentCast Property').item.json.history[0].price || null }},
+           lastSaleDate:   {{ $('RentCast Property').item.json.history[0].date || null }},
+           marketPriceYoY: {{ $('RentCast Market').item.json.saleData.priceChangeYoY || null }},
+           aduSqft:        null   ← auto-detected from listing text; override here if known
          }
          ★ IMPORTANT: The apn field passes the APN extracted by node [3] RentCast Property
            directly to save-report. This eliminates a second RentCast API call and ensures
            APN is immediately available for property_master and property_history writes.
            assessorID is the field name in the RentCast /v1/properties response.
+
+         ★ lastSalePrice / lastSaleDate enables sale-anchored valuation: if the AVM is >10%
+           below the appreciated last-sale value, the algorithm blends in the sale anchor
+           (80% weight for <24mo sales). This corrects for remodeled/improved homes where
+           AVM hasn't caught up. aduSqft adds a per-sqft casita uplift ($300/sqft luxury).
+
          Response includes: { viewToken, viewUrl, dnaAdjusted }
+
+         ★ CRITICAL BUG IN CURRENT WORKFLOW — Node [12] "OpenAI Narrative":
+           The x-api-key header is set to literal "YOUR_ANTHROPIC_API_KEY" (placeholder).
+           Replace with your actual Anthropic API key from console.anthropic.com.
+           Model should be: claude-sonnet-4-6  (NOT claude-2 or any deprecated model)
       ↓
 [15] IF: Email Present?
        ├─ YES → HTTP: send-report-email (Netlify function)
