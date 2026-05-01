@@ -184,6 +184,7 @@ exports.handler = async (event) => {
     try {
       const result = await resendPost({
         from: `${SENDER_NAME} <${SENDER}>`,
+        reply_to: SENDER,
         to: [contact.email],
         subject: getSubject(contact, campaign),
         html: getHtml(contact, campaign),

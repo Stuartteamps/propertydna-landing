@@ -18,6 +18,9 @@
 [functions."send-weekly-newsletter"]
   schedule = "20 23 * * 4"
 
+[functions."drip-sequence"]
+  schedule = "0 * * * *"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
