@@ -183,7 +183,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
 
   const body = JSON.stringify({
     from: `PropertyDNA <${SENDER}>`,
-    reply_to: SENDER,
+    reply_to: process.env.OWNER_EMAIL || 'stuartteamps@gmail.com',
     to: [contact.email],
     subject: tmpl.subject,
     html: tmpl.html,
