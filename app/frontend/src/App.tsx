@@ -28,6 +28,8 @@ import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 import CampaignManager from "./pages/admin/CampaignManager";
 import Listings from "./pages/Listings";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +64,8 @@ const AppRoutes = () => (
     <Route path="/listings" element={<Listings />} />
     <Route path="/outreach" element={<CampaignManager />} />
     <Route path="/admin/campaigns" element={<CampaignManager />} />
+    <Route path="/blog/:slug" element={<BlogPost />} />
+    <Route path="/blog" element={<Blog />} />
   </Routes>
 );
 
