@@ -1,20 +1,27 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense, Component, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import { computeDNAScore } from '@/lib/dnaScore';
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
+// Lazy-load Leaflet — isolates any crash to just the map section
+const ReportMap = lazy(() => import('@/components/report/ReportMap'));
+
+// Error boundary — catches Leaflet crashes without killing the whole report
+class MapErrorBoundary extends Component<{ children: ReactNode }, { crashed: boolean }> {
+  state = { crashed: false };
+  static getDerivedStateFromError() { return { crashed: true }; }
+  render() {
+    if (this.state.crashed) return (
+      <div style={{ height: 420, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', border: '1px solid rgba(255,255,255,0.08)', color: '#6B6252', fontFamily: 'Jost, sans-serif', fontSize: 13 }}>
+        Map unavailable in this browser
+      </div>
+    );
+    return this.props.children;
+  }
+}
 
 interface ReportData {
   id: string;
@@ -391,27 +398,16 @@ export default function ReportViewByToken() {
               Subject property shown in gold. Comparable sales sized and colored by price.
             </div>
             <div style={{ height: 420, borderRadius: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <MapContainer center={[subjectLat!, subjectLon!]} zoom={14} style={{ height: '100%', width: '100%' }} zoomControl={true}>
-                <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                  attribution='© <a href="https://carto.com/">CARTO</a>'
-                />
-                {compsWithCoords.map((comp: any, i: number) => (
-                  <CircleMarker key={i} center={[Number(comp.lat), Number(comp.lon)]}
-                    radius={8 + Math.min(16, (comp.rawPrice || 500000) / 100000)}
-                    pathOptions={{ color: '#C9A84C', fillColor: priceColor(comp.rawPrice || 500000), fillOpacity: 0.75, weight: 1 }}>
-                    <Popup>
-                      <div style={{ fontFamily: 'sans-serif', fontSize: 13 }}>
-                        <strong>{comp.address}</strong><br />{comp.price} · {comp.sqft} · {comp.distance}
-                      </div>
-                    </Popup>
-                  </CircleMarker>
-                ))}
-                <CircleMarker center={[subjectLat!, subjectLon!]} radius={14}
-                  pathOptions={{ color: '#C9A84C', fillColor: '#C9A84C', fillOpacity: 1, weight: 2 }}>
-                  <Popup><strong>Subject Property</strong><br />{displayAddress}</Popup>
-                </CircleMarker>
-              </MapContainer>
+              <MapErrorBoundary>
+                <Suspense fallback={<div style={{ height: '100%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6252', fontFamily: 'Jost, sans-serif', fontSize: 12 }}>Loading map…</div>}>
+                  <ReportMap
+                    lat={subjectLat!} lon={subjectLon!}
+                    address={displayAddress}
+                    comps={comps}
+                    priceColor={priceColor}
+                  />
+                </Suspense>
+              </MapErrorBoundary>
             </div>
             {comps.length > 0 && (
               <div style={{ marginTop: 24 }}>

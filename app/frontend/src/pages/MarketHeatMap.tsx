@@ -318,8 +318,21 @@ export default function MarketHeatMap() {
 
           {/* Rankings panel */}
           <div style={{ border: '1px solid rgba(255,255,255,0.07)', background: '#0d0d0d', overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 8, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.7)' }}>Market Rankings</span>
+            <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <input
+                type="text"
+                placeholder="Search city…"
+                onChange={e => {
+                  const q = e.target.value.toLowerCase();
+                  if (!q) { return; }
+                  const match = markets.find(m => m.name.toLowerCase().includes(q));
+                  if (match && premium) handleCityClick({ name: match.name, lat: match.lat, lon: match.lon });
+                }}
+                style={{ width: '100%', background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.15)', color: '#e0e0e0', fontSize: 11, padding: '6px 10px', outline: 'none', fontFamily: 'Jost, sans-serif', boxSizing: 'border-box' as const }}
+              />
+            </div>
+            <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 8, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.7)' }}>Market Rankings {premium ? '· click to load' : ''}</span>
               <div style={{ display: 'flex', gap: 6 }}>
                 {(['heat', 'yoy', 'dom'] as SortKey[]).map(k => (
                   <button key={k} onClick={() => { if (sortKey === k) setSortAsc(v => !v); else { setSortKey(k); setSortAsc(false); } }}
