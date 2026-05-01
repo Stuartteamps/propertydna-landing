@@ -81,12 +81,29 @@ exports.handler = async (event) => {
   // ── Owner bypass — platform owner is never charged ────────────────
   const OWNER_EMAIL = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
   if (normalizedEmail === OWNER_EMAIL) {
+    // Always ensure owner has enterprise subscription in DB
     db.upsert("subscriptions", {
       email: OWNER_EMAIL,
       plan_name: "enterprise",
       status: "active",
       current_period_end: null,
     }, "email").catch(() => {});
+
+    // FREE mode → generate report via n8n (same as regular free user)
+    if (mode === "free") {
+      db.insert("report_searches", { email: normalizedEmail, address, city: city || null, state: state || null, zip: zip || null }).catch(() => {});
+      db.kpi("owner_free_report", OWNER_EMAIL, { address });
+      const params = new URLSearchParams({
+        bypass: "1", mode: "free",
+        fullName: fullName || "", email: normalizedEmail,
+        phone: phone || "", role: role || "Buyer",
+        address, unit: unit || "", city: city || "", state: state || "", zip: zip || "",
+        propertyType: propertyType || "", notes: notes || "",
+      });
+      return { statusCode: 200, headers: CORS, body: JSON.stringify({ url: `${origin}/report-pending?${params.toString()}` }) };
+    }
+
+    // PAID modes → bypass Stripe, confirm enterprise access
     db.kpi("owner_bypass", OWNER_EMAIL, { mode });
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ url: `${origin}/dashboard?plan=enterprise&bypass=owner` }) };
   }

@@ -26,6 +26,7 @@ import Dashboard from "./pages/Dashboard";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 import CampaignManager from "./pages/admin/CampaignManager";
+import Listings from "./pages/Listings";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,8 @@ const AppRoutes = () => (
     <Route path="/dashboard" element={<Dashboard />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
+    <Route path="/listings/:region" element={<Listings />} />
+    <Route path="/listings" element={<Listings />} />
     <Route path="/outreach" element={<CampaignManager />} />
     <Route path="/admin/campaigns" element={<CampaignManager />} />
   </Routes>

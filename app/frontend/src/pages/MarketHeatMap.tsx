@@ -4,7 +4,8 @@ import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import PremiumLockOverlay from '@/components/PremiumLockOverlay';
-import { isPremiumUser } from '@/lib/isPremiumUser';
+import { isPremiumUser, checkAndSetPremium } from '@/lib/isPremiumUser';
+import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import HeatMapCanvas from '@/components/heatmap/HeatMapCanvas';
 import FilterPanel from '@/components/heatmap/FilterPanel';
@@ -69,6 +70,7 @@ type ModalTab = 'signin' | 'pricing';
 type SortKey  = 'heat' | 'medianPrice' | 'yoy' | 'dom';
 
 export default function MarketHeatMap() {
+  const { user } = useAuth();
   const [modalOpen,   setModalOpen]   = useState(false);
   const [modalTab,    setModalTab]    = useState<ModalTab>('signin');
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -92,7 +94,15 @@ export default function MarketHeatMap() {
   const [drawerParcel, setDrawerParcel] = useState<HeatParcel | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => { setPremium(isPremiumUser()); }, []);
+  // Check premium status — async verify against Supabase so no Dashboard visit required
+  useEffect(() => {
+    const email = user?.email || sessionStorage.getItem('pdna_email') || '';
+    if (email) {
+      checkAndSetPremium(email).then(isPrem => setPremium(isPrem));
+    } else {
+      setPremium(isPremiumUser());
+    }
+  }, [user?.email]);
 
   const fetchMarkets = useCallback(() => {
     supabase.from('market_snapshots')
@@ -137,12 +147,15 @@ export default function MarketHeatMap() {
 
   useEffect(() => {
     fetchMarkets(); fetchProperties();
-    // Auto-load Palm Springs parcels for premium users
-    if (isPremiumUser()) fetchParcels('Palm Springs', 'CA');
     const mkt  = setInterval(fetchMarkets, 5 * 60 * 1000);
     const prop = setInterval(fetchProperties, 90 * 1000);
     return () => { clearInterval(mkt); clearInterval(prop); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-load Palm Springs parcels once premium status is confirmed
+  useEffect(() => {
+    if (premium && !parcelCity) fetchParcels('Palm Springs', 'CA');
+  }, [premium]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const t = setInterval(() => setBlinkIdx(i => (i + 1) % Math.max(1, properties.length)), 2200);

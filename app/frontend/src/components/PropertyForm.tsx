@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import PricingGate from './PricingGate';
 import AddressAutocomplete from './AddressAutocomplete';
 import { parseIdxUrl } from '@/lib/parseIdxUrl';
+import { setPremiumStatus } from '@/lib/isPremiumUser';
 
 type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
 
@@ -127,6 +128,9 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
         body: JSON.stringify({ email: form.email }),
       });
       const usage = await usageRes.json().catch(() => ({ reportCount: 0, isSubscribed: false }));
+
+      // Cache subscription status so premium features unlock immediately
+      if (usage.isSubscribed) setPremiumStatus(true, usage.plan || null);
 
       if (usage.isSubscribed) {
         // Subscribed → free
