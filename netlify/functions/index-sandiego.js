@@ -43,13 +43,9 @@ const COMMUNITY_QUEUE = [
   "BORREGO SPRINGS", "WARNER SPRINGS",
 ];
 
-// SANDAG nucleus_use_cd codes for residential (1xx = residential)
-// 1000-1999 = residential in CA assessor coding
-const RESIDENTIAL_USE_CODES = [
-  1100, 1110, 1120, 1130, 1140, 1150, 1160, 1170, 1180, 1190,
-  1200, 1210, 1220, 1230, 1240, 1250, 1260, 1270, 1280, 1290,
-  1300, 1400, 1500, 1600, 1700, 1800, 1900,
-];
+// SANDAG nucleus_use_cd is a 3-digit STRING. Residential = "1xx" (starts with "1").
+// Examples: "109"=SFR, "110"=Condo, "117"=Mobile home, "120"=2-4 unit, "130"=5+ units
+// "400"=Commercial, "300"=Commercial, "200"=Vacant — these are NOT residential.
 
 // Replacement cost per sqft — San Diego (higher than inland)
 const COST_PER_SQFT = {
@@ -79,23 +75,52 @@ function fetchJSON(url, timeoutMs = 20000) {
 }
 
 function buildWhere(community) {
-  // Filter by community (city) and residential use codes
-  // SANDAG uses situs_community field for city names
-  const useCodes = RESIDENTIAL_USE_CODES.join(",");
+  // nucleus_use_cd is a 3-char string; "1xx" = residential
+  const resFilter = `nucleus_use_cd >= '100' AND nucleus_use_cd < '200'`;
   if (community && community !== "ALL") {
-    return `UPPER(situs_community)='${community.toUpperCase().replace(/'/g, "''")}' AND nucleus_use_cd IN (${useCodes})`;
+    return `situs_community='${community.replace(/'/g, "''")}' AND ${resFilter}`;
   }
-  return `nucleus_use_cd IN (${useCodes})`;
+  return resFilter;
+}
+
+function parseYear(raw) {
+  if (!raw || String(raw).trim() === "") return null;
+  const n = parseInt(String(raw).trim(), 10);
+  if (isNaN(n)) return null;
+  // SANDAG stores 2-digit year: 00-25 = 2000-2025, 26-99 = 1926-1999
+  if (n <= 25) return 2000 + n;
+  if (n <= 99) return 1900 + n;
+  return n; // already 4-digit
+}
+
+function parseNum(raw) {
+  if (raw == null || raw === "") return null;
+  const n = parseInt(String(raw).trim(), 10);
+  return isNaN(n) ? null : n;
+}
+
+function buildFullAddress(row) {
+  // SANDAG situs_address is the street NUMBER (integer)
+  const parts = [
+    row.situs_address ? String(row.situs_address) : "",
+    row.situs_pre_dir || "",
+    row.situs_street  || "",
+    row.situs_suffix  || "",
+    row.situs_post_dir || "",
+  ].map(s => String(s).trim()).filter(Boolean);
+  return parts.join(" ").replace(/\s+/g, " ").trim();
 }
 
 async function fetchParcels(where, offset, count) {
   const params = new URLSearchParams({
     where,
     outFields: [
-      "apn", "situs_address", "situs_community", "situs_zip",
+      "apn", "situs_address", "situs_pre_dir", "situs_street", "situs_suffix",
+      "situs_post_dir", "situs_community", "situs_zip",
       "total_lvg_area", "bedrooms", "baths", "pool", "acreage",
       "asr_land", "asr_impr", "asr_total", "year_effective",
-      "nucleus_use_cd", "nucleus_zone_cd", "addition_area",
+      "nucleus_use_cd", "qual_class_shape", "addition_area",
+      "x_coord", "y_coord", "ownerocc", "par_view",
     ].join(","),
     returnGeometry: "false",
     resultOffset: String(offset),
@@ -115,12 +140,13 @@ async function countParcels(where) {
 }
 
 function computeSDDNA(row) {
-  const sqft       = Number(row.total_lvg_area || 0);
-  const yearEff    = Number(row.year_effective  || 0);
-  const improvVal  = Number(row.asr_impr        || 0);
-  const landValue  = Number(row.asr_land        || 0);
-  const totalValue = Number(row.asr_total       || improvVal + landValue);
-  const hasPool    = String(row.pool || "").toUpperCase() === "Y" || Number(row.pool) === 1;
+  const sqft       = Number(row.total_lvg_area  || 0);
+  const yearEff    = parseYear(row.year_effective) || 0;
+  const improvVal  = Number(row.asr_impr         || 0);
+  const landValue  = Number(row.asr_land         || 0);
+  const totalValue = Number(row.asr_total        || improvVal + landValue);
+  const hasPool    = String(row.pool  || "").trim().toUpperCase() === "Y";
+  const hasView    = String(row.par_view || "").trim() !== "" && String(row.par_view).trim() !== "0";
 
   const costSqft  = COST_PER_SQFT.default;
   const age       = yearEff > 1800 ? new Date().getFullYear() - yearEff : 30;
@@ -142,6 +168,7 @@ function computeSDDNA(row) {
   return {
     renovationRatio:     renovRatio,
     conditionScore:      condScore,
+    yearBuilt:           yearEff || null,
     assessorLandValue:   landValue || null,
     assessorImprovValue: improvVal || null,
     assessorTotalValue:  totalValue || null,
@@ -149,6 +176,7 @@ function computeSDDNA(row) {
       pool:              hasPool,
       golf_course:       false,
       waterfront:        false,
+      view:              hasView,
       fully_remodeled:   fullyRemod,
       updated,
       original_condition: origCond,
@@ -159,20 +187,22 @@ function computeSDDNA(row) {
 }
 
 function buildMasterRow(row, dna) {
-  const addr = [row.situs_address].filter(Boolean).join(" ").trim();
+  const addr = buildFullAddress(row);
   return {
     apn:                String(row.apn || "").trim(),
     county_fips:        COUNTY_FIPS,
     address:            addr,
-    city:               String(row.situs_community || "").trim().toUpperCase(),
+    city:               String(row.situs_community || "").trim(),
     state:              "CA",
     zip:                String(row.situs_zip || "").trim().slice(0, 5),
     property_type:      String(row.nucleus_use_cd || ""),
-    beds:               Number(row.bedrooms) || null,
-    baths:              Number(row.baths)    || null,
+    beds:               parseNum(row.bedrooms),
+    baths:              parseNum(row.baths),
     sqft:               Number(row.total_lvg_area) || null,
     lot_sqft:           row.acreage ? Math.round(Number(row.acreage) * 43560) : null,
-    year_built:         Number(row.year_effective) || null,
+    year_built:         dna.yearBuilt,
+    lat:                row.y_coord || null,
+    lng:                row.x_coord || null,
     tax_assessed_value: dna.assessorTotalValue,
     last_updated:       new Date().toISOString(),
   };
@@ -185,18 +215,22 @@ function buildHistoryRow(row, dna, today) {
     event_date: today,
     source:     "sandag_parcels",
     data: {
-      address:          row.situs_address,
+      address:          buildFullAddress(row),
       community:        row.situs_community,
       zip:              row.situs_zip,
-      sqft:             row.total_lvg_area,
-      beds:             row.bedrooms,
-      baths:            row.baths,
-      pool:             row.pool,
+      sqft:             Number(row.total_lvg_area) || null,
+      beds:             parseNum(row.bedrooms),
+      baths:            parseNum(row.baths),
+      pool:             row.pool === "Y",
       acreage:          row.acreage,
       additionArea:     row.addition_area,
-      yearEffective:    row.year_effective,
+      yearEffective:    dna.yearBuilt,
+      qualClassShape:   row.qual_class_shape,
       useCode:          row.nucleus_use_cd,
-      zoneCode:         row.nucleus_zone_cd,
+      parView:          row.par_view,
+      ownerOcc:         row.ownerocc,
+      lat:              row.y_coord,
+      lng:              row.x_coord,
       landValue:        dna.assessorLandValue,
       improvValue:      dna.assessorImprovValue,
       totalValue:       dna.assessorTotalValue,
@@ -264,9 +298,9 @@ exports.handler = async (event) => {
       historyRows.push(buildHistoryRow(row, dna, today));
       if (sample.length < 3) {
         sample.push({
-          apn: row.apn, address: row.situs_address,
+          apn: row.apn, address: buildFullAddress(row),
           city: row.situs_community, sqft: row.total_lvg_area,
-          yearEff: row.year_effective, renovRatio: dna.renovationRatio,
+          yearBuilt: dna.yearBuilt, renovRatio: dna.renovationRatio,
           condScore: dna.conditionScore, features: dna.detectedFeatures,
         });
       }
