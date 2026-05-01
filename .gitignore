@@ -29,3 +29,10 @@ npm-debug.log*
 .netlify
 AuthKey_*.p8
 *.p8
+
+# OAuth credentials and tokens — never commit
+tools/gmail-cleanup/credentials_*.json
+tools/gmail-cleanup/token_*.json
+tools/**/*.json
+*.credentials.json
+*_token.json

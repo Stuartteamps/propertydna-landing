@@ -1,0 +1,594 @@
+firstName,lastName,email,phone,address,city,state,zip,source,notes
+William,,,,1040 E Alejo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 3134sqft | Single Family Residential
+John,Shakarian,,,1150 E Alejo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2631sqft | Single Family Residential
+Thomas,Ballou,,,1328 E Alejo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 169sqft | Single Family Residential
+Laura,Svedberg,,,1460 E Alejo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1216sqft | Single Family Residential
+Thomas,Riccio,,,1500 E Alejo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1627sqft | Single Family Residential
+Joey,Duhon,,,777 N Arquilla Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 73sqft | Single Family Residential
+John,Stelmach,,,821 N Arquilla Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2439sqft | Single Family Residential
+Virginia,Brooker,,,895 N Arquilla Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2711sqft | Single Family Residential
+George,,,,1025 N Arquilla Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1982sqft | Single Family Residential
+William,Janus,,,1040 N Arquilla Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2076sqft | Single Family Residential
+Francis,Alvarez,,,1105 N Asher Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3656sqft | Single Family Residential
+Joseph,Stuart,,,1115 N Asher Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3085sqft | Single Family Residential
+Michele,Sizemore,,,1182 N Asher Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3437sqft | Single Family Residential
+Christy,Porter,,,521 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2065sqft | Single Family Residential
+Daniel,Bunker,,,545 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2568sqft | Single Family Residential
+Sidney,Pr,,,555 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1816sqft | Single Family Residential
+Debra,Moses,,,590 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2037sqft | Single Family Residential
+Michael,Huard,,,615 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2188sqft | Single Family Residential
+E,Keeney,,,639 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2219sqft | Single Family Residential
+Lisa,Carlomagno,,,681 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2159sqft | Single Family Residential
+Graham,Schneider,,,755 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2623sqft | Single Family Residential
+John,,,,840 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1251sqft | Single Family Residential
+Jill,Lewis,,,850 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2641sqft | Single Family Residential
+Leslie,Sheppard,,,1111 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 144sqft | Single Family Residential
+V,,,,1125 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1731sqft | Single Family Residential
+David,Madison,,,1175 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1666sqft | Single Family Residential
+Sheriann,Green,,,1185 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1476sqft | Single Family Residential
+Judi,Cook,,,1190 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1656sqft | Single Family Residential
+Adeline,Garcia,,,1196 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 271sqft | Single Family Residential
+Neil,,,,1200 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1756sqft | Single Family Residential
+Irl,Jones,,,1455 N Avenida Caballeros,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1684sqft | Single Family Residential
+Robert,,,,879 N Avenida Olivos,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3625sqft | Single Family Residential
+Diomidio,,,,900 N Avenida Olivos,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3358sqft | Single Family Residential
+Nasr,,,,903 N Avenida Olivos,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3942sqft | Single Family Residential
+Hosea,Brown,,,940 N Avenida Olivos,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2739sqft | Single Family Residential
+Silvana,Fillmore,,,971 N Avenida Olivos,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2053sqft | Single Family Residential
+Jack,,,,835 N Avenida Palmas,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 389sqft | Single Family Residential
+Jay,Rifkin,,,901 N Avenida Palos Verdes,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3227sqft | Single Family Residential
+Charles,,,,939 N Avenida Palos Verdes,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2739sqft | Single Family Residential
+John,Shields,,,946 N Avenida Palos Verdes,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3637sqft | Single Family Residential
+Louis,Levy,,,1298 Barrymore Pl,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3173sqft | Single Family Residential
+Steven,Allen,,,1349 Barrymore Pl,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3419sqft | Single Family Residential
+Elzbieta,Szambelan,,,1378 Barrymore Pl,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3173sqft | Single Family Residential
+Glen,Gertmenian,,,1379 Barrymore Pl,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 386sqft | Single Family Residential
+Jeffrey,Johnson,,,1398 Barrymore Pl,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3085sqft | Single Family Residential
+Paul,,,,946 N Biskra Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2335sqft | Single Family Residential
+Michael,Lambton,,,1014 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2126sqft | Single Family Residential
+Gary,Borgstedt,,,1022 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 173sqft | Single Family Residential
+Scott,Ryan,,,1057 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1874sqft | Single Family Residential
+Christopher,Ruetz,,,1073 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2075sqft | Single Family Residential
+James,,,,1130 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 179sqft | Single Family Residential
+Marvin,,,,1144 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1771sqft | Single Family Residential
+Bruce,,,,1165 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 157sqft | Single Family Residential
+Fernando,,,,1189 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2194sqft | Single Family Residential
+Jeffrey,Zorn,,,1225 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 175sqft | Single Family Residential
+Phillip,Wigglesworth,,,1230 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1625sqft | Single Family Residential
+Laurel,Futterman,,,1248 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3014sqft | Single Family Residential
+Franklin,Jasko,,,1255 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1537sqft | Single Family Residential
+Kimberly,Brown,,,1318 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 23sqft | Single Family Residential
+Anne,Samuels,,,1338 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 836sqft | Single Family Residential
+Sheldon,Summers,,,1370 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1696sqft | Single Family Residential
+Teresa,,,,1385 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 181sqft | Single Family Residential
+Marietta,,,,1411 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3301sqft | Single Family Residential
+Raymond,Foote,,,1477 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2325sqft | Single Family Residential
+Colleen,Elliott,,,1551 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1757sqft | Single Family Residential
+Jason,Scott,,,1557 E Buena Vista Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1694sqft | Single Family Residential
+Ronald,,,,910 N Buttonwillow Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 253sqft | Single Family Residential
+David,Smith,,,942 N Buttonwillow Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1456sqft | Single Family Residential
+David,Manley,,,913 N Calle Loro,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1998sqft | Single Family Residential
+Howard,Cohen,,,923 N Calle Loro,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3056sqft | Single Family Residential
+David,,,,930 N Calle Loro,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2903sqft | Single Family Residential
+Deborah,Cormier,,,933 N Calle Loro,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1852sqft | Single Family Residential
+Robert,Miley,,,940 N Calle Loro,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Juan,,,,505 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 937sqft | Single Family Residential
+Paul,Messina,,,527 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1009sqft | Single Family Residential
+Anna,Caterinicchia,,,530 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1452sqft | Single Family Residential
+Jeffrey,Meade,,,544 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1474sqft | Single Family Residential
+Quinn,Dolan,,,547 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 156sqft | Single Family Residential
+Thomas,Krygowski,,,567 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1407sqft | Single Family Residential
+Darleene,Cooper,,,572 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 126sqft | Single Family Residential
+Humberto,,,,576 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1572sqft | Single Family Residential
+Angus,Miller Jr,,,577 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1126sqft | Single Family Residential
+Home,Away From Home Palm Springs,,,587 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1284sqft | Single Family Residential
+Dimitar,Dyankov,,,595 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1706sqft | Single Family Residential
+Marie,,,,619 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 167sqft | Single Family Residential
+Richard,Griswold,,,714 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1321sqft | Single Family Residential
+Barbara,Beaupre,,,749 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 972sqft | Single Family Residential
+Robert,Shashoua,,,777 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1118sqft | Single Family Residential
+Jeffrey,Waddle,,,791 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1723sqft | Single Family Residential
+Bruce,Wishnefsky,,,1111 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2168sqft | Single Family Residential
+Rosemary,Black,,,1133 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1854sqft | Single Family Residential
+William,Markley,,,1134 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1988sqft | Single Family Residential
+Katherine,Petersen,,,1163 N Calle Marcus,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1573sqft | Single Family Residential
+Jeffrey,Phillips,,,802 N Calle Quetzal,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Matthew,Adam,,,805 N Calle Quetzal,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1675sqft | Single Family Residential
+Milvia,Virgili,,,870 N Calle Quetzal,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Filomena,Aquino,,,890 N Calle Quetzal,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Karla,Player,,,511 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1325sqft | Single Family Residential
+Rohan,Bisset,,,530 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1269sqft | Single Family Residential
+Joseph,Yohe,,,540 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1434sqft | Single Family Residential
+Joann,Farver,,,548 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 171sqft | Single Family Residential
+Lynn,Crane,,,554 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1443sqft | Single Family Residential
+David,Thomas,,,575 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1421sqft | Single Family Residential
+Michael,Durnin,,,583 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1633sqft | Single Family Residential
+James,,,,634 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2613sqft | Single Family Residential
+Bruce,,,,637 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1433sqft | Single Family Residential
+Michelle,Soto Teall,,,677 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1231sqft | Single Family Residential
+Anthony,Paige,,,680 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 884sqft | Single Family Residential
+Debra,Weinstein,,,681 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1181sqft | Single Family Residential
+Barbara,Richards,,,686 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 943sqft | Single Family Residential
+Mary,Schroeder,,,727 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1307sqft | Single Family Residential
+Julie,Cobb,,,748 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1262sqft | Single Family Residential
+Christine,Patterson,,,764 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1478sqft | Single Family Residential
+Dee,Wallis Bianchi,,,767 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1173sqft | Single Family Residential
+Todd,Milliner,,,1111 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2165sqft | Single Family Residential
+Geoff,Gilbert,,,1133 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2547sqft | Single Family Residential
+Aalsa,Lee,,,1193 N Calle Rolph,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1795sqft | Single Family Residential
+Adam,,,,839 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Dustin,,,,859 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Salim,Alama,,,860 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1829sqft | Single Family Residential
+Nadia,,,,909 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Ronald,Bell,,,912 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Neal,Weir,,,921 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1731sqft | Single Family Residential
+John,Jacobs,,,922 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Ukiyo,Lifestyle,,,932 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Lori,Simmons,,,939 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Jeffrey,Benjamin,,,949 N Camino Condor,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Maryellen,Hill,,,2301 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Shaun,Mcgovern,,,2313 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2192sqft | Single Family Residential
+Carmine,Arcaro,,,2320 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Paul,Pensabene,,,2321 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Kalin,Robert S,,,2350 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2101sqft | Single Family Residential
+Gregg,,,,2351 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Cahill-Barger,,,,2411 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+George,Mclaughlin,,,2412 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Dana,Guarnera,,,2451 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 166sqft | Single Family Residential
+Samantha,Clemons,,,2452 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Oscar,Chamudes,,,2471 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1809sqft | Single Family Residential
+Marilou,Cabacungan,,,2472 E Camino Pelicano,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 166sqft | Single Family Residential
+Brian,Beach,,,508 N Camino Real,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 4164sqft | Single Family Residential
+Michael,Garner,,,545 N Camino Real,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2393sqft | Single Family Residential
+John,,,,560 N Camino Real,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3398sqft | Single Family Residential
+Stephen,Smith,,,567 N Camino Real,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2272sqft | Single Family Residential
+Michael,Gendler,,,620 N Camino Real,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 3186sqft | Single Family Residential
+Enger-Barros,,,,690 N Camino Real,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1816sqft | Single Family Residential
+Jacqueline,Yellin,,,713 N Camino Real,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 4091sqft | Single Family Residential
+Christopher,,,,953 N Cerritos Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2434sqft | Single Family Residential
+Deen,Warren,,,970 N Cerritos Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Ron,Diliberto,,,619 E Chia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2073sqft | Single Family Residential
+John,Sigler,,,663 E Chia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1849sqft | Single Family Residential
+Steven,Dinga,,,733 E Chia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1839sqft | Single Family Residential
+Joel,Schneider,,,777 E Chia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2057sqft | Single Family Residential
+Paul,Depace,,,901 E Chia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1849sqft | Single Family Residential
+Phillip,Zamudio,,,990 E Chia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1642sqft | Single Family Residential
+Raul,Sosa,,,1515 E Chia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 3049sqft | Single Family Residential
+Christopher,Halligan,,,1533 E Chia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1427sqft | Single Family Residential
+Mark,,,,1031 E Christina Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1756sqft | Single Family Residential
+Thomas,Storms,,,1061 E Christina Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2068sqft | Single Family Residential
+Jerry,Weyer,,,1081 E Christina Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1898sqft | Single Family Residential
+Anthony,Marchese,,,443 E Chuckwalla Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2632sqft | Single Family Residential
+Adan,Murillo,,,970 E Chuckwalla Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1225sqft | Single Family Residential
+Felipe,,,,990 E Chuckwalla Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1376sqft | Single Family Residential
+Michael,Polk,,,950 N Cibola Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1989sqft | Single Family Residential
+Karen,Blinkinsop,,,981 N Cibola Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1832sqft | Single Family Residential
+Maurice,Minno,,,1236 Colony Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 295sqft | Single Family Residential
+Michael,Isaacs,,,1245 Colony Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3173sqft | Single Family Residential
+Steven,Brown,,,1252 Colony Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3173sqft | Single Family Residential
+John,,,,1302 Colony Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 386sqft | Single Family Residential
+Richard,Norris,,,1394 Colony Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3419sqft | Single Family Residential
+Carlos,Paz,,,909 E Cottonwood Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1225sqft | Single Family Residential
+Julio,Hernandez,,,921 E Cottonwood Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1376sqft | Single Family Residential
+Angela,Young,,,933 E Cottonwood Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1376sqft | Single Family Residential
+Alberto,,,,945 E Cottonwood Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1376sqft | Single Family Residential
+Jesus,,,,957 E Cottonwood Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1225sqft | Single Family Residential
+Gabriel,,,,969 E Cottonwood Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1376sqft | Single Family Residential
+Eneida,Reboucas,,,999 E Cottonwood Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1386sqft | Single Family Residential
+Ivor,Nazareth,,,1347 Culver Pl,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 344sqft | Single Family Residential
+James,Mccabe,,,1377 Culver Pl,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3495sqft | Single Family Residential
+Ian,Trentham,,,1380 Culver Pl,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 386sqft | Single Family Residential
+Brian,Smith,,,1050 E Deepak Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2203sqft | Single Family Residential
+Carol,Costner,,,1066 E Deepak Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 26sqft | Single Family Residential
+Jerome,Davis,,,1070 E Deepak Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 272sqft | Single Family Residential
+Richard,Mangino,,,1088 E Deepak Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2692sqft | Single Family Residential
+Peter,Harmon,,,1099 E Deepak Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3122sqft | Single Family Residential
+Adam,Gilbert,,,1172 E Deepak Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3162sqft | Single Family Residential
+Tammy,,,,1044 E Diana Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2329sqft | Single Family Residential
+Jana,Beran,,,1055 E Diana Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2073sqft | Single Family Residential
+Clarence,Moten,,,1010 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2207sqft | Single Family Residential
+Roman,Coppola,,,1011 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3237sqft | Single Family Residential
+Larribas,George Separate Property,,,1028 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2336sqft | Single Family Residential
+Doris,Hart,,,1053 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2258sqft | Single Family Residential
+Steven,,,,1063 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1789sqft | Single Family Residential
+Scott,,,,1066 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1695sqft | Single Family Residential
+Deborah,Hand,,,1108 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 105sqft | Single Family Residential
+Alan,Kaminsky,,,1112 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1285sqft | Single Family Residential
+Marvin,,,,1135 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1707sqft | Single Family Residential
+Randall,,,,1155 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2096sqft | Single Family Residential
+Craig,Attebury,,,1160 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2829sqft | Single Family Residential
+Carl,Heuchling,,,1172 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1932sqft | Single Family Residential
+Kevin,Lavine,,,1199 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 195sqft | Single Family Residential
+Moamad,Shareef,,,1232 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2387sqft | Single Family Residential
+Joe,Ricketts,,,1316 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2443sqft | Single Family Residential
+Gabi,,,,1350 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1187sqft | Single Family Residential
+Timothy,Mertel,,,1380 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2321sqft | Single Family Residential
+Alvidera-Baggs,Prop,,,1401 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1657sqft | Single Family Residential
+Scott,Sites,,,1428 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2698sqft | Single Family Residential
+Rachel,,,,1471 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 262sqft | Single Family Residential
+Dale,,,,1508 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2135sqft | Single Family Residential
+Timothy,Sigle,,,1558 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1847sqft | Single Family Residential
+Helene,Sarda,,,1585 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1733sqft | Single Family Residential
+Daniel,,,,1660 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1302sqft | Single Family Residential
+Jason,Ellisen,,,1750 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1456sqft | Single Family Residential
+Bruce,Maki,,,1910 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1949sqft | Single Family Residential
+Frank,,,,1980 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1774sqft | Single Family Residential
+Shawn,Visutsiri,,,2020 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1712sqft | Single Family Residential
+George,Piazzi,,,2320 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Holder,Roger E,,,2321 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 21sqft | Single Family Residential
+Scott,Madover,,,2380 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 264sqft | Single Family Residential
+Walter,Miller,,,2383 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+William,Breto,,,2410 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 166sqft | Single Family Residential
+Kevin,Ogrady,,,2470 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 166sqft | Single Family Residential
+Donald,Gardenier,,,2473 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 166sqft | Single Family Residential
+David,Parker,,,2490 E El Alameda,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2135sqft | Single Family Residential
+Steven,Edwards,,,504 N Farrell Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 136sqft | Single Family Residential
+Dennis,Pleimann,,,546 N Farrell Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 12sqft | Single Family Residential
+Gary,Dorothy,,,562 N Farrell Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 136sqft | Single Family Residential
+Ronald,,,,569 N Farrell Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 136sqft | Single Family Residential
+Oottrr,,,,608 N Farrell Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 136sqft | Single Family Residential
+Patricia,Wilcox,,,835 N Farrell Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Joseph,Yi,,,855 N Farrell Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2029sqft | Single Family Residential
+Denny,Salveson,,,1401 N Fiesta Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 14sqft | Single Family Residential
+Lee,Purcell,,,1433 N Fiesta Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2192sqft | Single Family Residential
+Ronald,Wendt,,,1441 N Fiesta Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2059sqft | Single Family Residential
+Ron,Conye,,,1446 N Fiesta Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1962sqft | Single Family Residential
+Joanne,Demers,,,1453 N Fiesta Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1832sqft | Single Family Residential
+Mark,Bautzer,,,670 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 313sqft | Single Family Residential
+Terry,,,,890 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3095sqft | Single Family Residential
+David,Wrenn,,,933 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2968sqft | Single Family Residential
+Peter,Bray,,,987 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3635sqft | Single Family Residential
+Tomlinson,Holman,,,1022 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3817sqft | Single Family Residential
+Gregory,,,,1060 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 4086sqft | Single Family Residential
+Lesley,Zendle,,,1080 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 3236sqft | Single Family Residential
+Doreen,Guyer,,,1130 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 187sqft | Single Family Residential
+Allan,,,,1142 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 3286sqft | Single Family Residential
+Jonathan,,,,1169 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 1811sqft | Single Family Residential
+Dianne,Russom,,,1187 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1603sqft | Single Family Residential
+Patrick,,,,1257 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1909sqft | Single Family Residential
+Kyle,Mosher,,,1550 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 11sqft | Single Family Residential
+Gregory,,,,1631 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1336sqft | Single Family Residential
+Howard,Aronow,,,1635 E Granvia Valmonte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1339sqft | Single Family Residential
+Eugene,Pretorius,,,505 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 3186sqft | Single Family Residential
+Michael,Smith,,,514 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1649sqft | Single Family Residential
+Richard,,,,534 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1152sqft | Single Family Residential
+John,Morrill,,,542 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1285sqft | Single Family Residential
+Mark,Mcdavitt,,,558 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 139sqft | Single Family Residential
+Anita,Montalvo,,,567 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1995sqft | Single Family Residential
+Joseph,Nespoli,,,577 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1564sqft | Single Family Residential
+Ronald,Ward,,,584 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 12sqft | Single Family Residential
+Dona,Vanden Heuvel,,,682 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 165sqft | Single Family Residential
+Michael,Shaw,,,696 N Hermosa Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2008sqft | Single Family Residential
+Kenneth,Levin,,,544 N Indian Canyon Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1849sqft | Single Family Residential
+Sanjeev,Grewal,,,548 N Indian Canyon Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2005sqft | Single Family Residential
+Rita,Jarrett,,,501 N Juanita Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 136sqft | Single Family Residential
+Jutta,Cavallaro,,,525 N Juanita Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2856sqft | Single Family Residential
+Ronald,Gothberg,,,593 N Juanita Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 156sqft | Single Family Residential
+Daniel,Pisut,,,603 N Juanita Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1536sqft | Single Family Residential
+Rx2,,,,625 N Juanita Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 136sqft | Single Family Residential
+Keith,Zabel,,,669 N Juanita Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 201sqft | Single Family Residential
+John,Bernal Iii,,,695 N Juanita Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 136sqft | Single Family Residential
+Corden,Mckenzie,,,1120 Linda Vista Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1812sqft | Single Family Residential
+Kerry,Cunningham,,,1121 Linda Vista Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2258sqft | Single Family Residential
+Diana,Doyle,,,1142 Linda Vista Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2036sqft | Single Family Residential
+Leroy,Peterson,,,1165 Linda Vista Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2024sqft | Single Family Residential
+Frank,,,,1185 Linda Vista Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2522sqft | Single Family Residential
+Marie,Shaw,,,1221 Linda Vista Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2333sqft | Single Family Residential
+John,Mcminn,,,1250 Linda Vista Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 145sqft | Single Family Residential
+Robert,,,,511 N Los Nietos,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 4178sqft | Single Family Residential
+Jorge,,,,544 N Los Nietos,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 3808sqft | Single Family Residential
+Ricky,Lehman,,,1030 E Marshall Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2309sqft | Single Family Residential
+Nancy,Stegner,,,1035 E Marshall Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1644sqft | Single Family Residential
+Diana,Gaba,,,1080 E Marshall Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1617sqft | Single Family Residential
+John,Pullin,,,1085 E Marshall Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2541sqft | Single Family Residential
+Marvin,Dorson,,,1086 E Marshall Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2111sqft | Single Family Residential
+Grant,Laviale,,,1090 E Marshall Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1733sqft | Single Family Residential
+Bruce,Ericksen,,,1221 Mary Fleming Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 344sqft | Single Family Residential
+Edgar,,,,1224 Mary Fleming Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3173sqft | Single Family Residential
+Herman,,,,1121 N May Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3195sqft | Single Family Residential
+Earl,,,,1144 N May Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1901sqft | Single Family Residential
+Thomas,Allems,,,1161 N May Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3366sqft | Single Family Residential
+Diane,Iglesias,,,1172 N May Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2057sqft | Single Family Residential
+Sonya,Moreno,,,1179 N May Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2389sqft | Single Family Residential
+David,Scott,,,486 E Mel Ave Unit 13,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | bd 996sqft | Single Family Residential
+Steve,,,,688 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 311sqft | Single Family Residential
+Irja,Carrie,,,695 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2302sqft | Single Family Residential
+Jeffrey,Miller,,,775 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3906sqft | Single Family Residential
+Nicolas,Marabout,,,812 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 206sqft | Single Family Residential
+Eric,Mann,,,821 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 792sqft | Single Family Residential
+Barkley,Dean,,,887 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 3575sqft | Single Family Residential
+Mark,,,,1516 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2002sqft | Single Family Residential
+Christopher,White,,,1528 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1828sqft | Single Family Residential
+Douglas,Chirnside,,,1540 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2046sqft | Single Family Residential
+Cindra,Rowell,,,1548 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2101sqft | Single Family Residential
+Mary,Lanca,,,1640 E Mel Ave,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1088sqft | Single Family Residential
+Marcia,Mccue,,,505 E Miraleste Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2124sqft | Single Family Residential
+John,Ellis,,,533 E Miraleste Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 31sqft | Single Family Residential
+Donald,Bond,,,506 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1796sqft | Single Family Residential
+David,Robertson Iii,,,521 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1451sqft | Single Family Residential
+Allen,Baki,,,543 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1933sqft | Single Family Residential
+Lorna,,,,588 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 12sqft | Single Family Residential
+Richard,Fearns,,,589 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1803sqft | Single Family Residential
+Scott,Preston,,,607 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1928sqft | Single Family Residential
+Luis,Lucio,,,648 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 12sqft | Single Family Residential
+Dorothy,Ostman,,,666 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 136sqft | Single Family Residential
+Ottilie,Arthen,,,682 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1676sqft | Single Family Residential
+Steven,Guidry,,,683 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 171sqft | Single Family Residential
+Julie,Warren,,,690 N Monterey Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2116sqft | Single Family Residential
+Norman,,,,1020 E Olive Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2046sqft | Single Family Residential
+Gregory,,,,1025 E Olive Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2108sqft | Single Family Residential
+Wilson,Lynda,,,1040 E Olive Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1702sqft | Single Family Residential
+Clarissa,Filgioun,,,1055 E Olive Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2178sqft | Single Family Residential
+Curt,Ginther,,,1061 E Olive Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1587sqft | Single Family Residential
+Brenton,Suiter,,,1074 E Olive Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1954sqft | Single Family Residential
+Val,Addams,,,1091 E Olive Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3093sqft | Single Family Residential
+William,Sanderson,,,1422 N Opuntia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1832sqft | Single Family Residential
+Richard,Coyle,,,1439 N Opuntia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 139sqft | Single Family Residential
+William,Gil,,,1440 N Opuntia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1604sqft | Single Family Residential
+Thomas,Rounds,,,1445 N Opuntia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1908sqft | Single Family Residential
+Brian,Beneat,,,1466 N Opuntia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2243sqft | Single Family Residential
+Michael,Mcalhaney,,,1467 N Opuntia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1498sqft | Single Family Residential
+Alice,Zorn,,,1481 N Opuntia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1475sqft | Single Family Residential
+Thomas,Lane,,,1482 N Opuntia Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1694sqft | Single Family Residential
+Michael,Fey,,,1121 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1812sqft | Single Family Residential
+Deborah,Piwonka,,,1133 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2908sqft | Single Family Residential
+Patrick,Harman,,,1139 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2404sqft | Single Family Residential
+Sandra,Conyne,,,1145 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1752sqft | Single Family Residential
+Raymond,Goettl,,,1163 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 163sqft | Single Family Residential
+Sherry,Alchian,,,1166 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1827sqft | Single Family Residential
+Marguerite,Bane,,,1171 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1331sqft | Single Family Residential
+William,Schroeder,,,1245 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 249sqft | Single Family Residential
+Paul,Zapala,,,1252 Pasatiempo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1478sqft | Single Family Residential
+Sandoval,,,,515 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1394sqft | Single Family Residential
+Michael,,,,516 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 165sqft | Single Family Residential
+James,Hum,,,532 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1032sqft | Single Family Residential
+Dean,Hollenkamp,,,535 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1092sqft | Single Family Residential
+Charles,,,,544 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 97sqft | Single Family Residential
+Robert,Beach,,,563 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2356sqft | Single Family Residential
+Robert,Mosura,,,572 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1525sqft | Single Family Residential
+Benny,Nash,,,573 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1348sqft | Single Family Residential
+Daron,Madinger,,,585 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2092sqft | Single Family Residential
+Scott,Wade,,,607 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1712sqft | Single Family Residential
+Julio,Rodrigues,,,610 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1122sqft | Single Family Residential
+Douglas,East,,,615 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1294sqft | Single Family Residential
+Richard,Bonvissuto,,,660 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1264sqft | Single Family Residential
+Michael,,,,677 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1431sqft | Single Family Residential
+David,Summers,,,684 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1008sqft | Single Family Residential
+Julia,Rogers,,,710 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1445sqft | Single Family Residential
+Padraic,Jordan,,,750 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1082sqft | Single Family Residential
+Jennifer,King,,,753 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1531sqft | Single Family Residential
+Steven,Grosdidier,,,765 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1541sqft | Single Family Residential
+Alana,Scott,,,770 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1307sqft | Single Family Residential
+Michael,Wylie,,,800 N Paseo De Anza,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 195sqft | Single Family Residential
+Janet,Ihde,,,636 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1916sqft | Single Family Residential
+Mark,Bessey,,,720 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1978sqft | Single Family Residential
+Trevor,Manning,,,775 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 4035sqft | Single Family Residential
+Jay,Schmid,,,890 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3055sqft | Single Family Residential
+Christopher,Davidson,,,895 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3004sqft | Single Family Residential
+Jamie,Stickney,,,900 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1747sqft | Single Family Residential
+Candace,Luptowitz,,,1020 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1718sqft | Single Family Residential
+John,,,,1021 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2123sqft | Single Family Residential
+Paul,Glackman,,,1030 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2104sqft | Single Family Residential
+Robert,Lorenson,,,1040 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1838sqft | Single Family Residential
+Byron,Joyner,,,1055 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1786sqft | Single Family Residential
+John,Butterly,,,1060 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2028sqft | Single Family Residential
+Hanna,Sanders,,,1087 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3223sqft | Single Family Residential
+Mark,Ferrier,,,1110 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 2496sqft | Single Family Residential
+Douglas,,,,1190 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2641sqft | Single Family Residential
+Stanley,Clark,,,1200 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1162sqft | Single Family Residential
+Robert,Kleppe,,,1249 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1408sqft | Single Family Residential
+James,Jones,,,1289 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1618sqft | Single Family Residential
+Joseph,,,,1291 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1282sqft | Single Family Residential
+James,,,,1500 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1866sqft | Single Family Residential
+Bruce,Schott,,,1508 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 253sqft | Single Family Residential
+Osmundo,Saguil,,,1528 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1528sqft | Single Family Residential
+Donald,,,,1590 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2375sqft | Single Family Residential
+Robert,,,,1617 E Paseo El Mirador,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2174sqft | Single Family Residential
+Joan,Petruzzi,,,500 N Phillips Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2225sqft | Single Family Residential
+Linda,Holmes,,,501 N Phillips Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2756sqft | Single Family Residential
+William,Gerardi,,,640 N Phillips Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 235sqft | Single Family Residential
+Jose,Troncoso,,,650 N Phillips Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 333sqft | Single Family Residential
+Edward,Smith,,,661 N Phillips Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 4553sqft | Single Family Residential
+Stephen,Saponaro,,,733 N Phillips Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2sqft | Single Family Residential
+Allison,Whitlock,,,755 N Phillips Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2422sqft | Single Family Residential
+Domenic,,,,770 N Phillips Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2019sqft | Single Family Residential
+Fai,Lee,,,528 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1799sqft | Single Family Residential
+Mayra,Leyva,,,536 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1288sqft | Single Family Residential
+Sacha,Khanbegian,,,546 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 832sqft | Single Family Residential
+Joann,Rosendo,,,551 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1425sqft | Single Family Residential
+Robert,Goldware,,,572 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1522sqft | Single Family Residential
+Patrick,Ryan Sr,,,583 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 925sqft | Single Family Residential
+Colin,,,,590 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 232sqft | Single Family Residential
+Alice,Mcreynolds,,,633 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1305sqft | Single Family Residential
+Manuel,Padilla Jr,,,676 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1881sqft | Single Family Residential
+Gilbert,Fenn,,,686 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1554sqft | Single Family Residential
+Robert,,,,717 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 116sqft | Single Family Residential
+Matthew,Morris,,,720 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1136sqft | Single Family Residential
+Michael,Hillman,,,729 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1239sqft | Single Family Residential
+Corey,John,,,740 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1029sqft | Single Family Residential
+Olyn,,,,760 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1219sqft | Single Family Residential
+William,Sleeper,,,777 N Plaza Amigo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1344sqft | Single Family Residential
+Marlen,Videz,,,620 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2239sqft | Single Family Residential
+John,Mcclendon,,,640 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2817sqft | Single Family Residential
+Tommy,Zaharakis,,,660 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3302sqft | Single Family Residential
+William,Reynolds,,,680 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2598sqft | Single Family Residential
+David,,,,2350 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3302sqft | Single Family Residential
+Brad,,,,2351 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3302sqft | Single Family Residential
+Mark,Pearson,,,2380 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2262sqft | Single Family Residential
+David,Reinke,,,2381 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2524sqft | Single Family Residential
+Don,Howard,,,2421 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2587sqft | Single Family Residential
+Caroline,Tchamanian,,,2450 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 203sqft | Single Family Residential
+Harold,Clumeck,,,2480 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 225sqft | Single Family Residential
+Roy,Dolley,,,2481 Quincy Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | bd sqft | Single Family Residential
+James,Berry,,,1456 N Rodeo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1202sqft | Single Family Residential
+Adam,Lerner,,,1465 N Rodeo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 184sqft | Single Family Residential
+1483,Rodeo Rd,,,1483 N Rodeo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1091sqft | Single Family Residential
+Victor,Calixto,,,1492 N Rodeo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 145sqft | Single Family Residential
+Naomi,Stone,,,1044 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1467sqft | Single Family Residential
+Daniel,,,,1075 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 1183sqft | Single Family Residential
+Kay,,,,1111 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1792sqft | Single Family Residential
+Daniel,Barnett,,,1120 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 723sqft | Single Family Residential
+Jean,Gooler,,,1133 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 544sqft | Single Family Residential
+Nancy,Dobrozdravic,,,1145 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2523sqft | Single Family Residential
+Genevieve,Broer,,,1188 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2468sqft | Single Family Residential
+Timothy,Rorak,,,1200 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1569sqft | Single Family Residential
+Margaret,Duplantier,,,1324 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2967sqft | Single Family Residential
+Karen,Albright,,,1375 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1899sqft | Single Family Residential
+Pierre,Lemieux,,,1387 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1962sqft | Single Family Residential
+Lisa,Barreth,,,1388 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1032sqft | Single Family Residential
+Mark,Arnold,,,1420 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1206sqft | Single Family Residential
+Armida,Pedrin,,,1481 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1248sqft | Single Family Residential
+Scott,Shevlin,,,1507 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2274sqft | Single Family Residential
+Robin,Rodriguez,,,1520 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 789sqft | Single Family Residential
+Jeane,White,,,1557 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1204sqft | Single Family Residential
+David,,,,1580 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 147sqft | Single Family Residential
+Merlina,Angert,,,1680 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1204sqft | Single Family Residential
+Michael,Maranhas,,,1685 E San Jacinto Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1887sqft | Single Family Residential
+James,Jaranson,,,1255 N Serena Cir,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1756sqft | Single Family Residential
+Nancy,Cerne,,,541 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 117sqft | Single Family Residential
+Nathan,Herrington,,,571 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1245sqft | Single Family Residential
+Gay,Lea,,,605 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 121sqft | Single Family Residential
+Jean,Mackay,,,675 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1554sqft | Single Family Residential
+Raul,Contreras Jr,,,677 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1247sqft | Single Family Residential
+Jennifer,Pratz,,,685 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1144sqft | Single Family Residential
+Ronald,Viaardingen,,,729 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1432sqft | Single Family Residential
+Brenda,Roland,,,765 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1102sqft | Single Family Residential
+Duncan,Giblin,,,1073 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1614sqft | Single Family Residential
+Jonathan,Saindon,,,1109 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1232sqft | Single Family Residential
+Jesus,Escamilla,,,1147 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1232sqft | Single Family Residential
+Sherry,Fulton,,,1165 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1704sqft | Single Family Residential
+David,Diehl,,,1177 N Sunrise Way,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1864sqft | Single Family Residential
+Quentin,Obrien,,,630 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3873sqft | Single Family Residential
+Anthony,,,,690 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 5361sqft | Single Family Residential
+Carl,Telson,,,980 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2939sqft | Single Family Residential
+Ashley,Williamson,,,1033 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 171sqft | Single Family Residential
+Kelvin,Tempel,,,1057 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1562sqft | Single Family Residential
+Raymond,,,,1067 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 198sqft | Single Family Residential
+Erik,Palmer,,,1072 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2531sqft | Single Family Residential
+Raymond,Roiz Jr,,,1099 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1875sqft | Single Family Residential
+John,Grima,,,1133 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 213sqft | Single Family Residential
+Daniel,Lim,,,1145 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2127sqft | Single Family Residential
+Kirk,Hendricks,,,1165 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2289sqft | Single Family Residential
+Phyllis,Lyman,,,1213 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2117sqft | Single Family Residential
+W,Slusarenko,,,1263 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1815sqft | Single Family Residential
+Lois,Field,,,1321 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1689sqft | Single Family Residential
+Sharon,Walters,,,1339 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1532sqft | Single Family Residential
+Brad,Richards,,,1365 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 139sqft | Single Family Residential
+Michael,Kofman,,,1395 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1474sqft | Single Family Residential
+A,Declaration Of,,,1545 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1592sqft | Single Family Residential
+Craig,Ferrier,,,2215 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Birna,Bjornsson,,,2245 E Tachevah Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Thomas,Duafala,,,777 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 6bd 3124sqft | Single Family Residential
+Elisa,Giangreco Rogers,,,875 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 4124sqft | Single Family Residential
+Douglas,,,,899 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 4059sqft | Single Family Residential
+Don,,,,1002 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1979sqft | Single Family Residential
+Sharon,Goodman,,,1010 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2972sqft | Single Family Residential
+William,Oconnell,,,1047 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 3419sqft | Single Family Residential
+Peter,Pichler,,,1111 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2638sqft | Single Family Residential
+Philip,,,,1122 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 1807sqft | Single Family Residential
+Timothy,Hatch,,,1129 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 4074sqft | Single Family Residential
+Linda,Van Horn,,,1134 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 309sqft | Single Family Residential
+Martin,,,,1156 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3027sqft | Single Family Residential
+Ricardo,Rivera,,,1188 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 417sqft | Single Family Residential
+Robert,Ayanian,,,1189 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3682sqft | Single Family Residential
+Barbara,Black,,,1320 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1754sqft | Single Family Residential
+Kent,Klinner Iii,,,1333 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1279sqft | Single Family Residential
+Matthew,Habib,,,1411 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1549sqft | Single Family Residential
+Kathy,Solowiej,,,1450 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2165sqft | Single Family Residential
+Margaret,Martin,,,1550 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1494sqft | Single Family Residential
+Nancy,Roget,,,1652 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2526sqft | Single Family Residential
+Jana,Steel,,,1655 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 902sqft | Single Family Residential
+Conrad,Doerr,,,2250 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Gary,Kelb,,,2290 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 166sqft | Single Family Residential
+Kevin,Charles Mecca,,,2351 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2587sqft | Single Family Residential
+Melissa,Olson,,,2420 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Cary,,,,2450 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 166sqft | Single Family Residential
+Michael,Frydrych,,,2451 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3302sqft | Single Family Residential
+Eric,Ueno,,,2480 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1516sqft | Single Family Residential
+Henry,Gundersen,,,2481 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2443sqft | Single Family Residential
+John,Hayet,,,2530 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1624sqft | Single Family Residential
+Greg,Robertson,,,2590 Tamarisk Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 166sqft | Single Family Residential
+Lowell,Pearson,,,434 E The Palms St,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2588sqft | Single Family Residential
+Janina,Haskell,,,456 E The Palms St,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2396sqft | Single Family Residential
+Matthew,Funke,,,580 E The Palms St,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 351sqft | Single Family Residential
+Theodore,Armstrong,,,359 E Valmonte Norte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2071sqft | Single Family Residential
+Ivan,Atanassov,,,443 E Valmonte Norte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3593sqft | Single Family Residential
+Raphael,Lyons,,,487 E Valmonte Norte,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2925sqft | Single Family Residential
+Sandra,,,,330 E Valmonte Sur,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2564sqft | Single Family Residential
+William,,,,414 E Valmonte Sur,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2464sqft | Single Family Residential
+Waynette,Day,,,1415 N Vaquero Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 158sqft | Single Family Residential
+Garth,Mclean,,,1427 N Vaquero Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 1564sqft | Single Family Residential
+Rico,Barbosa,,,1430 N Vaquero Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1574sqft | Single Family Residential
+Paul,Block,,,1450 N Vaquero Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1865sqft | Single Family Residential
+Mark,,,,1464 N Vaquero Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2165sqft | Single Family Residential
+Stuart,,,,1465 N Vaquero Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1862sqft | Single Family Residential
+Tamara,Berndt,,,1486 N Vaquero Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1351sqft | Single Family Residential
+Mark,Shetley,,,1493 N Vaquero Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 145sqft | Single Family Residential
+Lisa,Barreth,,,1213 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2577sqft | Single Family Residential
+Joseph,,,,1251 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1558sqft | Single Family Residential
+Tienken-Swailes,Marital,,,1265 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1554sqft | Single Family Residential
+John,Pierce,,,1285 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1158sqft | Single Family Residential
+James,,,,1348 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1952sqft | Single Family Residential
+H,Card,,,1366 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2724sqft | Single Family Residential
+Adnan,,,,1387 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1742sqft | Single Family Residential
+Richard,,,,1460 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1754sqft | Single Family Residential
+Sandra,Shaw,,,1525 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1581sqft | Single Family Residential
+Richard,Kedrowski,,,1528 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1181sqft | Single Family Residential
+Jean,Mutin,,,1629 E Verbena Dr,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1284sqft | Single Family Residential
+Christopher,Guyer,,,1231 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 386sqft | Single Family Residential
+Brian,Anderson,,,1244 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3085sqft | Single Family Residential
+William,,,,1260 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 344sqft | Single Family Residential
+Steven,Luce,,,1301 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3173sqft | Single Family Residential
+David,Mcclurg,,,1308 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3173sqft | Single Family Residential
+Richard,Watkins,,,1333 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3377sqft | Single Family Residential
+James,Cockerham,,,1352 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 344sqft | Single Family Residential
+Robert,,,,1353 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3085sqft | Single Family Residential
+Gerald,,,,1400 Verdugo Rd,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3505sqft | Single Family Residential
+Jeffrey,Blaseck,,,655 E Vereda Sur,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 5186sqft | Single Family Residential
+Steve,,,,660 E Vereda Sur,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 7sqft | Single Family Residential
+Germaine,,,,687 E Vereda Sur,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 4814sqft | Single Family Residential
+John,Heckenlively,,,696 E Vereda Sur,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3025sqft | Single Family Residential
+Thomas,Crinigan,,,2350 Verna Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3302sqft | Single Family Residential
+Scott,Ferreira,,,2351 Verna Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3223sqft | Single Family Residential
+Zosimo,,,,2420 Verna Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2587sqft | Single Family Residential
+Ronald,Martin,,,2421 Verna Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2085sqft | Single Family Residential
+David,,,,2450 Verna Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | bd sqft | Single Family Residential
+Allen,Hill,,,2480 Verna Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2377sqft | Single Family Residential
+Clifford,,,,1036 E Via Altamira,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2013sqft | Single Family Residential
+Karl,,,,1049 E Via Altamira,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2sqft | Single Family Residential
+Ronald,Laporta,,,1065 E Via Altamira,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 3831sqft | Single Family Residential
+Vicki,Fields,,,1131 E Via Altamira,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2939sqft | Single Family Residential
+William,,,,1140 E Via Altamira,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3684sqft | Single Family Residential
+Earl,Clark,,,1165 E Via Altamira,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2443sqft | Single Family Residential
+Michael,Mughannem,,,330 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2792sqft | Single Family Residential
+Cynthia,,,,343 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 4063sqft | Single Family Residential
+Trude,Crain,,,350 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 287sqft | Single Family Residential
+Tracy,Smith,,,401 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 2812sqft | Single Family Residential
+David,Doyle Sr,,,403 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 1bd 716sqft | Single Family Residential
+Thomas,,,,418 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2241sqft | Single Family Residential
+Seth,Gross,,,437 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 3094sqft | Single Family Residential
+Stephen,,,,450 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2156sqft | Single Family Residential
+Laurence,Cook,,,535 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 6bd 3554sqft | Single Family Residential
+Gerald,Lege,,,1050 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1806sqft | Single Family Residential
+Paul,Feeney,,,1055 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 311sqft | Single Family Residential
+Bruce,,,,1075 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 4168sqft | Single Family Residential
+Charles,Martin,,,1130 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 2525sqft | Single Family Residential
+Joseph,Rajczi,,,1150 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 226sqft | Single Family Residential
+Victor,Agbayani,,,1164 E Via Colusa,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2266sqft | Single Family Residential
+James,Widmaier,,,1210 N Via Donna,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 4643sqft | Single Family Residential
+Scott,Coleman,,,1351 N Via Donna,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2148sqft | Single Family Residential
+John,Cliburn,,,1399 N Via Donna,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2198sqft | Single Family Residential
+Debra,Valentino,,,550 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2338sqft | Single Family Residential
+Jeffrey,Dunham,,,650 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 6bd 6456sqft | Single Family Residential
+Kevin,,,,750 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 4112sqft | Single Family Residential
+Linda,George,,,961 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3575sqft | Single Family Residential
+Matthew,,,,1432 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2129sqft | Single Family Residential
+Litos,Mallare,,,1442 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 2bd 1448sqft | Single Family Residential
+Don,Whitaker Jr,,,1449 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2962sqft | Single Family Residential
+David,Varner,,,1466 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2196sqft | Single Family Residential
+Richard,Racine,,,1480 N Via Miraleste,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 1618sqft | Single Family Residential
+Douglas,Drummond,,,1124 Villa El Paseo,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 2564sqft | Single Family Residential
+Terry,Davis,,,1109 Villa Francea,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2823sqft | Single Family Residential
+Robert,Donovan,,,1120 Villa Francea,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 5bd 3409sqft | Single Family Residential
+Moore-Winsor,,,,1123 Villa Francea,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 3bd 2564sqft | Single Family Residential
+Roger,Fenton,,,1126 Village Ct,Palm Springs,CA,92262,Movie Colony PS — Owner Occupied,Owner-Occupied | 4bd 3062sqft | Single Family Residential

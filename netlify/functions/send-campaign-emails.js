@@ -36,41 +36,45 @@ function agentHtml(c, campaign) {
   const city      = c.city || 'Coachella Valley';
   const score     = c.neighborhood_score || 71;
   const label     = c.score_label || 'Buy';
-  const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(c.email)}&cid=${c.campaign_id}`;
+  const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(c.email)}&amp;cid=${c.campaign_id}`;
+  const ctaUrl    = `${SITE_URL}/?ref=agent_campaign&amp;city=${encodeURIComponent(city)}`;
+  const mapUrl    = `${SITE_URL}/market-heatmaps?ref=agent_campaign`;
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{margin:0;padding:0;background:#F4F0E8;font-family:Jost,Helvetica,sans-serif}
-.wrap{max-width:580px;margin:0 auto;background:#fff;border:1px solid #e8e4dc}
-.header{background:#0F0E0D;padding:32px 40px}.header h1{font-family:Georgia,serif;color:#F4F0E8;font-size:22px;font-weight:400;margin:0;letter-spacing:0.5px}
-.header p{color:#6B6252;font-size:11px;margin:6px 0 0;letter-spacing:2px;text-transform:uppercase}
-.score-band{background:#0A0908;padding:24px 40px;display:flex;align-items:center;gap:24px}
-.score-ring{width:64px;height:64px;border-radius:50%;background:conic-gradient(#B89355 ${score * 3.6}deg,rgba(107,98,82,0.3) 0);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.score-inner{width:50px;height:50px;border-radius:50%;background:#0A0908;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#B89355}
-.score-label{color:#F4F0E8;font-size:14px;font-weight:600}.score-sub{color:#6B6252;font-size:11px;margin-top:3px}
-.body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
-.cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
-.cta2{display:block;border:1px solid #B89355;color:#B89355;text-decoration:none;padding:12px 28px;font-size:12px;font-weight:500;text-align:center;margin:12px 0}
-.footer{padding:20px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999;line-height:1.6}
-</style></head><body><div class="wrap">
-  <div class="header"><h1>PropertyDNA</h1><p>Market Intelligence · ${city}</p></div>
-  <div class="score-band">
-    <div class="score-ring"><div class="score-inner">${score}</div></div>
-    <div>
-      <div class="score-label">${city} Ranked ${score}/100 — ${label}</div>
-      <div class="score-sub">Live composite · comps · DOM · permits · livability · rental demand</div>
-    </div>
-  </div>
-  <div class="body">
-    <p>Hi ${firstName},</p>
-    <p>PropertyDNA just ranked the <strong>${city}</strong> market <strong>${score} out of 100</strong> — a <strong>${label}</strong> signal based on live comparable sales, days on market velocity, permit activity, and rental demand.</p>
-    <p>Every property in this market has a unique DNA score. PropertyDNA shows you exactly where the value is, what's driving price movement, and which properties are outperforming their neighbors.</p>
-    <p><strong>Your first full property report is free.</strong></p>
-    <a href="${SITE_URL}/?ref=agent_campaign&city=${encodeURIComponent(city)}" class="cta">→ See the ${city} Live Ranking</a>
-    <a href="${SITE_URL}/market-heatmaps?ref=agent_campaign" class="cta2">View the Live Heat Map</a>
-  </div>
-  <div class="footer">PropertyDNA · thepropertydna.com · reports@thepropertydna.com<br>
-  <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
-</div></body></html>`;
+  return `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PropertyDNA</title></head>
+<body style="margin:0;padding:0;background:#F4F0E8;font-family:Helvetica,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F0E8"><tr><td align="center" style="padding:20px 10px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;background:#ffffff;border:1px solid #e8e4dc">
+  <tr><td style="background:#0F0E0D;padding:32px 40px">
+    <p style="font-family:Georgia,serif;color:#F4F0E8;font-size:22px;font-weight:400;margin:0;letter-spacing:0.5px">PropertyDNA</p>
+    <p style="color:#6B6252;font-size:11px;margin:6px 0 0;letter-spacing:2px;text-transform:uppercase">Market Intelligence &bull; ${city}</p>
+  </td></tr>
+  <tr><td style="background:#0A0908;padding:20px 40px">
+    <p style="color:#F4F0E8;font-size:15px;font-weight:600;margin:0">${city} Ranked ${score}/100 &mdash; ${label}</p>
+    <p style="color:#6B6252;font-size:11px;margin:4px 0 0">Live composite &bull; comps &bull; DOM &bull; permits &bull; livability &bull; rental demand</p>
+  </td></tr>
+  <tr><td style="padding:32px 40px">
+    <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 16px">Hi ${firstName},</p>
+    <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 16px">PropertyDNA just ranked the <strong>${city}</strong> market <strong>${score} out of 100</strong> &mdash; a <strong>${label}</strong> signal based on live comparable sales, days on market velocity, permit activity, and rental demand.</p>
+    <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 16px">Every property has a unique DNA score. PropertyDNA shows you exactly where the value is, what&rsquo;s driving price movement, and which properties are outperforming their neighbors.</p>
+    <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 24px"><strong>Your first full property report is free.</strong></p>
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0"><tr>
+      <td align="center" bgcolor="#B89355" style="border-radius:3px;background:#B89355">
+        <a href="${ctaUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0F0E0D;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;background:#B89355;mso-padding-alt:14px 28px">&rarr; See the ${city} Live Ranking</a>
+      </td>
+    </tr></table>
+    <table cellpadding="0" cellspacing="0" border="0"><tr>
+      <td align="center" style="border:1px solid #B89355;border-radius:3px">
+        <a href="${mapUrl}" target="_blank" style="display:inline-block;padding:12px 28px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:500;color:#B89355;text-decoration:none;border-radius:3px">View the Live Heat Map</a>
+      </td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="padding:16px 40px;border-top:1px solid #e8e4dc">
+    <p style="font-size:11px;color:#999999;line-height:1.6;margin:0">PropertyDNA &bull; <a href="https://thepropertydna.com" style="color:#999999;text-decoration:underline">thepropertydna.com</a> &bull; reports@thepropertydna.com<br>
+    <a href="${unsub}" style="color:#999999;text-decoration:underline">Unsubscribe</a></p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
 }
 
 function buyerHtml(c, campaign) {
@@ -78,49 +82,47 @@ function buyerHtml(c, campaign) {
   const city      = c.city || 'Coachella Valley';
   const score     = c.neighborhood_score || 71;
   const label     = c.score_label || 'Buy';
-  const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(c.email)}&cid=${c.campaign_id}`;
+  const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(c.email)}&amp;cid=${c.campaign_id}`;
+  const ctaUrl    = `${SITE_URL}/?ref=homeowner_campaign`;
+  const mapUrl    = `${SITE_URL}/market-heatmaps?ref=homeowner_campaign`;
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{margin:0;padding:0;background:#F4F0E8;font-family:Jost,Helvetica,sans-serif}
-.wrap{max-width:580px;margin:0 auto;background:#fff;border:1px solid #e8e4dc}
-.header{background:#0F0E0D;padding:32px 40px}.header h1{font-family:Georgia,serif;color:#F4F0E8;font-size:22px;font-weight:400;margin:0;letter-spacing:0.5px}
-.header p{color:#6B6252;font-size:11px;margin:6px 0 0;letter-spacing:2px;text-transform:uppercase}
-.rank-band{background:#0A0908;padding:24px 40px}
-.rank-label{color:#6B6252;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px}
-.rank-value{font-family:Georgia,serif;color:#B89355;font-size:32px;font-weight:400;margin:0;letter-spacing:-0.5px}
-.rank-sub{color:#6B6252;font-size:11px;margin-top:6px}
-.score-band{display:flex;border-top:1px solid rgba(184,147,85,0.2)}
-.score-cell{flex:1;background:#0A0908;padding:16px 20px;border-right:1px solid rgba(184,147,85,0.15);text-align:center}
-.score-cell:last-child{border-right:none}.sc-val{font-size:22px;font-weight:700;color:#B89355;font-family:Georgia,serif}
-.sc-label{font-size:9px;color:#6B6252;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
-.body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
-.cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
-.cta2{display:block;border:1px solid rgba(184,147,85,0.5);color:#B89355;text-decoration:none;padding:12px 28px;font-size:12px;font-weight:500;text-align:center;margin:12px 0}
-.footer{padding:20px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999;line-height:1.6}
-</style></head><body><div class="wrap">
-  <div class="header"><h1>PropertyDNA</h1><p>Property Intelligence · ${city}</p></div>
-  <div class="rank-band">
-    <div class="rank-label">Your ${city} Property Ranked</div>
-    <div class="rank-value">${score} / 100</div>
-    <div class="rank-sub">${label} · Live market composite · Updated daily</div>
-  </div>
-  <div class="score-band">
-    <div class="score-cell"><div class="sc-val">${score}</div><div class="sc-label">DNA Score</div></div>
-    <div class="score-cell"><div class="sc-val" style="color:#22c55e">${label}</div><div class="sc-label">Market Signal</div></div>
-    <div class="score-cell"><div class="sc-val">Free</div><div class="sc-label">Full Report</div></div>
-  </div>
-  <div class="body">
-    <p>Hi ${firstName},</p>
-    <p>PropertyDNA ranked your area in <strong>${city}</strong> at <strong>${score}/100</strong> — a <strong>${label}</strong> signal based on live comparable sales, days on market trends, permit activity, and rental demand.</p>
-    <p>Your full PropertyDNA report goes further: property-level comps, flood and hazard exposure, renovation ROI estimate, and a 5-year value trajectory specific to your address.</p>
-    <p><strong>Your first full report is free — no card required.</strong></p>
-    <a href="${SITE_URL}/?ref=sphere_campaign" class="cta">→ Get Your Free PropertyDNA Report</a>
-    <a href="${SITE_URL}/market-heatmaps?ref=sphere_campaign" class="cta2">View the ${city} Live Heat Map</a>
-    <p style="font-size:12px;color:#888;margin-top:8px">Takes 60 seconds · AI-generated · Delivered to your inbox</p>
-  </div>
-  <div class="footer">PropertyDNA · thepropertydna.com · reports@thepropertydna.com<br>
-  <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
-</div></body></html>`;
+  return `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PropertyDNA</title></head>
+<body style="margin:0;padding:0;background:#F4F0E8;font-family:Helvetica,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F0E8"><tr><td align="center" style="padding:20px 10px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;background:#ffffff;border:1px solid #e8e4dc">
+  <tr><td style="background:#0F0E0D;padding:32px 40px">
+    <p style="font-family:Georgia,serif;color:#F4F0E8;font-size:22px;font-weight:400;margin:0;letter-spacing:0.5px">PropertyDNA</p>
+    <p style="color:#6B6252;font-size:11px;margin:6px 0 0;letter-spacing:2px;text-transform:uppercase">Property Intelligence &bull; ${city}</p>
+  </td></tr>
+  <tr><td style="background:#0A0908;padding:20px 40px">
+    <p style="color:#6B6252;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px">Your ${city} Property Ranked</p>
+    <p style="font-family:Georgia,serif;color:#B89355;font-size:32px;font-weight:400;margin:0">${score} / 100</p>
+    <p style="color:#6B6252;font-size:11px;margin:6px 0 0">${label} &bull; Live market composite &bull; Updated daily</p>
+  </td></tr>
+  <tr><td style="padding:32px 40px">
+    <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 16px">Hi ${firstName},</p>
+    <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 16px">PropertyDNA ranked your area in <strong>${city}</strong> at <strong>${score}/100</strong> &mdash; a <strong>${label}</strong> signal based on live comparable sales, days on market trends, permit activity, and rental demand.</p>
+    <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 16px">Your full PropertyDNA report goes further: property-level comps, flood and hazard exposure, renovation ROI estimate, and a 5-year value trajectory specific to your address.</p>
+    <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 24px"><strong>Your first full report is free &mdash; no card required.</strong></p>
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0"><tr>
+      <td align="center" bgcolor="#B89355" style="border-radius:3px;background:#B89355">
+        <a href="${ctaUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0F0E0D;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;background:#B89355;mso-padding-alt:14px 28px">&rarr; Get Your Free PropertyDNA Report</a>
+      </td>
+    </tr></table>
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px 0"><tr>
+      <td align="center" style="border:1px solid #B89355;border-radius:3px">
+        <a href="${mapUrl}" target="_blank" style="display:inline-block;padding:12px 28px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:500;color:#B89355;text-decoration:none;border-radius:3px">View the ${city} Live Heat Map</a>
+      </td>
+    </tr></table>
+    <p style="font-size:12px;color:#888888;margin:0">Takes 60 seconds &bull; AI-generated &bull; Delivered to your inbox</p>
+  </td></tr>
+  <tr><td style="padding:16px 40px;border-top:1px solid #e8e4dc">
+    <p style="font-size:11px;color:#999999;line-height:1.6;margin:0">PropertyDNA &bull; <a href="https://thepropertydna.com" style="color:#999999;text-decoration:underline">thepropertydna.com</a> &bull; reports@thepropertydna.com<br>
+    <a href="${unsub}" style="color:#999999;text-decoration:underline">Unsubscribe</a></p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
 }
 
 function getHtml(c, campaign) {
