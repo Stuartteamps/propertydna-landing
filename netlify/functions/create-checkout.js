@@ -174,6 +174,26 @@ exports.handler = async (event) => {
       }, "email").catch(() => {});
     }
 
+    // ── $1 TEST MODE — uses inline price_data, no price ID needed ──
+    if (mode === "test") {
+      const testSession = await stripePost("/v1/checkout/sessions", {
+        mode: "payment",
+        "payment_method_types[0]": "card",
+        "line_items[0][price_data][currency]": "usd",
+        "line_items[0][price_data][unit_amount]": "100",
+        "line_items[0][price_data][product_data][name]": "PropertyDNA Test Charge",
+        "line_items[0][quantity]": "1",
+        ...(customerId ? { customer: customerId } : { customer_email: normalizedEmail }),
+        success_url: `${origin}/report-pending?session_id={CHECKOUT_SESSION_ID}&test=1`,
+        cancel_url: `${origin}/stripe-test`,
+        "metadata[email]": normalizedEmail,
+        "metadata[mode]": "test",
+      }, SK);
+      if (testSession.error) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: testSession.error.message }) };
+      db.kpi("test_charge_initiated", normalizedEmail, { sessionId: testSession.id });
+      return { statusCode: 200, headers: CORS, body: JSON.stringify({ url: testSession.url, sessionId: testSession.id }) };
+    }
+
     let priceId;
     let sessionMode = "payment";
     let successPath = "/report-pending?session_id={CHECKOUT_SESSION_ID}";

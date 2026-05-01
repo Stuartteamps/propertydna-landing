@@ -22,6 +22,7 @@ import OffMarket from "./pages/OffMarket";
 import Newsletter from "./pages/Newsletter";
 import Contact from "./pages/Contact";
 import ReportPending from "./pages/ReportPending";
+import StripeTest from "./pages/StripeTest";
 import Dashboard from "./pages/Dashboard";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
@@ -53,6 +54,7 @@ const AppRoutes = () => (
     <Route path="/newsletter" element={<Newsletter />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/report-pending" element={<ReportPending />} />
+    <Route path="/stripe-test"    element={<StripeTest />} />
     <Route path="/dashboard" element={<Dashboard />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
