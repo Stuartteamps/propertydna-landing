@@ -15,6 +15,9 @@
 [functions."index-properties"]
   timeout = 26
 
+[functions."send-weekly-newsletter"]
+  schedule = "20 23 * * 4"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

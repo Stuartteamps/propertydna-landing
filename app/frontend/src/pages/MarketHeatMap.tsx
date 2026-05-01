@@ -4,7 +4,6 @@ import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import PremiumLockOverlay from '@/components/PremiumLockOverlay';
-import { isPremiumUser, checkAndSetPremium } from '@/lib/isPremiumUser';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import HeatMapCanvas from '@/components/heatmap/HeatMapCanvas';
@@ -69,12 +68,18 @@ const fmtAddr      = (a: string) => a.length > 22 ? a.slice(0, 20) + '…' : a;
 type ModalTab = 'signin' | 'pricing';
 type SortKey  = 'heat' | 'medianPrice' | 'yoy' | 'dom';
 
+const OWNER = 'stuartteamps@gmail.com';
+
 export default function MarketHeatMap() {
-  const { user } = useAuth();
+  const { user, tier, loading: authLoading } = useAuth();
   const [modalOpen,   setModalOpen]   = useState(false);
   const [modalTab,    setModalTab]    = useState<ModalTab>('signin');
   const [pricingOpen, setPricingOpen] = useState(false);
-  const [premium,     setPremium]     = useState(false);
+
+  // Derive premium from auth context — no sessionStorage race condition
+  const premium = !authLoading && (
+    user?.email?.toLowerCase() === OWNER || tier !== 'free'
+  );
   const [markets,     setMarkets]     = useState<Market[]>(FALLBACK_MARKETS);
   const [properties,  setProperties]  = useState<Property[]>([]);
   const [liveCount,   setLiveCount]   = useState(0);
@@ -94,15 +99,6 @@ export default function MarketHeatMap() {
   const [drawerParcel, setDrawerParcel] = useState<HeatParcel | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Check premium status — async verify against Supabase so no Dashboard visit required
-  useEffect(() => {
-    const email = user?.email || sessionStorage.getItem('pdna_email') || '';
-    if (email) {
-      checkAndSetPremium(email).then(isPrem => setPremium(isPrem));
-    } else {
-      setPremium(isPremiumUser());
-    }
-  }, [user?.email]);
 
   const fetchMarkets = useCallback(() => {
     supabase.from('market_snapshots')
