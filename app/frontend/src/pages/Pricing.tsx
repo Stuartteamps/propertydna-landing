@@ -70,7 +70,7 @@ const plans = [
       'White-label export',
       'Dedicated account manager',
     ],
-    cta: 'Talk to Sales',
+    cta: 'Schedule a Call →',
     action: 'subscribe' as const,
   },
 ];
@@ -79,8 +79,11 @@ export default function Pricing() {
   const [pricingOpen, setPricingOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleCta = (action: 'analyze' | 'subscribe') => {
+  const CALENDLY_URL = 'https://calendly.com/thepropertydna/enterprise';
+
+  const handleCta = (action: 'analyze' | 'subscribe', tier?: string) => {
     if (action === 'analyze') navigate('/analyze');
+    else if (tier === 'Enterprise') window.open(CALENDLY_URL, '_blank', 'noopener');
     else setPricingOpen(true);
   };
 
@@ -208,7 +211,7 @@ export default function Pricing() {
 
                   <button
                     type="button"
-                    onClick={() => handleCta(plan.action)}
+                    onClick={() => handleCta(plan.action, plan.tier)}
                     style={{
                       fontFamily: 'Jost, sans-serif', fontSize: 10,
                       fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase',

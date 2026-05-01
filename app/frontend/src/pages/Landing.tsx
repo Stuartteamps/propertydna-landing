@@ -9,6 +9,7 @@ import TeaserCard from '@/components/TeaserCard';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
+import PropertyTicker from '@/components/PropertyTicker';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -324,6 +325,9 @@ export default function Landing() {
           </svg>
         </div>
       </section>
+
+      {/* ── LIVE PROPERTY TICKER ───────────────────────────────────── */}
+      <PropertyTicker />
 
       {/* ── METRICS MARQUEE ────────────────────────────────────────── */}
       <div style={{

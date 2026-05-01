@@ -69,6 +69,7 @@ export default function ReportViewByToken() {
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<'signin' | 'pricing'>('signin');
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   useEffect(() => {
     if (!token) { setError('No report token provided.'); setLoading(false); return; }
@@ -101,6 +102,14 @@ export default function ReportViewByToken() {
   const sale   = n.sale ?? {};
   const weather = n.weather ?? {};
   const dnaAdj = dna.dnaAdjusted ?? null;
+
+  // Handle both n8n key naming conventions (old: buyerAngle; new: buyerNarrative)
+  const sellerAngle    = dna.sellerAngle    || dna.sellerNarrative    || '';
+  const buyerAngle     = dna.buyerAngle     || dna.buyerNarrative     || '';
+  const investAngle    = dna.investmentAngle || dna.investorNarrative  || '';
+  const dataQualNote   = dna.dataQualityNote || dna.dataQualityDetails || (typeof dna.dataQuality === 'string' ? dna.dataQuality : '') || '';
+  // subject.address fallback for older data
+  const displayAddress = sub.matchedAddress || sub.address || report?.address || '';
 
   // v3 enrichment data (populated asynchronously by enrich-property.js)
   const enr = dna.enrichment ?? null;
@@ -200,7 +209,7 @@ export default function ReportViewByToken() {
             PropertyDNA Intelligence Report
           </div>
           <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(28px,4vw,52px)', fontWeight: 300, color: '#F0EBE0', margin: '0 0 8px', lineHeight: 1.1 }}>
-            {sub.matchedAddress !== '—' ? sub.matchedAddress : report?.address}
+            {displayAddress || '—'}
           </h1>
           <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', marginTop: 8 }}>
             Prepared for {fmt(n.client?.name)} · {new Date(report?.created_at ?? '').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -378,7 +387,7 @@ export default function ReportViewByToken() {
                 ))}
                 <CircleMarker center={[subjectLat!, subjectLon!]} radius={14}
                   pathOptions={{ color: '#C9A84C', fillColor: '#C9A84C', fillOpacity: 1, weight: 2 }}>
-                  <Popup><strong>Subject Property</strong><br />{sub.matchedAddress}</Popup>
+                  <Popup><strong>Subject Property</strong><br />{displayAddress}</Popup>
                 </CircleMarker>
               </MapContainer>
             </div>
@@ -499,9 +508,9 @@ export default function ReportViewByToken() {
           </Section>
         )}
 
-        {(dna.sellerAngle || dna.buyerAngle || dna.investmentAngle) && (
+        {(sellerAngle || buyerAngle || investAngle) && (
           <Section title="Analysis">
-            {[['Seller Angle', dna.sellerAngle], ['Buyer Angle', dna.buyerAngle], ['Investment Angle', dna.investmentAngle]].map(([label, text]) =>
+            {[['Seller Perspective', sellerAngle], ['Buyer Perspective', buyerAngle], ['Investment Angle', investAngle]].map(([label, text]) =>
               text ? (
                 <div key={label as string} style={{ marginBottom: 28 }}>
                   <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', marginBottom: 6 }}>{label}</div>
@@ -518,9 +527,9 @@ export default function ReportViewByToken() {
           </Section>
         )}
 
-        {dna.dataQualityNote && (
+        {dataQualNote && (
           <Section title="Data Quality Note">
-            <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, margin: 0 }}>{dna.dataQualityNote}</p>
+            <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, margin: 0 }}>{dataQualNote}</p>
           </Section>
         )}
 
