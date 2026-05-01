@@ -11,7 +11,7 @@ const CORS = {
 
 const BATCH_SIZE  = 50;
 const SENDER      = process.env.SENDER_EMAIL || 'reports@thepropertydna.com';
-const SENDER_NAME = 'Dan Stuart | PropertyDNA';
+const SENDER_NAME = 'PropertyDNA';
 const SITE_URL    = 'https://thepropertydna.com';
 
 function resendPost(payload) {
@@ -33,10 +33,10 @@ function resendPost(payload) {
 
 function agentHtml(c, campaign) {
   const firstName = c.first_name || 'there';
-  const city      = c.city || 'your market';
-  const score     = c.neighborhood_score || 68;
+  const city      = c.city || 'Coachella Valley';
+  const score     = c.neighborhood_score || 71;
   const label     = c.score_label || 'Buy';
-  const unsub     = `${SITE_URL}/.netlify/functions/unsubscribe?e=${Buffer.from(c.email).toString('base64')}&c=${c.campaign_id}`;
+  const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(c.email)}&cid=${c.campaign_id}`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>body{margin:0;padding:0;background:#F4F0E8;font-family:Jost,Helvetica,sans-serif}
@@ -52,68 +52,73 @@ function agentHtml(c, campaign) {
 .cta2{display:block;border:1px solid #B89355;color:#B89355;text-decoration:none;padding:12px 28px;font-size:12px;font-weight:500;text-align:center;margin:12px 0}
 .footer{padding:20px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999;line-height:1.6}
 </style></head><body><div class="wrap">
-  <div class="header"><h1>PropertyDNA</h1><p>Market Intelligence · California</p></div>
+  <div class="header"><h1>PropertyDNA</h1><p>Market Intelligence · ${city}</p></div>
   <div class="score-band">
     <div class="score-ring"><div class="score-inner">${score}</div></div>
     <div>
-      <div class="score-label">${city} DNA Score: ${score}/100 — ${label}</div>
-      <div class="score-sub">Real-time composite · comps · DOM · permits · livability · rental demand</div>
+      <div class="score-label">${city} Ranked ${score}/100 — ${label}</div>
+      <div class="score-sub">Live composite · comps · DOM · permits · livability · rental demand</div>
     </div>
   </div>
   <div class="body">
     <p>Hi ${firstName},</p>
-    <p>The <strong>${city}</strong> market just scored <strong>${score}/100</strong> on PropertyDNA's intelligence index — ranking it <strong>${label}</strong> based on current comparable sales, days on market velocity, permit activity, and rental demand signals.</p>
-    <p>We built PropertyDNA to give agents like you a data edge your clients can't get anywhere else. Every buyer and seller you work with gets a personalized DNA report — covering their specific property's comps, hazard exposure, renovation ROI, and 5-year trajectory.</p>
-    <p><strong>The first report for every one of your clients is free.</strong></p>
-    <a href="${SITE_URL}/?ref=agent_campaign&city=${encodeURIComponent(city)}" class="cta">→ See the ${city} Live Heat Map</a>
-    <a href="${SITE_URL}/?ref=agent_partner" class="cta2">Partner with PropertyDNA — offer free reports to your clients</a>
+    <p>PropertyDNA just ranked the <strong>${city}</strong> market <strong>${score} out of 100</strong> — a <strong>${label}</strong> signal based on live comparable sales, days on market velocity, permit activity, and rental demand.</p>
+    <p>Every property in this market has a unique DNA score. PropertyDNA shows you exactly where the value is, what's driving price movement, and which properties are outperforming their neighbors.</p>
+    <p><strong>Your first full property report is free.</strong></p>
+    <a href="${SITE_URL}/?ref=agent_campaign&city=${encodeURIComponent(city)}" class="cta">→ See the ${city} Live Ranking</a>
+    <a href="${SITE_URL}/market-heatmaps?ref=agent_campaign" class="cta2">View the Live Heat Map</a>
   </div>
   <div class="footer">PropertyDNA · thepropertydna.com · reports@thepropertydna.com<br>
-  You're receiving this because you're a licensed real estate professional in California.<br>
   <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
 </div></body></html>`;
 }
 
 function buyerHtml(c, campaign) {
   const firstName = c.first_name || 'there';
-  const address   = c.address || `your property in ${c.city || 'California'}`;
-  const city      = c.city || 'your area';
-  const score     = c.neighborhood_score || 68;
+  const city      = c.city || 'Coachella Valley';
+  const score     = c.neighborhood_score || 71;
   const label     = c.score_label || 'Buy';
-  const unsub     = `${SITE_URL}/.netlify/functions/unsubscribe?e=${Buffer.from(c.email).toString('base64')}&c=${c.campaign_id}`;
+  const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(c.email)}&cid=${c.campaign_id}`;
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>body{margin:0;padding:0;background:#F4F0E8;font-family:Jost,Helvetica,sans-serif}
 .wrap{max-width:580px;margin:0 auto;background:#fff;border:1px solid #e8e4dc}
-.header{background:#0F0E0D;padding:32px 40px}.header h1{font-family:Georgia,serif;color:#F4F0E8;font-size:22px;font-weight:400;margin:0}
+.header{background:#0F0E0D;padding:32px 40px}.header h1{font-family:Georgia,serif;color:#F4F0E8;font-size:22px;font-weight:400;margin:0;letter-spacing:0.5px}
 .header p{color:#6B6252;font-size:11px;margin:6px 0 0;letter-spacing:2px;text-transform:uppercase}
-.address-band{background:#0A0908;padding:20px 40px}
-.address-band p{color:#6B6252;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 4px}
-.address-band h2{color:#F4F0E8;font-family:Georgia,serif;font-size:18px;font-weight:400;margin:0}
-.score-band{display:flex;gap:0;border-top:1px solid rgba(184,147,85,0.2)}
+.rank-band{background:#0A0908;padding:24px 40px}
+.rank-label{color:#6B6252;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px}
+.rank-value{font-family:Georgia,serif;color:#B89355;font-size:32px;font-weight:400;margin:0;letter-spacing:-0.5px}
+.rank-sub{color:#6B6252;font-size:11px;margin-top:6px}
+.score-band{display:flex;border-top:1px solid rgba(184,147,85,0.2)}
 .score-cell{flex:1;background:#0A0908;padding:16px 20px;border-right:1px solid rgba(184,147,85,0.15);text-align:center}
 .score-cell:last-child{border-right:none}.sc-val{font-size:22px;font-weight:700;color:#B89355;font-family:Georgia,serif}
 .sc-label{font-size:9px;color:#6B6252;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
 .cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
+.cta2{display:block;border:1px solid rgba(184,147,85,0.5);color:#B89355;text-decoration:none;padding:12px 28px;font-size:12px;font-weight:500;text-align:center;margin:12px 0}
 .footer{padding:20px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999;line-height:1.6}
 </style></head><body><div class="wrap">
-  <div class="header"><h1>PropertyDNA</h1><p>Property Intelligence · California</p></div>
-  <div class="address-band"><p>Analysis for</p><h2>${address}</h2></div>
+  <div class="header"><h1>PropertyDNA</h1><p>Property Intelligence · ${city}</p></div>
+  <div class="rank-band">
+    <div class="rank-label">Your ${city} Property Ranked</div>
+    <div class="rank-value">${score} / 100</div>
+    <div class="rank-sub">${label} · Live market composite · Updated daily</div>
+  </div>
   <div class="score-band">
-    <div class="score-cell"><div class="sc-val">${score}</div><div class="sc-label">Neighborhood Score</div></div>
-    <div class="score-cell"><div class="sc-val" style="color:#22c55e">${label}</div><div class="sc-label">DNA Rating</div></div>
+    <div class="score-cell"><div class="sc-val">${score}</div><div class="sc-label">DNA Score</div></div>
+    <div class="score-cell"><div class="sc-val" style="color:#22c55e">${label}</div><div class="sc-label">Market Signal</div></div>
     <div class="score-cell"><div class="sc-val">Free</div><div class="sc-label">Full Report</div></div>
   </div>
   <div class="body">
     <p>Hi ${firstName},</p>
-    <p>We analyzed <strong>${city}</strong> and your neighborhood scores <strong>${score}/100</strong> — ranked <strong>${label}</strong> based on live comparable sales, days on market trends, permit activity, and rental demand.</p>
-    <p>Your full PropertyDNA report goes deeper: specific comps for your property, flood and hazard exposure, renovation ROI estimate, and a 5-year value trajectory.</p>
-    <p><strong>Your first full report is completely free.</strong></p>
-    <a href="${SITE_URL}/?address=${encodeURIComponent(address)}&ref=homeowner_campaign" class="cta">→ Claim Your Free DNA Report</a>
+    <p>PropertyDNA ranked your area in <strong>${city}</strong> at <strong>${score}/100</strong> — a <strong>${label}</strong> signal based on live comparable sales, days on market trends, permit activity, and rental demand.</p>
+    <p>Your full PropertyDNA report goes further: property-level comps, flood and hazard exposure, renovation ROI estimate, and a 5-year value trajectory specific to your address.</p>
+    <p><strong>Your first full report is free — no card required.</strong></p>
+    <a href="${SITE_URL}/?ref=sphere_campaign" class="cta">→ Get Your Free PropertyDNA Report</a>
+    <a href="${SITE_URL}/market-heatmaps?ref=sphere_campaign" class="cta2">View the ${city} Live Heat Map</a>
+    <p style="font-size:12px;color:#888;margin-top:8px">Takes 60 seconds · AI-generated · Delivered to your inbox</p>
   </div>
-  <div class="footer">PropertyDNA · thepropertydna.com<br>
-  You're receiving this because you own property in California.<br>
+  <div class="footer">PropertyDNA · thepropertydna.com · reports@thepropertydna.com<br>
   <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
 </div></body></html>`;
 }
@@ -124,14 +129,13 @@ function getHtml(c, campaign) {
 }
 
 function getSubject(c, campaign) {
-  const city      = c.city || 'your market';
-  const score     = c.neighborhood_score || 68;
-  const firstName = c.first_name ? `, ${c.first_name}` : '';
-  const tmpl      = campaign?.template || campaign?.type || 'agent';
+  const city  = c.city || 'Coachella Valley';
+  const score = c.neighborhood_score || 71;
+  const tmpl  = campaign?.template || campaign?.type || 'agent';
   if (tmpl === 'buyer' || tmpl === 'homeowner') {
-    return `Your ${c.address ? c.address.split(',')[0] : city} neighborhood scored ${score}/100`;
+    return `Your ${city} Property Ranked ${score}/100 by PropertyDNA`;
   }
-  return campaign?.subject || `${city} DNA Score: ${score}/100${firstName} — see what it means`;
+  return campaign?.subject || `Your ${city} Property Ranked ${score}/100 by PropertyDNA`;
 }
 
 exports.handler = async (event) => {
