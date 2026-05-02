@@ -277,15 +277,15 @@ export default function Landing() {
                   fontFamily: 'Jost, sans-serif', fontSize: 10,
                   color: 'rgba(244,240,232,0.22)', marginTop: 8, letterSpacing: '0.5px',
                 }}>
-                  {teaserAddress ? 'Preview loaded — sign in to unlock full report' : "Sign in required to run a report — it's free"}
+                  {teaserAddr ? 'Preview loaded — sign in to unlock full report' : "Sign in required to run a report — it's free"}
                 </div>
               </form>
 
               {/* Teaser result card */}
-              {teaserAddress && (
+              {teaserAddr && (
                 <TeaserCard
-                  address={teaserAddress}
-                  onSignIn={() => { setPending(true); openModal('signin'); }}
+                  address={teaserAddr}
+                  onSignIn={() => { pendingFire.current = true; openModal('signin'); }}
                 />
               )}
 
