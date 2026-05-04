@@ -1,4 +1,4 @@
-const OWNER_EMAILS = ['stuartteamps@gmail.com'];
+const OWNER_EMAILS = ['stuartteamps@gmail.com', 'daniel.dunn.hack@gmail.com'];
 
 export function isPremiumUser(): boolean {
   try {

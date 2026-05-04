@@ -27,10 +27,13 @@ exports.handler = async (event) => {
   const normalizedEmail = email.toLowerCase().trim();
 
   // Owner bypass — always subscribed, upsert subscription so DB is authoritative
-  const OWNER_EMAIL = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
-  if (normalizedEmail === OWNER_EMAIL) {
+  const OWNER_EMAILS = [
+    process.env.OWNER_EMAIL || "stuartteamps@gmail.com",
+    "daniel.dunn.hack@gmail.com",
+  ];
+  if (OWNER_EMAILS.includes(normalizedEmail)) {
     db.upsert("subscriptions", {
-      email: OWNER_EMAIL,
+      email: normalizedEmail,
       plan_name: "enterprise",
       status: "active",
       current_period_end: null,
