@@ -36,3 +36,4 @@ tools/gmail-cleanup/token_*.json
 tools/**/*.json
 *.credentials.json
 *_token.json
+.claude/settings.local.json
