@@ -145,6 +145,8 @@ export default function IntellaGraph() {
   const [clock,       setClock]       = useState('');
   const [mode,        setMode]        = useState<'global' | 'national' | 'regional'>('global');
   const [timeframe,   setTimeframe]   = useState<'1Y' | '3Y' | '5Y' | '10Y'>('1Y');
+  const [isMobile,    setIsMobile]    = useState(() => window.innerWidth < 768);
+  const [mobileSheet, setMobileSheet] = useState<'none' | 'rankings' | 'intel'>('none');
 
   const canvasRef     = useRef<HTMLCanvasElement>(null);
   const scoreCanvasRef  = useRef<HTMLCanvasElement>(null);
@@ -163,6 +165,12 @@ export default function IntellaGraph() {
   });
 
   // ── Side effects ────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useEffect(() => { marketsRef.current = markets; }, [markets]);
   // Use live auth tier — covers direct navigation where sessionStorage isn't populated yet
@@ -557,6 +565,7 @@ export default function IntellaGraph() {
     setSelected(m);
     three.current.flyTarget     = { lat: m.lat, lng: m.lng };
     three.current.targetCameraZ = 1.6;
+    if (window.innerWidth < 768) setMobileSheet('intel');
   };
 
   // Reads directly from the uncontrolled input element
@@ -588,6 +597,174 @@ export default function IntellaGraph() {
   const sorted = [...markets].sort((a, b) => b.score - a.score);
 
   // ── Render ────────────────────────────────────────────────────────────────────
+
+  const commonHead = (
+    <>
+      <Nav onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }} onRequestAccessClick={() => setPricingOpen(true)} />
+      <AuthModal   isOpen={modalOpen}   initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
+    </>
+  );
+
+  // ── Mobile render (globe full-screen + bottom sheet) ─────────────────────────
+  if (isMobile) {
+    const SHEET_H = mobileSheet !== 'none' ? '55vh' : '52px';
+
+    return (
+      <>
+        {commonHead}
+
+        {/* Loading overlay */}
+        {showLoading && (
+          <div style={{ position: 'fixed', inset: 0, background: '#020408', zIndex: 999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, fontFamily: UI }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: G, letterSpacing: 3 }}>PROPERTYDNA</div>
+            <div style={{ fontFamily: MONO, fontSize: 9, color: T_M, letterSpacing: 3 }}>INTELLAGRAPH AI — INITIALIZING</div>
+            <div style={{ width: 220, height: 2, background: 'rgba(0,255,136,0.1)', overflow: 'hidden', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: G, animation: 'tg-load 2.5s ease-out forwards' }} />
+            </div>
+          </div>
+        )}
+
+        {!showLoading && (
+          <div ref={globeContainerRef} style={{ position: 'fixed', top: NAV_H, left: 0, right: 0, bottom: 0, background: '#020408', overflow: 'hidden', zIndex: 10 }}>
+
+            {/* Globe canvas — fills everything */}
+            <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, zIndex: 1 }} />
+
+            {/* Mobile search bar */}
+            <div data-globe-ui style={{ position: 'absolute', top: 10, left: 10, right: 10, zIndex: 150, display: 'flex' }}>
+              <input
+                ref={searchInputRef}
+                type="text"
+                defaultValue=""
+                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                placeholder="SEARCH MARKET..."
+                style={{ flex: 1, background: BG, border: `1px solid ${BORDER}`, borderRight: 'none', color: T_P, fontFamily: MONO, fontSize: 11, padding: '8px 12px', outline: 'none', backdropFilter: 'blur(12px)' }}
+              />
+              <button onClick={handleSearch} style={{ background: G, border: 'none', color: '#000', fontFamily: MONO, fontSize: 10, fontWeight: 700, letterSpacing: 1, padding: '8px 14px', cursor: 'pointer' }}>GO</button>
+            </div>
+
+            {/* Zoom controls */}
+            <div data-globe-ui style={{ position: 'absolute', right: 10, top: 60, zIndex: 95, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {([['＋', zoomIn], ['−', zoomOut], ['⊙', zoomReset]] as [string, () => void][]).map(([label, fn]) => (
+                <button key={label} onClick={fn} style={{ width: 36, height: 36, background: BG, border: `1px solid ${BORDER}`, color: G, fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: MONO, backdropFilter: 'blur(12px)' }}>{label}</button>
+              ))}
+            </div>
+
+            {/* Bottom sheet */}
+            <div data-globe-ui style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: SHEET_H, background: BG, borderTop: `1px solid ${BORDER}`, zIndex: 200, display: 'flex', flexDirection: 'column', backdropFilter: 'blur(16px)', transition: 'height 0.35s cubic-bezier(0.4,0,0.2,1)' }}>
+
+              {/* Sheet tab bar */}
+              <div style={{ height: 52, flexShrink: 0, display: 'flex', alignItems: 'stretch', borderBottom: mobileSheet !== 'none' ? `1px solid ${BORDER}` : 'none' }}>
+                <div style={{ display: 'flex', flex: 1 }}>
+                  {(['rankings', 'intel'] as const).map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setMobileSheet(mobileSheet === tab ? 'none' : tab)}
+                      style={{ flex: 1, fontFamily: MONO, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', background: mobileSheet === tab ? 'rgba(0,255,136,0.1)' : 'transparent', color: mobileSheet === tab ? G : T_M, border: 'none', cursor: 'pointer', borderBottom: mobileSheet === tab ? `2px solid ${G}` : '2px solid transparent' }}
+                    >
+                      {tab === 'intel' ? (selected ? `${selected.city.toUpperCase()}` : 'INTEL') : 'MARKETS'}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', gap: 6, borderLeft: `1px solid ${BORDER}` }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: G, boxShadow: `0 0 6px ${G}`, animation: 'tg-pulse 2s infinite' }} />
+                  <span style={{ fontFamily: MONO, fontSize: 8, color: T_M }}>{clock}</span>
+                </div>
+              </div>
+
+              {/* Sheet content */}
+              {mobileSheet !== 'none' && (
+                <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none' as const }}>
+
+                  {/* RANKINGS */}
+                  {mobileSheet === 'rankings' && (
+                    <div>
+                      {sorted.map((m, i) => {
+                        const locked = !premium && i >= 3;
+                        return (
+                          <div
+                            key={m.city}
+                            onClick={() => !locked && selectMarket(m.city)}
+                            style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid rgba(0,255,136,0.04)', filter: locked ? 'blur(4px)' : 'none', gap: 10, cursor: locked ? 'default' : 'pointer', background: selected?.city === m.city ? 'rgba(0,255,136,0.07)' : 'transparent', borderLeft: `2px solid ${selected?.city === m.city ? G : 'transparent'}` }}
+                          >
+                            <div style={{ fontFamily: MONO, fontSize: 9, color: T_M, width: 16, textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 600, color: T_P, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.city}, {m.state}</div>
+                              <div style={{ fontFamily: MONO, fontSize: 9, color: T_M, marginTop: 2 }}>{m.yoy > 0 ? '+' : ''}{m.yoy.toFixed(1)}% YoY · {fmt(m.price)}</div>
+                            </div>
+                            <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 600, color: scoreColor(m.score), flexShrink: 0 }}>{m.score}</div>
+                          </div>
+                        );
+                      })}
+                      {!premium && (
+                        <div style={{ padding: 14 }}>
+                          <button onClick={() => setPricingOpen(true)} style={{ width: '100%', fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: '#000', background: G, border: 'none', padding: '12px 0', cursor: 'pointer' }}>
+                            Unlock All Markets →
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* INTEL */}
+                  {mobileSheet === 'intel' && (
+                    <div style={{ padding: '14px' }}>
+                      {selected ? (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+                            <div style={{ position: 'relative', width: 80, height: 80, flexShrink: 0 }}>
+                              <canvas ref={scoreCanvasRef} width={80} height={80} />
+                              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ fontFamily: MONO, fontSize: 20, fontWeight: 700, color: scoreColor(selected.score) }}>{selected.score}</div>
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ fontFamily: UI, fontSize: 16, fontWeight: 600, color: T_P }}>{selected.city}, {selected.state}</div>
+                              <div style={{ fontFamily: MONO, fontSize: 10, color: T_M, marginTop: 2 }}>{fmt(selected.price)} median</div>
+                              <div style={{ fontFamily: MONO, fontSize: 11, color: selected.yoy > 0 ? G : R, marginTop: 3 }}>{selected.yoy > 0 ? '▲ +' : '▼ '}{Math.abs(selected.yoy)}% YoY</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px 8px', marginBottom: 14 }}>
+                            {([
+                              ['RENTAL YIELD', `${selected.rentalYield}%`],
+                              ['CAP RATE', `${selected.cap}%`],
+                              ['DOM', `${selected.dom}d`],
+                              ['WALK', `${selected.walk}/100`],
+                              ['SCHOOL', `${selected.school}/10`],
+                              ['INVENTORY', selected.inventory.toLocaleString()],
+                            ] as [string,string][]).map(([l,v]) => (
+                              <div key={l}>
+                                <div style={{ fontFamily: MONO, fontSize: 7, color: T_M, letterSpacing: 1 }}>{l}</div>
+                                <div style={{ fontFamily: MONO, fontSize: 11, color: T_P, fontWeight: 600, marginTop: 2 }}>{v}</div>
+                              </div>
+                            ))}
+                          </div>
+                          <canvas ref={sparkCanvasRef} style={{ width: '100%', height: 56, display: 'block', marginBottom: 14 }} />
+                        </>
+                      ) : (
+                        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                          <div style={{ fontFamily: UI, fontSize: 13, color: T_M, lineHeight: 1.7 }}>Tap a market on the globe<br />or select from Rankings</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+
+        <style>{`
+          @keyframes tg-load  { 0% { width: 0% } 100% { width: 100% } }
+          @keyframes tg-pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.3 } }
+        `}</style>
+      </>
+    );
+  }
+
+  // ── Desktop render ────────────────────────────────────────────────────────────
   return (
     <>
       <Nav

@@ -323,7 +323,7 @@ exports.handler = async (event) => {
         await saveProgress(coNo, 0, total, true);
         const nextCoNo = coNo < 67 ? coNo + 1 : null;
         return { statusCode: 200, headers: CORS,
-          body: JSON.stringify({ county: countyName, coNo, done: true, nextCounty: CO_NO_TO_NAME[nextCoNo] || null, total, dryRun }) };
+          body: JSON.stringify({ county: countyName, coNo, done: true, nextCounty: nextCoNo ? `FL County ${nextCoNo}` : null, total, dryRun }) };
       }
       return { statusCode: 200, headers: CORS,
         body: JSON.stringify({ county: countyName, coNo, offset, newOffset: offset, total,
@@ -372,17 +372,18 @@ exports.handler = async (event) => {
       offset: newOffset, total, countyDone, dryRun,
     });
 
+    const nextCounty = nextCoNo ? `FL County ${nextCoNo}` : null;
     return {
       statusCode: 200, headers: CORS,
       body: JSON.stringify({
         county: countyName, coNo, countyFips,
         offset, newOffset, total, pctComplete: pct,
         processed, errors: writeErrors.length,
-        countyDone, nextCounty: CO_NO_TO_NAME[nextCoNo] || null,
+        countyDone, nextCounty,
         dryRun, sample,
         message: countyDone
-          ? `${countyName} complete (${total} properties). Next: ${CO_NO_TO_NAME[nextCoNo] || "ALL DONE"}`
-          : `${countyName}: ${newOffset}/${total} (${pct}%)`,
+          ? `${countyName} complete (${total} properties). Next: ${nextCounty || "ALL DONE"}`
+          : `${countyName}: ${newOffset}/${total} (${pct || "?"})`,
       }),
     };
   } catch (err) {

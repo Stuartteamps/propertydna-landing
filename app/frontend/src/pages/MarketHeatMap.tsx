@@ -120,10 +120,20 @@ export default function MarketHeatMap() {
   const [clock,         setClock]         = useState('');
   const [sortKey,       setSortKey]       = useState<SortKey>('heat');
   const [sortAsc,       setSortAsc]       = useState(false);
+  const [isMobile,      setIsMobile]      = useState(() => window.innerWidth < 768);
+  const [mobileTab,     setMobileTab]     = useState<'markets' | 'intel'>('markets');
 
   const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
   const sparkCanvasRef = useRef<HTMLCanvasElement>(null);
   const hoverTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Mobile resize ───────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // ── Fonts & scroll lock ─────────────────────────────────────────────────────
 
@@ -288,6 +298,7 @@ export default function MarketHeatMap() {
   const handleParcelSelect = useCallback((p: HeatParcel) => {
     setHover(null);
     setSelected(p);
+    if (window.innerWidth < 768) setMobileTab('intel');
   }, []);
 
   const handleCityClick = useCallback((city: { name: string; lat: number; lon: number }) => {
@@ -306,7 +317,242 @@ export default function MarketHeatMap() {
   const cityMarketsForMap = markets.map(m => ({ name: m.name, lat: m.lat, lon: m.lon, heat: m.heat, medianPrice: m.medianPrice, yoy: m.yoy }));
   const avgYoy        = markets.length ? (markets.reduce((s, m) => s + m.yoy, 0) / markets.length).toFixed(1) : '—';
 
-  // ── Render ────────────────────────────────────────────────────────────────────
+  // ── Mobile render ─────────────────────────────────────────────────────────────
+
+  const sharedModals = (
+    <>
+      <Nav onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }} onRequestAccessClick={() => setPricingOpen(true)} />
+      <AuthModal   isOpen={modalOpen}   initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
+      <PropertyDrawer
+        parcel={drawerParcel}
+        onClose={() => setDrawerParcel(null)}
+        onNeedAuth={() => { setDrawerParcel(null); setModalTab('signin'); setModalOpen(true); }}
+      />
+      {hover && <HoverTooltip hover={hover} />}
+    </>
+  );
+
+  if (isMobile) {
+    const TAB_H  = 48;
+    const MINI_H = 30;
+    const MAP_H  = `calc(100vh - ${NAV_H}px - ${TICK_H}px - ${TAB_H}px - ${MINI_H}px - 45px)`;
+
+    return (
+      <>
+        {sharedModals}
+        <div style={{ position: 'fixed', top: NAV_H, left: 0, right: 0, bottom: 0, background: '#020408', display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 10 }}>
+
+          {/* Ticker */}
+          <div style={{ height: TICK_H, flexShrink: 0, background: 'rgba(4,12,20,0.99)', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+            <div style={{ padding: '0 10px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, borderRight: `1px solid ${BORDER}`, height: '100%' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: G, boxShadow: `0 0 6px ${G}`, animation: 'hm-blink 1.4s ease-in-out infinite' }} />
+              <span style={{ fontFamily: MONO, fontSize: 8, letterSpacing: 2, color: G }}>LIVE</span>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', whiteSpace: 'nowrap', animation: 'hm-ticker 60s linear infinite' }}>
+                {tickerItems.map((p, i) => (
+                  <div key={`${p.id}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', borderRight: `1px solid rgba(0,255,136,0.05)`, flexShrink: 0 }}>
+                    <span style={{ fontFamily: MONO, fontSize: 8, color: T_M }}>{fmtAddr(p.address)}</span>
+                    <span style={{ fontFamily: MONO, fontSize: 9, color: T_P }}>{fmtPrice(p.price)}</span>
+                    <span style={{ fontFamily: MONO, fontSize: 8, color: yoyColor(p.change) }}>{fmtChange(p.change)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Map */}
+          <div style={{ height: MAP_H, flexShrink: 0, position: 'relative' }}>
+            <div style={{ position: 'absolute', inset: 0, filter: premium ? 'none' : 'brightness(0.45) saturate(0.3)' }}>
+              <HeatMapCanvas
+                parcels={parcels} cityMarkets={cityMarketsForMap} weights={weights}
+                loading={parcelLoading} premium={premium}
+                onHover={handleHover} onSelect={handleParcelSelect} onCityClick={handleCityClick}
+              />
+            </div>
+            {premium && (
+              <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 20 }}>
+                <FilterPanel weights={weights} onChange={setWeights} />
+              </div>
+            )}
+            {!premium && (
+              <div style={{ position: 'absolute', inset: 0, zIndex: 1000 }}>
+                <PremiumLockOverlay
+                  headline="Unlock 168K Indexed Properties"
+                  body="Full Coachella Valley parcel-level DNA scoring."
+                  ctaLabel="Unlock Premium"
+                  onUpgrade={() => setPricingOpen(true)}
+                />
+              </div>
+            )}
+            {parcelCity && (
+              <div style={{ position: 'absolute', bottom: 8, left: 8, background: 'rgba(4,12,20,0.85)', border: `1px solid ${BORDER}`, padding: '4px 10px', fontFamily: MONO, fontSize: 8, color: G, letterSpacing: 1 }}>
+                {parcelLoading ? '● LOADING…' : `● ${parcels.length.toLocaleString()} PARCELS`}
+              </div>
+            )}
+          </div>
+
+          {/* Mobile tab bar */}
+          <div style={{ height: TAB_H, flexShrink: 0, display: 'flex', borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid rgba(0,255,136,0.06)`, background: 'rgba(4,12,20,0.99)' }}>
+            {(['markets', 'intel'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setMobileTab(tab)}
+                style={{ flex: 1, fontFamily: MONO, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', background: mobileTab === tab ? 'rgba(0,255,136,0.1)' : 'transparent', color: mobileTab === tab ? G : T_M, border: 'none', cursor: 'pointer', borderBottom: mobileTab === tab ? `2px solid ${G}` : '2px solid transparent' }}
+              >
+                {tab === 'intel' ? 'DNA INTEL' : 'MARKETS'}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none' as const }}>
+
+            {/* MARKETS tab */}
+            {mobileTab === 'markets' && (
+              <div>
+                {sorted.map((m, i) => {
+                  const locked = !premium && i >= 3;
+                  const active = !!(parcelCity && m.name.startsWith(parcelCity));
+                  return (
+                    <div
+                      key={m.name}
+                      onClick={() => !locked && premium && handleCityClick({ name: m.name, lat: m.lat, lon: m.lon })}
+                      style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid rgba(0,255,136,0.04)', background: active ? 'rgba(0,255,136,0.07)' : 'transparent', borderLeft: `2px solid ${active ? G : 'transparent'}`, filter: locked ? 'blur(4px)' : 'none', userSelect: locked ? 'none' : 'auto', gap: 10 }}
+                    >
+                      <div style={{ fontFamily: MONO, fontSize: 9, color: T_M, width: 16, textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 600, color: active ? G : T_P, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</div>
+                        <div style={{ fontFamily: MONO, fontSize: 9, color: T_M, marginTop: 2 }}>{fmtPrice(m.medianPrice)} · DOM {m.dom}</div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ fontFamily: MONO, fontSize: 12, fontWeight: 700, color: yoyColor(m.yoy) }}>{m.yoy >= 0 ? '+' : ''}{m.yoy.toFixed(1)}%</div>
+                        <div style={{ fontFamily: MONO, fontSize: 8, color: T_M, marginTop: 2 }}>HEAT {Math.round(m.heat * 100)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {!premium && (
+                  <div style={{ padding: 14 }}>
+                    <button onClick={() => setPricingOpen(true)} style={{ width: '100%', fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: '#000', background: G, border: 'none', padding: '12px 0', cursor: 'pointer' }}>
+                      Unlock All Markets →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* INTEL tab */}
+            {mobileTab === 'intel' && (
+              <div>
+                {/* Score ring */}
+                <div style={{ padding: '16px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <div style={{ position: 'relative', width: 110, height: 110 }}>
+                    <canvas ref={scoreCanvasRef} width={110} height={110} />
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ fontFamily: MONO, fontSize: selected ? 28 : 22, fontWeight: 700, lineHeight: 1, color: selected ? heatScoreToHex(selected.score) : T_M }}>
+                        {selected ? selected.score : '—'}
+                      </div>
+                      <div style={{ fontFamily: MONO, fontSize: 8, letterSpacing: 1, color: T_M }}>DNA SCORE</div>
+                    </div>
+                  </div>
+                  {selected ? (
+                    <>
+                      <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 600, color: heatScoreBadgeColor(selected.score), textTransform: 'uppercase' }}>{heatScoreLabel(selected.score)}</div>
+                      <div style={{ fontFamily: UI, fontSize: 13, color: T_P, textAlign: 'center' }}>{selected.street}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 9, color: T_M }}>{selected.city}, {selected.state}</div>
+                    </>
+                  ) : (
+                    <div style={{ fontFamily: UI, fontSize: 13, color: T_M, textAlign: 'center', lineHeight: 1.6 }}>Tap any parcel on the map<br />to run DNA analysis</div>
+                  )}
+                </div>
+
+                {selected && (
+                  <>
+                    {/* Metrics grid */}
+                    <div style={{ padding: '12px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)` }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px 8px' }}>
+                        {([
+                          ['PRICE',   selected.price > 0 ? fmtPrice(selected.price) : '—'],
+                          ['SQFT',    selected.sqft > 0 ? `${selected.sqft.toLocaleString()}` : '—'],
+                          ['DOM',     selected.dom > 0 ? `${selected.dom}d` : '—'],
+                          ['BED/BATH',selected.bedrooms > 0 ? `${selected.bedrooms}/${selected.bathrooms}` : '—'],
+                          ['YR BUILT',selected.yearBuilt > 0 ? String(selected.yearBuilt) : '—'],
+                          ['$/SQFT',  selected.pricePerSqft > 0 ? `$${selected.pricePerSqft}` : '—'],
+                        ] as [string,string][]).map(([l,v]) => (
+                          <div key={l}>
+                            <div style={{ fontFamily: MONO, fontSize: 7, color: T_M, letterSpacing: 1.5 }}>{l}</div>
+                            <div style={{ fontFamily: MONO, fontSize: 11, color: T_P, fontWeight: 600, marginTop: 2 }}>{v}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Sub-score bars */}
+                    <div style={{ padding: '10px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)` }}>
+                      <div style={{ fontFamily: MONO, fontSize: 7, color: T_M, letterSpacing: 2, marginBottom: 8 }}>SCORE BREAKDOWN</div>
+                      {([
+                        ['COMPS',      selected.compsScore],
+                        ['PRICE Δ',    selected.priceDeltaScore],
+                        ['DOM',        selected.domScore],
+                        ['PERMITS',    selected.permitsScore],
+                        ['LIVABILITY', selected.livability],
+                        ['RENTAL',     selected.rentalDemand],
+                      ] as [string,number][]).map(([label, score]) => {
+                        const barColor = score >= 70 ? G : score >= 50 ? GOLD : R;
+                        return (
+                          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                            <div style={{ fontFamily: MONO, fontSize: 7, color: T_M, width: 55, flexShrink: 0 }}>{label}</div>
+                            <div style={{ flex: 1, height: 3, background: 'rgba(0,255,136,0.08)', position: 'relative' }}>
+                              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${score}%`, background: barColor }} />
+                            </div>
+                            <div style={{ fontFamily: MONO, fontSize: 8, color: barColor, width: 22, textAlign: 'right', flexShrink: 0 }}>{score}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Sparkline */}
+                    {selected.sparkline?.length > 1 && (
+                      <div style={{ padding: '8px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)` }}>
+                        <div style={{ fontFamily: MONO, fontSize: 7, color: T_M, letterSpacing: 2, marginBottom: 4 }}>PRICE TREND</div>
+                        <canvas ref={sparkCanvasRef} style={{ width: '100%', height: 56, display: 'block' }} />
+                      </div>
+                    )}
+
+                    {/* CTA */}
+                    <div style={{ padding: '14px' }}>
+                      <button
+                        onClick={() => setDrawerParcel(selected)}
+                        style={{ width: '100%', fontFamily: MONO, fontSize: 11, letterSpacing: 2, color: '#000', background: G, border: 'none', padding: '14px 0', cursor: 'pointer', boxShadow: `0 0 20px rgba(0,255,136,0.2)` }}
+                      >
+                        Generate Full DNA Report
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Mini status strip */}
+          <div style={{ height: MINI_H, flexShrink: 0, background: 'rgba(4,12,20,0.99)', borderTop: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 14 }}>
+            <span style={{ fontFamily: MONO, fontSize: 8, color: T_M }}>168K INDEXED</span>
+            <span style={{ fontFamily: MONO, fontSize: 8, color: GOLD }}>IntellaGraph AI</span>
+            <span style={{ fontFamily: MONO, fontSize: 8, color: T_M, marginLeft: 'auto' }}>{clock}</span>
+          </div>
+
+        </div>
+        <style>{`
+          @keyframes hm-ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+          @keyframes hm-blink  { 0%,100%{opacity:1} 50%{opacity:0.2} }
+        `}</style>
+      </>
+    );
+  }
+
+  // ── Desktop render ────────────────────────────────────────────────────────────
 
   return (
     <>
