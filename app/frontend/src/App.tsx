@@ -27,6 +27,7 @@ import Dashboard from "./pages/Dashboard";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 import CampaignManager from "./pages/admin/CampaignManager";
+import KpiDashboard from "./pages/admin/KpiDashboard";
 import Listings from "./pages/Listings";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
@@ -65,6 +66,7 @@ const AppRoutes = () => (
     <Route path="/listings" element={<Listings />} />
     <Route path="/outreach" element={<CampaignManager />} />
     <Route path="/admin/campaigns" element={<CampaignManager />} />
+    <Route path="/admin/kpis" element={<KpiDashboard />} />
     <Route path="/blog/:slug" element={<BlogPost />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="/privacy" element={<Privacy />} />

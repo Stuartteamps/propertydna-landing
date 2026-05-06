@@ -140,7 +140,7 @@ function buildOutreachEmail({ contact, market, subject, campaignId }) {
 
         <!-- Header -->
         <tr><td style="padding:28px 40px 24px;border-bottom:1px solid #e5e0d8;">
-          <p style="margin:0;font-size:11px;color:#999;letter-spacing:3px;text-transform:uppercase;font-family:Georgia,serif;">Stuart Team · Property DNA</p>
+          <p style="margin:0;font-size:11px;color:#999;letter-spacing:3px;text-transform:uppercase;font-family:Georgia,serif;">PropertyDNA</p>
         </td></tr>
 
         <!-- Body -->
@@ -186,14 +186,13 @@ function buildOutreachEmail({ contact, market, subject, campaignId }) {
 
         <!-- Signature -->
         <tr><td style="padding:24px 40px;border-top:1px solid #e5e0d8;background:#faf8f5;">
-          <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;font-family:Georgia,serif;">Daniel Stuart</p>
-          <p style="margin:0 0 2px;font-size:12px;color:#777;">Stuart Team &mdash; Real Estate Intelligence</p>
-          <p style="margin:0;font-size:12px;color:#777;">daniel@thepropertydna.com &nbsp;&middot;&nbsp; thepropertydna.com</p>
+          <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;font-family:Georgia,serif;">PropertyDNA</p>
+          <p style="margin:0;font-size:12px;color:#777;">thepropertydna.com</p>
         </td></tr>
 
         <!-- Footer / unsubscribe -->
         <tr><td style="padding:16px 40px;border-top:1px solid #e5e0d8;">
-          <p style="margin:0;font-size:11px;color:#bbb;line-height:1.6;">&copy; ${YEAR} Stuart Team Real Estate &middot; PropertyDNA. This message was sent to ${contact.email} because your property is located in the Coachella Valley market we cover. <a href="${unsubUrl}" style="color:#bbb;">Unsubscribe</a>.</p>
+          <p style="margin:0;font-size:11px;color:#bbb;line-height:1.6;">&copy; ${YEAR} PropertyDNA. This message was sent to ${contact.email} because your property is located in the Coachella Valley market we cover. <a href="${unsubUrl}" style="color:#bbb;">Unsubscribe</a>.</p>
         </td></tr>
 
       </table>
@@ -216,8 +215,8 @@ function buildOutreachEmail({ contact, market, subject, campaignId }) {
     `See your report: ${reportUrl}`,
     "",
     "".padEnd(50, "-"),
-    "Daniel Stuart",
-    "Stuart Team — Real Estate Intelligence",
+    "PropertyDNA",
+    "Real Estate Intelligence",
     "daniel@thepropertydna.com",
     SITE,
     "",
@@ -230,7 +229,7 @@ function buildOutreachEmail({ contact, market, subject, campaignId }) {
 // ── Resend sender ─────────────────────────────────────────────────────────────
 async function sendEmail({ to, subject, html, text }) {
   const key    = process.env.RESEND_API_KEY;
-  const from   = `Stuart Team <${process.env.SENDER_EMAIL || "reports@thepropertydna.com"}>`;
+  const from   = `PropertyDNA <${process.env.SENDER_EMAIL || "reports@thepropertydna.com"}>`;
   const replyTo = process.env.REPLY_TO_EMAIL || "stuartteamps@gmail.com";
   if (!key) throw new Error("RESEND_API_KEY not set");
   return httpsPost("api.resend.com", "/emails", { Authorization: `Bearer ${key}` }, {

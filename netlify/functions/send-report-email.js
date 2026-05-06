@@ -114,9 +114,7 @@ function buildHtml({ recipientName, propertyAddress, summary, reportUrl, year })
           <!-- Contact -->
           <tr>
             <td style="padding:24px 40px;border-top:1px solid #e5e0d8;background:#faf8f5;">
-              <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;font-family:Georgia,serif;">Daniel Stuart</p>
-              <p style="margin:0 0 4px;font-size:12px;color:#777;">Stuart Team &mdash; Real Estate Intelligence</p>
-              <p style="margin:0 0 2px;font-size:12px;color:#777;">daniel@thepropertydna.com</p>
+              <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;font-family:Georgia,serif;">PropertyDNA</p>
               <p style="margin:0;font-size:12px;color:#777;">thepropertydna.com</p>
             </td>
           </tr>
@@ -155,10 +153,8 @@ function buildText({ recipientName, propertyAddress, summary, reportUrl, year })
     reportUrl,
     "",
     "".padEnd(50, "-"),
-    "Daniel Stuart",
-    "Stuart Team — Real Estate Intelligence",
-    "Email: daniel@thepropertydna.com",
-    "Web:   https://thepropertydna.com",
+    "PropertyDNA",
+    "https://thepropertydna.com",
     "",
     `This report is for informational purposes only and is not a licensed appraisal. © ${year} PropertyDNA.`,
   );

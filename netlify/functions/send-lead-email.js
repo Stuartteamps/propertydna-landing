@@ -33,14 +33,13 @@ function buildTemplate(funnel, { name, address, executionId, message }) {
 
   const footer = `
 <tr><td style="padding:24px 40px;border-top:1px solid #e5e0d8;background:#faf8f5;">
-  <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;font-family:Georgia,serif;">Daniel Stuart</p>
-  <p style="margin:0 0 2px;font-size:12px;color:#777;">Stuart Team — Real Estate</p>
-  <p style="margin:0 0 2px;font-size:12px;color:#777;">daniel@thepropertydna.com &nbsp;·&nbsp; thepropertydna.com</p>
+  <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;font-family:Georgia,serif;">PropertyDNA</p>
+  <p style="margin:0 0 2px;font-size:12px;color:#777;">thepropertydna.com</p>
   <p style="margin:8px 0 0;font-size:10px;color:#bbb;letter-spacing:1px;">Ref: ${ref}</p>
 </td></tr>
 <tr><td style="padding:16px 40px;border-top:1px solid #e5e0d8;">
   <p style="margin:0;font-size:11px;color:#bbb;line-height:1.6;">
-    © ${year} Stuart Team Real Estate · PropertyDNA. Not a licensed appraisal.
+    © ${year} PropertyDNA. Not a licensed appraisal.
     If you did not submit this form, please ignore this message.
   </p>
 </td></tr>`;
@@ -57,12 +56,12 @@ function buildTemplate(funnel, { name, address, executionId, message }) {
 <table role="presentation" width="600" cellpadding="0" cellspacing="0"
   style="max-width:600px;width:100%;background:#fff;border:1px solid #e5e0d8;">
 <tr><td style="padding:32px 40px 24px;border-bottom:1px solid #e5e0d8;">
-  <p style="margin:0;font-family:Georgia,serif;font-size:11px;color:#999;letter-spacing:3px;text-transform:uppercase;">Stuart Team · Property DNA</p>
+  <p style="margin:0;font-family:Georgia,serif;font-size:11px;color:#999;letter-spacing:3px;text-transform:uppercase;">PropertyDNA</p>
 </td></tr>
 ${bodyRows}
 ${footer}
 </table></td></tr></table></body></html>`,
-    text: `${subject}\n\nHi ${first},\n\n${preheader}\n\nRef: ${ref}\n\n---\nDaniel Stuart\nStuart Team Real Estate\ndaniel@thepropertydna.com\n${site}\n\n© ${year} Stuart Team Real Estate`,
+    text: `${subject}\n\nHi ${first},\n\n${preheader}\n\nRef: ${ref}\n\n---\nPropertyDNA\nthepropertydna.com\n\n© ${year} PropertyDNA`,
   });
 
   const row = (html) => `<tr><td style="padding:28px 40px 0;">${html}</td></tr>`;
@@ -70,7 +69,7 @@ ${footer}
   switch (funnel) {
     case "buyer":
       return wrap(
-        "Your buyer access is confirmed — Stuart Team",
+        "Your buyer access is confirmed — PropertyDNA",
         `Hi ${first}, you're set up. Curated homes coming your way shortly.`,
         row(`<p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">Hi ${first},</p>
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">You're confirmed. I'll be sending you curated home listings that match your criteria — off-market when available, MLS when relevant.</p>
@@ -94,7 +93,7 @@ ${footer}
 
     case "off_market":
       return wrap(
-        "You're on the off-market list — Stuart Team",
+        "You're on the off-market list — PropertyDNA",
         `Hi ${first}, you'll hear from me first when something matches.`,
         row(`<p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">Hi ${first},</p>
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">You're on the list. When an off-market property becomes available that matches your criteria, you'll hear from me before it goes anywhere else.</p>
@@ -106,7 +105,7 @@ ${footer}
 
     case "open_house":
       return wrap(
-        `Thanks for visiting${address ? " — " + address : ""} — Stuart Team`,
+        `Thanks for visiting${address ? " — " + address : ""} — PropertyDNA`,
         `Hi ${first}, great meeting you. Here's what comes next.`,
         row(`<p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">Hi ${first},</p>
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">Thanks for stopping by${address ? " <strong>" + address + "</strong>" : ""}. It was great to meet you.</p>
@@ -118,7 +117,7 @@ ${footer}
 
     case "newsletter":
       return wrap(
-        "You're subscribed — Stuart Team",
+        "You're subscribed — PropertyDNA",
         `Hi ${first}, you're on the list. Market intel coming your way.`,
         row(`<p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">Hi ${first},</p>
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">You're subscribed. I send a weekly market update covering Coachella Valley — pricing shifts, inventory, off-market opportunities, and data-backed analysis.</p>
@@ -131,7 +130,7 @@ ${footer}
     case "contact":
     default:
       return wrap(
-        "Message received — Stuart Team",
+        "Message received — PropertyDNA",
         `Hi ${first}, I've received your message and will follow up shortly.`,
         row(`<p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">Hi ${first},</p>
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">I've received your message and will follow up shortly — usually within a few hours during business hours.</p>
@@ -148,7 +147,7 @@ ${message ? `<p style="margin:0 0 24px;font-size:14px;color:#555;line-height:1.7
 
 function sendViaResend({ to, subject, html, text }) {
   const key     = process.env.RESEND_API_KEY;
-  const from    = `Stuart Team <${process.env.SENDER_EMAIL || "reports@thepropertydna.com"}>`;
+  const from    = `PropertyDNA <${process.env.SENDER_EMAIL || "reports@thepropertydna.com"}>`;
   const replyTo = process.env.REPLY_TO_EMAIL || "stuartteamps@gmail.com";
   if (!key) return Promise.resolve({ status: 503, data: { error: "No RESEND_API_KEY" } });
 

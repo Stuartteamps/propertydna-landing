@@ -1,0 +1,25 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#0F0E0D"/>
+  <!-- Gold border -->
+  <rect x="1" y="1" width="298" height="298" fill="none" stroke="#B89355" stroke-width="1.5"/>
+  <!-- Grid cross motif -->
+  <line x1="150" y1="30" x2="150" y2="270" stroke="rgba(184,147,85,0.2)" stroke-width="1"/>
+  <line x1="30" y1="150" x2="270" y2="150" stroke="rgba(184,147,85,0.2)" stroke-width="1"/>
+  <!-- DNA helix left strand -->
+  <path d="M 95 80 Q 125 115 95 150 Q 65 185 95 220" stroke="#B89355" stroke-width="2" fill="none" stroke-opacity="0.8"/>
+  <!-- DNA helix right strand -->
+  <path d="M 125 80 Q 95 115 125 150 Q 155 185 125 220" stroke="#B89355" stroke-width="2" fill="none" stroke-opacity="0.8"/>
+  <!-- Rungs -->
+  <line x1="95" y1="105" x2="125" y2="105" stroke="#B89355" stroke-width="1.5" stroke-opacity="0.6"/>
+  <line x1="95" y1="130" x2="125" y2="130" stroke="#B89355" stroke-width="1.5" stroke-opacity="0.6"/>
+  <line x1="95" y1="150" x2="125" y2="150" stroke="#B89355" stroke-width="1.5" stroke-opacity="0.6"/>
+  <line x1="95" y1="170" x2="125" y2="170" stroke="#B89355" stroke-width="1.5" stroke-opacity="0.6"/>
+  <line x1="95" y1="195" x2="125" y2="195" stroke="#B89355" stroke-width="1.5" stroke-opacity="0.6"/>
+  <!-- Wordmark: Property -->
+  <text x="155" y="140" font-family="Georgia, serif" font-size="28" font-weight="300" fill="#F4F0E8" letter-spacing="-0.5">Property</text>
+  <!-- Wordmark: DNA in gold -->
+  <text x="155" y="172" font-family="Georgia, serif" font-size="28" font-weight="300" fill="#B89355" letter-spacing="-0.5">DNA</text>
+  <!-- Tagline -->
+  <text x="155" y="195" font-family="Arial, sans-serif" font-size="7" fill="rgba(184,147,85,0.55)" letter-spacing="2.5">INTELLIGENCE</text>
+</svg>
