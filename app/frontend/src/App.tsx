@@ -30,6 +30,7 @@ import CampaignManager from "./pages/admin/CampaignManager";
 import Listings from "./pages/Listings";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ const AppRoutes = () => (
     <Route path="/admin/campaigns" element={<CampaignManager />} />
     <Route path="/blog/:slug" element={<BlogPost />} />
     <Route path="/blog" element={<Blog />} />
+    <Route path="/privacy" element={<Privacy />} />
   </Routes>
 );
 
