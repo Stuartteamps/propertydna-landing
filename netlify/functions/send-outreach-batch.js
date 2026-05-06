@@ -229,7 +229,7 @@ function buildOutreachEmail({ contact, market, subject, campaignId }) {
 // ── Resend sender ─────────────────────────────────────────────────────────────
 async function sendEmail({ to, subject, html, text }) {
   const key    = process.env.RESEND_API_KEY;
-  const from   = `PropertyDNA <${process.env.SENDER_EMAIL || "reports@thepropertydna.com"}>`;
+  const from   = `${process.env.SENDER_NAME || "PropertyDNA powered by IntellaGraphAI"} <${process.env.SENDER_EMAIL || "reports@thepropertydna.com"}>`;
   const replyTo = process.env.REPLY_TO_EMAIL || "stuartteamps@gmail.com";
   if (!key) throw new Error("RESEND_API_KEY not set");
   return httpsPost("api.resend.com", "/emails", { Authorization: `Bearer ${key}` }, {

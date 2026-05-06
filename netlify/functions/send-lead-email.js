@@ -147,7 +147,7 @@ ${message ? `<p style="margin:0 0 24px;font-size:14px;color:#555;line-height:1.7
 
 function sendViaResend({ to, subject, html, text }) {
   const key     = process.env.RESEND_API_KEY;
-  const from    = `PropertyDNA <${process.env.SENDER_EMAIL || "reports@thepropertydna.com"}>`;
+  const from    = `${process.env.SENDER_NAME || "PropertyDNA powered by IntellaGraphAI"} <${process.env.SENDER_EMAIL || "reports@thepropertydna.com"}>`;
   const replyTo = process.env.REPLY_TO_EMAIL || "stuartteamps@gmail.com";
   if (!key) return Promise.resolve({ status: 503, data: { error: "No RESEND_API_KEY" } });
 

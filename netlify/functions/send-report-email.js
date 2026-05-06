@@ -306,7 +306,7 @@ exports.handler = async (event) => {
   const provider = hasResend ? "resend" : "sendgrid";
 
   const sendFn = hasResend ? sendViaResend : sendViaSendGrid;
-  const fromField = hasResend ? `Property DNA <${SENDER}>` : SENDER;
+  const fromField = hasResend ? `${process.env.SENDER_NAME || "PropertyDNA powered by IntellaGraphAI"} <${SENDER}>` : SENDER;
 
   let recipientResult = null;
   let ownerResult = null;

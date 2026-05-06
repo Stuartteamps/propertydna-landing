@@ -14,7 +14,7 @@ const db    = require('./_supabase');
 
 const CC_CAMPAIGN_NAME = 'Constant Contact Database';
 const SENDER      = process.env.SENDER_EMAIL  || 'reports@thepropertydna.com';
-const SENDER_NAME = 'PropertyDNA';
+const SENDER_NAME = process.env.SENDER_NAME || 'PropertyDNA powered by IntellaGraphAI';
 const REPLY_TO    = process.env.REPLY_TO_EMAIL || 'stuartteamps@gmail.com';
 const SITE        = 'https://thepropertydna.com';
 
@@ -127,8 +127,7 @@ function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel) {
 <a href="https://youtube.com/@stuartteamrealestate3059" style="margin:5px;background:#1f1a15;color:#fff;padding:10px 18px;text-decoration:none;">YouTube</a>
 </td></tr>
 <tr><td align="center" style="padding:30px;font-size:13px;color:#7c6c5c;">
-Daniel Stuart · Coldwell Banker Realty · Palm Springs, CA<br>
-<a href="https://www.dsteamps.com" style="color:#7c6c5c;">dsteamps.com</a> &nbsp;·&nbsp; <a href="${SITE}" style="color:#7c6c5c;">thepropertydna.com</a><br><br>
+<a href="${SITE}" style="color:#7c6c5c;">thepropertydna.com</a><br><br>
 <a href="${unsubUrl}" style="color:#9a8671;font-size:11px;">Unsubscribe</a>
 </td></tr>
 </table></td></tr></table>
@@ -161,7 +160,7 @@ exports.handler = async () => {
   const weatherText     = buildWeatherText(weatherPeriods);
   const marketNarrative = buildMarketNarrative(markets);
   const weekLabel       = getWeekLabel();
-  const subject         = `The Stuart Team Weekly — ${weekLabel}`;
+  const subject         = `PropertyDNA Weekly — ${weekLabel}`;
 
   // 2. Load CC import campaign ID
   const campaigns = await db.from('campaigns')
