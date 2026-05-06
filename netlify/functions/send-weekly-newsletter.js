@@ -14,7 +14,7 @@ const db    = require('./_supabase');
 
 const CC_CAMPAIGN_NAME = 'Constant Contact Database';
 const SENDER      = process.env.SENDER_EMAIL  || 'reports@thepropertydna.com';
-const SENDER_NAME = process.env.SENDER_NAME || 'PropertyDNA powered by IntellaGraphAI';
+const SENDER_NAME = 'Daniel Stuart | Stuart Team'; // Stuart Team newsletter — separate from PropertyDNA
 const REPLY_TO    = process.env.REPLY_TO_EMAIL || 'stuartteamps@gmail.com';
 const SITE        = 'https://thepropertydna.com';
 
@@ -89,11 +89,11 @@ function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel) {
 <tr><td align="center">
 <table width="640" cellpadding="0" cellspacing="0" style="background:#fcfaf7;max-width:640px;">
 <tr><td style="padding:18px 34px;border-bottom:1px solid #e4d8c9;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8d7b67;">
-<table width="100%"><tr><td>PropertyDNA</td><td align="right">${weekLabel}</td></tr></table>
+<table width="100%"><tr><td>The Stuart Team</td><td align="right">${weekLabel}</td></tr></table>
 </td></tr>
 <tr><td><img src="https://files.constantcontact.com/5cd96ebd701/1071b613-147b-4079-89fa-195924b75343.png" width="100%" style="display:block;"></td></tr>
 <tr><td align="center" style="padding:40px;">
-<div style="font-family:Georgia,serif;font-size:38px;">PropertyDNA Weekly</div>
+<div style="font-family:Georgia,serif;font-size:38px;">The Stuart Team Weekly</div>
 <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9a8671;padding-top:10px;">Luxury Real Estate &bull; Market Insight &bull; Desert Lifestyle</div>
 </td></tr>
 <tr><td align="center" style="padding:0 60px 30px;font-size:16px;line-height:1.8;">${marketNarrative}</td></tr>
@@ -127,7 +127,8 @@ function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel) {
 <a href="https://youtube.com/@stuartteamrealestate3059" style="margin:5px;background:#1f1a15;color:#fff;padding:10px 18px;text-decoration:none;">YouTube</a>
 </td></tr>
 <tr><td align="center" style="padding:30px;font-size:13px;color:#7c6c5c;">
-<a href="${SITE}" style="color:#7c6c5c;">thepropertydna.com</a><br><br>
+Daniel Stuart · Coldwell Banker Realty · Palm Springs, CA<br>
+<a href="https://www.dsteamps.com" style="color:#7c6c5c;">dsteamps.com</a> &nbsp;·&nbsp; <a href="${SITE}" style="color:#7c6c5c;">thepropertydna.com</a><br><br>
 <a href="${unsubUrl}" style="color:#9a8671;font-size:11px;">Unsubscribe</a>
 </td></tr>
 </table></td></tr></table>

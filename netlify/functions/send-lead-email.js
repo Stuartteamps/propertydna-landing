@@ -225,7 +225,7 @@ exports.handler = async (event) => {
     provider:        "resend",
     error_code:      success ? null : String(result.status),
     error_message:   success ? null : JSON.stringify(result.data || {}).slice(0, 300),
-    metadata:        { funnel_type: funnelType, execution_id: executionId, phone },
+    metadata:        { source: "propertydna_lead", funnel_type: funnelType, execution_id: executionId, phone },
   }).catch(e => console.warn("[lead-email-log]", e.message));
 
   if (!success) {

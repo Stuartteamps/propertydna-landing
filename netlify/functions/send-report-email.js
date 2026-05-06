@@ -334,7 +334,7 @@ exports.handler = async (event) => {
       provider,
       errorCode:    success ? null : String(recipientResult?.status || "unknown"),
       errorMessage: success ? null : JSON.stringify(recipientResult?.data || {}),
-      metadata: { view_token: viewToken || null },
+      metadata: { source: "propertydna_report", view_token: viewToken || null },
     });
 
     if (!success) {

@@ -319,12 +319,23 @@ exports.handler = async (event) => {
       const result = await sendEmail({ to: contact.email, subject, html, text });
       const ok = result.status < 300;
 
+      const sentAt = new Date().toISOString();
       await db.update("campaign_contacts", { id: contact.id }, {
         status:   ok ? "sent" : "bounced",
-        sent_at:  ok ? new Date().toISOString() : null,
+        sent_at:  ok ? sentAt : null,
         resend_id: ok ? (result.data?.id || null) : null,
         metadata: { ...contact.metadata, error: ok ? undefined : JSON.stringify(result.data).slice(0, 200) },
       }).catch(e => console.warn("[update contact]", e.message));
+
+      db.insert("email_delivery_events", {
+        recipient_email: contact.email,
+        sender_email:    process.env.SENDER_EMAIL || "reports@thepropertydna.com",
+        subject,
+        status:          ok ? "sent" : "failed",
+        provider:        "resend",
+        error_message:   ok ? null : JSON.stringify(result.data || {}).slice(0, 300),
+        metadata:        { source: "propertydna_outreach", campaign_id: campaignId, resend_id: result.data?.id || null },
+      }).catch(() => {});
 
       if (ok) { sent++; } else { failed++; }
     } catch (err) {

@@ -192,10 +192,19 @@ exports.handler = async (event) => {
         tags: [{ name: 'campaign_id', value: campaignId }],
       });
       const ok = result.status < 300;
+      const sentAt = new Date().toISOString();
       await db.from('campaign_contacts').eq('id', contact.id).update({
         status: ok ? 'sent' : 'bounced',
-        sent_at: new Date().toISOString(),
+        sent_at: sentAt,
         resend_id: ok ? (result.data?.id || null) : null,
+      }).catch(() => {});
+      db.insert('email_delivery_events', {
+        recipient_email: contact.email,
+        sender_email:    SENDER,
+        subject:         getSubject(contact, campaign),
+        status:          ok ? 'sent' : 'failed',
+        provider:        'resend',
+        metadata:        { source: 'propertydna_campaign', campaign_id: campaignId, resend_id: result.data?.id || null },
       }).catch(() => {});
       if (ok) { sent++; } else { skipped++; }
     } catch {
