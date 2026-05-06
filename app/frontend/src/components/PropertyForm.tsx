@@ -108,6 +108,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [gateOpen, setGateOpen] = useState(false);
   const [gateLoading, setGateLoading] = useState(false);
+  const [quota, setQuota] = useState<{ limit: number | null; used: number; remaining: number | null; tierLabel: string } | null>(null);
 
   const set = (field: keyof FormState) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -128,14 +129,23 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email }),
       });
-      const usage = await usageRes.json().catch(() => ({ reportCount: 0, isSubscribed: false }));
+      const usage = await usageRes.json().catch(() => ({ reportCount: 0, isSubscribed: false, quota: null }));
 
       // Cache subscription status so premium features unlock immediately
       if (usage.isSubscribed) setPremiumStatus(true, usage.plan || null);
+      if (usage.quota) setQuota(usage.quota);
+
+      const q = usage.quota;
 
       if (usage.isSubscribed) {
-        // Subscribed → free
-        await goToCheckout(form, 'free');
+        // Subscribed — check monthly quota
+        if (q?.exceeded) {
+          // Quota exhausted for this billing cycle → show upgrade gate
+          setStatus('idle');
+          setGateOpen(true);
+        } else {
+          await goToCheckout(form, 'free');
+        }
       } else if ((usage.reportCount || 0) === 0) {
         // First ever report → free
         await goToCheckout(form, 'free');
@@ -369,9 +379,27 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
           {status === 'loading' ? 'Analyzing…' : 'Analyze This Property →'}
         </button>
 
-        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: '11px', color: '#6B6252', textAlign: 'center' }}>
-          First report free · $4.99/report after · $49/month unlimited
-        </div>
+        {/* Quota indicator — shown to subscribed users after first usage check */}
+        {quota && quota.limit !== null && quota.remaining !== null ? (
+          <div style={{ marginTop: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Jost, sans-serif', fontSize: '10px', letterSpacing: '1px', color: quota.remaining <= 5 ? '#C9A84C' : '#6B6252', marginBottom: 6 }}>
+              <span>{quota.tierLabel} plan</span>
+              <span>{quota.remaining} of {quota.limit} reports remaining this month</span>
+            </div>
+            <div style={{ height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 1 }}>
+              <div style={{
+                height: '100%', borderRadius: 1,
+                width: `${Math.max(2, Math.round((quota.remaining / quota.limit) * 100))}%`,
+                background: quota.remaining <= 5 ? '#C9A84C' : 'rgba(201,168,76,0.4)',
+                transition: 'width 0.4s ease',
+              }} />
+            </div>
+          </div>
+        ) : (
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: '11px', color: '#6B6252', textAlign: 'center' }}>
+            First report free · $0.75/report after · plans from $19/month
+          </div>
+        )}
       </form>
     </>
   );
