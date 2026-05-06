@@ -22,6 +22,11 @@
   schedule = "0 * * * *"
 
 [[redirects]]
+  from = "/blog/rss.xml"
+  to = "/.netlify/functions/blog-rss"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

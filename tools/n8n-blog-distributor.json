@@ -1,0 +1,143 @@
+{
+  "name": "PropertyDNA Blog Auto-Distributor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "weeks", "weeksInterval": 1, "triggerAtDay": [4], "triggerAtHour": 9, "triggerAtMinute": 0 }]
+        }
+      },
+      "name": "Every Thursday 9am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://propertydna.com/blog/rss.xml",
+        "options": { "response": { "response": { "responseFormat": "text" } } }
+      },
+      "name": "Fetch RSS Feed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse RSS XML and extract latest article\nconst xml = $input.first().json.data;\n\n// Extract all <item> blocks\nconst items = [...xml.matchAll(/<item>([\\s\\S]*?)<\\/item>/g)].map(m => {\n  const get = (tag) => {\n    const match = m[1].match(new RegExp(`<${tag}[^>]*><!\\\\[CDATA\\\\[([\\\\s\\\\S]*?)\\\\]\\\\]><\\\\/${tag}>|<${tag}[^>]*>([^<]*)<\\\\/${tag}>`));\n    return match ? (match[1] || match[2] || '').trim() : '';\n  };\n  return {\n    title: get('title'),\n    link: get('link'),\n    description: get('description'),\n    pubDate: get('pubDate'),\n    category: get('category'),\n    slug: (get('link').split('/blog/')[1] || '').trim()\n  };\n});\n\n// Get the most recently published article\nconst sorted = items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));\nreturn sorted.map(item => ({ json: item }));"
+      },
+      "name": "Parse RSS Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true },
+          "conditions": [
+            {
+              "id": "already-posted",
+              "leftValue": "={{ $json.slug }}",
+              "rightValue": "={{ $vars.LAST_POSTED_SLUG }}",
+              "operator": { "type": "string", "operation": "notEquals" }
+            }
+          ]
+        }
+      },
+      "name": "Skip if Already Posted",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Only take the single newest article\nconst items = $input.all();\nreturn [items[0]];"
+      },
+      "name": "Take Newest Only",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "resource": "ugc",
+        "text": "={{ '📊 New on the PropertyDNA Journal:\\n\\n' + $json.title + '\\n\\n' + $json.description + '\\n\\nRead the full article: ' + $json.link + '\\n\\n#RealEstate #PropertyDNA #CoachellaValley #PalmSprings #RealtorLife #AIRealEstate #ListingAppointment' }}",
+        "visibility": "PUBLIC",
+        "additionalFields": {
+          "shareMediaCategory": "ARTICLE",
+          "media": [
+            {
+              "status": "READY",
+              "originalUrl": "={{ $json.link }}",
+              "title": "={{ $json.title }}",
+              "description": "={{ $json.description }}"
+            }
+          ]
+        }
+      },
+      "name": "Post to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [1340, 180],
+      "credentials": { "linkedInOAuth2Api": { "id": "linkedin-credentials", "name": "LinkedIn OAuth2" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.medium.com/v1/users/{{ $vars.MEDIUM_USER_ID }}/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Authorization", "value": "=Bearer {{ $vars.MEDIUM_TOKEN }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "title", "value": "={{ $json.title }}" },
+            { "name": "contentFormat", "value": "markdown" },
+            { "name": "content", "value": "={{ '# ' + $json.title + '\\n\\n' + $json.description + '\\n\\n[Read the full article on PropertyDNA Journal](' + $json.link + ')\\n\\n---\\n*Originally published on [PropertyDNA Journal](https://propertydna.com/blog)*' }}" },
+            { "name": "canonicalUrl", "value": "={{ $json.link }}" },
+            { "name": "publishStatus", "value": "public" },
+            { "name": "tags", "value": "=[\"real estate\", \"property\", \"palm springs\", \"AI\", \"real estate agents\"]" }
+          ]
+        }
+      },
+      "name": "Post to Medium",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log the published slug for deduplication\n// In production, write to Supabase or n8n Variables\nconst item = $('Take Newest Only').first().json;\nconsole.log('Published:', item.slug);\nreturn [{ json: { published_slug: item.slug, published_at: new Date().toISOString(), linkedin: $('Post to LinkedIn').first().json, medium: $('Post to Medium').first().json } }];"
+      },
+      "name": "Log Published",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 300]
+    }
+  ],
+  "connections": {
+    "Every Thursday 9am": { "main": [[{ "node": "Fetch RSS Feed", "type": "main", "index": 0 }]] },
+    "Fetch RSS Feed": { "main": [[{ "node": "Parse RSS Items", "type": "main", "index": 0 }]] },
+    "Parse RSS Items": { "main": [[{ "node": "Skip if Already Posted", "type": "main", "index": 0 }]] },
+    "Skip if Already Posted": { "main": [[{ "node": "Take Newest Only", "type": "main", "index": 0 }]] },
+    "Take Newest Only": {
+      "main": [
+        [
+          { "node": "Post to LinkedIn", "type": "main", "index": 0 },
+          { "node": "Post to Medium", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Post to LinkedIn": { "main": [[{ "node": "Log Published", "type": "main", "index": 0 }]] },
+    "Post to Medium": { "main": [[{ "node": "Log Published", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "blog-distribution" }]
+}
