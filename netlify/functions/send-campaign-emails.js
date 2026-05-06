@@ -37,8 +37,8 @@ function agentHtml(c, campaign) {
   const score     = c.neighborhood_score || 71;
   const label     = c.score_label || 'Buy';
   const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(c.email)}&amp;cid=${c.campaign_id}`;
-  const ctaUrl    = `${SITE_URL}/?ref=agent_campaign&amp;city=${encodeURIComponent(city)}`;
-  const mapUrl    = `${SITE_URL}/market-heatmaps?ref=agent_campaign`;
+  const ctaUrl    = `${SITE_URL}/market-heatmaps?ref=agent_campaign&city=${encodeURIComponent(city)}`;
+  const mapUrl    = `${SITE_URL}/?ref=agent_partner&city=${encodeURIComponent(city)}`;
 
   return `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PropertyDNA</title></head>
 <body style="margin:0;padding:0;background:#F4F0E8;font-family:Helvetica,Arial,sans-serif">
@@ -58,13 +58,13 @@ function agentHtml(c, campaign) {
     <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 16px">Every property has a unique DNA score. PropertyDNA shows you exactly where the value is, what&rsquo;s driving price movement, and which properties are outperforming their neighbors.</p>
     <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 24px"><strong>Your first full property report is free.</strong></p>
     <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0"><tr>
-      <td align="center" bgcolor="#B89355" style="border-radius:3px;background:#B89355">
-        <a href="${ctaUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0F0E0D;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;background:#B89355;mso-padding-alt:14px 28px">&rarr; See the ${city} Live Ranking</a>
+      <td align="center" bgcolor="#E8B84B" style="border-radius:3px;background:#E8B84B">
+        <a href="${ctaUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#0F0E0D;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;background:#E8B84B;mso-padding-alt:14px 28px">&rarr; See the ${city} Live Heat Map</a>
       </td>
     </tr></table>
     <table cellpadding="0" cellspacing="0" border="0"><tr>
-      <td align="center" style="border:1px solid #B89355;border-radius:3px">
-        <a href="${mapUrl}" target="_blank" style="display:inline-block;padding:12px 28px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:500;color:#B89355;text-decoration:none;border-radius:3px">View the Live Heat Map</a>
+      <td align="center" style="border:1px solid #E8B84B;border-radius:3px">
+        <a href="${mapUrl}" target="_blank" style="display:inline-block;padding:12px 28px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:500;color:#E8B84B;text-decoration:none;border-radius:3px">Partner with PropertyDNA — offer free reports to your clients</a>
       </td>
     </tr></table>
   </td></tr>
@@ -96,7 +96,7 @@ function buyerHtml(c, campaign) {
   </td></tr>
   <tr><td style="background:#0A0908;padding:20px 40px">
     <p style="color:#6B6252;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px">Your ${city} Property Ranked</p>
-    <p style="font-family:Georgia,serif;color:#B89355;font-size:32px;font-weight:400;margin:0">${score} / 100</p>
+    <p style="font-family:Georgia,serif;color:#E8B84B;font-size:36px;font-weight:400;margin:0">${score} / 100</p>
     <p style="color:#6B6252;font-size:11px;margin:6px 0 0">${label} &bull; Live market composite &bull; Updated daily</p>
   </td></tr>
   <tr><td style="padding:32px 40px">
@@ -105,13 +105,13 @@ function buyerHtml(c, campaign) {
     <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 16px">Your full PropertyDNA report goes further: property-level comps, flood and hazard exposure, renovation ROI estimate, and a 5-year value trajectory specific to your address.</p>
     <p style="color:#333333;font-size:15px;line-height:1.7;margin:0 0 24px"><strong>Your first full report is free &mdash; no card required.</strong></p>
     <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px 0"><tr>
-      <td align="center" bgcolor="#B89355" style="border-radius:3px;background:#B89355">
-        <a href="${ctaUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;color:#0F0E0D;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;background:#B89355;mso-padding-alt:14px 28px">&rarr; Get Your Free PropertyDNA Report</a>
+      <td align="center" bgcolor="#E8B84B" style="border-radius:3px;background:#E8B84B">
+        <a href="${ctaUrl}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#0F0E0D;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;background:#E8B84B;mso-padding-alt:14px 28px">&rarr; Get Your Free PropertyDNA Report</a>
       </td>
     </tr></table>
     <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px 0"><tr>
-      <td align="center" style="border:1px solid #B89355;border-radius:3px">
-        <a href="${mapUrl}" target="_blank" style="display:inline-block;padding:12px 28px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:500;color:#B89355;text-decoration:none;border-radius:3px">View the ${city} Live Heat Map</a>
+      <td align="center" style="border:1px solid #E8B84B;border-radius:3px">
+        <a href="${mapUrl}" target="_blank" style="display:inline-block;padding:12px 28px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:500;color:#E8B84B;text-decoration:none;border-radius:3px">View the ${city} Live Heat Map</a>
       </td>
     </tr></table>
     <p style="font-size:12px;color:#888888;margin:0">Takes 60 seconds &bull; AI-generated &bull; Delivered to your inbox</p>

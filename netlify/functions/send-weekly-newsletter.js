@@ -161,7 +161,7 @@ exports.handler = async () => {
   const weatherText     = buildWeatherText(weatherPeriods);
   const marketNarrative = buildMarketNarrative(markets);
   const weekLabel       = getWeekLabel();
-  const subject         = `PropertyDNA Weekly — ${weekLabel}`;
+  const subject         = `The Stuart Team Weekly — ${weekLabel}`;
 
   // 2. Load CC import campaign ID
   const campaigns = await db.from('campaigns')

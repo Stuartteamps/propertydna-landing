@@ -114,10 +114,10 @@ async function sendFollowUp(contact, step) {
 .header{background:#0F0E0D;padding:28px 40px}.header h1{font-family:Georgia,serif;color:#F4F0E8;font-size:20px;font-weight:400;margin:0}
 .header p{color:#6B6252;font-size:10px;margin:5px 0 0;letter-spacing:2px;text-transform:uppercase}
 .hero{background:#0A0908;padding:28px 40px;text-align:center}
-.hero .num{font-family:Georgia,serif;font-size:56px;color:#B89355;line-height:1;margin:0}
+.hero .num{font-family:Georgia,serif;font-size:56px;color:#E8B84B;line-height:1;margin:0}
 .hero .sub{color:#6B6252;font-size:11px;margin-top:8px;letter-spacing:1px;text-transform:uppercase}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
-.cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:16px 28px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
+.cta{display:block;background:#E8B84B;color:#0F0E0D;text-decoration:none;padding:16px 28px;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
 .footer{padding:18px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999}
 </style></head><body><div class="wrap">
 <div class="header"><h1>PropertyDNA</h1><p>Property Intelligence · ${city}</p></div>
@@ -149,10 +149,10 @@ async function sendFollowUp(contact, step) {
 .stat-row{display:flex;background:#0A0908}
 .stat{flex:1;padding:18px 20px;text-align:center;border-right:1px solid rgba(184,147,85,0.15)}
 .stat:last-child{border-right:none}
-.sv{font-size:20px;font-weight:700;color:#B89355;font-family:Georgia,serif}
+.sv{font-size:20px;font-weight:700;color:#E8B84B;font-family:Georgia,serif}
 .sl{font-size:9px;color:#6B6252;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
-.cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
+.cta{display:block;background:#E8B84B;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:15px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
 .footer{padding:18px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999}
 </style></head><body><div class="wrap">
 <div class="header"><h1>PropertyDNA</h1><p>Market Update · ${city}</p></div>
@@ -184,7 +184,7 @@ async function sendFollowUp(contact, step) {
 .alert{background:#0A0908;padding:20px 40px;border-left:3px solid #B89355}
 .alert p{color:#F4F0E8;font-size:13px;line-height:1.6;margin:0}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
-.cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
+.cta{display:block;background:#E8B84B;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:15px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
 .footer{padding:18px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999}
 </style></head><body><div class="wrap">
 <div class="header"><h1>PropertyDNA</h1><p>Final Notice · ${city}</p></div>
@@ -210,9 +210,9 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
 .wrap{max-width:580px;margin:0 auto;background:#fff;border:1px solid #e8e4dc}
 .header{background:#0F0E0D;padding:28px 40px}.header h1{font-family:Georgia,serif;color:#F4F0E8;font-size:20px;font-weight:400;margin:0}
 .header p{color:#6B6252;font-size:10px;margin:5px 0 0;letter-spacing:2px;text-transform:uppercase}
-.divider{height:3px;background:linear-gradient(90deg,#B89355,#8B6A2E)}
+.divider{height:3px;background:linear-gradient(90deg,#E8B84B,#B89355)}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
-.insight{background:#F9F7F2;border-left:3px solid #B89355;padding:14px 20px;margin:20px 0}
+.insight{background:#F9F7F2;border-left:3px solid #E8B84B;padding:14px 20px;margin:20px 0}
 .insight p{margin:0;font-size:13px;color:#444;line-height:1.6}
 .cta{display:block;background:#0F0E0D;color:#F4F0E8;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
 .footer{padding:18px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999}
@@ -244,7 +244,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
 .quote p{font-family:Georgia,serif;font-size:16px;color:#F4F0E8;line-height:1.6;margin:0;font-style:italic}
 .quote .attr{font-family:Jost,sans-serif;font-size:10px;color:#6B6252;margin-top:12px;letter-spacing:1px;text-transform:uppercase}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
-.cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
+.cta{display:block;background:#E8B84B;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
 .footer{padding:18px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999}
 </style></head><body><div class="wrap">
 <div class="header"><h1>PropertyDNA</h1><p>Owner Story · ${city}</p></div>
@@ -273,10 +273,10 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
 .header p{color:#6B6252;font-size:10px;margin:5px 0 0;letter-spacing:2px;text-transform:uppercase}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
 .item{display:flex;gap:16px;margin:16px 0;align-items:flex-start}
-.num{background:#B89355;color:#0F0E0D;font-family:Georgia,serif;font-size:18px;font-weight:700;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.num{background:#E8B84B;color:#0F0E0D;font-family:Georgia,serif;font-size:18px;font-weight:700;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .item-body{font-size:13px;color:#333;line-height:1.6}
 .item-body strong{color:#0F0E0D}
-.cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:28px 0}
+.cta{display:block;background:#E8B84B;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:28px 0}
 .footer{padding:18px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999}
 </style></head><body><div class="wrap">
 <div class="header"><h1>PropertyDNA</h1><p>Value Intelligence · ${city}</p></div>
@@ -333,8 +333,8 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.8;margin:0 0 18px}
 .offer{background:#0A0908;padding:20px 40px;text-align:center}
 .offer p{color:#F4F0E8;font-size:13px;margin:0 0 14px;line-height:1.6}
-.offer .tag{display:inline-block;background:#B89355;color:#0F0E0D;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;margin-bottom:10px}
-.cta{display:block;background:#B89355;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
+.offer .tag{display:inline-block;background:#E8B84B;color:#0F0E0D;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;margin-bottom:10px}
+.cta{display:block;background:#E8B84B;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
 .footer{padding:18px 40px;border-top:1px solid #e8e4dc;font-size:10px;color:#999}
 </style></head><body><div class="wrap">
 <div class="header"><h1>PropertyDNA</h1></div>

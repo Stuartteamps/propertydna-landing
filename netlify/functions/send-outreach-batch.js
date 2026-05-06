@@ -175,7 +175,7 @@ function buildOutreachEmail({ contact, market, subject, campaignId }) {
             <tr><td style="padding:0 0 32px;">
               <table cellpadding="0" cellspacing="0"><tr>
                 <td style="background:#1a1a1a;">
-                  <a href="${reportUrl}" style="display:inline-block;padding:14px 28px;color:#c9a84c;font-family:Georgia,serif;font-size:13px;text-decoration:none;letter-spacing:1px;">See Your Free Property Report &rarr;</a>
+                  <a href="${reportUrl}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">See Your Free Property Report &rarr;</a>
                 </td>
               </tr></table>
               <p style="margin:12px 0 0;font-size:11px;color:#aaa;word-break:break-all;">Or copy: ${reportUrl}</p>
