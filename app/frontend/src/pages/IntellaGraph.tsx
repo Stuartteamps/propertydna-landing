@@ -133,7 +133,7 @@ const GRADIENT_ALPHA: Record<string, string> = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function TerraGraph() {
+export default function IntellaGraph() {
   const { tier } = useAuth();
   const [modalOpen,   setModalOpen]   = useState(false);
   const [modalTab,    setModalTab]    = useState<ModalTab>('signin');
@@ -601,7 +601,7 @@ export default function TerraGraph() {
       {showLoading && (
         <div style={{ position: 'fixed', inset: 0, background: '#020408', zIndex: 999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, fontFamily: UI }}>
           <div style={{ fontSize: 36, fontWeight: 700, color: G, letterSpacing: 4 }}>PROPERTYDNA</div>
-          <div style={{ fontFamily: MONO, fontSize: 11, color: T_M, letterSpacing: 4 }}>TERRAGRAPH AI — INITIALIZING</div>
+          <div style={{ fontFamily: MONO, fontSize: 11, color: T_M, letterSpacing: 4 }}>INTELLAGRAPH AI — INITIALIZING</div>
           <div style={{ width: 280, height: 2, background: 'rgba(0,255,136,0.1)', overflow: 'hidden', position: 'relative' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, background: G, boxShadow: `0 0 10px ${G}`, animation: 'tg-load 2.5s ease-out forwards' }} />
           </div>
@@ -730,7 +730,7 @@ export default function TerraGraph() {
                   ['DOM AVG',       selected ? selected.dom     + ' days' : '—', T_P],
                   ['INVENTORY',     selected ? selected.inventory.toLocaleString() : '—', T_P],
                   ['YOY CHANGE',    selected ? (selected.yoy > 0 ? '+' : '') + selected.yoy.toFixed(1) + '%' : '—', selected ? (selected.yoy > 0 ? G : R) : T_P],
-                  ['POWERED BY',    'TERRAGRAPH AI', GOLD],
+                  ['POWERED BY',    'ThePropertyDNA · IntellaGraph AI', GOLD],
                 ] as [string, string | undefined, string][]).map(([key, val, color]) => (
                   <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(0,255,136,0.04)' }}>
                     <span style={{ color: T_M, fontFamily: MONO, fontSize: 10 }}>{key}</span>
@@ -769,7 +769,7 @@ export default function TerraGraph() {
               ['AVG SCORE', Math.round(markets.reduce((s, m) => s + m.score, 0) / markets.length).toString()],
               ['AVG YOY',  (markets.reduce((s, m) => s + m.yoy, 0) / markets.length).toFixed(1) + '%'],
               ['DATA',     'REAL-TIME'],
-              ['TERRAGRAPH AI', 'v3.1.0'],
+              ['INTELLAGRAPH AI', 'THEPROPERTYDNA'],
             ] as [string, string][]).map(([label, val]) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: MONO }}>
                 <span style={{ color: T_M }}>{label}</span>

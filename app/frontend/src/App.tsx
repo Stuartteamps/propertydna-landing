@@ -14,7 +14,7 @@ import ReportView from "./pages/ReportView";
 import ReportViewByToken from "./pages/ReportViewByToken";
 import Professionals from "./pages/Professionals";
 import MarketHeatMap from "./pages/MarketHeatMap";
-import TerraGraph from "./pages/TerraGraph";
+import IntellaGraph from "./pages/IntellaGraph";
 import OpenHouse from "./pages/OpenHouse";
 import SellerValuation from "./pages/SellerValuation";
 import BuyerAccess from "./pages/BuyerAccess";
@@ -46,7 +46,7 @@ const AppRoutes = () => (
     <Route path="/report/:id" element={<ReportView />} />
     <Route path="/professionals" element={<Professionals />} />
     <Route path="/market-heatmaps" element={<MarketHeatMap />} />
-    <Route path="/terragraph"      element={<TerraGraph />} />
+    <Route path="/intellagraph"     element={<IntellaGraph />} />
     <Route path="/report" element={<ReportView />} />
     <Route path="/property-dna" element={<Index />} />
     <Route path="/open-house" element={<OpenHouse />} />

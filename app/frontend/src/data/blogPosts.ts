@@ -43,7 +43,7 @@ export const blogPosts: BlogPost[] = [
         items: [
           'Instant property reports with ownership history, permit data, valuation, and neighborhood comps',
           'Market heat maps showing price-per-sqft, listing density, and buyer demand by ZIP code',
-          'TerraGraph: parcel-level 3D visualization of land value and development potential',
+          'IntellaGraph AI: parcel-level 3D visualization of land value and development potential',
           'Off-market lead identification for sellers who haven\'t listed yet',
           'Automated buyer access reports that realtors send before the first showing',
           'Open house intelligence packets generated instantly at the door',
@@ -87,7 +87,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         type: 'p',
-        text: 'PropertyDNA offers a free tier that includes basic property lookups and limited reports. Paid plans start at the per-report level for occasional users and scale to Pro and Enterprise tiers for teams who want unlimited reports, market heat map access, TerraGraph visualization, and white-label branding. Full pricing details are available on the Pricing page.',
+        text: 'PropertyDNA offers a free tier that includes basic property lookups and limited reports. Paid plans start at the per-report level for occasional users and scale to Pro and Enterprise tiers for teams who want unlimited reports, market heat map access, IntellaGraph AI visualization, and white-label branding. Full pricing details are available on the Pricing page.',
       },
       {
         type: 'faq',
@@ -252,7 +252,7 @@ export const blogPosts: BlogPost[] = [
           'Automated valuation with AI confidence scoring',
           'Neighborhood price trend analysis over 1, 3, and 5-year windows',
           'Market heat map positioning — where this property sits in the broader market demand landscape',
-          'TerraGraph land value visualization showing parcel-level development potential',
+          'IntellaGraph AI land value visualization showing parcel-level development potential',
           'AI narrative that synthesizes all data into plain-language insights',
           'Instant shareability — the full report is a link, not a PDF attachment',
           'Sub-60-second generation time vs. 2-4 hours for a manual CMA',

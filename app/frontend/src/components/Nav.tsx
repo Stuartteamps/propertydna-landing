@@ -15,7 +15,7 @@ const navLinks = [
   { label: 'How It Works', href: '/how-it-works' },
   { label: 'Pricing',      href: '/pricing' },
   { label: 'Heat Maps',    href: '/market-heatmaps' },
-  { label: 'TerraGraph',   href: '/terragraph' },
+  { label: 'IntellaGraph AI', href: '/intellagraph' },
   { label: 'Journal',      href: '/blog' },
   { label: 'About',        href: '/about' },
 ];
