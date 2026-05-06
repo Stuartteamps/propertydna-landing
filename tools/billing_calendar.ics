@@ -1,0 +1,178 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PropertyDNA//Billing Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:PropertyDNA Billing & Renewals
+X-WR-CALDESC:All PropertyDNA subscription payments with 24hr reminders
+
+BEGIN:VEVENT
+UID:netlify-monthly@propertydna.com
+DTSTART:20260601T170000Z
+DTEND:20260601T180000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
+SUMMARY:💳 Netlify — Monthly ~$19
+DESCRIPTION:Netlify hosting + serverless functions. Check: netlify.com/billing\nPlan: Pro (~$19/mo)\nAction: Review usage — upgrade if bandwidth or build minutes hit limits.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ Netlify billing tomorrow — confirm ~$19 at netlify.com
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:supabase-monthly@propertydna.com
+DTSTART:20260601T170000Z
+DTEND:20260601T180000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
+SUMMARY:💳 Supabase — Monthly $25
+DESCRIPTION:Supabase database (reports\, contacts\, parcels\, campaigns).\nPlan: Pro $25/mo\nCheck: supabase.com/dashboard → Billing\nAction: Monitor DB size and connections — upgrade to $599/mo Team if approaching limits.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ Supabase billing tomorrow — confirm $25 at supabase.com
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:n8n-monthly@propertydna.com
+DTSTART:20260601T170000Z
+DTEND:20260601T180000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
+SUMMARY:💳 n8n Cloud — Monthly ~$20
+DESCRIPTION:n8n workflow automation (report generation pipeline).\nInstance: dillabean.app.n8n.cloud\nPlan: Starter ~$20/mo\nCheck: app.n8n.cloud/billing\nAction: Monitor execution count — upgrade if workflow runs hit plan limits.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ n8n billing tomorrow — confirm ~$20 at app.n8n.cloud
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:resend-monthly@propertydna.com
+DTSTART:20260601T170000Z
+DTEND:20260601T180000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
+SUMMARY:💳 Resend — Monthly ~$20
+DESCRIPTION:Email sending platform (reports\, campaigns\, drip sequences).\nPlan: Basic ~$20/mo (50k emails)\nCheck: resend.com/billing\nEmails sent to date: 4500+\nAction: Monitor send volume — scale plan if approaching 50k/mo.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ Resend billing tomorrow — confirm ~$20 at resend.com
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:rentcast-monthly@propertydna.com
+DTSTART:20260601T170000Z
+DTEND:20260601T180000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
+SUMMARY:💳 RentCast API — Monthly $29–$199
+DESCRIPTION:Property data\, AVM valuations\, comparable sales.\nPlan tiers: Starter $29 (100 calls)\, Growth $99 (500)\, Pro $199 (2000)\nCheck: rentcast.io/billing\nAction: Monitor API call count. UPGRADE before hitting limit — overage is expensive.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ RentCast billing tomorrow — check call volume at rentcast.io
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:constantcontact-monthly@propertydna.com
+DTSTART:20260601T170000Z
+DTEND:20260601T180000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
+SUMMARY:💳 Constant Contact — Monthly ~$45–$80
+DESCRIPTION:Email newsletter platform (3\,946 contacts synced).\nCheck: login.constantcontact.com → Billing\nAction: VERIFY this is still active and needed — newsletter automation is paused. Consider pausing billing if not sending.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ Constant Contact billing tomorrow — is newsletter active? Check constantcontact.com
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:sona-monthly@propertydna.com
+DTSTART:20260601T170000Z
+DTEND:20260601T180000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=1
+SUMMARY:💳 Quo Sona AI — Monthly ~$25–$49
+DESCRIPTION:Sona AI answering service (24/7 call handling for PropertyDNA).\nPlan: ~40 calls/mo = $25/mo\, 100 calls/mo = $49/mo\nCheck: quo.com/billing\nAction: Review call volume and lead capture rate — ROI check.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ Quo Sona billing tomorrow — review call volume at quo.com
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:quo-annual@propertydna.com
+DTSTART:20270506T170000Z
+DTEND:20270506T180000Z
+SUMMARY:💳 Quo (OpenPhone) ANNUAL RENEWAL — $300
+DESCRIPTION:Quo VoIP business phone annual renewal.\nSigned up: 2026-05-06\nCost: $300/year\nCheck: quo.com/billing\nAction: Confirm plan still fits — evaluate usage over the year.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ Quo annual renewal TOMORROW — $300 will be charged. Confirm at quo.com
+END:VALARM
+BEGIN:VALARM
+TRIGGER:-P7D
+ACTION:DISPLAY
+DESCRIPTION:📅 Quo annual renewal in 7 days — $300. Review at quo.com
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:apple-dev-annual@propertydna.com
+DTSTART:20270101T170000Z
+DTEND:20270101T180000Z
+SUMMARY:💳 Apple Developer — Annual $99 (CONFIRM DATE)
+DESCRIPTION:Apple Developer account for Apple Sign In OAuth.\nCost: $99/year\nCheck: developer.apple.com → Membership\nAction: Confirm exact renewal date and update this event.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ Apple Developer renewal tomorrow — $99. Confirm at developer.apple.com
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:domain-propertydna-annual@propertydna.com
+DTSTART:20270101T170000Z
+DTEND:20270101T180000Z
+SUMMARY:💳 Domain: propertydna.com — Annual ~$18 (CONFIRM DATE)
+DESCRIPTION:Domain renewal for propertydna.com.\nCost: ~$18/year\nAction: Check registrar for exact renewal date and update this event. Enable auto-renew.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ propertydna.com domain renewal tomorrow — ~$18. Check registrar.
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:domain-thepropertydna-annual@propertydna.com
+DTSTART:20270101T170000Z
+DTEND:20270101T180000Z
+SUMMARY:💳 Domain: thepropertydna.com — Annual ~$18 (CONFIRM DATE)
+DESCRIPTION:Domain renewal for thepropertydna.com.\nCost: ~$18/year\nAction: Check registrar for exact renewal date and update this event. Enable auto-renew.
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:⚠️ thepropertydna.com domain renewal tomorrow — ~$18. Check registrar.
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:monthly-review@propertydna.com
+DTSTART:20260605T170000Z
+DTEND:20260605T180000Z
+RRULE:FREQ=MONTHLY;BYMONTHDAY=5
+SUMMARY:📊 PropertyDNA Monthly Stack Review
+DESCRIPTION:Monthly check on all subscriptions and profitability.\nReview: current_stack.md in /tools/\n\nChecklist:\n- Total spend vs. last month\n- Revenue (Stripe dashboard)\n- RentCast API call count — upgrade needed?\n- Resend email volume — approaching limit?\n- Constant Contact — still needed?\n- Any services to cancel or downgrade?\n- Sona call quality + leads captured
+BEGIN:VALARM
+TRIGGER:DURATION:PT0S
+ACTION:DISPLAY
+DESCRIPTION:📊 Monthly stack review — open current_stack.md and check all subscriptions vs. revenue
+END:VALARM
+END:VEVENT
+
+END:VCALENDAR
