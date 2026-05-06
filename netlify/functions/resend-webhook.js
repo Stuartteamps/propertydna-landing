@@ -1,13 +1,33 @@
 // Receives Resend email event webhooks.
 // Registers opens/clicks in DB and queues immediate follow-up for clickers.
-// Configure in Resend dashboard: Webhooks → Add endpoint → https://thepropertydna.com/.netlify/functions/resend-webhook
-// Events to subscribe: email.opened, email.clicked, email.bounced, email.complained
+const crypto = require('crypto');
 const db = require('./_supabase');
 
 const CORS = { 'Content-Type': 'application/json' };
 
+function verifyResendSignature(headers, rawBody, secret) {
+  try {
+    const msgId   = headers['svix-id'];
+    const msgTs   = headers['svix-timestamp'];
+    const msgSig  = headers['svix-signature'];
+    if (!msgId || !msgTs || !msgSig) return false;
+
+    const toSign  = `${msgId}.${msgTs}.${rawBody}`;
+    const key     = Buffer.from(secret.replace(/^whsec_/, ''), 'base64');
+    const hmac    = crypto.createHmac('sha256', key).update(toSign).digest('base64');
+    const expected = `v1,${hmac}`;
+
+    return msgSig.split(' ').some(sig => sig === expected);
+  } catch { return false; }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS, body: '{}' };
+
+  const secret = process.env.RESEND_WEBHOOK_SECRET;
+  if (secret && !verifyResendSignature(event.headers, event.body, secret)) {
+    return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Invalid signature' }) };
+  }
 
   let payload;
   try { payload = JSON.parse(event.body); } catch { return { statusCode: 400, headers: CORS, body: '{}' }; }
