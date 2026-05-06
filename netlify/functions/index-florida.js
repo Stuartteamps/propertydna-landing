@@ -253,7 +253,7 @@ async function getProgress(coNo) {
 
 async function saveProgress(coNo, nextOffset, total, done) {
   db.kpi("fl_index_progress", `fl_county:${coNo}`, {
-    coNo, county: CO_NO_TO_NAME[coNo], nextOffset, total, done, ts: new Date().toISOString(),
+    coNo, nextOffset, total, done, ts: new Date().toISOString(),
   });
 }
 
