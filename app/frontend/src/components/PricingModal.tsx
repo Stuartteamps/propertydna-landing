@@ -67,7 +67,7 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
     if (!e || !e.includes('@')) { setError('Enter a valid email to continue.'); return; }
     setError('');
     setLoading(tier.mode);
-    try { sessionStorage.setItem('pdna_email', e); } catch {}
+    try { sessionStorage.setItem('pdna_email', e); } catch { /* sessionStorage unavailable */ }
     try {
       const res = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',

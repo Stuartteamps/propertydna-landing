@@ -28,13 +28,13 @@ const MLS_NUMBER_PATTERNS = [
   // Coldwell Banker / CRMLS hash-based URL: #!/listing:219143834DA
   /#!\/listing:([A-Z0-9]{6,})/i,
   // Query params
-  /[?&]ListingId=([A-Z0-9\-]+)/i,
-  /[?&]listingId=([A-Z0-9\-]+)/i,
-  /[?&]mls=([A-Z0-9\-]+)/i,
-  /[?&]mlsId=([A-Z0-9\-]+)/i,
-  /[?&]mlsnum=([A-Z0-9\-]+)/i,
+  /[?&]ListingId=([A-Z0-9-]+)/i,
+  /[?&]listingId=([A-Z0-9-]+)/i,
+  /[?&]mls=([A-Z0-9-]+)/i,
+  /[?&]mlsId=([A-Z0-9-]+)/i,
+  /[?&]mlsnum=([A-Z0-9-]+)/i,
   // Path-based
-  /\/listing[s]?\/([A-Z0-9\-]{6,})/i,
+  /\/listing[s]?\/([A-Z0-9-]{6,})/i,
   /\/([A-Z0-9]{8,})\/?(?:\?|#|$)/i,
   /-(\d{7,})\/?(?:\?|#|$)/,
 ];

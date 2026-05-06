@@ -33,14 +33,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   async function loadTier(email: string) {
-    try { sessionStorage.setItem('pdna_email', email.toLowerCase().trim()); } catch {}
+    try { sessionStorage.setItem('pdna_email', email.toLowerCase().trim()); } catch { /* sessionStorage unavailable */ }
     const { tier: t, plan: p } = await fetchUserTier(email);
     setTier(t);
     setPlan(p);
     try {
       sessionStorage.setItem('pdna_subscribed', t !== 'free' ? 'true' : 'false');
       sessionStorage.setItem('pdna_plan', p ?? '');
-    } catch {}
+    } catch { /* sessionStorage unavailable */ }
   }
 
   async function upsertProfile(authUser: User) {
@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       sessionStorage.removeItem('pdna_email');
       sessionStorage.removeItem('pdna_subscribed');
       sessionStorage.removeItem('pdna_plan');
-    } catch {}
+    } catch { /* sessionStorage unavailable */ }
   }
 
   return (

@@ -91,7 +91,7 @@ export default function ReportViewByToken() {
         if (data.error) { setError(data.error); return; }
         // Parse if n8n double-encoded the DNA as a string
         if (typeof data.property_dna === 'string') {
-          try { data.property_dna = JSON.parse(data.property_dna); } catch {}
+          try { data.property_dna = JSON.parse(data.property_dna); } catch { /* already an object */ }
         }
         setPending(false);
         setReport(data);

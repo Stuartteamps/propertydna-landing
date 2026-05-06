@@ -90,7 +90,7 @@ export default function ReportView() {
         if (!rows || !rows.length) { setError('Report not found.'); return; }
         const row = rows[0];
         if (typeof row.property_dna === 'string') {
-          try { row.property_dna = JSON.parse(row.property_dna); } catch {}
+          try { row.property_dna = JSON.parse(row.property_dna); } catch { /* already an object */ }
         }
         setReport(row);
       })
@@ -102,7 +102,7 @@ export default function ReportView() {
   useEffect(() => {
     const urlEmail = searchParams.get('email') || '';
     let email = '';
-    try { email = urlEmail || sessionStorage.getItem('pdna_email') || ''; } catch {}
+    try { email = urlEmail || sessionStorage.getItem('pdna_email') || ''; } catch { /* sessionStorage unavailable */ }
     if (!email) return;
     setTierEmail(email);
     setTierCheckEmail(email);
@@ -115,7 +115,7 @@ export default function ReportView() {
     const { tier } = await fetchUserTier(tierCheckEmail);
     setUserTier(tier);
     setTierEmail(tierCheckEmail);
-    try { sessionStorage.setItem('pdna_email', tierCheckEmail.toLowerCase().trim()); } catch {}
+    try { sessionStorage.setItem('pdna_email', tierCheckEmail.toLowerCase().trim()); } catch { /* sessionStorage unavailable */ }
     setShowTierPrompt(false);
     setTierChecking(false);
   };

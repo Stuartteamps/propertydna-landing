@@ -50,7 +50,7 @@ export default function Dashboard() {
       try {
         setPremiumStatus(data.isSubscribed || false, data.plan || null);
         sessionStorage.setItem('pdna_email', email.toLowerCase().trim());
-      } catch {}
+      } catch { /* sessionStorage unavailable */ }
     } catch {
       setError('Network error. Please try again.');
       setLoadStatus('error');

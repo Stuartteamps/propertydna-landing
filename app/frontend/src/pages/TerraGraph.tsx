@@ -288,7 +288,7 @@ export default function TerraGraph() {
       tc.beginPath();
       pts.forEach(([lo, la], i) => {
         const x = (lo + 180) / 360 * 2048, y = (90 - la) / 180 * 1024;
-        i === 0 ? tc.moveTo(x, y) : tc.lineTo(x, y);
+        if (i === 0) { tc.moveTo(x, y); } else { tc.lineTo(x, y); }
       });
       tc.closePath(); tc.fill();
       tc.strokeStyle = 'rgba(0,255,136,0.15)'; tc.lineWidth = 1.5; tc.stroke();

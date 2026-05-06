@@ -16,7 +16,7 @@ export function setPremiumStatus(isSubscribed: boolean, plan: string | null): vo
   try {
     sessionStorage.setItem('pdna_subscribed', isSubscribed ? 'true' : 'false');
     sessionStorage.setItem('pdna_plan', plan ?? '');
-  } catch {}
+  } catch { /* sessionStorage unavailable */ }
 }
 
 /**

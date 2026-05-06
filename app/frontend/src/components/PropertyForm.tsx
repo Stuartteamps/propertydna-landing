@@ -65,14 +65,15 @@ const fieldStyle: React.CSSProperties = {
 
 async function goToCheckout(formData: FormState, mode: 'free' | 'per_report' | 'subscription' | 'enterprise') {
   // Auto-parse IDX URL if provided but MLS number not manually entered
-  let { mlsNumber, idxUrl } = formData;
+  const { idxUrl } = formData;
+  let { mlsNumber } = formData;
   if (idxUrl && !mlsNumber) {
     const parsed = parseIdxUrl(idxUrl);
     if (parsed.mlsNumber) mlsNumber = parsed.mlsNumber;
   }
 
   // Store email in sessionStorage so report view can check tier
-  try { sessionStorage.setItem('pdna_email', formData.email.toLowerCase().trim()); } catch {}
+  try { sessionStorage.setItem('pdna_email', formData.email.toLowerCase().trim()); } catch { /* sessionStorage unavailable */ }
 
   const res = await fetch('/.netlify/functions/create-checkout', {
     method: 'POST',
