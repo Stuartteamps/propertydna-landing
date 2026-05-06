@@ -69,8 +69,11 @@ function calcMargin(price, reportsUsed) {
  * consumer     $19      25       $3.33       $0.85   $14.82    78.0%
  * pro          $49      75       $9.98       $1.72   $37.30    76.1%
  * realtor      $99     150      $19.95       $3.17   $75.88    76.6%
- * enterprise  $249     300      $39.90       $7.52  $201.58    80.9%  ← REPRICED from $149
+ * enterprise  $149     200      $26.60       $4.62  $117.78    79.1%  ← current Stripe price
  * investor    $299     250      $33.25       $8.97  $256.78    85.9%
+ *
+ * NOTE: Enterprise repricing to $249/300-reports is recommended but requires
+ * a new Stripe price ID + PricingModal update before activating.
  * ─────────────────────────────────────────────────────────────────────────
  */
 const TIERS = {
@@ -106,12 +109,12 @@ const TIERS = {
     margin:       calcMargin(99, 150),
   },
   enterprise: {
-    limit:        300,
-    price:        249,     // REPRICED from $149 — see PE analysis
+    limit:        200,
+    price:        149,     // current Stripe price — raise to $249 when new price ID created
     overageRate:  OVERAGE_RATE_PER_REPORT,
     label:        'Enterprise',
     stripeId:     'STRIPE_PRICE_ENTERPRISE',
-    margin:       calcMargin(249, 300),
+    margin:       calcMargin(149, 200),
   },
   investor: {
     limit:        250,

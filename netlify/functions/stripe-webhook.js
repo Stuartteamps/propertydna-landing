@@ -93,12 +93,26 @@ async function handleCheckoutCompleted(session) {
   }
 
   if (isSubscription) {
-    const plan = meta.plan === "enterprise" ? "enterprise" : "monthly";
+    const MODE_TO_PLAN = {
+      enterprise:  "enterprise",
+      consumer:    "consumer",
+      realtor_pro: "realtor",
+      investor:    "investor",
+      subscription:"pro",
+    };
+    const plan = MODE_TO_PLAN[meta.mode] || MODE_TO_PLAN[meta.plan] || "pro";
+    const PLAN_PRICE_IDS = {
+      enterprise: process.env.STRIPE_PRICE_ENTERPRISE,
+      consumer:   process.env.STRIPE_PRICE_CONSUMER,
+      realtor:    process.env.STRIPE_PRICE_REALTOR_PRO,
+      investor:   process.env.STRIPE_PRICE_INVESTOR,
+      pro:        process.env.STRIPE_PRICE_SUBSCRIPTION,
+    };
     await db.upsert("subscriptions", {
       email,
       stripe_subscription_id: session.subscription || session.id,
       stripe_customer_id: session.customer || null,
-      stripe_price_id: plan === "enterprise" ? process.env.STRIPE_PRICE_ENTERPRISE : process.env.STRIPE_PRICE_SUBSCRIPTION,
+      stripe_price_id: PLAN_PRICE_IDS[plan] || process.env.STRIPE_PRICE_SUBSCRIPTION,
       plan_name: plan,
       status: "active",
       current_period_start: new Date().toISOString(),

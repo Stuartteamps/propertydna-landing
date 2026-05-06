@@ -88,10 +88,25 @@ exports.handler = async (event) => {
 
     // ── Record subscription ────────────────────────────────────
     if (isSubscription && customerEmail) {
-      const planName = meta.plan === "enterprise" ? "enterprise" : "monthly";
-      const priceId = planName === "enterprise"
-        ? process.env.STRIPE_PRICE_ENTERPRISE
-        : process.env.STRIPE_PRICE_SUBSCRIPTION;
+      // Map Stripe session mode → canonical plan name stored in DB
+      // meta.mode is set in create-checkout metadata[mode] for every checkout
+      const MODE_TO_PLAN = {
+        enterprise:  "enterprise",
+        consumer:    "consumer",
+        realtor_pro: "realtor",
+        investor:    "investor",
+        subscription:"pro",
+      };
+      const planName = MODE_TO_PLAN[meta.mode] || MODE_TO_PLAN[meta.plan] || "pro";
+
+      const PLAN_PRICE_IDS = {
+        enterprise: process.env.STRIPE_PRICE_ENTERPRISE,
+        consumer:   process.env.STRIPE_PRICE_CONSUMER,
+        realtor:    process.env.STRIPE_PRICE_REALTOR_PRO,
+        investor:   process.env.STRIPE_PRICE_INVESTOR,
+        pro:        process.env.STRIPE_PRICE_SUBSCRIPTION,
+      };
+      const priceId = PLAN_PRICE_IDS[planName] || process.env.STRIPE_PRICE_SUBSCRIPTION;
 
       db.upsert("subscriptions", {
         email: customerEmail,

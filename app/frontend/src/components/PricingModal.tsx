@@ -18,7 +18,7 @@ const TIERS = [
     period: '/mo',
     highlight: true,
     features: [
-      'Unlimited property reports',
+      '75 property reports per month',
       'Full DNA valuation + risk profile',
       'Comparable trend charts',
       'Market velocity index',
@@ -36,7 +36,7 @@ const TIERS = [
     period: '/mo',
     highlight: false,
     features: [
-      'Everything in Pro',
+      '200 property reports per month',
       'Portfolio genome mapping',
       'Temporal drift modelling',
       'Bulk report API access',
