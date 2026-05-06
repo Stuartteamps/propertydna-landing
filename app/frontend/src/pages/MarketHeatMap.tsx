@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Nav from '@/components/Nav';
-import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import PremiumLockOverlay from '@/components/PremiumLockOverlay';
@@ -11,7 +10,31 @@ import FilterPanel from '@/components/heatmap/FilterPanel';
 import HoverTooltip from '@/components/heatmap/HoverTooltip';
 import PropertyDrawer from '@/components/heatmap/PropertyDrawer';
 import type { HeatParcel, HeatFilterWeights, HeatHoverState } from '@/types/heatmap';
-import { DEFAULT_HEAT_WEIGHTS, computeHeatScore } from '@/lib/scoringHeatmap';
+import { DEFAULT_HEAT_WEIGHTS, computeHeatScore, heatScoreLabel, heatScoreBadgeColor } from '@/lib/scoringHeatmap';
+import { heatScoreToHex } from '@/lib/colorScaleHeatmap';
+
+// ─── Layout constants ─────────────────────────────────────────────────────────
+
+const NAV_H   = 64;
+const TICK_H  = 36;
+const BOT_H   = 40;
+const LEFT_W  = 260;
+const RIGHT_W = 300;
+
+// ─── Style constants ──────────────────────────────────────────────────────────
+
+const MONO   = "'Share Tech Mono', monospace";
+const UI     = "'Rajdhani', sans-serif";
+const G      = '#00ff88';
+const R      = '#ff3355';
+const GOLD   = '#ffb700';
+const BG     = 'rgba(4,12,20,0.96)';
+const BORDER = 'rgba(0,255,136,0.18)';
+const T_M    = 'rgba(180,220,200,0.5)';
+const T_P    = '#e8f4f0';
+const OWNER  = 'stuartteamps@gmail.com';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Property {
   id: string; address: string; city: string;
@@ -25,6 +48,11 @@ interface Market {
   heat: number; medianPrice: number; yoy: number;
   dom: number; inventory: number; tier: string; radius: number;
 }
+
+type ModalTab = 'signin' | 'pricing';
+type SortKey  = 'heat' | 'yoy' | 'dom';
+
+// ─── City meta ────────────────────────────────────────────────────────────────
 
 const CITY_META: Record<string, { name: string; lat: number; lon: number; radius: number }> = {
   'miami-fl':        { name: 'Miami, FL',        lat: 25.7617, lon: -80.1918,  radius: 18 },
@@ -58,47 +86,68 @@ const FALLBACK_MARKETS: Market[] = [
   { name: 'Chicago, IL',      lat: 41.8781, lon: -87.6298,  heat: 0.54, medianPrice: 328000,  yoy: 3.9,  dom: 45, inventory: 16400, tier: 'standard', radius: 20 },
 ];
 
-const priceToTier  = (p: number) => p >= 1_500_000 ? 'ultra' : p >= 900_000 ? 'luxury' : p >= 650_000 ? 'premium' : p >= 400_000 ? 'standard' : 'entry';
-const changeColor  = (c: number) => c >= 0 ? '#00ff88' : '#ff4444';
-const heatColor    = (h: number) => h >= 0.8 ? '#ff4444' : h >= 0.65 ? '#ff8800' : h >= 0.5 ? '#ffbb00' : '#4A7EC9';
-const fmtPrice     = (p: number) => p >= 1_000_000 ? `$${(p / 1_000_000).toFixed(2)}M` : `$${(p / 1000).toFixed(0)}K`;
-const fmtChange    = (c: number) => `${c >= 0 ? '+' : ''}${c.toFixed(1)}%`;
-const fmtAddr      = (a: string) => a.length > 22 ? a.slice(0, 20) + '…' : a;
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-type ModalTab = 'signin' | 'pricing';
-type SortKey  = 'heat' | 'medianPrice' | 'yoy' | 'dom';
+const priceToTier = (p: number) => p >= 1_500_000 ? 'ultra' : p >= 900_000 ? 'luxury' : p >= 650_000 ? 'premium' : p >= 400_000 ? 'standard' : 'entry';
+const fmtPrice    = (p: number) => p >= 1_000_000 ? `$${(p / 1_000_000).toFixed(2)}M` : `$${(p / 1000).toFixed(0)}K`;
+const fmtChange   = (c: number) => `${c >= 0 ? '+' : ''}${c.toFixed(1)}%`;
+const fmtAddr     = (a: string) => a.length > 22 ? a.slice(0, 20) + '…' : a;
+const yoyColor    = (y: number) => y >= 0 ? G : R;
 
-const OWNER = 'stuartteamps@gmail.com';
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function MarketHeatMap() {
   const { user, tier, loading: authLoading } = useAuth();
-  const [modalOpen,   setModalOpen]   = useState(false);
-  const [modalTab,    setModalTab]    = useState<ModalTab>('signin');
-  const [pricingOpen, setPricingOpen] = useState(false);
+  const [modalOpen,    setModalOpen]    = useState(false);
+  const [modalTab,     setModalTab]     = useState<ModalTab>('signin');
+  const [pricingOpen,  setPricingOpen]  = useState(false);
 
-  // Derive premium from auth context — no sessionStorage race condition
   const premium = !authLoading && (
     user?.email?.toLowerCase() === OWNER || tier !== 'free'
   );
-  const [markets,     setMarkets]     = useState<Market[]>(FALLBACK_MARKETS);
-  const [properties,  setProperties]  = useState<Property[]>([]);
-  const [liveCount,   setLiveCount]   = useState(0);
-  const [selected,    setSelected]    = useState<Property | null>(null);
-  const [lastRefresh, setLastRefresh] = useState(new Date());
-  const [blinkIdx,    setBlinkIdx]    = useState(0);
-  const [sortKey,     setSortKey]     = useState<SortKey>('heat');
-  const [sortAsc,     setSortAsc]     = useState(false);
-  const tickerRef = useRef<HTMLDivElement>(null);
 
-  // Heatmap state
-  const [weights,      setWeights]      = useState<HeatFilterWeights>(DEFAULT_HEAT_WEIGHTS);
-  const [parcels,      setParcels]      = useState<HeatParcel[]>([]);
-  const [parcelCity,   setParcelCity]   = useState('');
-  const [parcelLoading,setParcelLoading]= useState(false);
-  const [hover,        setHover]        = useState<HeatHoverState | null>(null);
-  const [drawerParcel, setDrawerParcel] = useState<HeatParcel | null>(null);
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [markets,       setMarkets]       = useState<Market[]>(FALLBACK_MARKETS);
+  const [properties,    setProperties]    = useState<Property[]>([]);
+  const [liveCount,     setLiveCount]     = useState(0);
+  const [selected,      setSelected]      = useState<HeatParcel | null>(null);
+  const [drawerParcel,  setDrawerParcel]  = useState<HeatParcel | null>(null);
+  const [hover,         setHover]         = useState<HeatHoverState | null>(null);
+  const [weights,       setWeights]       = useState<HeatFilterWeights>(DEFAULT_HEAT_WEIGHTS);
+  const [parcels,       setParcels]       = useState<HeatParcel[]>([]);
+  const [parcelCity,    setParcelCity]    = useState('');
+  const [parcelLoading, setParcelLoading] = useState(false);
+  const [blinkIdx,      setBlinkIdx]      = useState(0);
+  const [clock,         setClock]         = useState('');
+  const [sortKey,       setSortKey]       = useState<SortKey>('heat');
+  const [sortAsc,       setSortAsc]       = useState(false);
 
+  const scoreCanvasRef = useRef<HTMLCanvasElement>(null);
+  const sparkCanvasRef = useRef<HTMLCanvasElement>(null);
+  const hoverTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Fonts & scroll lock ─────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel  = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap';
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  useEffect(() => {
+    const tick = () => setClock(new Date().toLocaleTimeString('en-US', { hour12: false }));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // ── Data fetching ───────────────────────────────────────────────────────────
 
   const fetchMarkets = useCallback(() => {
     supabase.from('market_snapshots')
@@ -107,13 +156,14 @@ export default function MarketHeatMap() {
       .then(({ data }) => {
         if (!data?.length) return;
         const seen = new Set<string>();
-        const live: Market[] = data.filter(r => { if (seen.has(r.geo_key)) return false; seen.add(r.geo_key); return true; })
+        const live: Market[] = data
+          .filter(r => { if (seen.has(r.geo_key)) return false; seen.add(r.geo_key); return true; })
           .flatMap(r => {
             const meta = CITY_META[r.geo_key]; if (!meta) return [];
             const price = Number(r.median_price) || 0;
             return [{ ...meta, heat: Math.min(1, Math.max(0, Number(r.demand_score) / 100)), medianPrice: price, yoy: Number(r.appreciation_rate_yoy) || 0, dom: Number(r.days_on_market) || 0, inventory: Number(r.active_listings) || 0, tier: priceToTier(price) }];
           });
-        if (live.length > 0) { setMarkets(live); setLastRefresh(new Date()); }
+        if (live.length > 0) setMarkets(live);
       });
   }, []);
 
@@ -148,7 +198,6 @@ export default function MarketHeatMap() {
     return () => { clearInterval(mkt); clearInterval(prop); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-load Palm Springs parcels once premium status is confirmed
   useEffect(() => {
     if (premium && !parcelCity) fetchParcels('Palm Springs', 'CA');
   }, [premium]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -158,12 +207,77 @@ export default function MarketHeatMap() {
     return () => clearInterval(t);
   }, [properties.length]);
 
-  // Re-score parcels when weights change
   useEffect(() => {
-    if (parcels.length) {
-      setParcels(prev => prev.map(p => ({ ...p, score: computeHeatScore(p, weights) })));
-    }
+    if (parcels.length) setParcels(prev => prev.map(p => ({ ...p, score: computeHeatScore(p, weights) })));
   }, [weights]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Canvas drawing ──────────────────────────────────────────────────────────
+
+  const drawScoreRing = useCallback((score: number) => {
+    const c = scoreCanvasRef.current;
+    if (!c) return;
+    const ctx   = c.getContext('2d')!;
+    const color = heatScoreToHex(score);
+    const start = -Math.PI * 0.75;
+    const end   = start + Math.PI * 1.5 * (score / 100);
+    ctx.clearRect(0, 0, 120, 120);
+    ctx.beginPath(); ctx.arc(60, 60, 50, -Math.PI * 0.75, Math.PI * 0.75);
+    ctx.strokeStyle = 'rgba(0,255,136,0.08)'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(60, 60, 50, start, end);
+    ctx.strokeStyle = color; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+  }, []);
+
+  const drawSparkline = useCallback((sparkline: number[]) => {
+    const canvas = sparkCanvasRef.current;
+    if (!canvas || sparkline.length < 2) return;
+    const W = canvas.parentElement?.clientWidth || 268;
+    const H = 60;
+    canvas.width  = W;
+    canvas.height = H;
+
+    const mn   = Math.min(...sparkline) * 0.995;
+    const mx   = Math.max(...sparkline) * 1.005;
+    const pts  = sparkline.length;
+    const pad  = { l: 6, r: 6, t: 6, b: 6 };
+    const W2   = W - pad.l - pad.r;
+    const H2   = H - pad.t - pad.b;
+    const px   = (i: number) => pad.l + (i / (pts - 1)) * W2;
+    const py   = (v: number) => pad.t + H2 - ((v - mn) / (mx - mn || 1)) * H2;
+
+    const ctx      = canvas.getContext('2d')!;
+    const trending = sparkline[pts - 1] >= sparkline[0];
+    const color    = trending ? G : R;
+
+    ctx.clearRect(0, 0, W, H);
+
+    const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + H2);
+    grad.addColorStop(0, trending ? 'rgba(0,255,136,0.2)' : 'rgba(255,51,85,0.2)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+    ctx.beginPath();
+    sparkline.forEach((v, i) => i === 0 ? ctx.moveTo(px(i), py(v)) : ctx.lineTo(px(i), py(v)));
+    ctx.lineTo(px(pts - 1), pad.t + H2); ctx.lineTo(pad.l, pad.t + H2);
+    ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+
+    ctx.beginPath();
+    sparkline.forEach((v, i) => i === 0 ? ctx.moveTo(px(i), py(v)) : ctx.lineTo(px(i), py(v)));
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+
+    ctx.beginPath(); ctx.arc(px(pts - 1), py(sparkline[pts - 1]), 3, 0, Math.PI * 2);
+    ctx.fillStyle = color; ctx.fill();
+  }, []);
+
+  useEffect(() => {
+    const c = scoreCanvasRef.current;
+    if (!selected) {
+      if (c) c.getContext('2d')?.clearRect(0, 0, 120, 120);
+      return;
+    }
+    drawScoreRing(selected.score);
+    requestAnimationFrame(() => drawSparkline(selected.sparkline));
+  }, [selected, drawScoreRing, drawSparkline]);
+
+  // ── Interactions ─────────────────────────────────────────────────────────────
 
   const handleHover = useCallback((state: HeatHoverState | null) => {
     if (hoverTimer.current) clearTimeout(hoverTimer.current);
@@ -171,34 +285,34 @@ export default function MarketHeatMap() {
     hoverTimer.current = setTimeout(() => setHover(state), 150);
   }, []);
 
+  const handleParcelSelect = useCallback((p: HeatParcel) => {
+    setHover(null);
+    setSelected(p);
+  }, []);
+
   const handleCityClick = useCallback((city: { name: string; lat: number; lon: number }) => {
     const parts = city.name.split(', ');
-    const cityName = parts[0];
-    const stateAbbr = parts[1] || 'CA';
-    fetchParcels(cityName, stateAbbr);
+    fetchParcels(parts[0], parts[1] || 'CA');
   }, [fetchParcels]);
 
   const sorted = [...markets].sort((a, b) => {
     const v = sortAsc ? 1 : -1;
     if (sortKey === 'heat') return v * (a.heat - b.heat);
-    if (sortKey === 'medianPrice') return v * (a.medianPrice - b.medianPrice);
-    if (sortKey === 'yoy') return v * (a.yoy - b.yoy);
+    if (sortKey === 'yoy')  return v * (a.yoy  - b.yoy);
     return v * (a.dom - b.dom);
   });
 
-  const tickerItems = [...properties, ...properties];
+  const tickerItems   = [...properties, ...properties];
+  const cityMarketsForMap = markets.map(m => ({ name: m.name, lat: m.lat, lon: m.lon, heat: m.heat, medianPrice: m.medianPrice, yoy: m.yoy }));
+  const avgYoy        = markets.length ? (markets.reduce((s, m) => s + m.yoy, 0) / markets.length).toFixed(1) : '—';
 
-  const cityMarketsForMap = markets.map(m => ({
-    name: m.name, lat: m.lat, lon: m.lon, heat: m.heat, medianPrice: m.medianPrice, yoy: m.yoy,
-  }));
+  // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ background: '#080808', color: '#e0e0e0', minHeight: '100vh', fontFamily: 'Jost, sans-serif' }}>
+    <>
       <Nav onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }} onRequestAccessClick={() => setPricingOpen(true)} />
-      <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
+      <AuthModal   isOpen={modalOpen}   initialView={modalTab} onClose={() => setModalOpen(false)} />
       <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
-
-      {/* Drawer & hover — rendered at top level so they overlay everything */}
       <PropertyDrawer
         parcel={drawerParcel}
         onClose={() => setDrawerParcel(null)}
@@ -206,263 +320,296 @@ export default function MarketHeatMap() {
       />
       {hover && <HoverTooltip hover={hover} />}
 
-      {/* ── LIVE TICKER BAR ── */}
-      <div style={{ position: 'fixed', top: 64, left: 0, right: 0, zIndex: 400, background: '#0d0d0d', borderBottom: '1px solid rgba(0,255,136,0.15)', overflow: 'hidden', height: 38, display: 'flex', alignItems: 'center' }}>
-        <div style={{ padding: '0 14px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#00ff88', boxShadow: '0 0 8px #00ff88', animation: 'blink 1.4s ease-in-out infinite' }} />
-          <span style={{ fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.8)', fontWeight: 600 }}>LIVE</span>
-          {liveCount > 0 && <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.3)' }}>{liveCount} tracked</span>}
-        </div>
-        <div style={{ flex: 1, overflow: 'hidden' }}>
-          <div ref={tickerRef} style={{ display: 'flex', gap: 0, whiteSpace: 'nowrap', animation: 'ticker 70s linear infinite' }}>
-            {tickerItems.map((p, i) => (
-              <div key={`${p.id}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 20px', borderRight: '1px solid rgba(255,255,255,0.05)', flexShrink: 0, background: i === blinkIdx || i === blinkIdx + properties.length ? 'rgba(0,255,136,0.04)' : 'transparent', transition: 'background 0.4s' }}>
-                <span style={{ fontSize: 9, letterSpacing: '1px', color: '#b0b0b0', fontWeight: 600 }}>{fmtAddr(p.address)}</span>
-                <span style={{ fontSize: 10, color: '#e0e0e0', fontFamily: 'Cormorant Garamond, serif', fontWeight: 300 }}>{fmtPrice(p.price)}</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: changeColor(p.change) }}>{fmtChange(p.change)}</span>
-                {(i === blinkIdx || i === blinkIdx + properties.length) && <span style={{ fontSize: 7, letterSpacing: 1, color: '#00ff88', textTransform: 'uppercase' }}>●</span>}
-              </div>
-            ))}
+      {/* ── Terminal shell ── */}
+      <div style={{ position: 'fixed', top: NAV_H, left: 0, right: 0, bottom: 0, background: '#020408', overflow: 'hidden', zIndex: 10 }}>
+
+        {/* ── TICKER BAR ── */}
+        <div data-hm-ui style={{ position: 'absolute', top: 0, left: 0, right: 0, height: TICK_H, zIndex: 100, background: 'rgba(4,12,20,0.99)', borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+          <div style={{ padding: '0 12px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, borderRight: `1px solid ${BORDER}`, height: '100%' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: G, boxShadow: `0 0 8px ${G}`, animation: 'hm-blink 1.4s ease-in-out infinite' }} />
+            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: G }}>LIVE</span>
+            {liveCount > 0 && <span style={{ fontFamily: MONO, fontSize: 8, color: T_M }}>{liveCount}</span>}
           </div>
-        </div>
-        <div style={{ padding: '0 14px', flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,0.06)', fontSize: 8, color: 'rgba(255,255,255,0.2)', letterSpacing: 1 }}>
-          {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-        </div>
-      </div>
-
-      {/* ── HEADER ── */}
-      <section style={{ paddingTop: 120, paddingBottom: 20, paddingLeft: 'clamp(16px,4vw,48px)', paddingRight: 'clamp(16px,4vw,48px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <div style={{ fontSize: 8, letterSpacing: '4px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.7)', marginBottom: 6 }}>Market Intelligence · United States</div>
-            <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(26px,4vw,48px)', fontWeight: 300, color: '#f0f0f0', margin: 0, letterSpacing: '-0.5px', lineHeight: 1.1 }}>
-              Live Property <em style={{ color: '#00ff88' }}>Heat Map</em>
-            </h1>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
-              Mapbox GL · Deck.gl · Real MLS via RentCast
-              {parcelCity && <span style={{ color: 'rgba(0,255,136,0.5)', marginLeft: 8 }}>· {parcels.length} live listings in {parcelCity}</span>}
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 28 }}>
-            {[
-              ['Markets', markets.length],
-              ['Live Listings', parcels.length || '—'],
-              ['Avg YoY', `${(markets.reduce((s, m) => s + m.yoy, 0) / Math.max(1, markets.length)).toFixed(1)}%`],
-            ].map(([l, v]) => (
-              <div key={String(l)} style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 3 }}>{l}</div>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 300, color: '#f0f0f0' }}>{v}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── MAP + RANKINGS ── */}
-      <section style={{ padding: '16px clamp(16px,4vw,48px)', maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 300px', gap: 14, alignItems: 'start' }}>
-
-          {/* Map */}
-          <div style={{ position: 'relative' }}>
-            <div style={{
-              height: 'clamp(400px,60vh,640px)',
-              border: '1px solid rgba(255,255,255,0.07)',
-              position: 'relative', overflow: 'hidden',
-              filter: premium ? 'none' : 'brightness(0.5) saturate(0.4)',
-            }}>
-              <HeatMapCanvas
-                parcels={parcels}
-                cityMarkets={cityMarketsForMap}
-                weights={weights}
-                loading={parcelLoading}
-                premium={premium}
-                onHover={handleHover}
-                onSelect={p => { setHover(null); setDrawerParcel(p); }}
-                onCityClick={handleCityClick}
-              />
-
-              {/* Filter panel — floats over map */}
-              {premium && (
-                <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 20 }}>
-                  <FilterPanel weights={weights} onChange={setWeights} />
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', whiteSpace: 'nowrap', animation: 'hm-ticker 80s linear infinite' }}>
+              {tickerItems.map((p, i) => (
+                <div key={`${p.id}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 18px', borderRight: `1px solid rgba(0,255,136,0.05)`, flexShrink: 0, background: i === blinkIdx || i === blinkIdx + properties.length ? 'rgba(0,255,136,0.04)' : 'transparent', transition: 'background 0.4s' }}>
+                  <span style={{ fontFamily: MONO, fontSize: 9, color: T_M }}>{fmtAddr(p.address)}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 10, color: T_P }}>{fmtPrice(p.price)}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: yoyColor(p.change) }}>{fmtChange(p.change)}</span>
+                  {(i === blinkIdx || i === blinkIdx + properties.length) && <span style={{ fontSize: 7, color: G }}>●</span>}
                 </div>
-              )}
-
-              {!premium && (
-                <div style={{ position: 'absolute', inset: 0, zIndex: 1000 }}>
-                  <PremiumLockOverlay
-                    headline="Unlock Live Market Intelligence"
-                    body="Street-level property listings, DNA scoring, and parcel-level heat visualization across US markets."
-                    ctaLabel="Unlock Premium"
-                    onUpgrade={() => setPricingOpen(true)}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Legend */}
-            <div style={{ display: 'flex', gap: 20, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgb(253,231,37)' }} />
-                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)' }}>High DNA Score</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgb(68,1,84)' }} />
-                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)' }}>Low Score</span>
-              </div>
-              <div style={{ marginLeft: 'auto', fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>
-                Click a city to load real listings · Zoom 12+ for parcels
-              </div>
+              ))}
             </div>
           </div>
+          <div style={{ padding: '0 12px', flexShrink: 0, borderLeft: `1px solid ${BORDER}`, fontFamily: MONO, fontSize: 8, color: T_M, letterSpacing: 1 }}>
+            {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </div>
+        </div>
 
-          {/* Rankings panel */}
-          <div style={{ border: '1px solid rgba(255,255,255,0.07)', background: '#0d0d0d', overflow: 'hidden' }}>
-            <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <input
-                type="text"
-                placeholder="Search city…"
-                onChange={e => {
-                  const q = e.target.value.toLowerCase();
-                  if (!q) { return; }
-                  const match = markets.find(m => m.name.toLowerCase().includes(q));
-                  if (match && premium) handleCityClick({ name: match.name, lat: match.lat, lon: match.lon });
-                }}
-                style={{ width: '100%', background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.15)', color: '#e0e0e0', fontSize: 11, padding: '6px 10px', outline: 'none', fontFamily: 'Jost, sans-serif', boxSizing: 'border-box' as const }}
-              />
-            </div>
-            <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 8, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.7)' }}>Market Rankings {premium ? '· click to load' : ''}</span>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {(['heat', 'yoy', 'dom'] as SortKey[]).map(k => (
-                  <button key={k} onClick={() => { if (sortKey === k) setSortAsc(v => !v); else { setSortKey(k); setSortAsc(false); } }}
-                    style={{ fontSize: 7, letterSpacing: 1, textTransform: 'uppercase', background: sortKey === k ? 'rgba(0,255,136,0.1)' : 'transparent', color: sortKey === k ? '#00ff88' : 'rgba(255,255,255,0.3)', border: `1px solid ${sortKey === k ? 'rgba(0,255,136,0.3)' : 'rgba(255,255,255,0.08)'}`, padding: '3px 7px', cursor: 'pointer' }}>
-                    {k}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {sorted.map((m, i) => (
-              <div key={m.name}
-                onClick={() => premium && handleCityClick({ name: m.name, lat: m.lat, lon: m.lon })}
-                style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: !premium && i > 2 ? 0.2 : 1, filter: !premium && i > 2 ? 'blur(4px)' : 'none', userSelect: !premium && i > 2 ? 'none' : 'auto', cursor: premium ? 'pointer' : 'default' }}
+        {/* ── LEFT PANEL: Market Index ── */}
+        <div data-hm-ui style={{ position: 'absolute', top: TICK_H, left: 0, width: LEFT_W, bottom: BOT_H, background: BG, borderRight: `1px solid ${BORDER}`, zIndex: 90, display: 'flex', flexDirection: 'column', backdropFilter: 'blur(12px)' }}>
+          <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}` }}>
+            <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 3, color: G, textTransform: 'uppercase', marginBottom: 8 }}>Market Index</div>
+            <input
+              type="text"
+              placeholder="SEARCH CITY..."
+              onChange={e => {
+                const q = e.target.value.toLowerCase();
+                if (!q) return;
+                const match = markets.find(m => m.name.toLowerCase().includes(q));
+                if (match && premium) handleCityClick({ name: match.name, lat: match.lat, lon: match.lon });
+              }}
+              style={{ width: '100%', background: 'rgba(0,255,136,0.04)', border: `1px solid ${BORDER}`, color: T_P, fontFamily: MONO, fontSize: 10, padding: '6px 10px', outline: 'none', boxSizing: 'border-box' as const }}
+            />
+          </div>
+          <div style={{ padding: '5px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)`, display: 'flex', gap: 5 }}>
+            {(['heat', 'yoy', 'dom'] as SortKey[]).map(k => (
+              <button
+                key={k}
+                onClick={() => { if (sortKey === k) setSortAsc(v => !v); else { setSortKey(k); setSortAsc(false); } }}
+                style={{ fontFamily: MONO, fontSize: 7, letterSpacing: 1.5, textTransform: 'uppercase', padding: '3px 7px', cursor: 'pointer', background: sortKey === k ? 'rgba(0,255,136,0.1)' : 'transparent', color: sortKey === k ? G : T_M, border: `1px solid ${sortKey === k ? BORDER : 'transparent'}` }}
               >
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 12, color: 'rgba(255,255,255,0.2)', minWidth: 16 }}>{i + 1}</span>
-                  <div>
-                    <div style={{ fontSize: 11, color: parcelCity && m.name.startsWith(parcelCity) ? '#00ff88' : '#e0e0e0', letterSpacing: '0.3px' }}>{m.name}</div>
-                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{fmtPrice(m.medianPrice)} · DOM {m.dom}</div>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: changeColor(m.yoy) }}>{fmtChange(m.yoy)}</div>
-                  <div style={{ fontSize: 8, marginTop: 2 }}>
-                    <span style={{ display: 'inline-block', width: 32, height: 2, background: heatColor(m.heat), verticalAlign: 'middle', opacity: m.heat }} />
-                  </div>
-                </div>
-              </div>
+                {k}{sortKey === k ? (sortAsc ? ' ↑' : ' ↓') : ''}
+              </button>
             ))}
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin' as const }}>
+            {sorted.map((m, i) => {
+              const locked  = !premium && i >= 3;
+              const active  = !!(parcelCity && m.name.startsWith(parcelCity));
+              const barW    = Math.round(m.heat * 36);
+              const barColor = m.heat >= 0.75 ? R : m.heat >= 0.5 ? GOLD : G;
+              return (
+                <div
+                  key={m.name}
+                  onClick={() => !locked && premium && handleCityClick({ name: m.name, lat: m.lat, lon: m.lon })}
+                  style={{
+                    display: 'flex', alignItems: 'center', padding: '8px 14px',
+                    borderBottom: '1px solid rgba(0,255,136,0.04)',
+                    cursor: locked ? 'default' : premium ? 'pointer' : 'default', gap: 8,
+                    background: active ? 'rgba(0,255,136,0.07)' : 'transparent',
+                    borderLeft: `2px solid ${active ? G : 'transparent'}`,
+                    filter: locked ? 'blur(4px)' : 'none',
+                    userSelect: locked ? 'none' : 'auto',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  <div style={{ fontFamily: MONO, fontSize: 9, color: T_M, width: 16, textAlign: 'right', flexShrink: 0 }}>{i + 1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: active ? G : T_P, letterSpacing: 0.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</div>
+                    <div style={{ fontFamily: MONO, fontSize: 9, color: T_M, marginTop: 1 }}>{fmtPrice(m.medianPrice)} · DOM {m.dom}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, color: yoyColor(m.yoy) }}>{m.yoy >= 0 ? '+' : ''}{m.yoy.toFixed(1)}%</div>
+                    <div style={{ width: barW, height: 2, background: barColor, marginTop: 3, marginLeft: 'auto', opacity: 0.7 + m.heat * 0.3 }} />
+                  </div>
+                </div>
+              );
+            })}
             {!premium && (
-              <div style={{ padding: 14 }}>
-                <button onClick={() => setPricingOpen(true)} style={{ width: '100%', fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: '#000', background: '#00ff88', border: 'none', padding: '11px 20px', cursor: 'pointer' }}>
+              <div style={{ padding: 12 }}>
+                <button
+                  onClick={() => setPricingOpen(true)}
+                  style={{ width: '100%', fontFamily: MONO, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: G, border: 'none', padding: '10px 0', cursor: 'pointer' }}
+                >
                   Unlock All Markets →
                 </button>
               </div>
             )}
           </div>
-        </div>
-      </section>
-
-      {/* ── SELECTED PROPERTY (legacy, from ticker table clicks) ── */}
-      {selected && premium && (
-        <section style={{ padding: '0 clamp(16px,4vw,48px) 12px', maxWidth: 1400, margin: '0 auto' }}>
-          <div style={{ border: '1px solid rgba(0,255,136,0.2)', background: '#0d0d0d', padding: '18px 24px', display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'center' }}>
-            <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontSize: 8, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.5)', marginBottom: 4 }}>Property Detail</div>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 300, color: '#f0f0f0' }}>{selected.address}</div>
-              <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>{selected.city}</div>
-            </div>
-            {([['Price', fmtPrice(selected.price), '#ffbb00'], ['Change', fmtChange(selected.change), changeColor(selected.change)], ['DOM', `${selected.dom}d`, '#e0e0e0'], ...(selected.rating ? [['DNA Rating', selected.rating, '#C9A84C']] : [])] as [string, string, string][]).map(([l, v, c]) => (
-              <div key={l} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>{l}</div>
-                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 300, color: c }}>{v}</div>
+          {parcelCity && (
+            <div style={{ padding: '7px 14px', borderTop: `1px solid ${BORDER}`, background: 'rgba(0,255,136,0.03)' }}>
+              <div style={{ fontFamily: MONO, fontSize: 8, letterSpacing: 2, color: parcelLoading ? GOLD : G }}>
+                {parcelLoading ? '● LOADING PARCELS…' : `● ${parcels.length.toLocaleString()} PARCELS · ${parcelCity.toUpperCase()}`}
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ── PROPERTY TICKER TABLE ── */}
-      <section style={{ padding: '14px clamp(16px,4vw,48px) 32px', maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ border: '1px solid rgba(255,255,255,0.06)', background: '#0d0d0d', overflow: 'hidden' }}>
-          <div style={{ padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 8, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(0,255,136,0.6)' }}>Property Ticker — Recent Activity</span>
-            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)' }}>Click row to view detail</span>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  {['#', 'Property', 'City', 'Price', 'Change', 'DOM', 'Signal'].map(h => (
-                    <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: 7, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', fontWeight: 400 }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {properties.map((p, i) => {
-                  const isActive = i === blinkIdx;
-                  return (
-                    <tr key={p.id}
-                      onClick={() => premium && setSelected(p)}
-                      style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: premium ? 'pointer' : 'default', background: isActive ? 'rgba(0,255,136,0.03)' : selected?.id === p.id ? 'rgba(0,255,136,0.05)' : 'transparent', transition: 'background 0.2s', opacity: !premium && i > 4 ? 0.15 : 1, filter: !premium && i > 4 ? 'blur(5px)' : 'none' }}
-                    >
-                      <td style={{ padding: '9px 14px', color: 'rgba(255,255,255,0.2)', fontSize: 10 }}>{i + 1}</td>
-                      <td style={{ padding: '9px 14px', color: '#e0e0e0', fontWeight: 500 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: changeColor(p.change), boxShadow: isActive ? `0 0 6px ${changeColor(p.change)}` : 'none', flexShrink: 0 }} />
-                          {p.address}
-                        </div>
-                      </td>
-                      <td style={{ padding: '9px 14px', color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>{p.city}</td>
-                      <td style={{ padding: '9px 14px', color: '#ffbb00', fontFamily: 'Cormorant Garamond, serif', fontSize: 14 }}>{fmtPrice(p.price)}</td>
-                      <td style={{ padding: '9px 14px', color: changeColor(p.change), fontWeight: 700 }}>{fmtChange(p.change)}</td>
-                      <td style={{ padding: '9px 14px', color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>{p.dom}d</td>
-                      <td style={{ padding: '9px 14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div style={{ width: 36, height: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-                            <div style={{ width: `${Math.min(100, Math.abs(p.change) * 10)}%`, height: '100%', background: changeColor(p.change) }} />
-                          </div>
-                          {p.rating && <span style={{ fontSize: 9, color: '#C9A84C', letterSpacing: 1 }}>{p.rating}</span>}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          {!premium && (
-            <div style={{ padding: '14px 18px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>Full property-level data available to Pro subscribers</span>
-              <button onClick={() => setPricingOpen(true)} style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: '#000', background: '#00ff88', border: 'none', padding: '9px 18px', cursor: 'pointer', flexShrink: 0 }}>
-                Unlock Premium
-              </button>
             </div>
           )}
         </div>
-        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', marginTop: 8, letterSpacing: 1 }}>
-          Live data: Mapbox GL · Deck.gl HexagonLayer · RentCast MLS · Supabase market_snapshots · Not a licensed appraisal
-        </div>
-      </section>
 
-      <Footer />
+        {/* ── MAP (center) ── */}
+        <div style={{ position: 'absolute', top: TICK_H, left: LEFT_W, right: RIGHT_W, bottom: BOT_H }}>
+          <div style={{ position: 'relative', width: '100%', height: '100%', filter: premium ? 'none' : 'brightness(0.45) saturate(0.3)' }}>
+            <HeatMapCanvas
+              parcels={parcels}
+              cityMarkets={cityMarketsForMap}
+              weights={weights}
+              loading={parcelLoading}
+              premium={premium}
+              onHover={handleHover}
+              onSelect={handleParcelSelect}
+              onCityClick={handleCityClick}
+            />
+            {premium && (
+              <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 20 }}>
+                <FilterPanel weights={weights} onChange={setWeights} />
+              </div>
+            )}
+            {!premium && (
+              <div style={{ position: 'absolute', inset: 0, zIndex: 1000 }}>
+                <PremiumLockOverlay
+                  headline="Unlock 168K Indexed Properties"
+                  body="Street-level DNA scoring across the entire Coachella Valley — every parcel, Bloomberg-style."
+                  ctaLabel="Unlock Premium"
+                  onUpgrade={() => setPricingOpen(true)}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── RIGHT PANEL: DNA Intelligence ── */}
+        <div data-hm-ui style={{ position: 'absolute', top: TICK_H, right: 0, width: RIGHT_W, bottom: BOT_H, background: BG, borderLeft: `1px solid ${BORDER}`, zIndex: 90, display: 'flex', flexDirection: 'column', backdropFilter: 'blur(12px)' }}>
+          <div style={{ padding: '10px 14px', borderBottom: `1px solid ${BORDER}`, fontFamily: MONO, fontSize: 9, letterSpacing: 3, color: G, textTransform: 'uppercase' }}>
+            DNA Intelligence
+          </div>
+
+          {/* Score ring — always visible */}
+          <div style={{ padding: '16px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div style={{ position: 'relative', width: 120, height: 120 }}>
+              <canvas ref={scoreCanvasRef} width={120} height={120} />
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ fontFamily: MONO, fontSize: selected ? 32 : 26, fontWeight: 700, lineHeight: 1, color: selected ? heatScoreToHex(selected.score) : T_M }}>
+                  {selected ? selected.score : '—'}
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 1, color: T_M }}>DNA SCORE</div>
+              </div>
+            </div>
+            {selected ? (
+              <>
+                <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: 1, color: heatScoreBadgeColor(selected.score), textTransform: 'uppercase' }}>
+                  {heatScoreLabel(selected.score)}
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 8, color: T_M, letterSpacing: 1 }}>
+                  {Math.round(selected.confidence * 100)}% MODEL CONFIDENCE
+                </div>
+              </>
+            ) : (
+              <div style={{ fontFamily: UI, fontSize: 11, color: T_M, textAlign: 'center', lineHeight: 1.7 }}>
+                Click any parcel<br />on the map to analyze
+              </div>
+            )}
+          </div>
+
+          {/* Selection details */}
+          {selected ? (
+            <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin' as const }}>
+
+              {/* Address */}
+              <div style={{ padding: '10px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T_P, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selected.street}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 9, color: T_M, marginTop: 2 }}>{selected.city}, {selected.state} {selected.zip}</div>
+                </div>
+                <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: T_M, fontSize: 16, cursor: 'pointer', padding: '0 0 0 8px', flexShrink: 0 }}>×</button>
+              </div>
+
+              {/* Key metrics grid */}
+              <div style={{ padding: '10px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)` }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 10px' }}>
+                  {([
+                    ['LIST PRICE',    selected.price > 0 ? fmtPrice(selected.price) : '—'],
+                    ['PER SQFT',      selected.pricePerSqft > 0 ? `$${selected.pricePerSqft}` : '—'],
+                    ['SIZE',          selected.sqft > 0 ? `${selected.sqft.toLocaleString()} sf` : '—'],
+                    ['BEDS / BATHS',  selected.bedrooms > 0 ? `${selected.bedrooms} / ${selected.bathrooms}` : '—'],
+                    ['YEAR BUILT',    selected.yearBuilt > 0 ? String(selected.yearBuilt) : '—'],
+                    ['DOM',           selected.dom > 0 ? `${selected.dom}d` : '—'],
+                  ] as [string, string][]).map(([l, v]) => (
+                    <div key={l}>
+                      <div style={{ fontFamily: MONO, fontSize: 7, color: T_M, letterSpacing: 2, textTransform: 'uppercase' }}>{l}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 12, color: T_P, fontWeight: 600, marginTop: 2 }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sub-score bars */}
+              <div style={{ padding: '10px 14px', borderBottom: `1px solid rgba(0,255,136,0.06)` }}>
+                <div style={{ fontFamily: MONO, fontSize: 8, color: T_M, letterSpacing: 2, marginBottom: 8 }}>SCORE BREAKDOWN</div>
+                {([
+                  ['COMPS',      selected.compsScore],
+                  ['PRICE Δ',    selected.priceDeltaScore],
+                  ['DOM',        selected.domScore],
+                  ['PERMITS',    selected.permitsScore],
+                  ['LIVABILITY', selected.livability],
+                  ['RENTAL',     selected.rentalDemand],
+                ] as [string, number][]).map(([label, score]) => {
+                  const barColor = score >= 70 ? G : score >= 50 ? GOLD : R;
+                  return (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+                      <div style={{ fontFamily: MONO, fontSize: 8, color: T_M, width: 58, flexShrink: 0 }}>{label}</div>
+                      <div style={{ flex: 1, height: 3, background: 'rgba(0,255,136,0.08)', position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${score}%`, background: barColor, transition: 'width 0.6s ease' }} />
+                      </div>
+                      <div style={{ fontFamily: MONO, fontSize: 9, color: barColor, width: 22, textAlign: 'right', flexShrink: 0 }}>{score}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Sparkline */}
+              {selected.sparkline?.length > 1 && (
+                <div style={{ borderBottom: `1px solid rgba(0,255,136,0.06)` }}>
+                  <div style={{ padding: '8px 14px 2px', fontFamily: MONO, fontSize: 8, color: T_M, letterSpacing: 2 }}>PRICE TREND</div>
+                  <div style={{ padding: '0 14px 10px' }}>
+                    <canvas ref={sparkCanvasRef} style={{ width: '100%', height: 60, display: 'block' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* CTA */}
+              <div style={{ padding: '14px' }}>
+                <button
+                  onClick={() => setDrawerParcel(selected)}
+                  style={{ width: '100%', fontFamily: MONO, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: G, border: 'none', padding: '12px 0', cursor: 'pointer', boxShadow: `0 0 20px rgba(0,255,136,0.15)` }}
+                >
+                  Generate Full DNA Report
+                </button>
+                <div style={{ fontFamily: MONO, fontSize: 8, color: T_M, textAlign: 'center', marginTop: 6 }}>
+                  Powered by PropertyDNA AI
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+              <div style={{ fontFamily: MONO, fontSize: 8, color: 'rgba(180,220,200,0.25)', letterSpacing: 1, textAlign: 'center', lineHeight: 1.8 }}>
+                {parcels.length > 0
+                  ? `${parcels.length.toLocaleString()} PARCELS INDEXED\n${parcelCity.toUpperCase()}`
+                  : premium ? 'CLICK A CITY TO LOAD PARCELS' : 'PREMIUM REQUIRED'}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── BOTTOM STATUS BAR ── */}
+        <div data-hm-ui style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: BOT_H, background: BG, borderTop: `1px solid ${BORDER}`, zIndex: 100, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 20, backdropFilter: 'blur(12px)', overflow: 'hidden' }}>
+          {([
+            ['MARKETS',  markets.length.toString()],
+            ['INDEXED',  '168K'],
+            ['AVG YOY',  `${avgYoy}%`],
+            ['ACTIVE',   parcelCity || '—'],
+            ['PARCELS',  parcels.length > 0 ? parcels.length.toLocaleString() : '—'],
+            ['DATA',     'REAL-TIME'],
+          ] as [string, string][]).map(([label, val]) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: MONO, fontSize: 10, flexShrink: 0 }}>
+              <span style={{ color: T_M }}>{label}</span>
+              <span style={{ color: val === 'REAL-TIME' ? G : val === '168K' ? GOLD : T_P }}>{val}</span>
+            </div>
+          ))}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontFamily: MONO, fontSize: 10, flexShrink: 0 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: G, boxShadow: `0 0 8px ${G}`, animation: 'hm-pulse 2s infinite' }} />
+            <span style={{ color: T_M }}>REFRESH</span>
+            <span style={{ color: T_P }}>{clock}</span>
+          </div>
+        </div>
+
+      </div>
 
       <style>{`
-        @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-        @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:0.2} }
-        @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes hm-ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+        @keyframes hm-blink  { 0%,100%{opacity:1} 50%{opacity:0.2} }
+        @keyframes hm-pulse  { 0%,100%{opacity:1} 50%{opacity:0.3} }
       `}</style>
-    </div>
+    </>
   );
 }

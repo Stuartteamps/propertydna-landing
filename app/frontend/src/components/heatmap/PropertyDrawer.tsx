@@ -66,112 +66,121 @@ export default function PropertyDrawer({ parcel, onClose, onNeedAuth }: Props) {
 
   function reset() { setGenerating(false); setReportSent(false); setRequestId(''); }
 
+  const MONO  = "'Share Tech Mono', monospace";
+  const UI    = "'Rajdhani', sans-serif";
+  const G     = '#00ff88';
+  const T_M   = 'rgba(180,220,200,0.5)';
+  const T_P   = '#e8f4f0';
+  const BDR   = 'rgba(0,255,136,0.16)';
+
   return (
     <>
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, zIndex: 8000,
-        background: 'rgba(0,0,0,0.4)',
+        background: 'rgba(0,0,0,0.5)',
         opacity: isOpen ? 1 : 0, pointerEvents: isOpen ? 'auto' : 'none',
         transition: 'opacity 0.25s',
       }} />
 
       <div style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 8100,
-        width: 380, background: '#0A0908',
-        borderLeft: '1px solid rgba(184,147,85,0.2)',
+        width: 380, background: 'rgba(4,12,20,0.99)',
+        borderLeft: `1px solid ${BDR}`,
         transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
-        overflowY: 'auto', fontFamily: 'Jost, sans-serif',
+        overflowY: 'auto', fontFamily: MONO,
+        backdropFilter: 'blur(16px)',
       }}>
         {parcel && (
           <>
             {/* Header */}
             <div style={{
-              padding: '20px 24px 16px',
-              borderBottom: '1px solid rgba(107,98,82,0.3)',
-              background: `linear-gradient(180deg, ${heatScoreToRgba(parcel.score, 0.1)}, transparent)`,
+              padding: '18px 20px 14px',
+              borderBottom: `1px solid ${BDR}`,
+              background: `linear-gradient(180deg, ${heatScoreToRgba(parcel.score, 0.08)}, transparent)`,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#F4F0E8', lineHeight: 1.3, marginBottom: 3 }}>
+                  <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 600, color: T_P, lineHeight: 1.3, marginBottom: 3 }}>
                     {parcel.street}
                   </div>
-                  <div style={{ fontSize: 11, color: '#6B6252' }}>{parcel.city}, {parcel.state} {parcel.zip}</div>
+                  <div style={{ fontSize: 10, color: T_M }}>{parcel.city}, {parcel.state} {parcel.zip}</div>
                 </div>
-                <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B6252', fontSize: 20, padding: 0, marginLeft: 12 }}>×</button>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T_M, fontSize: 20, padding: 0, marginLeft: 12 }}>×</button>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}>
                 <div style={{
                   width: 54, height: 54, borderRadius: '50%',
-                  background: `conic-gradient(${heatScoreToHex(parcel.score)} ${parcel.score * 3.6}deg, rgba(107,98,82,0.2) 0)`,
+                  background: `conic-gradient(${heatScoreToHex(parcel.score)} ${parcel.score * 3.6}deg, rgba(0,255,136,0.08) 0)`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <div style={{
-                    width: 42, height: 42, borderRadius: '50%', background: '#0A0908',
+                    width: 42, height: 42, borderRadius: '50%', background: 'rgba(4,12,20,0.99)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 15, fontWeight: 700, color: heatScoreToHex(parcel.score),
                   }}>{parcel.score}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: heatScoreBadgeColor(parcel.score) }}>
+                  <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: heatScoreBadgeColor(parcel.score), letterSpacing: 0.5 }}>
                     {heatScoreLabel(parcel.score)}
                   </div>
-                  <div style={{ fontSize: 10, color: '#6B6252' }}>{Math.round(parcel.confidence * 100)}% model confidence</div>
-                  <div style={{ fontSize: 9, color: '#6B6252' }}>{parcel.neighborhood}</div>
+                  <div style={{ fontSize: 9, color: T_M, marginTop: 2 }}>{Math.round(parcel.confidence * 100)}% model confidence</div>
+                  <div style={{ fontSize: 9, color: T_M }}>{parcel.neighborhood}</div>
                 </div>
               </div>
             </div>
 
             {/* Stats */}
-            <div style={{ padding: '14px 24px', borderBottom: '1px solid rgba(107,98,82,0.2)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '9px 14px' }}>
+            <div style={{ padding: '12px 20px', borderBottom: `1px solid rgba(0,255,136,0.06)` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px' }}>
                 {[
-                  ['List Price', `$${parcel.price.toLocaleString()}`],
-                  ['Per Sqft', `$${parcel.pricePerSqft}`],
-                  ['Size', `${parcel.sqft.toLocaleString()} sqft`],
-                  ['Beds / Baths', `${parcel.bedrooms} / ${parcel.bathrooms}`],
-                  ['Year Built', parcel.yearBuilt || '—'],
-                  ['Days on Market', `${parcel.dom}d`],
-                  ['Type', parcel.propertyType.replace('_', ' ')],
-                  ['Source', 'RentCast MLS'],
+                  ['LIST PRICE',    `$${parcel.price.toLocaleString()}`],
+                  ['PER SQFT',      `$${parcel.pricePerSqft}`],
+                  ['SIZE',          `${parcel.sqft.toLocaleString()} sqft`],
+                  ['BEDS / BATHS',  `${parcel.bedrooms} / ${parcel.bathrooms}`],
+                  ['YEAR BUILT',    parcel.yearBuilt || '—'],
+                  ['DAYS ON MKT',   `${parcel.dom}d`],
+                  ['TYPE',          parcel.propertyType.replace('_', ' ')],
+                  ['SOURCE',        'RentCast MLS'],
                 ].map(([l, v]) => (
                   <div key={String(l)}>
-                    <div style={{ fontSize: 8, color: '#6B6252', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{l}</div>
-                    <div style={{ fontSize: 12, color: '#F4F0E8', fontWeight: 500, marginTop: 2 }}>{v}</div>
+                    <div style={{ fontSize: 7, color: T_M, textTransform: 'uppercase', letterSpacing: 2 }}>{l}</div>
+                    <div style={{ fontFamily: UI, fontSize: 12, color: T_P, fontWeight: 500, marginTop: 2 }}>{v}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Radar */}
-            <div style={{ padding: '14px 24px 0', borderBottom: '1px solid rgba(107,98,82,0.2)' }}>
-              <div style={{ fontSize: 9, color: '#6B6252', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 2 }}>Score Breakdown</div>
+            <div style={{ padding: '12px 20px 0', borderBottom: `1px solid rgba(0,255,136,0.06)` }}>
+              <div style={{ fontSize: 8, color: T_M, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 }}>Score Breakdown</div>
               <div style={{ height: 170 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
-                    <PolarGrid stroke="rgba(107,98,82,0.3)" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#6B6252', fontSize: 9 }} />
-                    <Radar dataKey="value" stroke={heatScoreToHex(parcel.score)} fill={heatScoreToHex(parcel.score)} fillOpacity={0.25} />
+                    <PolarGrid stroke="rgba(0,255,136,0.1)" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: T_M, fontSize: 9, fontFamily: MONO }} />
+                    <Radar dataKey="value" stroke={heatScoreToHex(parcel.score)} fill={heatScoreToHex(parcel.score)} fillOpacity={0.2} />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* CTA */}
-            <div style={{ padding: '18px 24px' }}>
+            <div style={{ padding: '16px 20px' }}>
               {!generating && !reportSent && (
                 <>
                   <button onClick={handleGenerate} style={{
-                    width: '100%', padding: '13px 0',
-                    background: 'linear-gradient(135deg,#B89355,#C9A84C)',
-                    border: 'none', borderRadius: 8, cursor: 'pointer',
-                    fontSize: 12, fontWeight: 600, color: '#0F0E0D', letterSpacing: '0.05em',
+                    width: '100%', padding: '12px 0',
+                    background: G,
+                    border: 'none', cursor: 'pointer',
+                    fontFamily: MONO, fontSize: 10, fontWeight: 700, color: '#000', letterSpacing: 2, textTransform: 'uppercase',
+                    boxShadow: '0 0 20px rgba(0,255,136,0.15)',
                   }}>
                     {user ? 'Generate Full DNA Report' : 'Sign In to Generate Report'}
                   </button>
-                  <p style={{ fontSize: 10, color: '#6B6252', textAlign: 'center', marginTop: 6 }}>
-                    {user ? `Report delivered to ${user.email}` : 'Sign in with Google to get your free report'}
+                  <p style={{ fontFamily: MONO, fontSize: 9, color: T_M, textAlign: 'center', marginTop: 6 }}>
+                    {user ? `Delivered to ${user.email}` : 'Sign in with Google to get your free report'}
                   </p>
                 </>
               )}
@@ -180,16 +189,16 @@ export default function PropertyDrawer({ parcel, onClose, onNeedAuth }: Props) {
 
               {reportSent && (
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>✓</div>
-                  <div style={{ fontSize: 13, color: '#22c55e', fontWeight: 600, marginBottom: 4 }}>Report Processing</div>
-                  <div style={{ fontSize: 11, color: '#6B6252', marginBottom: 4 }}>
-                    Check your email — <strong style={{ color: '#F4F0E8' }}>{user?.email}</strong>
+                  <div style={{ fontFamily: MONO, fontSize: 24, color: G, marginBottom: 8 }}>✓</div>
+                  <div style={{ fontFamily: UI, fontSize: 13, color: G, fontWeight: 600, marginBottom: 4 }}>Report Processing</div>
+                  <div style={{ fontSize: 10, color: T_M, marginBottom: 4 }}>
+                    Check your email — <strong style={{ color: T_P }}>{user?.email}</strong>
                   </div>
-                  {requestId && <div style={{ fontSize: 9, color: '#6B6252', marginBottom: 14 }}>Ref: {requestId}</div>}
+                  {requestId && <div style={{ fontSize: 9, color: T_M, marginBottom: 14, letterSpacing: 1 }}>REF: {requestId}</div>}
                   <button onClick={reset} style={{
                     width: '100%', padding: '10px 0',
-                    background: 'rgba(184,147,85,0.1)', border: '1px solid rgba(184,147,85,0.4)',
-                    borderRadius: 8, cursor: 'pointer', fontSize: 11, color: '#B89355',
+                    background: 'rgba(0,255,136,0.06)', border: `1px solid ${BDR}`,
+                    cursor: 'pointer', fontFamily: MONO, fontSize: 10, color: G, letterSpacing: 1,
                   }}>Run Another Report</button>
                 </div>
               )}
