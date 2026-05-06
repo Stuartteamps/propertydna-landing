@@ -168,7 +168,7 @@ export default function IntellaGraph() {
   // Use live auth tier — covers direct navigation where sessionStorage isn't populated yet
   useEffect(() => { setPremium(isPremiumUser() || tier !== 'free'); }, [tier]);
 
-  // Load TerraGraph fonts into document head
+  // Load IntellaGraph AI fonts into document head
   useEffect(() => {
     const link = document.createElement('link');
     link.rel   = 'stylesheet';
