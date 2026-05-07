@@ -181,7 +181,7 @@ async function sendFollowUp(contact, step) {
 .wrap{max-width:580px;margin:0 auto;background:#fff;border:1px solid #e8e4dc}
 .header{background:#0F0E0D;padding:28px 40px}.header h1{font-family:Georgia,serif;color:#F4F0E8;font-size:20px;font-weight:400;margin:0}
 .header p{color:#6B6252;font-size:10px;margin:5px 0 0;letter-spacing:2px;text-transform:uppercase}
-.alert{background:#0A0908;padding:20px 40px;border-left:3px solid #B89355}
+.alert{background:#0A0908;padding:20px 40px;border-left:3px solid #E8B84B}
 .alert p{color:#F4F0E8;font-size:13px;line-height:1.6;margin:0}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
 .cta{display:block;background:#E8B84B;color:#0F0E0D;text-decoration:none;padding:14px 28px;font-size:15px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;margin:24px 0}
@@ -210,7 +210,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
 .wrap{max-width:580px;margin:0 auto;background:#fff;border:1px solid #e8e4dc}
 .header{background:#0F0E0D;padding:28px 40px}.header h1{font-family:Georgia,serif;color:#F4F0E8;font-size:20px;font-weight:400;margin:0}
 .header p{color:#6B6252;font-size:10px;margin:5px 0 0;letter-spacing:2px;text-transform:uppercase}
-.divider{height:3px;background:linear-gradient(90deg,#E8B84B,#B89355)}
+.divider{height:3px;background:linear-gradient(90deg,#E8B84B,#c9953a)}
 .body{padding:32px 40px}.body p{color:#333;font-size:14px;line-height:1.7;margin:0 0 16px}
 .insight{background:#F9F7F2;border-left:3px solid #E8B84B;padding:14px 20px;margin:20px 0}
 .insight p{margin:0;font-size:13px;color:#444;line-height:1.6}

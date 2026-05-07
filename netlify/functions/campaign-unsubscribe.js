@@ -25,7 +25,7 @@ exports.handler = async (event) => {
 .box{background:#fff;padding:40px 48px;text-align:center;border:1px solid #e8e4dc;max-width:400px}
 h2{font-family:Georgia,serif;font-weight:400;color:#0F0E0D;margin-bottom:12px}
 p{color:#6B6252;font-size:13px;line-height:1.6}
-a{color:#B89355;font-size:12px}</style></head>
+a{color:#E8B84B;font-size:12px}</style></head>
 <body><div class="box">
 <h2>You've been unsubscribed.</h2>
 <p>You won't receive any more campaign emails from PropertyDNA.</p>

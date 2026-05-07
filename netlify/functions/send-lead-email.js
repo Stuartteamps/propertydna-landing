@@ -75,7 +75,7 @@ ${footer}
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">You're confirmed. I'll be sending you curated home listings that match your criteria — off-market when available, MLS when relevant.</p>
 <p style="margin:0 0 24px;font-size:15px;color:#333;line-height:1.75;">While you wait, run a free Property DNA report on any address you're curious about — full valuation, flood zone, crime, and a direct verdict on whether we'd buy it.</p>
 <table cellpadding="0" cellspacing="0"><tr><td style="background:#1a1a1a;">
-  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#c9a84c;font-family:Georgia,serif;font-size:13px;text-decoration:none;letter-spacing:1px;">Run a Free Property DNA Report &rarr;</a>
+  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">Run a Free Property DNA Report &rarr;</a>
 </td></tr></table>`));
 
 
@@ -87,7 +87,7 @@ ${footer}
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">I've received your valuation request for <strong>${address || "your property"}</strong> and will follow up with a full market analysis shortly.</p>
 <p style="margin:0 0 24px;font-size:15px;color:#333;line-height:1.75;">In the meantime, you can run a Property DNA report on your address for an instant data-driven view of comparable sales, flood zone, and current value range.</p>
 <table cellpadding="0" cellspacing="0"><tr><td style="background:#1a1a1a;">
-  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#c9a84c;font-family:Georgia,serif;font-size:13px;text-decoration:none;letter-spacing:1px;">Get a Property DNA Report &rarr;</a>
+  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">Get a Property DNA Report &rarr;</a>
 </td></tr></table>`));
 
 
@@ -99,7 +99,7 @@ ${footer}
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">You're on the list. When an off-market property becomes available that matches your criteria, you'll hear from me before it goes anywhere else.</p>
 <p style="margin:0 0 24px;font-size:15px;color:#333;line-height:1.75;">Off-market moves fast. If you see an address you're interested in, run a Property DNA report on it — full intelligence in under 3 minutes, so you're ready to act.</p>
 <table cellpadding="0" cellspacing="0"><tr><td style="background:#1a1a1a;">
-  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#c9a84c;font-family:Georgia,serif;font-size:13px;text-decoration:none;letter-spacing:1px;">Run a Property DNA Report &rarr;</a>
+  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">Run a Property DNA Report &rarr;</a>
 </td></tr></table>`));
 
 
@@ -111,7 +111,7 @@ ${footer}
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">Thanks for stopping by${address ? " <strong>" + address + "</strong>" : ""}. It was great to meet you.</p>
 <p style="margin:0 0 24px;font-size:15px;color:#333;line-height:1.75;">If you'd like a full Property DNA report on this home or any other you're considering — valuation, flood zone, comparable sales, and a direct verdict — it's free for your first report.</p>
 <table cellpadding="0" cellspacing="0"><tr><td style="background:#1a1a1a;">
-  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#c9a84c;font-family:Georgia,serif;font-size:13px;text-decoration:none;letter-spacing:1px;">Get Your Free Property DNA Report &rarr;</a>
+  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">Get Your Free Property DNA Report &rarr;</a>
 </td></tr></table>`));
 
 
@@ -123,7 +123,7 @@ ${footer}
 <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">You're subscribed. I send a weekly market update covering Coachella Valley — pricing shifts, inventory, off-market opportunities, and data-backed analysis.</p>
 <p style="margin:0 0 24px;font-size:15px;color:#333;line-height:1.75;">First issue coming soon. In the meantime, run a free Property DNA report on any address you're curious about.</p>
 <table cellpadding="0" cellspacing="0"><tr><td style="background:#1a1a1a;">
-  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#c9a84c;font-family:Georgia,serif;font-size:13px;text-decoration:none;letter-spacing:1px;">Run a Free Property DNA Report &rarr;</a>
+  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">Run a Free Property DNA Report &rarr;</a>
 </td></tr></table>`));
 
 
@@ -137,7 +137,7 @@ ${footer}
 ${message ? `<p style="margin:0 0 24px;font-size:14px;color:#555;line-height:1.75;border-left:3px solid #e5e0d8;padding-left:16px;"><em>${message.replace(/</g,"&lt;").replace(/>/g,"&gt;").slice(0,400)}</em></p>` : ""}
 <p style="margin:0 0 24px;font-size:15px;color:#333;line-height:1.75;">While you wait, run a free Property DNA report on any address you're interested in.</p>
 <table cellpadding="0" cellspacing="0"><tr><td style="background:#1a1a1a;">
-  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#c9a84c;font-family:Georgia,serif;font-size:13px;text-decoration:none;letter-spacing:1px;">Run a Free Property DNA Report &rarr;</a>
+  <a href="${site}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">Run a Free Property DNA Report &rarr;</a>
 </td></tr></table>`));
 
   }

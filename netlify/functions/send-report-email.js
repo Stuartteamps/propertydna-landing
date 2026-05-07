@@ -101,7 +101,7 @@ function buildHtml({ recipientName, propertyAddress, summary, reportUrl, year })
                     <table role="presentation" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="background:#1a1a1a;">
-                          <a href="${reportUrl}" style="display:inline-block;padding:14px 28px;color:#c9a84c;font-family:Georgia,serif;font-size:13px;text-decoration:none;letter-spacing:1px;">View Your Property DNA Report &rarr;</a>
+                          <a href="${reportUrl}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">View Your Property DNA Report &rarr;</a>
                         </td>
                       </tr>
                     </table>
