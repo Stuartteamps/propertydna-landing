@@ -22,7 +22,7 @@
 
 | Service | Purpose | Cost/Yr | Renewal Date | Login |
 |---------|----------|---------|--------------|-------|
-| Quo (OpenPhone) | Business VoIP phone number | $300 | 2027-05-06 | quo.com |
+| Quo (OpenPhone) | Business VoIP — (213) 205-4933 | $300 | 2027-05-06 | quo.com |
 | Apple Developer | Apple Sign In OAuth | $99 | TBD | developer.apple.com |
 | Domain: propertydna.com | Primary domain | ~$18 | TBD | check registrar |
 | Domain: thepropertydna.com | Alternate domain (also live) | ~$18 | TBD | check registrar |

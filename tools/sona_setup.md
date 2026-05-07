@@ -15,7 +15,7 @@ PropertyDNA is an AI property intelligence platform serving real estate agents, 
 Operating Hours: We answer 24/7 via AI. A team member will follow up on all inquiries during business hours (Mon–Sat, 8am–7pm PT).
 
 Location: Palm Springs, California 92262
-Phone: [your Quo number]
+Phone: (213) 205-4933
 Website: propertydna.com
 ```
 
