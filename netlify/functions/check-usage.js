@@ -9,7 +9,6 @@ const CORS = {
 
 const OWNER_EMAILS = [
   process.env.OWNER_EMAIL || "stuartteamps@gmail.com",
-  "daniel.dunn.hack@gmail.com",
 ];
 
 exports.handler = async (event) => {
