@@ -2,12 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CAPACITOR_DEBUG</key>
+	<key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
+
+	<!-- App Identity -->
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Property DNA</string>
+	<string>PropertyDNA</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,16 +24,24 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+
+	<!-- Required for iPhone -->
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
+	<!-- Storyboards -->
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+
+	<!-- Device capabilities -->
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
+
+	<!-- Orientation: portrait + landscape for iPad, portrait-first for iPhone -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -45,7 +55,53 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- Status bar -->
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
+
+	<!-- Background modes for push notifications -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+
+	<!-- Privacy — Location (for map / parcel geolocation features) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PropertyDNA uses your location to show nearby property data and heat map parcels.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>PropertyDNA uses your location to show nearby property data and heat map parcels.</string>
+
+	<!-- Privacy — Camera (for future document scanning / photo upload) -->
+	<key>NSCameraUsageDescription</key>
+	<string>PropertyDNA may use the camera to attach property photos to your reports.</string>
+
+	<!-- Privacy — Photo Library -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PropertyDNA may access your photo library to attach images to property reports.</string>
+
+	<!-- App Transport Security — allow our domains -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>thepropertydna.com</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+			</dict>
+		</dict>
+	</dict>
+
+	<!-- Apple Sign In is handled in entitlements -->
 </dict>
 </plist>
