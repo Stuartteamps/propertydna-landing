@@ -10,8 +10,8 @@ const CORS = {
 };
 
 const BATCH_SIZE  = 50;
-const SENDER      = process.env.SENDER_EMAIL || 'reports@thepropertydna.com';
-const SENDER_NAME = process.env.SENDER_NAME || 'PropertyDNA powered by IntellaGraphAI';
+const SENDER      = process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
+const SENDER_NAME = process.env.CAMPAIGN_SENDER_NAME || 'PropertyDNA';
 const SITE_URL    = 'https://thepropertydna.com';
 
 function resendPost(payload) {

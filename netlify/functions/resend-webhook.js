@@ -96,7 +96,7 @@ exports.handler = async (event) => {
 // ── Shared follow-up sender (also used by drip-sequence.js) ──────────────────
 async function sendFollowUp(contact, step) {
   const https = require('https');
-  const SENDER   = process.env.SENDER_EMAIL || 'reports@thepropertydna.com';
+  const SENDER   = process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
   const SITE_URL = 'https://thepropertydna.com';
   const firstName = contact.first_name || 'there';
   const city      = contact.city || 'Coachella Valley';
