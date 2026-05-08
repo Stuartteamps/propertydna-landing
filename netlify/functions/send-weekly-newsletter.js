@@ -12,7 +12,7 @@
 const https = require('https');
 const db    = require('./_supabase');
 
-const CC_CAMPAIGN_NAME = 'Constant Contact Database';
+const CC_CAMPAIGN_ID   = '3bbbef67-eebe-418a-90d2-96e8f5a9e42a'; // Sphere of Influence — CC import (734 contacts)
 const SENDER      = process.env.SENDER_EMAIL  || 'reports@thepropertydna.com';
 const SENDER_NAME = 'Daniel Stuart | Stuart Team'; // Stuart Team newsletter — separate from PropertyDNA
 const REPLY_TO    = process.env.REPLY_TO_EMAIL || 'stuartteamps@gmail.com';
@@ -166,10 +166,10 @@ exports.handler = async () => {
   // 2. Load CC import campaign ID
   const campaigns = await db.from('campaigns')
     .select('id,name,total_contacts')
-    .order('created_at', { ascending: false })
-    .limit(10).get().catch(() => []);
+    .eq('id', CC_CAMPAIGN_ID)
+    .limit(1).get().catch(() => []);
 
-  const campaign = (campaigns || []).find(c => (c.name || '').includes('Constant Contact Database'));
+  const campaign = (campaigns || [])[0];
   if (!campaign) {
     console.error('[send-weekly-newsletter] CC import campaign not found');
     return { statusCode: 404, body: 'Campaign not found' };
@@ -184,30 +184,22 @@ exports.handler = async () => {
   let offset = 0, sent = 0, skipped = 0, failed = 0;
   const BATCH = 50;
 
-  while (true) {
-    const contacts = await db.from('campaign_contacts')
-      .select('email,first_name,status')
-      .eq('campaign_id', campaign.id)
-      .order('created_at', { ascending: true })
-      .limit(BATCH).get().catch(() => []);
-
-    // Use raw offset query
+  while (offset < (campaign.total_contacts || 9999)) {
     const batch = await db.from('campaign_contacts')
       .select('id,email,first_name')
       .eq('campaign_id', campaign.id)
       .order('created_at', { ascending: true })
-      .limit(BATCH).get().catch(() => null);
+      .range(offset, offset + BATCH - 1)
+      .get().catch(() => null);
 
-    // Break when out of contacts (pagination handled via sent count)
     if (!Array.isArray(batch) || batch.length === 0) break;
-    if (offset >= (campaign.total_contacts || 0)) break;
 
     for (const c of batch) {
       if (unsubSet.has((c.email || '').toLowerCase())) { skipped++; continue; }
       const html   = buildHtml(c.email, c.first_name, weatherText, marketNarrative, weekLabel);
       const result = await sendEmail(c.email, subject, html);
       if (result.ok) { sent++; } else { failed++; }
-      await new Promise(r => setTimeout(r, 100)); // pace sends
+      await new Promise(r => setTimeout(r, 100));
     }
 
     offset += batch.length;
