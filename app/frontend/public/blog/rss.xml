@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>PropertyDNA Journal</title>
+    <link>https://www.thepropertydna.com/blog</link>
+    <description>AI property intelligence insights for real estate professionals in the Coachella Valley and beyond.</description>
+    <language>en-us</language>
+    <atom:link href="https://www.thepropertydna.com/blog/rss.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>Thu, 03 Jul 2025 00:00:00 GMT</lastBuildDate>
+    <image>
+      <url>https://www.thepropertydna.com/og-image.png</url>
+      <title>PropertyDNA Journal</title>
+      <link>https://www.thepropertydna.com/blog</link>
+    </image>
+
+    <item>
+      <title>What Is PropertyDNA? The AI Platform Realtors Use to Win More Listings</title>
+      <link>https://www.thepropertydna.com/blog/what-is-propertydna</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/what-is-propertydna</guid>
+      <description>PropertyDNA is the AI property intelligence platform transforming how real estate professionals win listings, serve clients, and analyze markets. Here is exactly what it does and why agents are switching.</description>
+      <pubDate>Thu, 01 May 2025 00:00:00 GMT</pubDate>
+      <category>Platform Overview</category>
+    </item>
+
+    <item>
+      <title>How Realtors in Palm Springs Are Using AI Property Reports to Win More Listings in 2025</title>
+      <link>https://www.thepropertydna.com/blog/ai-property-reports-palm-springs-realtors</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/ai-property-reports-palm-springs-realtors</guid>
+      <description>The Coachella Valley real estate market moves fast. Palm Springs realtors using AI-generated property reports are arriving at listing appointments more prepared than competitors — and winning more sellers as a result.</description>
+      <pubDate>Thu, 08 May 2025 00:00:00 GMT</pubDate>
+      <category>For Realtors</category>
+    </item>
+
+    <item>
+      <title>PropertyDNA vs Traditional CMA: Why AI Is Replacing Manual Comparables in Real Estate</title>
+      <link>https://www.thepropertydna.com/blog/propertydna-vs-traditional-cma</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/propertydna-vs-traditional-cma</guid>
+      <description>The traditional CMA has served real estate agents well for decades. But AI property reports from PropertyDNA do everything a CMA does — and ten things it cannot. Here is a direct comparison.</description>
+      <pubDate>Thu, 15 May 2025 00:00:00 GMT</pubDate>
+      <category>Tools &amp; Technology</category>
+    </item>
+
+    <item>
+      <title>7 Ways PropertyDNA Saves Realtors 10+ Hours Every Week</title>
+      <link>https://www.thepropertydna.com/blog/propertydna-saves-realtors-time</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/propertydna-saves-realtors-time</guid>
+      <description>Time is the one resource every top-producing realtor runs out of first. Here are seven specific ways PropertyDNA eliminates the research bottlenecks that drain hours from your week.</description>
+      <pubDate>Thu, 22 May 2025 00:00:00 GMT</pubDate>
+      <category>Productivity</category>
+    </item>
+
+    <item>
+      <title>How to Win Your Next Listing Appointment Using AI Property Data</title>
+      <link>https://www.thepropertydna.com/blog/win-listing-appointment-ai-property-data</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/win-listing-appointment-ai-property-data</guid>
+      <description>Listing appointments are won before the agent walks in the door. Here is the exact workflow top Coachella Valley agents use with PropertyDNA to convert more listing opportunities into signed agreements.</description>
+      <pubDate>Thu, 29 May 2025 00:00:00 GMT</pubDate>
+      <category>For Realtors</category>
+    </item>
+
+    <item>
+      <title>What Is a PropertyDNA Report? A Complete Guide for Home Buyers</title>
+      <link>https://www.thepropertydna.com/blog/what-is-a-propertydna-report-home-buyers</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/what-is-a-propertydna-report-home-buyers</guid>
+      <description>Before you make an offer on a home, you need more information than the MLS listing provides. A PropertyDNA report gives buyers a complete property picture — including the things sellers would rather you not know.</description>
+      <pubDate>Thu, 05 Jun 2025 00:00:00 GMT</pubDate>
+      <category>For Buyers</category>
+    </item>
+
+    <item>
+      <title>Real Estate Market Heat Maps: How Top Agents Identify Buyer Demand Before It Moves</title>
+      <link>https://www.thepropertydna.com/blog/real-estate-market-heat-maps-explained</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/real-estate-market-heat-maps-explained</guid>
+      <description>Market heat maps show realtors where buyer demand is building before it shows up in listing prices. Here is how to read them and how top Coachella Valley agents use them to get ahead of the market.</description>
+      <pubDate>Thu, 12 Jun 2025 00:00:00 GMT</pubDate>
+      <category>Market Intelligence</category>
+    </item>
+
+    <item>
+      <title>From Cold Lead to Signed Listing: The PropertyDNA Conversion Workflow</title>
+      <link>https://www.thepropertydna.com/blog/propertydna-lead-to-listing-conversion</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/propertydna-lead-to-listing-conversion</guid>
+      <description>Winning listings is a system, not a talent. Here is the exact lead-to-listing workflow that top Coachella Valley agents use with PropertyDNA to convert more seller leads into signed agreements.</description>
+      <pubDate>Thu, 19 Jun 2025 00:00:00 GMT</pubDate>
+      <category>For Realtors</category>
+    </item>
+
+    <item>
+      <title>The Future of Real Estate: How AI Is Transforming Property Analysis in 2025</title>
+      <link>https://www.thepropertydna.com/blog/future-of-real-estate-ai-property-analysis</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/future-of-real-estate-ai-property-analysis</guid>
+      <description>Artificial intelligence is not replacing real estate agents — it is replacing the hours of manual research that prevent great agents from doing their best work. Here is what the AI-powered real estate future looks like from inside it.</description>
+      <pubDate>Thu, 26 Jun 2025 00:00:00 GMT</pubDate>
+      <category>Industry Trends</category>
+    </item>
+
+    <item>
+      <title>Why Home Sellers Choose Realtors Who Use PropertyDNA</title>
+      <link>https://www.thepropertydna.com/blog/why-sellers-choose-propertydna-realtors</link>
+      <guid isPermaLink="true">https://www.thepropertydna.com/blog/why-sellers-choose-propertydna-realtors</guid>
+      <description>When a seller is choosing between two qualified agents, the one who shows up with AI-powered property intelligence wins more often than not. Here is what sellers are actually looking for — and why PropertyDNA delivers it.</description>
+      <pubDate>Thu, 03 Jul 2025 00:00:00 GMT</pubDate>
+      <category>For Sellers</category>
+    </item>
+
+  </channel>
+</rss>
