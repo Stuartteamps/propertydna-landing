@@ -60,12 +60,15 @@ const db = {
       in(col, vals) { this._filters.push(`${col}=in.(${vals.map(encodeURIComponent).join(",")})`); return this; },
       order(col, { ascending = true } = {}) { this._order = `${col}.${ascending ? "asc" : "desc"}`; return this; },
       limit(n) { this._limit = n; return this; },
+      offset(n) { this._offset = n; return this; },
+      range(from, to) { this._offset = from; this._limit = to - from + 1; return this; },
 
       async get() {
         let qs = `select=${encodeURIComponent(this._select)}`;
         for (const f of this._filters) qs += `&${f}`;
         if (this._order) qs += `&order=${this._order}`;
         if (this._limit) qs += `&limit=${this._limit}`;
+        if (this._offset) qs += `&offset=${this._offset}`;
         return _req("GET", `/rest/v1/${this._table}?${qs}`, null, null, {});
       },
 
