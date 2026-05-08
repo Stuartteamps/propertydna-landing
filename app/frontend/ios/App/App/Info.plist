@@ -102,6 +102,23 @@
 		</dict>
 	</dict>
 
+	<!-- Google Sign In URL scheme — value comes from REVERSED_CLIENT_ID in GoogleService-Info.plist -->
+	<!-- Replace PASTE_REVERSED_CLIENT_ID_HERE after downloading GoogleService-Info.plist from Firebase Console -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.propertydna.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.propertydna.app</string>
+				<string>PASTE_REVERSED_CLIENT_ID_HERE</string>
+			</array>
+		</dict>
+	</array>
+
 	<!-- Apple Sign In is handled in entitlements -->
 </dict>
 </plist>
