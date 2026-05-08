@@ -24,6 +24,9 @@
 [functions."send-cc-newsletter"]
   schedule = "20 23 * * 4"
 
+[functions."auto-refresh-cc-token"]
+  schedule = "59 7 * * 4"
+
 [functions."drip-sequence"]
   schedule = "0 * * * *"
 

@@ -24,7 +24,7 @@ const AUTH_URL =
   `?client_id=${CLIENT_ID}` +
   `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
   `&response_type=code` +
-  `&scope=contact_data+campaign_data` +
+  `&scope=contact_data+campaign_data+offline_access` +
   `&state=pdna2026`;
 
 function ask(question) {
@@ -72,29 +72,27 @@ function setNetlifyToken(token) {
 
 async function main() {
   console.log('\n=== CC Token Refresh ===\n');
-  console.log('Opening Constant Contact authorization page...\n');
-  console.log('AUTH URL (if browser does not open, paste this manually):\n');
-  console.log(AUTH_URL + '\n');
 
-  exec(`open "${AUTH_URL}"`);
+  // Accept code as argument: node refresh-cc-token.js CODE
+  let code = process.argv[2];
 
-  console.log('After approving, your browser will redirect to localhost (page will fail — that is expected).');
-  console.log('Copy the FULL URL from the browser address bar and paste it below.\n');
-
-  const redirectUrl = await ask('Paste redirect URL here: ');
-
-  let code;
-  try {
-    const u = new URL(redirectUrl);
-    code = u.searchParams.get('code');
-  } catch {
-    code = redirectUrl.match(/[?&]code=([^&]+)/)?.[1];
-  }
-
-  if (!code) {
-    console.error('\nERROR: Could not find "code" in the URL you pasted.');
-    console.error('Make sure you copied the full redirect URL from the address bar.\n');
-    process.exit(1);
+  if (code) {
+    // Strip full URL if pasted instead of just the code
+    try {
+      const u = new URL(code);
+      code = u.searchParams.get('code') || code;
+    } catch { /* it's just the code string */ }
+    console.log(`Using code from argument: ${code.slice(0, 10)}...\n`);
+  } else {
+    console.log('Opening Constant Contact authorization page...\n');
+    console.log('AUTH URL (if browser does not open, paste this manually):\n');
+    console.log(AUTH_URL + '\n');
+    exec(`open "${AUTH_URL}"`);
+    console.log('After approving, copy the FULL redirect URL from the browser address bar.\n');
+    console.log('Then run:\n');
+    console.log('  node tools/refresh-cc-token.js YOUR_CODE_HERE\n');
+    console.log('Or paste the full redirect URL as the argument.\n');
+    process.exit(0);
   }
 
   console.log('\nExchanging code for access token...');
@@ -109,17 +107,31 @@ async function main() {
 
   try {
     await setNetlifyToken(tokens.access_token);
-    console.log('\nCC_ACCESS_TOKEN updated in Netlify successfully.');
+    console.log('CC_ACCESS_TOKEN updated in Netlify.');
   } catch (err) {
-    console.warn('\nNetlify CLI set failed (is netlify CLI installed?):', err.message);
-    console.log('\nSet it manually:\n');
-    console.log(`netlify env:set CC_ACCESS_TOKEN "${tokens.access_token}" --site ${NETLIFY_SITE} --force\n`);
+    console.warn('Netlify CLI set failed:', err.message);
+    console.log(`\nSet manually: netlify env:set CC_ACCESS_TOKEN "${tokens.access_token}" --site ${NETLIFY_SITE} --force\n`);
+  }
+
+  if (tokens.refresh_token) {
+    try {
+      await new Promise((resolve, reject) => {
+        exec(`netlify env:set CC_REFRESH_TOKEN "${tokens.refresh_token}" --site ${NETLIFY_SITE} --force`,
+          (err, stdout, stderr) => err ? reject(new Error(stderr || err.message)) : resolve());
+      });
+      console.log('CC_REFRESH_TOKEN saved to Netlify (auto-refresh now enabled).');
+    } catch (err) {
+      console.warn('Could not save refresh token:', err.message);
+      console.log(`\nSet manually: netlify env:set CC_REFRESH_TOKEN "${tokens.refresh_token}" --site ${NETLIFY_SITE} --force\n`);
+    }
+  } else {
+    console.log('\nNOTE: No refresh_token returned. Re-run to try again with offline_access scope.');
   }
 
   console.log('\nDone. Newsletter will use the new token on Thursday.\n');
   if (tokens.expires_in) {
     const exp = new Date(Date.now() + tokens.expires_in * 1000);
-    console.log(`Token expires: ${exp.toLocaleString()} (${Math.round(tokens.expires_in / 3600)}h)\n`);
+    console.log(`Access token expires: ${exp.toLocaleString()}`);
   }
 }
 
