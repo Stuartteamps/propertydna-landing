@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
+    "@capacitor-firebase/authentication": "^8.2.0",
     "@capacitor/app": "^8.1.0",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
@@ -20,7 +21,6 @@
     "@capacitor/push-notifications": "^8.0.3",
     "@capacitor/share": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
-    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@deck.gl/aggregation-layers": "^8.9.36",
     "@deck.gl/core": "^8.9.36",
     "@deck.gl/layers": "^8.9.36",
@@ -66,6 +66,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
+    "firebase": "^12.13.0",
     "input-otp": "^1.2.4",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.462.0",

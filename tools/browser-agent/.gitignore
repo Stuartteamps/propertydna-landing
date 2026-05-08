@@ -1,0 +1,7 @@
+# browser-agent local files
+.cc-creds.json
+refresh.log
+node_modules/
+.daily-creds.json
+.cc-session.json
+.reddit-session.json

@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
 import { supabase } from './supabase';
 import { planToTier, fetchUserTier, type Tier } from './tier';
+
+const isNative = Capacitor.isNativePlatform();
 
 interface AuthState {
   user: User | null;
@@ -86,6 +89,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function signInWithGoogle() {
+    if (isNative) {
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const idToken = result.credential?.idToken;
+      if (!idToken) throw new Error('Google sign-in failed — no token returned.');
+      const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
+      if (error) throw error;
+      return;
+    }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -98,6 +110,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signInWithApple() {
+    if (isNative) {
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithApple();
+      const idToken = result.credential?.idToken;
+      const nonce = result.credential?.nonce;
+      if (!idToken) throw new Error('Apple sign-in failed — no token returned.');
+      const { error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token: idToken, nonce });
+      if (error) throw error;
+      return;
+    }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
