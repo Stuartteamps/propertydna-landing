@@ -1,4 +1,4 @@
-const SITE_URL = 'https://propertydna.com';
+const SITE_URL = 'https://www.thepropertydna.com';
 
 const posts = [
   {
