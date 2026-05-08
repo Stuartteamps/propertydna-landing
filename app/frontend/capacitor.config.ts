@@ -25,10 +25,9 @@ const config: CapacitorConfig = {
       iosSpinnerStyle: 'small',
       spinnerColor: '#00ff88',
     },
-    GoogleAuth: {
-      scopes: ['profile', 'email'],
-      serverClientId: '',
-      forceCodeForRefreshToken: true,
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ['google.com', 'apple.com'],
     },
   },
 };
