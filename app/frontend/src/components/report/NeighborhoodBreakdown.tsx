@@ -203,11 +203,29 @@ export function NeighborhoodBreakdown({ apn, city }: { apn: string; city?: strin
     );
   }
 
-  if (error || !data) {
+  if (error) {
     return (
       <div style={{ padding: '20px 0' }}>
-        <div style={{ fontFamily: FONT_SANS, fontSize: 11, color: 'rgba(184,82,69,0.7)' }}>
+        <div style={{ fontFamily: FONT_SANS, fontSize: 11, color: 'rgba(184,82,69,0.6)' }}>
           Neighborhood comparison unavailable — assessor data not yet indexed for this property.
+        </div>
+      </div>
+    );
+  }
+
+  // Insufficient peer data — show graceful placeholder, not broken UI
+  if (!data || (data as any).insufficientData) {
+    const count = (data as any)?.validPeerCount ?? 0;
+    const label = (data as any)?.neighborhoodLabel || 'This neighborhood';
+    return (
+      <div style={{ padding: '20px 0' }}>
+        <div style={{ fontFamily: FONT_SANS, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: DIM, marginBottom: 10 }}>
+          {label}
+        </div>
+        <div style={{ fontFamily: FONT_SANS, fontSize: 12, color: DIM, lineHeight: 1.7 }}>
+          {count > 0
+            ? `${count} neighboring parcel${count === 1 ? '' : 's'} indexed so far — neighborhood comparison activates at 5+. Check back as the assessor index grows.`
+            : 'Assessor records for this parcel and its neighbors are not yet indexed. Neighborhood comparison will appear automatically once indexing is complete.'}
         </div>
       </div>
     );
@@ -215,17 +233,6 @@ export function NeighborhoodBreakdown({ apn, city }: { apn: string; city?: strin
 
   const { property: p, neighborhood: n, ranks, deltas } = data;
   const cityStats = (data as any).city || data.city_stats;
-
-  const noData = p.renovationRatio == null && p.conditionScore == null;
-  if (noData) {
-    return (
-      <div style={{ padding: '20px 0' }}>
-        <div style={{ fontFamily: FONT_SANS, fontSize: 11, color: DIM }}>
-          Assessor records for this parcel are partial — neighborhood comparison requires complete assessment data.
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>

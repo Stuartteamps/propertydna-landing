@@ -104,6 +104,27 @@ function delta(val, ref) {
   return Math.round(((val - ref) / ref) * 100);
 }
 
+// Zip code prefix by city — for city-wide PostgREST LIKE filter on data->>'postalCode'
+// PostgREST json operator requires the ->> form, not nested path
+const CITY_ZIP_PREFIXES = {
+  "PALM SPRINGS":      "9226*",   // 92262, 92264, 92263
+  "PALM DESERT":       "92260*",  // 92260, 92261
+  "RANCHO MIRAGE":     "92270*",
+  "INDIAN WELLS":      "92210*",
+  "LA QUINTA":         "92253*",
+  "INDIO":             "92201*",  // 92201, 92203
+  "CATHEDRAL CITY":    "92234*",
+  "DESERT HOT SPRINGS":"92240*",
+  "COACHELLA":         "92236*",
+  "HEMET":             "92543*",
+  "BANNING":           "92220*",
+  "BEAUMONT":          "92223*",
+};
+
+function cityZipPrefix(city) {
+  return CITY_ZIP_PREFIXES[city] || "9*"; // fallback won't match much — returns sparse data
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: CORS };
 
@@ -115,54 +136,90 @@ exports.handler = async (event) => {
   const neighborhoodKey = apn.substring(0, 6); // book+page
 
   try {
-    // ── 1. Target property from property_history ──────────────────────────────
-    const histRows = await db.from("property_history")
-      .select("apn, data")
-      .eq("apn", apn)
-      .eq("source", "rivco_assessor_crest")
-      .limit(1);
+    // ── 1. Target property + city lookup — run in parallel ───────────────────
+    const [histRows, masterRows] = await Promise.all([
+      db.from("property_history")
+        .select("apn, data")
+        .eq("apn", apn)
+        .eq("source", "rivco_assessor_crest")
+        .limit(1)
+        .get()
+        .catch(() => []),
+      db.from("property_master")
+        .select("city, zip, address, sqft, year_built, lot_sqft")
+        .eq("apn", apn)
+        .limit(1)
+        .get()
+        .catch(() => []),
+    ]);
 
     const targetHistory = Array.isArray(histRows) ? histRows[0] : null;
     const td = targetHistory?.data || {};
-
-    // ── 2. City from property_master ──────────────────────────────────────────
-    const masterRows = await db.from("property_master")
-      .select("city, zip, address, sqft, year_built, lot_sqft")
-      .eq("apn", apn)
-      .limit(1);
-
     const master = Array.isArray(masterRows) ? masterRows[0] : {};
     const city = master?.city || "UNKNOWN";
 
     // ── 3. Neighborhood peers — same book+page ────────────────────────────────
-    // Supabase: apn starts with neighborhoodKey
+    // PostgREST like operator uses * as wildcard (not SQL %).
+    // Same APN book+page = physically contiguous parcels — the actual block.
     const neighborRows = await db.from("property_history")
       .select("apn, data")
-      .like("apn", `${neighborhoodKey}%`)
+      .like("apn", `${neighborhoodKey}*`)
       .eq("source", "rivco_assessor_crest")
-      .limit(500);
+      .limit(500)
+      .get()
+      .catch(() => []);
 
     const peers = Array.isArray(neighborRows) ? neighborRows : [];
 
-    // ── 4. City-level aggregate (sample for performance) ─────────────────────
-    // Query up to 2000 city records for city-wide stats
-    const cityMasterRows = await db.from("property_master")
-      .select("apn")
-      .eq("city", city)
-      .limit(2000);
+    // ── 4. Minimum data gate — refuse comparison if peers are insufficient ────
+    // 97%+ accuracy requires a real peer group. Under 5 peers = meaningless stats.
+    const validPeerCount = peers.filter(p =>
+      p.data?.renovationRatio != null || p.data?.conditionScore != null
+    ).length;
 
-    const cityApns = (Array.isArray(cityMasterRows) ? cityMasterRows : []).map(r => r.apn);
+    if (!targetHistory || validPeerCount < 5) {
+      return {
+        statusCode: 200,
+        headers: CORS,
+        body: JSON.stringify({
+          apn,
+          address: master?.address || null,
+          city: toTitleCase(city),
+          neighborhoodKey,
+          neighborhoodLabel: neighborhoodLabel(apn, city),
+          insufficientData: true,
+          validPeerCount,
+          message: validPeerCount < 5
+            ? `Only ${validPeerCount} neighbors with assessor data — need 5+ for reliable comparison`
+            : "No CREST assessor record for this parcel",
+        }),
+      };
+    }
 
-    // Fetch city history in one batch (Supabase IN clause, up to 500)
+    // ── 5. City-level aggregate — pull via property_master city join ──────────
+    // Get up to 500 APNs for this city from property_master, then fetch their
+    // CREST history. property_master.city is indexed and queryable directly.
+    // We spread the APN range (offset 5000) to avoid sampling just one neighborhood.
+    const [cityApnsBatch1, cityApnsBatch2] = await Promise.all([
+      db.from("property_master").select("apn").eq("city", city).limit(250).get(),
+      db.from("property_master").select("apn").eq("city", city).limit(250).offset(5000).get(),
+    ]);
+    const cityApns = [
+      ...(Array.isArray(cityApnsBatch1) ? cityApnsBatch1 : []),
+      ...(Array.isArray(cityApnsBatch2) ? cityApnsBatch2 : []),
+    ].map(r => r.apn).filter(Boolean);
+
     const cityHistSample = cityApns.length > 0
       ? await db.from("property_history")
           .select("apn, data")
-          .in("apn", cityApns.slice(0, 500))
+          .in("apn", cityApns.slice(0, 400))
           .eq("source", "rivco_assessor_crest")
-          .limit(500)
+          .limit(400)
+          .get()
+          .catch(() => [])
       : [];
 
-    // ── 5. Extract metrics ────────────────────────────────────────────────────
+    // ── 6. Extract metrics ────────────────────────────────────────────────────
     function extractMetrics(rows) {
       return rows.map(r => {
         const d = r.data || {};
