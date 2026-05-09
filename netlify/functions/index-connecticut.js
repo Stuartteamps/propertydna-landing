@@ -80,15 +80,25 @@ function fetchJSON(url, timeoutMs = 25000) {
 }
 
 function townWhere(townName) {
-  // Try both exact and upper-case — CT layer may use either
   const t = townName.replace(/'/g, "''");
-  return `Town='${t}' AND Assessed_Building > 0 AND OWNER_NAME IS NOT NULL`;
+  return `Town_Name='${t}' AND Assessed_Building > 0 AND Owner IS NOT NULL`;
 }
 
 async function fetchBatch(townName, offset, count) {
   const params = new URLSearchParams({
     where: townWhere(townName),
-    outFields: "*",
+    outFields: [
+      "OBJECTID","Parcel_ID","CAMA_Link","Town_Name","Location","Full_Address",
+      "Property_City","Property_Zip",
+      "Owner","Co_Owner","Mailing_Address","Mailing_City","Mailing_State","Mailing_Zip",
+      "Assessed_Total","Assessed_Land","Assessed_Building",
+      "Appraised_Land","Appraised_Building","Appraised_Outbuilding",
+      "AYB","EYB","Living_Area","Condition",
+      "Number_of_Bedroom","Number_of_Baths","Number_of_Half_Baths","Total_Rooms",
+      "State_Use","State_Use_Description","Zone",
+      "Sale_Price","Sale_Date","Prior_Sale_Price","Prior_Sale_Date",
+      "FIPS",
+    ].join(","),
     returnGeometry: "false",
     resultOffset: String(offset),
     resultRecordCount: String(count),
@@ -111,26 +121,33 @@ async function fetchCount(townName) {
 }
 
 function computeCTDNA(row) {
-  const assessed = Number(row.Assessed_Total || row.ASSESSED_TOTAL) || 0;
-  const land     = Number(row.Assessed_Land  || row.ASSESSED_LAND)  || 0;
-  const bldg     = Number(row.Assessed_Building || row.ASSESSED_BUILDING) || 0;
-  const yrBlt    = Number(row.YEAR_BUILT || row.YR_BLT || row.YearBuilt) || 0;
-  const sqft     = Number(row.SQFT || row.SqFt || row.TOTAL_SQFT || row.living_area) || 0;
+  // CT CAMA has EYB (Effective Year Built) and AYB (Actual Year Built) — same renovation signal as FL
+  const ayb      = Number(row.AYB) || 0;
+  const eyb      = Number(row.EYB) || ayb;
+  const sqft     = Number(row.Living_Area) || 0;
+  const apprBldg = Number(row.Appraised_Building) || 0;
+  const apprLand = Number(row.Appraised_Land) || 0;
+  const totalAppraised = apprBldg + apprLand;
 
-  // CT assessed values are typically 70% of fair market value
-  const marketEst = assessed > 0 ? assessed / 0.70 : 0;
-  const improvEst = bldg > 0 ? bldg / 0.70 : Math.max(0, marketEst - land / 0.70);
-  const age       = yrBlt > 1800 ? new Date().getFullYear() - yrBlt : 30;
-  const depr      = Math.max(0.20, 1 - age * 0.010);
-  const expected  = sqft > 0 ? sqft * COST_SQFT * depr : 0;
-  const rr        = expected > 0 ? Math.round((improvEst / expected) * 100) / 100 : 1.0;
-  const cond      = rr > 1.5 ? 93 : rr > 1.3 ? 82 : rr > 1.1 ? 72 : rr > 0.9 ? 63 : rr > 0.7 ? 50 : 38;
+  const now     = new Date().getFullYear();
+  const effAge  = eyb > 1800 ? now - eyb : 30;
+  const actAge  = ayb > 1800 ? now - ayb : 30;
+  const depr    = Math.max(0.20, 1 - effAge * 0.009);
+  const expected = sqft > 0 ? sqft * COST_SQFT * depr : 0;
+  const rr      = expected > 0 ? Math.round((apprBldg / expected) * 100) / 100 : 1.0;
+
+  const renovRecognized = eyb > 1800 && ayb > 1800 && eyb > ayb + 10;
+  const fullyRemod      = rr > 1.35 && renovRecognized;
+  const cond    = rr > 1.5 ? 93 : rr > 1.3 ? 82 : rr > 1.1 ? 72 : rr > 0.9 ? 63 : rr > 0.7 ? 50 : 38;
 
   return {
     renovationRatio: rr, conditionScore: cond,
-    assessedTotal: assessed || null, assessedLand: land || null, assessedBldg: bldg || null,
-    estMarketValue: Math.round(marketEst) || null,
-    dataQuality: assessed > 0 && yrBlt > 0 ? "complete" : "partial",
+    effectiveYearBuilt: eyb || null,
+    appraisedTotal: totalAppraised || null,
+    appraisedLand: apprLand || null,
+    appraisedBldg: apprBldg || null,
+    detectedFeatures: { renovation_recognized: renovRecognized, fully_remodeled: fullyRemod },
+    dataQuality: sqft > 0 && ayb > 0 && totalAppraised > 0 ? "complete" : "partial",
     scoredAt: new Date().toISOString(),
   };
 }
@@ -138,29 +155,27 @@ function computeCTDNA(row) {
 function buildRows(rows, fips, townName, today) {
   const master = [], history = [];
   for (const row of rows) {
-    // CT parcel IDs vary by town — use whatever ID field is available
-    const apn = String(
-      row.ParcelID || row.PARCEL_ID || row.MAP_LOT || row.GIS_PIN || row.OBJECTID || ""
-    ).trim();
-    if (!apn) continue;
-
-    const ownerName = String(row.OWNER_NAME || "").trim();
+    const rawApn = String(row.Parcel_ID || row.CAMA_Link || row.OBJECTID || "").trim();
+    if (!rawApn) continue;
+    const ownerName = String(row.Owner || "").trim();
     if (!ownerName || ownerName.toUpperCase() === "CURRENT OWNER") continue;
 
-    const addr = String(row.Location || row.LOCATION || row.SITE_ADDRESS || row.SiteAddress || "").trim();
-    const dna  = computeCTDNA(row);
-
-    // Build a unique APN with town prefix to avoid collisions across towns
-    const uniqueApn = `CT-${fips}-${apn}`;
+    const addr = String(row.Full_Address || row.Location || "").trim();
+    const uniqueApn = `CT-${fips}-${rawApn}`;
+    const dna = computeCTDNA(row);
 
     master.push({
       apn: uniqueApn, county_fips: fips,
-      address: addr || null, city: townName, state: "CT",
-      zip: String(row.ZIP || row.Zip || row.POSTAL_CODE || "").trim().slice(0, 5) || null,
-      sqft: Number(row.SQFT || row.SqFt || row.living_area) || null,
-      year_built: Number(row.YEAR_BUILT || row.YR_BLT || row.YearBuilt) > 1800
-        ? Number(row.YEAR_BUILT || row.YR_BLT || row.YearBuilt) : null,
-      tax_assessed_value: Number(row.Assessed_Total || row.ASSESSED_TOTAL) || null,
+      address: String(row.Location || "").trim() || null,
+      city: String(row.Property_City || townName).trim(),
+      state: "CT",
+      zip: String(row.Property_Zip || "").trim().slice(0, 5) || null,
+      beds: Number(row.Number_of_Bedroom) || null,
+      baths: Number(row.Number_of_Baths) || null,
+      sqft: Number(row.Living_Area) || null,
+      year_built: Number(row.AYB) > 1800 ? Number(row.AYB) : null,
+      tax_assessed_value: Number(row.Assessed_Total) || null,
+      property_type: String(row.State_Use_Description || "").trim() || null,
       last_updated: new Date().toISOString(),
     });
     history.push({
@@ -168,15 +183,23 @@ function buildRows(rows, fips, townName, today) {
       data: {
         address: addr, town: townName,
         ownerName,
-        coOwner: String(row.Co_Owner || row.CO_OWNER || "").trim() || null,
+        coOwner: String(row.Co_Owner || "").trim() || null,
         mailingAddr: String(row.Mailing_Address || "").trim() || null,
         mailingCity: String(row.Mailing_City || "").trim() || null,
         mailingState: String(row.Mailing_State || "").trim() || null,
-        zip: String(row.ZIP || row.Zip || "").trim() || null,
+        mailingZip: String(row.Mailing_Zip || "").trim() || null,
+        absentee: (row.Mailing_State || "").trim().toUpperCase() !== "CT",
         assessedTotal: Number(row.Assessed_Total) || null,
         assessedLand: Number(row.Assessed_Land) || null,
         assessedBldg: Number(row.Assessed_Building) || null,
-        preYearTotal: Number(row.Pre_Year_Assessed_Total) || null,
+        actualYearBuilt: Number(row.AYB) || null,
+        salePrice: Number(row.Sale_Price) || null,
+        saleDate: row.Sale_Date || null,
+        beds: Number(row.Number_of_Bedroom) || null,
+        baths: Number(row.Number_of_Baths) || null,
+        condition: row.Condition || null,
+        stateUse: row.State_Use_Description || null,
+        fips: row.FIPS || null,
         ...dna,
       },
     });

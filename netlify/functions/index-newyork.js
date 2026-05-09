@@ -20,7 +20,7 @@ const https = require("https");
 const db = require("./_supabase");
 
 const NYS_BASE = "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Tax_Parcels_Public/FeatureServer/1";
-const DEFAULT_BATCH = 1000;
+const DEFAULT_BATCH = 200; // NYS ITS server is slow — keep batches small to fit Netlify 10s limit
 
 const CORS = {
   "Content-Type": "application/json",
