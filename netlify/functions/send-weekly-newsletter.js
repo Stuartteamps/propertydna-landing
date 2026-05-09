@@ -167,7 +167,7 @@ exports.handler = async () => {
   const campaigns = await db.from('campaigns')
     .select('id,name,total_contacts')
     .eq('id', CC_CAMPAIGN_ID)
-    .limit(1).get().catch(() => []);
+    .limit(1).get().catch((e) => { console.error('[newsletter] campaign query failed:', e.message); return []; });
 
   const campaign = (campaigns || [])[0];
   if (!campaign) {

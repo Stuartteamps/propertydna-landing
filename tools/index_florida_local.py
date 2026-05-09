@@ -203,17 +203,24 @@ def index_county(co_no, county_name):
     print(f"  {county_name} (CO_NO={co_no})")
     print(f"{'='*60}")
 
+    consecutive_errors = 0
     while True:
         print(f"  offset={offset:>7} | fetching...", end=" ", flush=True)
         try:
             rows = fetch_batch(co_no, offset)
+            consecutive_errors = 0
         except Exception as e:
-            print(f"FETCH ERROR: {e} — retrying in 10s")
-            time.sleep(10)
+            consecutive_errors += 1
+            wait = min(30 * consecutive_errors, 120)
+            print(f"FETCH ERROR ({consecutive_errors}): {e} — retry in {wait}s")
+            if consecutive_errors >= 5:
+                print(f"  5 consecutive failures at offset {offset} — skipping ahead by {BATCH_SIZE}")
+                offset += BATCH_SIZE
+                consecutive_errors = 0
+            time.sleep(wait)
             continue
 
         if not rows:
-            # Check if we're genuinely done or hit a blip
             if offset == 0:
                 print(f"No records found for CO_NO={co_no}. Verify county number.")
             else:
@@ -231,13 +238,13 @@ def index_county(co_no, county_name):
         insert_history(history_rows)
         total += len(master_rows)
         offset += len(rows)
-        print(f"✓ ({total} total)")
+        print(f"✓ ({total} total so far)")
 
         if len(rows) < BATCH_SIZE:
             print(f"  Final batch. {total} total records indexed for {county_name}.")
             break
 
-        time.sleep(0.3)  # gentle rate limiting
+        time.sleep(0.5)
 
     return total
 
@@ -250,6 +257,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--counties", help="Comma-separated CO_NO values, e.g. 23,39,60")
+    parser.add_argument("--start-offset", type=int, default=0,
+                        help="Start offset for the FIRST county only (use to resume)")
     args = parser.parse_args()
 
     if args.counties:
@@ -264,8 +273,9 @@ def main():
 
     print(f"Indexing {len(target)} Florida counties: {', '.join(target.values())}")
     grand_total = 0
-    for co_no, name in target.items():
-        grand_total += index_county(co_no, name)
+    for i, (co_no, name) in enumerate(target.items()):
+        start = args.start_offset if i == 0 else 0
+        grand_total += index_county(co_no, name, start_offset=start)
 
     print(f"\n{'='*60}")
     print(f"ALL DONE — {grand_total:,} records indexed into Supabase")

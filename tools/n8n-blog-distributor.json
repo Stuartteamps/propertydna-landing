@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "url": "https://propertydna.com/blog/rss.xml",
+        "url": "https://raw.githubusercontent.com/Stuartteamps/propertydna-landing/main/app/frontend/public/blog/rss.xml",
         "options": { "response": { "response": { "responseFormat": "text" } } }
       },
       "name": "Fetch RSS Feed",
