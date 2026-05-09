@@ -5,7 +5,9 @@
 const https = require("https");
 
 const SUPA_URL = process.env.SUPABASE_URL || "https://neccpdfhmfnvyjgyrysy.supabase.co";
-const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY
+  || process.env.SUPABASE_KEY
+  || "sb_publishable_KTTgVO3mROxubE_A9OQ7Kg_aRrnzPVT";
 
 function _req(method, path, body, key, extraHeaders = {}) {
   const url = new URL(SUPA_URL + path);
