@@ -29,67 +29,84 @@
       "url": "https://www.reddit.com/r/RealEstate/comments/1t8a3ce/how_to_tell_if_a_neighborhood_is_actually/"
     },
     {
-      "id": "reddit-004",
-      "subreddit": "FirstTimeHomeBuyer",
-      "title": "The permit history check that saved our buyer $40k — and how to do it yourself",
-      "body": "Before my client put in an offer, we pulled the permit history on the property. Found an addition built in 2019 with no permit pulled — which meant the square footage the seller was advertising included unpermitted space.\n\nThat's a financing problem, an insurance problem, and a resale problem. We renegotiated $40k off the price.\n\nHow to check permits:\n- County assessor website (free, slow)\n- City building department (free, requires phone call in most cities)\n- AI property platforms like PropertyDNA that aggregate this automatically\n\nFull guide: https://www.thepropertydna.com/blog/permit-history-property-purchase\n\nAlways check permits before submitting an offer.",
+      "id": "tech-001",
+      "subreddit": "proptech",
+      "title": "We built an AI property intelligence platform indexing 168k parcels — sharing the architecture",
+      "body": "Spent the last year building PropertyDNA, a platform that pulls county assessor records, permit databases, MLS, and market data into AI-generated property reports.\n\nStack:\n- Riverside County CREST API for parcel data (~168k parcels indexed)\n- BuildZoom-equivalent permit aggregation\n- DNA scoring algorithm (proprietary): permit pull rate × owner-occupancy ratio × ppsf velocity × school district trend\n- Report generation in <60 seconds via Anthropic Claude\n- React/TypeScript frontend, Netlify functions, Supabase\n\nThe interesting part: agents send the report to sellers 24h before listing appointments. Conversion rate vs traditional CMA is meaningfully higher.\n\nFull breakdown: https://www.thepropertydna.com/blog/what-is-propertydna?utm_source=reddit_proptech&utm_medium=social&utm_campaign=organic\n\nHappy to talk shop on the indexing pipeline or DNA scoring approach.",
       "posted": false,
-      "postedAt": null,
-      "scheduledFor": "2026-05-15"
+      "postedAt": null
     },
     {
-      "id": "reddit-005",
-      "subreddit": "investing",
-      "title": "How we identify off-market multifamily deals before they list — the data approach",
-      "body": "The best multifamily deals in our market don't hit the MLS. Here's how we find them:\n\n1. Filter county assessor data for properties owned 10+ years by absentee owners\n2. Cross-reference with permit data — long ownership + no recent reinvestment = motivated seller candidate\n3. Score by equity position (estimated via assessed value + origination date)\n4. Outreach to owners directly, before any listing agent is involved\n\nWe've automated this through PropertyDNA's off-market scoring. In our first batch of 300 letters, we got 12 responses and 2 under-contract deals.\n\nDetails: https://www.thepropertydna.com/blog/off-market-property-leads",
+      "id": "tech-002",
+      "subreddit": "RealEstateTechnology",
+      "title": "County assessor data is goldmine and nobody is using it well — here's what we built",
+      "body": "Most real estate tech focuses on MLS data because that's what's easy to get. But county assessor data is publicly available, more accurate for ownership/permits/valuation history, and almost completely untapped at scale.\n\nWe ingested all 168k parcels in Riverside County (CA) and indexed: ownership chain, assessed values, permit history, lot data, and sale history. Built ML scoring on top.\n\nThe applications:\n1. Off-market lead scoring (motivated seller likelihood)\n2. Permit-adjusted valuation (Zillow misses unpermitted square footage)\n3. Neighborhood trend prediction (permit pull rate is 12-18 months ahead of price movement)\n\nFull writeup: https://www.thepropertydna.com/blog/neighborhood-data-signals?utm_source=reddit_RealEstateTechnology&utm_medium=social&utm_campaign=organic\n\nAnyone else working with assessor data? What state's API are you using?",
       "posted": false,
-      "postedAt": null,
-      "scheduledFor": "2026-05-18"
+      "postedAt": null
     },
     {
-      "id": "reddit-006",
-      "subreddit": "realtors",
-      "title": "AI property reports vs traditional CMA — direct comparison after running both for a year",
-      "body": "We've been running AI-generated property reports alongside traditional CMAs for a year now. Here's the actual comparison:\n\n**Time:** CMA = 2-4 hours. AI report = 4 minutes.\n**Permit data:** CMA = not included. AI = full history automatically.\n**Valuation accuracy:** CMA = depends on comp selection. AI = within 4.2% of sale price on average in our market.\n**Client reception:** CMA = expected. AI report = 'how did you find all this?'\n\nWe're not replacing the CMA — we're sending the AI report 24 hours before the appointment so the seller has already reviewed our research before we walk in.\n\nhttps://www.thepropertydna.com/blog/ai-property-report-vs-cma",
+      "id": "tech-003",
+      "subreddit": "SaaS",
+      "title": "Built a real estate intelligence SaaS solo in 12 months — pricing/conversion lessons",
+      "body": "Solo-built PropertyDNA over the last year. AI property intelligence for realtors, investors, buyers.\n\nPricing model went through 3 iterations:\n1. Per-report () — too transactional, no recurring revenue\n2. Subscription tiers (-/mo) — better, but unclear value tiers\n3. Hybrid: free first report + tiered subs + per-report overage\n\nFinal limits: free=3/mo, consumer=25, pro=75, realtor=150, enterprise=200, investor=250. Overage at /bin/zsh.75/report.\n\nBreak-even: 3 Realtor Pro subs ( tier). Margin at 1k users: 93.6% (most cost is Anthropic API).\n\nFull stack writeup: https://www.thepropertydna.com/blog/what-is-propertydna?utm_source=reddit_SaaS&utm_medium=social&utm_campaign=organic\n\nWhat did pricing iteration look like for your SaaS?",
       "posted": false,
-      "postedAt": null,
-      "scheduledFor": "2026-05-27"
+      "postedAt": null
     },
     {
-      "id": "reddit-007",
-      "subreddit": "realtors",
-      "title": "Palm Springs market heat map — where price-per-sqft is actually moving right now",
-      "body": "Sharing our current market heat map data for the Coachella Valley. Updated from live county assessor + MLS data.\n\nWhat's moving:\n- Movie Colony + Old Las Palmas: ppsf up 8.3% YoY, low DOM\n- South Palm Springs (below E Palm Canyon): flat, inventory building\n- Cathedral City Cove: price compression from seller movement into Palm Springs\n- Palm Desert Country Club: investor activity increasing, watching for flip premium compression\n\nFull interactive map: https://www.thepropertydna.com/market-heatmaps\n\nAnyone working this market? Happy to trade notes.",
+      "id": "tech-004",
+      "subreddit": "Entrepreneur",
+      "title": "Built an AI-powered property intelligence platform that's replacing manual CMAs — what worked",
+      "body": "Background: I'm a real estate agent in the Coachella Valley. Spent the last year building software for my own use, then realized other agents wanted it.\n\nThe problem: listing appointment prep takes 2-4 hours per appointment. Agents do this dozens of times a year unpaid.\n\nWhat I built: PropertyDNA — agents enter an address, get a full property report (permits, valuation, comps, neighborhood DNA) in 60 seconds. Email it to the seller before the appointment. Show up to a conversation, not a pitch.\n\nResults so far: 3,000+ campaign emails sent, 5 paid platforms posting daily, GBP listing live, blog driving SEO traffic.\n\nDistribution is harder than building. Cold email + Reddit + LinkedIn + organic blog content all running.\n\nFull product breakdown: https://www.thepropertydna.com/blog/what-is-propertydna?utm_source=reddit_Entrepreneur&utm_medium=social&utm_campaign=organic\n\nHappy to discuss anything technical or go-to-market.",
       "posted": false,
-      "postedAt": null,
-      "scheduledFor": "2026-05-22"
+      "postedAt": null
     },
     {
-      "id": "reddit-008",
-      "subreddit": "RealEstate",
-      "title": "Why Zillow's Zestimate is often wrong — and what to look at instead",
-      "body": "Zillow's Zestimate has a median error rate of ~2.4% on listed homes but jumps to 6.9%+ on off-market properties. Here's why:\n\n1. It doesn't see permit data — unreported upgrades are invisible\n2. It weights recent sales heavily, which creates lag in moving markets\n3. It doesn't adjust for micro-neighborhood variation (a street can have a 15% premium over adjacent streets)\n4. HOA quality and financial health aren't factored in\n\nBetter inputs: actual comp selection by a local agent, permit-adjusted square footage, owner-reported upgrade history.\n\nWe run a valuation model that incorporates all of this: https://www.thepropertydna.com/blog/zillow-zestimate-accuracy\n\nAlways verify with a human who knows the market.",
+      "id": "tech-005",
+      "subreddit": "startups",
+      "title": "Solo SaaS founder — built AI real estate platform, scaling distribution now",
+      "body": "PropertyDNA: AI property intelligence for real estate professionals. 168k parcels indexed in our launch market (Coachella Valley). Per-report and subscription tiers, -/mo.\n\n12 months from idea to live SaaS:\n- Months 1-3: data ingestion pipeline (county assessor APIs)\n- Months 4-6: report generation (Anthropic + custom prompts)\n- Months 7-9: agent UI + payment + auth\n- Months 10-12: distribution (cold email, content, social)\n\nCurrent state: live, paid, generating reports. Email campaign automation across 1,974 contacts. Social posting automated to LinkedIn, Facebook, GBP via Buffer. Content auto-distributing via RSS to Medium.\n\nNext: expanding to additional CA counties + Florida (statewide indexer built).\n\nhttps://www.thepropertydna.com/blog/what-is-propertydna?utm_source=reddit_startups&utm_medium=social&utm_campaign=organic\n\nQuestions about anything?",
       "posted": false,
-      "postedAt": null,
-      "scheduledFor": "2026-05-31"
+      "postedAt": null
     },
     {
-      "id": "reddit-009",
-      "subreddit": "FirstTimeHomeBuyer",
-      "title": "Questions to ask before buying in a HOA — the ones agents often don't bring up",
-      "body": "HOA issues kill deals and kill resale value. Here's what to ask before you're under contract:\n\n1. What's the reserve fund % funded? (under 70% = assessment risk)\n2. Any active or pending litigation?\n3. What's the rental restriction policy? (affects future sale pool)\n4. Has the HOA raised dues more than once in 5 years?\n5. Is there deferred maintenance visible in common areas?\n\nGet the last 2 years of meeting minutes — they'll show you what management doesn't want to discuss.\n\nWe include HOA risk flags in every PropertyDNA report now: https://www.thepropertydna.com/blog/hoa-questions-before-buying\n\nHappy to help if you're evaluating a specific property.",
+      "id": "tech-006",
+      "subreddit": "AI_Agents",
+      "title": "Using Claude to generate 60-second property reports from county assessor data",
+      "body": "Built an AI workflow that takes county assessor data + permit history + market comps and generates a full property analysis report in under 60 seconds.\n\nArchitecture:\n1. User enters address\n2. Lookup parcel ID via county API\n3. Fetch ownership/assessment/permit/sale data\n4. Pull MLS comps within 0.5mi\n5. Pass structured data to Claude with custom prompt\n6. Output: 8-section report (DNA score, valuation, comps, permits, neighborhood, risks, opportunities, recommendation)\n\nThe prompt engineering was the hard part. Took ~40 iterations to get reports that real estate agents actually trusted enough to send to clients.\n\nProduct: https://www.thepropertydna.com?utm_source=reddit_AI_Agents&utm_medium=social&utm_campaign=organic\n\nAnyone else building AI agents on top of public records data?",
       "posted": false,
-      "postedAt": null,
-      "scheduledFor": "2026-05-20"
+      "postedAt": null
     },
     {
-      "id": "reddit-010",
-      "subreddit": "investing",
-      "title": "Vacation rental market data: Coachella Valley performance by neighborhood",
-      "body": "Running some numbers on short-term rental performance in the Coachella Valley. Key data points:\n\n**Palm Springs (central):** avg occupancy 71%, ADR $285, strong weekend premium\n**Old Las Palmas / Movie Colony:** avg occupancy 64%, ADR $420, architecture premium\n**Cathedral City:** avg occupancy 58%, ADR $195, price-sensitive travelers\n**Palm Desert (near El Paseo):** avg occupancy 62%, ADR $245, seasonal variation higher\n\nDNA scoring for STR viability factors in zoning, owner-occupancy ratio, and permit status for any existing STR setup.\n\nhttps://www.thepropertydna.com/blog/coachella-valley-vacation-rental-data\n\nAnyone active in this market as an STR investor?",
+      "id": "tech-007",
+      "subreddit": "datasets",
+      "title": "Indexed 168k property parcels from Riverside County — making data structure available",
+      "body": "For anyone working with California county assessor data: I've indexed all 168k parcels in Riverside County (Coachella Valley region) from the CREST API. Includes ownership, assessment value, year built, square footage, permit history, sale history.\n\nUsing it for: ML-based off-market lead scoring, permit-adjusted property valuation, neighborhood trend prediction.\n\nThe API is rate-limited and not super well documented. Happy to share the indexing approach if anyone is building something similar.\n\nFull writeup: https://www.thepropertydna.com/blog/neighborhood-data-signals?utm_source=reddit_datasets&utm_medium=social&utm_campaign=organic\n\nWhich CA counties have the best assessor APIs in your experience?",
       "posted": false,
-      "postedAt": null,
-      "scheduledFor": "2026-06-02"
+      "postedAt": null
+    },
+    {
+      "id": "tech-008",
+      "subreddit": "RealEstateInvesting",
+      "title": "Filtering 168k parcels for off-market deal candidates — the data approach that works",
+      "body": "Sharing the off-market lead scoring approach we built into PropertyDNA. Indexed all 168k parcels in Coachella Valley. The scoring filter that's producing actual responses:\n\n1. Ownership duration > 10 years\n2. Owner address ≠ property address (absentee)\n3. No permit activity in last 5 years\n4. Estimated equity > 60% (assessed value vs purchase price + appreciation)\n5. Property type matches investment thesis\n\nIn our first 300 letter campaign with this filter: 12 responses, 2 under-contract deals.\n\nFull breakdown: https://www.thepropertydna.com/blog/off-market-property-leads?utm_source=reddit_RealEstateInvesting&utm_medium=social&utm_campaign=organic\n\nWhat scoring criteria are you using for off-market in your market?",
+      "posted": false,
+      "postedAt": null
+    },
+    {
+      "id": "tech-009",
+      "subreddit": "proptech",
+      "title": "Permit data is the most under-used signal in real estate — here's why",
+      "body": "Most valuation tools (Zillow, Redfin AVM) don't incorporate permit data, which is a massive blind spot.\n\nWhat permit data tells you:\n- Unpermitted square footage (insurance/financing risk)\n- Recent investment quality (2019 kitchen remodel vs 1985 original)\n- Owner intent (multiple recent permits = preparing to sell?)\n- Neighborhood velocity (cluster of permits in one block = neighborhood compounding)\n\nWe pull permit data automatically on every PropertyDNA report. It changes seller conversations.\n\nhttps://www.thepropertydna.com/blog/permit-history-property-purchase?utm_source=reddit_proptech&utm_medium=social&utm_campaign=organic\n\nDoes anyone have a recommendation for a national permit data aggregator? BuildZoom has gaps in our market.",
+      "posted": false,
+      "postedAt": null
+    },
+    {
+      "id": "tech-010",
+      "subreddit": "sidehustle",
+      "title": "Built an AI real estate platform on the side — generating revenue, scaling now",
+      "body": "I'm a real estate agent and started PropertyDNA as a side project to automate my own listing prep. Now it's a SaaS with paying users.\n\nThe path:\n1. Built it for myself (saved 3 hours/listing appointment)\n2. Showed it to 3 agent friends — all wanted access\n3. Built sign-up + payment\n4. Cold-emailed 3,000 agents\n5. First paid users converted from blog SEO and Reddit\n\nHonest take: distribution is brutal. Building was the easy part. The first paying customer felt like a miracle. Now I'm running automated content distribution across LinkedIn, Facebook, GBP, blog, and email daily.\n\nFull product: https://www.thepropertydna.com?utm_source=reddit_sidehustle&utm_medium=social&utm_campaign=organic\n\nHappy to share what worked / didn't.",
+      "posted": false,
+      "postedAt": null
     }
   ],
   "medium": [

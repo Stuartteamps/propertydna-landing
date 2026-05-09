@@ -112,6 +112,14 @@ const MEDIA_SUPPORTED = ['linkedin', 'facebook', 'googlebusiness', 'instagram', 
 // Services that require media — skip if no image provided
 const MEDIA_REQUIRED  = ['instagram', 'tiktok', 'youtube'];
 
+function addUTM(text, service) {
+  return text.replace(/https?:\/\/(www\.)?thepropertydna\.com(\/[^\s)]*)?/g, match => {
+    if (match.includes('utm_source')) return match;
+    const sep = match.includes('?') ? '&' : '?';
+    return `${match}${sep}utm_source=${service}&utm_medium=social&utm_campaign=buffer`;
+  });
+}
+
 async function postToChannel(token, channelId, service, text, imageUrl) {
   const hasImage = !!imageUrl;
 
@@ -119,9 +127,11 @@ async function postToChannel(token, channelId, service, text, imageUrl) {
     throw new Error(`SKIP — ${service} requires media (image/video)`);
   }
 
+  const taggedText = addUTM(text, service);
+
   const input = {
     channelId,
-    text,
+    text: taggedText,
     schedulingType: 'automatic',
     mode: 'shareNow',
   };
@@ -175,14 +185,15 @@ async function run() {
     }
   }
   if (!text) {
+    // UTM template: per-channel UTM is added in postToChannel for proper attribution
     const FALLBACK = [
-      "168,000 parcels indexed across the Coachella Valley. Every permit, every owner change, every valuation update — in one place. www.thepropertydna.com",
-      "The listing appointment is won before you walk in the door. www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
-      "Permit history is the most under-used data point in real estate due diligence. www.thepropertydna.com",
-      "AI property reports vs. CMA — 4 minutes vs 4 hours. Same accuracy. www.thepropertydna.com/blog/ai-property-report-vs-cma",
-      "Off-market leads: filter for absentee owners 10+ years with no recent permits. www.thepropertydna.com",
-      "Zillow's Zestimate error rate on off-market homes is 6.9%. We do better. www.thepropertydna.com/blog/zillow-zestimate-accuracy",
-      "PropertyDNA heat map: real-time price-per-sqft movement across Coachella Valley. www.thepropertydna.com/market-heatmaps",
+      "168,000 parcels indexed across the Coachella Valley. Every permit, every owner change, every valuation update — in one place. https://www.thepropertydna.com",
+      "The listing appointment is won before you walk in the door. https://www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
+      "Permit history is the most under-used data point in real estate due diligence. https://www.thepropertydna.com",
+      "AI property reports vs. CMA — 4 minutes vs 4 hours. Same accuracy. https://www.thepropertydna.com/blog/ai-property-report-vs-cma",
+      "Off-market leads: filter for absentee owners 10+ years with no recent permits. https://www.thepropertydna.com",
+      "Zillow's Zestimate error rate on off-market homes is 6.9%. We do better. https://www.thepropertydna.com/blog/zillow-zestimate-accuracy",
+      "PropertyDNA heat map: real-time price-per-sqft movement across Coachella Valley. https://www.thepropertydna.com/market-heatmaps",
     ];
     const idx = ((tracker.lastIndex ?? -1) + 1) % FALLBACK.length;
     text = FALLBACK[idx];
