@@ -30,7 +30,7 @@ DEFAULT_COUNTIES = {23: "Miami-Dade", 39: "Hillsborough", 60: "Palm Beach"}
 QUAL_COST = {"1": 380, "2": 300, "3": 230, "4": 175, "5": 130, "default": 220}
 
 FIELDS = ",".join([
-    "PARCEL_ID","CO_NO","PHY_ADDR1","PHY_CITY","PHY_ZIPCD",
+    "OBJECTID","PARCEL_ID","CO_NO","PHY_ADDR1","PHY_CITY","PHY_ZIPCD",
     "OWN_NAME","OWN_ADDR1","OWN_CITY","OWN_STATE","OWN_ZIPCD",
     "ACT_YR_BLT","EFF_YR_BLT","TOT_LVG_AR","LND_SQFOOT",
     "NO_RES_UNT","JV","LND_VAL","NCONST_VAL",
@@ -61,20 +61,40 @@ def strv(v):
     s = str(v or "").strip()
     return s or None
 
-# ── FDOR Fetch ────────────────────────────────────────────────────────────────
+# ── FDOR Fetch — OBJECTID-range pagination (reliable for large datasets) ──────
 
-def fetch_batch(co_no, offset):
+def get_oid_range(co_no):
+    """Get min/max OBJECTID for this county's residential parcels."""
     codes = ",".join(f"'{c}'" for c in RESIDENTIAL_DOR_CODES)
+    where = f"CO_NO={co_no} AND DOR_UC IN ({codes})"
     params = {
-        "where": f"CO_NO={co_no} AND DOR_UC IN ({codes})",
-        "outFields": FIELDS,
-        "returnGeometry": "false",
-        "resultOffset": str(offset),
-        "resultRecordCount": str(BATCH_SIZE),
-        "orderByFields": "PARCEL_ID ASC",
+        "where": where,
+        "outStatistics": json.dumps([
+            {"statisticType": "min", "onStatisticField": "OBJECTID", "outStatisticFieldName": "oid_min"},
+            {"statisticType": "max", "onStatisticField": "OBJECTID", "outStatisticFieldName": "oid_max"},
+            {"statisticType": "count", "onStatisticField": "OBJECTID", "outStatisticFieldName": "cnt"},
+        ]),
         "f": "json",
     }
-    r = requests.get(f"{FL_BASE}/query", params=params, timeout=30)
+    r = requests.get(f"{FL_BASE}/query", params=params, timeout=45)
+    r.raise_for_status()
+    d = r.json()
+    if "error" in d:
+        raise RuntimeError(f"FDOR stats error: {d['error']}")
+    attrs = d.get("features", [{}])[0].get("attributes", {})
+    return int(attrs.get("oid_min") or 0), int(attrs.get("oid_max") or 0), int(attrs.get("cnt") or 0)
+
+def fetch_batch_by_oid(co_no, oid_min, oid_max):
+    """Fetch records in an OBJECTID range — much faster than offset pagination."""
+    codes = ",".join(f"'{c}'" for c in RESIDENTIAL_DOR_CODES)
+    params = {
+        "where": f"CO_NO={co_no} AND DOR_UC IN ({codes}) AND OBJECTID >= {oid_min} AND OBJECTID < {oid_max}",
+        "outFields": FIELDS,
+        "returnGeometry": "false",
+        "resultRecordCount": str(BATCH_SIZE),
+        "f": "json",
+    }
+    r = requests.get(f"{FL_BASE}/query", params=params, timeout=60)
     r.raise_for_status()
     d = r.json()
     if "error" in d:
@@ -193,59 +213,79 @@ def insert_history(rows):
 
 # ── County indexer ────────────────────────────────────────────────────────────
 
-def index_county(co_no, county_name):
+def index_county(co_no, county_name, start_offset=0):
     county_fips = f"12_{co_no}"
     today = date.today().isoformat()
-    offset = 0
     total = 0
 
     print(f"\n{'='*60}")
     print(f"  {county_name} (CO_NO={co_no})")
     print(f"{'='*60}")
 
+    # Get OID range for this county
+    print("  Getting OID range...", end=" ", flush=True)
+    try:
+        oid_min, oid_max, count = get_oid_range(co_no)
+        print(f"OIDs {oid_min:,} → {oid_max:,} ({count:,} parcels)")
+    except Exception as e:
+        print(f"FAILED: {e}")
+        return 0
+
+    if count == 0:
+        print(f"  No residential records for CO_NO={co_no}. Check county number.")
+        return 0
+
+    # Resume: skip OIDs that correspond to already-indexed records
+    # start_offset is a record count; convert to approximate OID start
+    oid_step = BATCH_SIZE
+    oid_span = oid_max - oid_min
+    if start_offset > 0 and count > 0:
+        skip_fraction = start_offset / count
+        resume_oid = oid_min + int(oid_span * skip_fraction)
+        print(f"  Resuming from approx OID {resume_oid:,} ({start_offset:,} already done)")
+    else:
+        resume_oid = oid_min
+
+    current_oid = resume_oid
     consecutive_errors = 0
-    while True:
-        print(f"  offset={offset:>7} | fetching...", end=" ", flush=True)
+
+    while current_oid <= oid_max:
+        next_oid = current_oid + oid_step
+        pct = int((current_oid - oid_min) / max(oid_span, 1) * 100)
+        print(f"  OID {current_oid:>10,} ({pct}%) | fetching...", end=" ", flush=True)
+
         try:
-            rows = fetch_batch(co_no, offset)
+            rows = fetch_batch_by_oid(co_no, current_oid, next_oid)
             consecutive_errors = 0
         except Exception as e:
             consecutive_errors += 1
             wait = min(30 * consecutive_errors, 120)
-            print(f"FETCH ERROR ({consecutive_errors}): {e} — retry in {wait}s")
+            print(f"ERROR ({consecutive_errors}): {e} — retry in {wait}s")
             if consecutive_errors >= 5:
-                print(f"  5 consecutive failures at offset {offset} — skipping ahead by {BATCH_SIZE}")
-                offset += BATCH_SIZE
+                print(f"  Skipping OID range {current_oid}-{next_oid}")
+                current_oid = next_oid
                 consecutive_errors = 0
             time.sleep(wait)
             continue
 
-        if not rows:
-            if offset == 0:
-                print(f"No records found for CO_NO={co_no}. Verify county number.")
-            else:
-                print(f"Done. {total} total records indexed.")
-            break
+        if rows:
+            print(f"{len(rows):>5} records → writing...", end=" ", flush=True)
+            master_rows, history_rows = build_rows(rows, county_fips, today)
+            seen = {}
+            for r in master_rows:
+                seen[r["apn"]] = r
+            master_rows = list(seen.values())
+            upsert_master(master_rows)
+            insert_history(history_rows)
+            total += len(master_rows)
+            print(f"✓ ({total:,} total)")
+        else:
+            print("empty")
 
-        print(f"{len(rows):>5} records → writing...", end=" ", flush=True)
-        master_rows, history_rows = build_rows(rows, county_fips, today)
-        # Deduplicate by APN within batch (FDOR occasionally has duplicate parcel IDs)
-        seen = {}
-        for r in master_rows:
-            seen[r["apn"]] = r
-        master_rows = list(seen.values())
-        upsert_master(master_rows)
-        insert_history(history_rows)
-        total += len(master_rows)
-        offset += len(rows)
-        print(f"✓ ({total} total so far)")
+        current_oid = next_oid
+        time.sleep(0.3)
 
-        if len(rows) < BATCH_SIZE:
-            print(f"  Final batch. {total} total records indexed for {county_name}.")
-            break
-
-        time.sleep(0.5)
-
+    print(f"\n  {county_name} complete — {total:,} records indexed.")
     return total
 
 # ── Main ──────────────────────────────────────────────────────────────────────
