@@ -326,9 +326,6 @@ export default function ReportViewByToken() {
             <Stat label="Range Low"    value={fmt(val.low)} />
             <Stat label="Range High"   value={fmt(val.high)} />
           </div>
-          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginTop: 4 }}>
-            Confidence: {fmt(val.confidence)}
-          </div>
         </Section>
 
         {/* DNA Adjusted Valuation */}
@@ -437,21 +434,32 @@ export default function ReportViewByToken() {
           </Section>
         )}
 
-        {demo.medianIncome && (
-          <Section title="Neighborhood Profile">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0 40px' }}>
-              <Stat label="Median Income"     value={fmt(demo.medianIncome)} />
-              <Stat label="Median Home Value" value={fmt(demo.medianHomeValue)} />
-              <Stat label="Population"        value={fmt(demo.population)} />
-              <Stat label="Owner Occupied"    value={fmt(demo.ownerOccupied)} />
-              <Stat label="Renter Occupied"   value={fmt(demo.renterOccupied)} />
-              <Stat label="College Educated"  value={fmt(demo.collegePct)} />
-            </div>
-            <div style={{ marginTop: 8, fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0' }}>
-              {demo.neighborhoodTrend} · {demo.mobilityRate}
-            </div>
-          </Section>
-        )}
+        {/* Neighborhood Profile — uses synthesized data with Census ACS fallback */}
+        {(() => {
+          const nh = (dna.neighborhood || n.neighborhood) ?? null;
+          const d  = nh || demo; // prefer synthesized
+          const hasData = (d.medianIncome && d.medianIncome !== '—') || (d.population && d.population !== '—');
+          if (!hasData) return null;
+          return (
+            <Section title="Neighborhood Profile">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0 40px' }}>
+                <Stat label="Median Income"     value={fmt(d.medianIncome)} />
+                <Stat label="Median Home Value" value={fmt(d.medianHomeValue)} />
+                <Stat label="Median Rent"       value={fmt(d.medianRent)} />
+                <Stat label="Population"        value={fmt(d.population)} />
+                <Stat label="Owner Occupied"    value={fmt(d.ownerOccupied)} />
+                <Stat label="Renter Occupied"   value={fmt(d.renterOccupied)} />
+                <Stat label="College Educated"  value={fmt(d.collegePct)} />
+              </div>
+              <div style={{ marginTop: 12, fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.7 }}>
+                {nh?.summary || `${d.ownershipStability || demo.neighborhoodTrend || 'Stable Neighborhood'} · ${demo.mobilityRate || ''}`}
+              </div>
+              <div style={{ marginTop: 8, fontFamily: 'Jost, sans-serif', fontSize: 10, color: '#6B6252', letterSpacing: 1 }}>
+                Source: {d.source || 'Census ACS 2022 5-year'}
+              </div>
+            </Section>
+          );
+        })()}
 
         {/* Assessor Neighborhood Comparison — same block vs city */}
         {(report?.apn || prop?.apn || sub?.apn) && (
@@ -463,20 +471,48 @@ export default function ReportViewByToken() {
           </Section>
         )}
 
-        {flood.zone && (
-          <Section title="Risk Profile">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: 24 }}>
-                <Stat label="FEMA Flood Zone" value={`Zone ${flood.zone}`} />
-                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: flood.highRisk ? '#B85245' : '#2D9142' }}>{flood.label}</div>
+        {/* Risk Profile — 4 hazards with overall score */}
+        {(() => {
+          const risk = dna.risk || n.risk || null;
+          if (!risk) return null;
+          const colorFor = (s: number) => s >= 75 ? '#B85245' : s >= 55 ? '#C9A84C' : s >= 30 ? '#74C69D' : '#2D9142';
+          const Card = ({ label, score, value, sub, source }: any) => (
+            <div style={{ background: '#111', border: `1px solid ${colorFor(score)}33`, padding: 22 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252' }}>{label}</div>
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 24, color: colorFor(score) }}>{score}</div>
               </div>
-              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', padding: 24 }}>
-                <Stat label="Special Flood Hazard Area" value={flood.highRisk ? 'Yes — SFHA' : 'No'} />
-                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252' }}>{flood.subtype !== '—' ? flood.subtype : 'Standard zone determination'}</div>
-              </div>
+              <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 16, color: '#F0EBE0', marginBottom: sub ? 6 : 0 }}>{value}</div>
+              {sub && <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', lineHeight: 1.55 }}>{sub}</div>}
+              {source && <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, color: '#6B6252', marginTop: 8, letterSpacing: 1 }}>Source: {source}</div>}
             </div>
-          </Section>
-        )}
+          );
+          return (
+            <Section title="Risk Profile">
+              <div style={{ background: '#0d0d0d', border: '1px solid rgba(201,168,76,0.15)', padding: '14px 18px', marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252' }}>Overall Risk</div>
+                  <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, color: colorFor(risk.overallScore) }}>{risk.overallRating}</div>
+                </div>
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 38, color: colorFor(risk.overallScore) }}>{risk.overallScore}<span style={{ fontSize: 14, color: '#6B6252' }}>/100</span></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+                <Card label="FEMA Flood" score={risk.flood.score} value={`Zone ${risk.flood.zone}`} sub={risk.flood.label + (risk.flood.highRisk ? ' — SFHA' : '')} source={risk.flood.source} />
+                <Card label="Earthquake — USGS" score={risk.earthquake.score} value={risk.earthquake.label} sub={risk.earthquake.summary} source={risk.earthquake.source} />
+                <Card label="Wildfire — CalFire" score={risk.wildfire.score} value={risk.wildfire.label} sub={risk.wildfire.summary} source={risk.wildfire.source} />
+                <Card label="Crime" score={risk.crime.score} value={risk.crime.label} sub={`${risk.crime.city} · ${risk.crime.reportingAgency}`} />
+              </div>
+              {risk.earthquake.faultDistance && (
+                <div style={{ marginTop: 16, padding: 14, background: 'rgba(184,82,69,0.06)', borderLeft: '2px solid #B85245' }}>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#B85245', marginBottom: 4 }}>Seismic Note</div>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.6 }}>
+                    {risk.earthquake.faultDistance}. Peak ground acceleration: {risk.earthquake.pga2pct50yr || '—'}.
+                  </div>
+                </div>
+              )}
+            </Section>
+          );
+        })()}
 
         {n.crime?.available && (
           <Section title="Crime Statistics — FBI UCR">
