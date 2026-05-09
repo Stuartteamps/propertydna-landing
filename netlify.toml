@@ -1,6 +1,6 @@
 [build]
   base = "app/frontend"
-  command = "pnpm install --no-frozen-lockfile && NODE_OPTIONS=--max-old-space-size=4096 pnpm run build"
+  command = "npm i -g pnpm@9.15.0 && pnpm install --no-frozen-lockfile && NODE_OPTIONS=--max-old-space-size=4096 pnpm run build"
   publish = "dist"
 
 [build.environment]
