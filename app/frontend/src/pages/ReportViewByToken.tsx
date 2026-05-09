@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import { computeDNAScore } from '@/lib/dnaScore';
+import { NeighborhoodBreakdown } from '@/components/report/NeighborhoodBreakdown';
 
 // Lazy-load Leaflet — isolates any crash to just the map section
 const ReportMap = lazy(() => import('@/components/report/ReportMap'));
@@ -449,6 +450,16 @@ export default function ReportViewByToken() {
             <div style={{ marginTop: 8, fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0' }}>
               {demo.neighborhoodTrend} · {demo.mobilityRate}
             </div>
+          </Section>
+        )}
+
+        {/* Assessor Neighborhood Comparison — same block vs city */}
+        {(report?.apn || prop?.apn || sub?.apn) && (
+          <Section title="Assessor Neighborhood Breakdown">
+            <NeighborhoodBreakdown
+              apn={((report as any)?.apn || prop?.apn || sub?.apn || '').replace(/[^0-9]/g, '')}
+              city={prop?.city || sub?.city || undefined}
+            />
           </Section>
         )}
 

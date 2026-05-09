@@ -31,7 +31,7 @@ exports.handler = async (event) => {
     // Check new property_reports table first
     const [newRows, legacyRows] = await Promise.all([
       db.from("property_reports")
-        .select("id,email,address,city,state,zip,full_address,report_data,enrichment_data,view_token,status,created_at")
+        .select("id,email,address,city,state,zip,full_address,report_data,enrichment_data,view_token,status,created_at,apn")
         .eq("view_token", token)
         .limit(1)
         .get()
@@ -95,6 +95,7 @@ exports.handler = async (event) => {
           property_dna: mergedDna,
           created_at:   row.created_at,
           status:       row.status,
+          apn:          row.apn || dna?.normalized?.property?.apn || null,
         }),
       };
     }

@@ -13,6 +13,7 @@ import { LocationScorePanel } from '@/components/valuation/LocationScorePanel';
 import { PropertyEventsPanel } from '@/components/valuation/PropertyEventsPanel';
 import { AdjustmentFactorPanel } from '@/components/valuation/AdjustmentFactorPanel';
 import { MlsSourcePanel } from '@/components/report/MlsSourcePanel';
+import { NeighborhoodBreakdown } from '@/components/report/NeighborhoodBreakdown';
 import { planToTier, fetchUserTier, TIER_LABELS, type Tier } from '@/lib/tier';
 import { computeDNAScore } from '@/lib/dnaScore';
 
@@ -42,6 +43,7 @@ interface ReportData {
   listing_agent?: string | null;
   listing_brokerage?: string | null;
   mls_enrichment_status?: string | null;
+  apn?: string | null;
 }
 
 const fmt = (v: any) => (v && v !== '—' ? v : '—');
@@ -399,6 +401,16 @@ export default function ReportView() {
             <div style={{ marginTop: 8, fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0' }}>
               {demo.neighborhoodTrend} · {demo.mobilityRate}
             </div>
+          </Section>
+        )}
+
+        {/* Assessor Neighborhood Comparison — same block vs city */}
+        {(report?.apn || prop?.apn || sub?.apn) && (
+          <Section title="Assessor Neighborhood Breakdown">
+            <NeighborhoodBreakdown
+              apn={(report?.apn || prop?.apn || sub?.apn || '').replace(/[^0-9]/g, '')}
+              city={prop?.city || sub?.city || undefined}
+            />
           </Section>
         )}
 
