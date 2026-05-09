@@ -270,7 +270,7 @@ export default function SampleReport() {
             Sequence Your Property
           </Link>
           <Link
-            to="/#pricing"
+            to="/pricing"
             className="inline-block font-sans text-[11px] font-medium uppercase tracking-[3px] text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-8 py-4"
             style={{ textDecoration: 'none' }}
           >

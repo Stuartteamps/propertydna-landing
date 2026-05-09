@@ -53,7 +53,7 @@ export const TierGate: React.FC<TierGateProps> = ({ userTier, requiredTier, chil
             {info.description}
           </div>
           <a
-            href="/#pricing"
+            href="/pricing"
             onClick={onUpgrade}
             style={{
               fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500,

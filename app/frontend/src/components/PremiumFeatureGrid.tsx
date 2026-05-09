@@ -69,7 +69,7 @@ export default function PremiumFeatureGrid({ features, onUpgrade }: PremiumFeatu
                 </button>
               ) : (
                 <Link
-                  to="/#pricing"
+                  to="/pricing"
                   style={{
                     fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 500,
                     letterSpacing: 3, textTransform: 'uppercase',

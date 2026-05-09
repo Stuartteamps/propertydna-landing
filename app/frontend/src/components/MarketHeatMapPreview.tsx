@@ -102,7 +102,7 @@ export default function MarketHeatMapPreview({ isPremium = false, onUpgrade }: P
                   See Full Map →
                 </Link>
               )}
-              <Link to="/#pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(244,240,232,0.4)', textDecoration: 'none', padding: '10px 4px' }}>
+              <Link to="/pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(244,240,232,0.4)', textDecoration: 'none', padding: '10px 4px' }}>
                 View Plans →
               </Link>
             </div>

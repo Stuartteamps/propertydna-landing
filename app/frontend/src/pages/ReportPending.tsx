@@ -163,7 +163,7 @@ export default function ReportPending() {
                 Session: {sessionId}
               </div>
             )}
-            <a href="/#form" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 32px', textDecoration: 'none', display: 'inline-block' }}>
+            <a href="/analyze" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '14px 32px', textDecoration: 'none', display: 'inline-block' }}>
               Try Again →
             </a>
           </>

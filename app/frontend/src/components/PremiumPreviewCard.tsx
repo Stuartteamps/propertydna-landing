@@ -121,7 +121,7 @@ export default function PremiumPreviewCard({
                 </button>
               ) : (
                 <a
-                  href="/#pricing"
+                  href="/pricing"
                   style={{
                     fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500,
                     letterSpacing: 3, textTransform: 'uppercase',

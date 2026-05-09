@@ -53,7 +53,7 @@ export default function LockedModule({ title, tag, description, preview, onUnloc
             </button>
           ) : (
             <Link
-              to="/#pricing"
+              to="/pricing"
               style={{
                 fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500,
                 letterSpacing: 3, textTransform: 'uppercase',

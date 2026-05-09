@@ -110,7 +110,7 @@ export default function PremiumLockOverlay({
           </Link>
         )}
         <Link
-          to="/#pricing"
+          to="/pricing"
           style={{
             fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2,
             textTransform: 'uppercase', color: 'rgba(244,240,232,0.45)',
