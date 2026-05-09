@@ -158,9 +158,32 @@ if [ $? -eq 0 ]; then
   log "Build will appear in App Store Connect → TestFlight in ~10–30 min"
   log "after Apple processes it. You'll get an email when ready."
   log ""
-  osascript -e 'display notification "Build uploaded to App Store Connect! Check email in 10–30 min." with title "PropertyDNA Submitted to TestFlight!" sound name "Glass"'
+
+  # Read marketing version + build number from project
+  BUILD_VERSION=$(grep "MARKETING_VERSION" "$PROJECT/project.pbxproj" | head -1 | grep -o '= [^;]*' | tr -d '= ')
+  BUILD_NUMBER=$(grep "CURRENT_PROJECT_VERSION" "$PROJECT/project.pbxproj" | head -1 | grep -o '= [^;]*' | tr -d '= ')
+  TESTFLIGHT_URL="https://appstoreconnect.apple.com/teams/$TEAM_ID/apps"
+
+  # Wait for Apple to process the build (typically 5–15 min)
+  log "Waiting 8 minutes for Apple to process build..."
+  sleep 480
+
+  # Fire notifications: SMS + Email + macOS notification
+  bash /Users/danstuart/propertydna-landing/tools/notify-launch.sh \
+    "PropertyDNA $BUILD_VERSION (build $BUILD_NUMBER)" \
+    "$TESTFLIGHT_URL" >> "$LOG" 2>&1
+
 else
   log "ERROR: Upload failed. Check log."
   osascript -e 'display notification "Upload failed — check /tmp/propertydna-submit.log" with title "PropertyDNA Upload Failed" sound name "Sosumi"'
+
+  # Notify failure
+  osascript <<AS
+tell application "Messages"
+    set targetService to 1st service whose service type = iMessage
+    set targetBuddy to buddy "+16196770900" of targetService
+    send "❌ PropertyDNA build upload failed. Check /tmp/propertydna-submit.log on Mac." to targetBuddy
+end tell
+AS
   exit 1
 fi
