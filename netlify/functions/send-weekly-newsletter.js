@@ -152,9 +152,18 @@ function sendEmail(to, subject, html) {
   });
 }
 
+const BATCH_SIZE = 50;
+
 // ── Handler ───────────────────────────────────────────────────────────────────
-exports.handler = async () => {
-  console.log('[send-weekly-newsletter] Starting...');
+// Accepts ?offset=N for manual pagination. Returns { sent, skipped, failed, done, next_offset }.
+// Cron invocation runs the full loop internally (15-min limit).
+// Manual HTTP calls pass offset to avoid 26s timeout.
+exports.handler = async (event) => {
+  const params  = event?.queryStringParameters || {};
+  const isManual = !!params.offset;
+  const startOffset = parseInt(params.offset || '0', 10) || 0;
+
+  console.log(`[send-weekly-newsletter] Starting offset=${startOffset} manual=${isManual}`);
 
   // 1. Generate content
   const [weatherPeriods, markets] = await Promise.all([getWeather(), getMarketData()]);
@@ -163,7 +172,7 @@ exports.handler = async () => {
   const weekLabel       = getWeekLabel();
   const subject         = `The Stuart Team Weekly — ${weekLabel}`;
 
-  // 2. Load CC import campaign ID
+  // 2. Load campaign
   const campaigns = await db.from('campaigns')
     .select('id,name,total_contacts')
     .eq('id', CC_CAMPAIGN_ID)
@@ -171,25 +180,24 @@ exports.handler = async () => {
 
   const campaign = (campaigns || [])[0];
   if (!campaign) {
-    console.error('[send-weekly-newsletter] CC import campaign not found');
+    console.error('[send-weekly-newsletter] Campaign not found:', CC_CAMPAIGN_ID);
     return { statusCode: 404, body: 'Campaign not found' };
   }
-  console.log(`[send-weekly-newsletter] Campaign: ${campaign.name} (${campaign.total_contacts} contacts)`);
 
   // 3. Load unsubscribes
   const unsubs = await db.from('campaign_unsubscribes').select('email').get().catch(() => []);
-  const unsubSet = new Set((unsubs || []).map(u => u.email.toLowerCase()));
+  const unsubSet = new Set((unsubs || []).map(u => (u.email || '').toLowerCase()));
 
-  // 4. Send in batches of 50
-  let offset = 0, sent = 0, skipped = 0, failed = 0;
-  const BATCH = 50;
+  // 4. Send — single batch for manual, full loop for cron
+  let offset = startOffset, sent = 0, skipped = 0, failed = 0;
+  const maxBatches = isManual ? 1 : 999; // cron gets all, manual gets one batch
 
-  while (offset < (campaign.total_contacts || 9999)) {
+  for (let b = 0; b < maxBatches; b++) {
     const batch = await db.from('campaign_contacts')
       .select('id,email,first_name')
       .eq('campaign_id', campaign.id)
-      .order('created_at', { ascending: true })
-      .range(offset, offset + BATCH - 1)
+      .order('id', { ascending: true })
+      .range(offset, offset + BATCH_SIZE - 1)
       .get().catch(() => null);
 
     if (!Array.isArray(batch) || batch.length === 0) break;
@@ -199,15 +207,18 @@ exports.handler = async () => {
       const html   = buildHtml(c.email, c.first_name, weatherText, marketNarrative, weekLabel);
       const result = await sendEmail(c.email, subject, html);
       if (result.ok) { sent++; } else { failed++; }
-      await new Promise(r => setTimeout(r, 100));
     }
 
     offset += batch.length;
-    if (batch.length < BATCH) break;
+    if (batch.length < BATCH_SIZE) { offset = -1; break; } // done
   }
 
-  console.log(`[send-weekly-newsletter] Done — sent: ${sent}, skipped: ${skipped}, failed: ${failed}`);
-  db.kpi('newsletter_sent', null, { sent, skipped, failed, week: weekLabel });
+  const done = offset === -1 || offset >= (campaign.total_contacts || 0);
+  if (done) db.kpi('newsletter_sent', null, { sent, skipped, failed, week: weekLabel });
 
-  return { statusCode: 200, body: JSON.stringify({ sent, skipped, failed, subject }) };
+  console.log(`[send-weekly-newsletter] sent=${sent} skipped=${skipped} failed=${failed} done=${done} next=${offset}`);
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ sent, skipped, failed, done, next_offset: done ? 0 : offset, subject }),
+  };
 };
