@@ -2,35 +2,22 @@
 /**
  * PropertyDNA — CC Token Auto-Refresh
  *
- * Runs headlessly every 23h via launchd.
- * Uses saved browser session (cookies) to bypass Cloudflare on CC login page.
+ * Uses refresh_token grant — no browser, no Playwright, just HTTP.
+ * Runs every 23h via launchd cron.
  *
- * One-time setup:
- *   node tools/browser-agent/save-cc-session.js   ← run this first
- *
- * Manual run / cron:
- *   node tools/browser-agent/refresh-cc-token.js
+ * Manual run: node tools/browser-agent/refresh-cc-token.js
  */
 
-const { chromium }  = require('playwright');
-const https         = require('https');
-const fs            = require('fs');
-const path          = require('path');
-const { execSync }  = require('child_process');
+const https      = require('https');
+const fs         = require('fs');
+const path       = require('path');
+const { execSync } = require('child_process');
 
-const SESSION_FILE = path.join(__dirname, '.cc-session.json');
+const CREDS_FILE   = path.join(__dirname, '.cc-creds.json');
 const LOG_FILE     = path.join(__dirname, 'refresh.log');
 const CLIENT_ID    = 'f626272f-4940-42e3-b0d6-d4ffc0366337';
 const CLIENT_SEC   = 'UCMY_HNPbhCRENfCi_uK8g';
-const REDIRECT_URI = 'https://localhost';
 const NETLIFY_SITE = 'thepropertydna';
-
-const AUTH_URL = `https://authz.constantcontact.com/oauth2/default/v1/authorize` +
-  `?client_id=${CLIENT_ID}` +
-  `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-  `&response_type=code` +
-  `&scope=contact_data+campaign_data` +
-  `&state=pdna_auto`;
 
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
@@ -38,9 +25,9 @@ function log(msg) {
   try { fs.appendFileSync(LOG_FILE, line + '\n'); } catch {}
 }
 
-function exchangeToken(code) {
+function refreshToken(refreshTok) {
   return new Promise((resolve, reject) => {
-    const body = `grant_type=authorization_code&code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+    const body  = `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshTok)}`;
     const creds = Buffer.from(`${CLIENT_ID}:${CLIENT_SEC}`).toString('base64');
     const req = https.request({
       hostname: 'authz.constantcontact.com',
@@ -64,9 +51,10 @@ function exchangeToken(code) {
 
 function setNetlifyEnv(key, value) {
   try {
-    execSync(`netlify env:set ${key} "${value.replace(/"/g, '\\"')}" --site ${NETLIFY_SITE} --force`, {
-      stdio: 'pipe', timeout: 30000,
-    });
+    execSync(
+      `netlify env:set ${key} "${value.replace(/"/g, '\\"')}" --site ${NETLIFY_SITE} --force`,
+      { stdio: 'pipe', timeout: 30000 }
+    );
     return true;
   } catch (e) {
     log(`netlify env:set failed: ${e.message.slice(0, 100)}`);
@@ -77,78 +65,40 @@ function setNetlifyEnv(key, value) {
 (async () => {
   log('=== CC token refresh starting ===');
 
-  // Require saved session (created by save-cc-session.js)
-  if (!fs.existsSync(SESSION_FILE)) {
-    log('ERROR: No session found. Run: node tools/browser-agent/save-cc-session.js');
+  if (!fs.existsSync(CREDS_FILE)) {
+    log('ERROR: .cc-creds.json not found');
     process.exit(1);
   }
 
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    storageState: SESSION_FILE,  // restore cookies from saved login
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  });
-  const page = await context.newPage();
-
-  let authCode = null;
-
-  // Navigate to auth URL — CC auto-approves since app is already authorized + cookies are set
-  log('Navigating to auth URL with saved session...');
-  try {
-    const redirectPromise = page.waitForURL(/localhost.*code=/, { timeout: 20000 });
-    await page.goto(AUTH_URL, { waitUntil: 'commit', timeout: 20000 }).catch(() => {});
-    await redirectPromise;
-    const url = page.url();
-    const match = url.match(/[?&]code=([^&]+)/);
-    if (match) authCode = decodeURIComponent(match[1]);
-  } catch {
-    // Localhost blocked by browser — read from current URL bar
-    const url = page.url();
-    const match = url.match(/[?&]code=([^&]+)/);
-    if (match) authCode = decodeURIComponent(match[1]);
-  }
-
-  // If session expired, we need a re-login — alert and exit
-  if (!authCode) {
-    const currentUrl = page.url();
-    if (currentUrl.includes('/login') || currentUrl.includes('okta')) {
-      log('ERROR: Session expired. Re-run: node tools/browser-agent/save-cc-session.js');
-    } else {
-      log(`ERROR: No auth code. Current URL: ${currentUrl.slice(0, 100)}`);
-    }
-    await browser.close();
+  const creds = JSON.parse(fs.readFileSync(CREDS_FILE, 'utf8'));
+  if (!creds.refresh_token) {
+    log('ERROR: No refresh_token in creds file');
     process.exit(1);
   }
 
-  await browser.close();
+  log('Using refresh_token grant (no browser needed)...');
+  const { status, data } = await refreshToken(creds.refresh_token);
 
-  if (!authCode) {
-    log('ERROR: Could not capture auth code. CC may require re-authorization.');
-    log('Run: node tools/browser-agent/setup-cc.js  to re-authorize manually.');
-    process.exit(1);
-  }
-
-  log(`Auth code captured: ${authCode.slice(0, 15)}...`);
-
-  // Step 3: Exchange for token
-  log('Exchanging code for token...');
-  const { status, data } = await exchangeToken(authCode);
   if (status !== 200 || !data.access_token) {
-    log(`Token exchange failed: ${status} ${JSON.stringify(data)}`);
+    log(`ERROR: Token refresh failed: ${status} ${JSON.stringify(data)}`);
     process.exit(1);
   }
 
-  const token = data.access_token;
-  log(`New token obtained (expires in ${data.expires_in}s)`);
+  log(`New access_token obtained (expires in ${data.expires_in}s)`);
 
-  // Step 4: Update Netlify
-  log('Updating Netlify env var...');
-  const ok = setNetlifyEnv('CC_ACCESS_TOKEN', token);
+  // If CC rotates the refresh token, save the new one
+  if (data.refresh_token && data.refresh_token !== creds.refresh_token) {
+    creds.refresh_token = data.refresh_token;
+    fs.writeFileSync(CREDS_FILE, JSON.stringify(creds, null, 2), { mode: 0o600 });
+    log('Refresh token rotated — saved new one');
+    setNetlifyEnv('CC_REFRESH_TOKEN', data.refresh_token);
+  }
+
+  const ok = setNetlifyEnv('CC_ACCESS_TOKEN', data.access_token);
   if (ok) {
     log('CC_ACCESS_TOKEN updated in Netlify ✓');
   } else {
-    log('Netlify update failed — token printed below for manual set:');
-    log(`CC_ACCESS_TOKEN=${token}`);
+    log(`Manual set needed: CC_ACCESS_TOKEN=${data.access_token.slice(0, 30)}...`);
   }
 
   log('=== CC token refresh complete ===\n');

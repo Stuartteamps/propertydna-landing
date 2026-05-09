@@ -1,111 +1,131 @@
 #!/usr/bin/env node
 /**
- * PropertyDNA — Medium Cross-Posting Agent
+ * PropertyDNA — Medium Cross-Posting Agent (Playwright)
  *
- * Cross-posts blog articles to Medium as canonical links (no duplicate content penalty).
+ * Uses Medium's import feature to cross-post blog articles.
+ * Imports the canonical URL — no duplicate content penalty.
  *
  * Setup (one-time):
- *   1. medium.com → Settings → Security → Integration Tokens → Generate
- *   2. Run: curl -H "Authorization: Bearer YOUR_TOKEN" https://api.medium.com/v1/me
- *      Copy the "id" field — that's your userId
- *   3. Add to .daily-creds.json:
- *      { "medium": { "token": "...", "userId": "..." } }
+ *   node tools/browser-agent/save-medium-session.js
  *
- * Posts one article per run (canonical URL = propertydna.com/blog/slug).
+ * Manual run: node tools/browser-agent/agents/medium.js
  */
 
-const https    = require('https');
-const fs       = require('fs');
-const path     = require('path');
+const { chromium } = require('playwright-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+chromium.use(StealthPlugin());
 
-const QUEUE_FILE = path.join(__dirname, '../data/post-queue.json');
-const CREDS_FILE = path.join(__dirname, '../.daily-creds.json');
+const fs   = require('fs');
+const path = require('path');
+
+const QUEUE_FILE   = path.join(__dirname, '../data/post-queue.json');
+const SESSION_FILE = path.join(__dirname, '../.medium-session.json');
+const SCREENSHOT_DIR = path.join(__dirname, '../debug-screenshots');
 
 function log(msg) { console.log(`[Medium] ${msg}`); }
 
-function loadCreds() {
-  if (!fs.existsSync(CREDS_FILE)) return null;
-  const c = JSON.parse(fs.readFileSync(CREDS_FILE, 'utf8'));
-  return c.medium || null;
-}
-
-function httpsReq(method, url, body, headers = {}) {
-  return new Promise((resolve, reject) => {
-    const u = new URL(url);
-    const payload = body ? JSON.stringify(body) : null;
-    const req = https.request({
-      hostname: u.hostname,
-      path: u.pathname + u.search,
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...headers,
-        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        try { resolve({ status: res.statusCode, data: JSON.parse(d) }); }
-        catch { resolve({ status: res.statusCode, data: d }); }
-      });
-    });
-    req.on('error', reject);
-    if (payload) req.write(payload);
-    req.end();
-  });
-}
-
-function buildMediumContent(post) {
-  // Creates a short teaser with a canonical link back to the full article
-  return `<h1>${post.title}</h1>
-<p><em>Originally published on <a href="${post.canonicalUrl}">PropertyDNA Journal</a>.</em></p>
-<p>This article is published in full on the PropertyDNA Journal. <a href="${post.canonicalUrl}">Read the full article here →</a></p>
-<p>PropertyDNA is an AI-powered property intelligence platform that generates instant property reports, market heat maps, and deal analysis for real estate professionals. <a href="https://propertydna.com">Learn more at propertydna.com</a>.</p>`;
-}
-
 async function run() {
-  const creds = loadCreds();
-  if (!creds || !creds.token || !creds.userId) {
-    log('SKIP — no Medium credentials. Add token and userId to .daily-creds.json');
-    return { status: 'skipped', reason: 'no_credentials' };
+  if (!fs.existsSync(SESSION_FILE)) {
+    log('No session found. Run: node tools/browser-agent/save-medium-session.js');
+    return { status: 'error', error: 'no_session' };
   }
 
   const queue = JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8'));
   const pending = queue.medium.find(p => !p.posted);
-
   if (!pending) {
-    log('No pending Medium posts in queue.');
+    log('No pending Medium posts.');
     return { status: 'nothing_to_post' };
   }
 
-  log(`Cross-posting to Medium: "${pending.title.slice(0, 60)}..."`);
+  log(`Importing: "${pending.title.slice(0, 60)}..."`);
+  log(`URL: ${pending.canonicalUrl}`);
+
+  if (!fs.existsSync(SCREENSHOT_DIR)) fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
+
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--no-sandbox'],
+  });
+
+  const context = await browser.newContext({
+    storageState: SESSION_FILE,
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 },
+  });
+
+  const page = await context.newPage();
 
   try {
-    const res = await httpsReq('POST', `https://api.medium.com/v1/users/${creds.userId}/posts`, {
-      title:         pending.title,
-      contentFormat: 'html',
-      content:       buildMediumContent(pending),
-      canonicalUrl:  pending.canonicalUrl,
-      tags:          pending.tags,
-      publishStatus: 'public',
-    }, {
-      'Authorization': `Bearer ${creds.token}`,
-    });
+    // Verify session
+    log('Checking session...');
+    await page.goto('https://medium.com/me/stories/public', { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForTimeout(2000);
+    if (page.url().includes('/signin') || page.url().includes('/m/signin')) {
+      log('Session expired. Re-run: node tools/browser-agent/save-medium-session.js');
+      await browser.close();
+      return { status: 'error', error: 'session_expired' };
+    }
+    log('Session valid');
 
-    if (res.status !== 201) throw new Error(`Medium API error: ${res.status} ${JSON.stringify(res.data)}`);
+    // Navigate to import page
+    log('Navigating to import page...');
+    await page.goto('https://medium.com/p/import', { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.waitForTimeout(2000);
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'medium-import.png') });
 
-    const url = res.data?.data?.url;
+    // Find URL input and enter the blog post URL
+    const urlInput = page.locator('input[type="url"], input[placeholder*="url" i], input[placeholder*="URL" i], input[name="url"]').first();
+    await urlInput.waitFor({ timeout: 10000 });
+    await urlInput.click();
+    await page.keyboard.type(pending.canonicalUrl, { delay: 50 });
+    await page.waitForTimeout(500);
+
+    // Click import button
+    const importBtn = page.locator('button:has-text("Import"), button:has-text("Submit")').first();
+    await importBtn.waitFor({ timeout: 5000 });
+    await importBtn.click();
+    log('Import submitted, waiting for processing...');
+
+    // Wait for import to complete — Medium redirects to editor
+    await page.waitForURL(/medium\.com\/p\/.*\/edit|medium\.com\/@.*\//, { timeout: 30000 });
+    await page.waitForTimeout(2000);
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'medium-imported.png') });
+
+    const editorUrl = page.url();
+    log(`Imported to editor: ${editorUrl}`);
+
+    // Publish the story
+    log('Publishing...');
+    const publishBtn = page.locator('button:has-text("Publish"), button:has-text("Continue to publish")').first();
+    if (await publishBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await publishBtn.click();
+      await page.waitForTimeout(2000);
+
+      // Confirm publish if there's a second step
+      const confirmBtn = page.locator('button:has-text("Publish now"), button:has-text("Publish story")').first();
+      if (await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await confirmBtn.click();
+        await page.waitForTimeout(2000);
+      }
+    }
+
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'medium-published.png') });
+    const finalUrl = page.url();
+
+    // Mark as posted
     pending.posted   = true;
     pending.postedAt = new Date().toISOString();
-    pending.url      = url;
+    pending.url      = finalUrl;
     queue.lastMediumPost = pending.postedAt;
     fs.writeFileSync(QUEUE_FILE, JSON.stringify(queue, null, 2));
 
-    log(`Posted: ${url}`);
-    return { status: 'posted', title: pending.title, url };
+    log(`Published: ${finalUrl}`);
+    await browser.close();
+    return { status: 'posted', title: pending.title, url: finalUrl };
+
   } catch (e) {
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'medium-error.png') }).catch(() => {});
+    await browser.close();
     log(`ERROR: ${e.message}`);
     return { status: 'error', error: e.message };
   }

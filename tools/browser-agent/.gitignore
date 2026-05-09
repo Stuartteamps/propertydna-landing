@@ -5,3 +5,4 @@ node_modules/
 .daily-creds.json
 .cc-session.json
 .reddit-session.json
+.medium-session.json

@@ -1,25 +1,22 @@
 #!/usr/bin/env node
 /**
- * PropertyDNA — Buffer Social Posting Agent
+ * PropertyDNA — Buffer Social Posting Agent (GraphQL API)
  *
- * Schedules posts to LinkedIn, Facebook, Twitter, Instagram via Buffer API.
- * Buffer distributes to all connected profiles in one API call.
+ * Posts daily content to all connected Buffer channels via the GraphQL API.
  *
- * Setup (one-time):
- *   1. buffer.com → Sign in → Click your avatar → API Access
+ * Setup:
+ *   1. Go to buffer.com → log in → click your avatar → API Access (or developers.buffer.com)
  *   2. Copy your Access Token
- *   3. Add to .daily-creds.json:
- *      { "buffer": { "token": "..." } }
+ *   3. Add to .daily-creds.json: { "buffer": { "token": "YOUR_TOKEN" } }
  *
- * Content rotates through a set of property intelligence insights + blog links.
+ * Manual run: node tools/browser-agent/agents/buffer.js
  */
 
-const https    = require('https');
-const fs       = require('fs');
-const path     = require('path');
+const https      = require('https');
+const fs         = require('fs');
+const path       = require('path');
 
 const CREDS_FILE   = path.join(__dirname, '../.daily-creds.json');
-const QUEUE_FILE   = path.join(__dirname, '../data/post-queue.json');
 const TRACKER_FILE = path.join(__dirname, '../data/buffer-tracker.json');
 
 function log(msg) { console.log(`[Buffer] ${msg}`); }
@@ -30,7 +27,7 @@ function loadCreds() {
   return c.buffer || null;
 }
 
-// Daily social content rotation — mix of insights and blog links
+// Daily social content rotation
 const SOCIAL_CONTENT = [
   "168,000 parcels indexed across the Coachella Valley. Every permit, every owner change, every valuation update — in one place. www.thepropertydna.com",
   "The listing appointment is won before you walk in the door. Sellers who receive a property report 24 hours early arrive curious, not skeptical. www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
@@ -45,26 +42,26 @@ const SOCIAL_CONTENT = [
 ];
 
 function loadTracker() {
-  if (fs.existsSync(TRACKER_FILE)) {
-    return JSON.parse(fs.readFileSync(TRACKER_FILE, 'utf8'));
-  }
+  if (fs.existsSync(TRACKER_FILE)) return JSON.parse(fs.readFileSync(TRACKER_FILE, 'utf8'));
   return { lastIndex: -1, posts: [] };
 }
 
-function saveTracker(tracker) {
-  fs.writeFileSync(TRACKER_FILE, JSON.stringify(tracker, null, 2));
+function saveTracker(t) {
+  fs.writeFileSync(TRACKER_FILE, JSON.stringify(t, null, 2));
 }
 
-function httpsReq(method, url, body, headers = {}) {
+function graphql(token, query, variables = {}) {
   return new Promise((resolve, reject) => {
-    const u = new URL(url);
-    const payload = body ? (typeof body === 'string' ? body : JSON.stringify(body)) : null;
+    const body = JSON.stringify({ query, variables });
     const req = https.request({
-      hostname: u.hostname,
-      path: u.pathname + u.search,
-      method,
-      headers: { 'Content-Type': 'application/json', ...headers,
-        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}) },
+      hostname: 'api.buffer.com',
+      path: '/',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
     }, res => {
       let d = '';
       res.on('data', c => d += c);
@@ -74,41 +71,85 @@ function httpsReq(method, url, body, headers = {}) {
       });
     });
     req.on('error', reject);
-    if (payload) req.write(payload);
+    req.write(body);
     req.end();
   });
 }
 
-async function getProfiles(token) {
-  const res = await httpsReq('GET', 'https://api.bufferapp.com/1/profiles.json', null, {
-    'Authorization': `Bearer ${token}`,
-  });
-  if (!Array.isArray(res.data)) throw new Error(`Buffer profiles error: ${JSON.stringify(res.data)}`);
-  return res.data.map(p => p.id);
+async function getChannels(token) {
+  // First get the organization ID
+  const accountRes = await graphql(token, `
+    query { account { organizations { id name } } }
+  `);
+  const orgs = accountRes.data?.data?.account?.organizations;
+  if (!orgs?.length) throw new Error('No organizations found: ' + JSON.stringify(accountRes.data));
+  const orgId = orgs[0].id;
+  log(`Organization: ${orgs[0].name} (${orgId})`);
+
+  // Then get channels for that org
+  const channelsRes = await graphql(token, `
+    query GetChannels($input: ChannelsInput!) {
+      channels(input: $input) { id name service type isDisconnected isLocked }
+    }
+  `, { input: { organizationId: orgId } });
+
+  const channels = channelsRes.data?.data?.channels || [];
+  return channels.filter(c => !c.isDisconnected && !c.isLocked);
 }
 
-async function schedulePost(token, profileIds, text) {
-  const params = new URLSearchParams({
+function buildMetadata(service) {
+  switch (service) {
+    case 'facebook':
+      return { facebook: { type: 'post' } };
+    case 'googlebusiness':
+      return { google: { type: 'whats_new', detailsWhatsNew: { button: 'learn_more', link: 'https://www.thepropertydna.com' } } };
+    default:
+      return undefined;
+  }
+}
+
+// Services that require media — skip for text-only posts
+const MEDIA_REQUIRED = ['instagram', 'tiktok', 'youtube'];
+
+async function postToChannel(token, channelId, service, text) {
+  if (MEDIA_REQUIRED.includes(service)) {
+    throw new Error(`SKIP — ${service} requires media (image/video)`);
+  }
+
+  const input = {
+    channelId,
     text,
-    'profile_ids[]': profileIds,
-    shorten: 'false',
-    now: 'true',
-  });
-  // Buffer API v1 uses form encoding for this endpoint
-  const res = await httpsReq('POST', 'https://api.bufferapp.com/1/updates/create.json', params.toString(), {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/x-www-form-urlencoded',
-  });
-  if (!res.data?.success) throw new Error(`Buffer post error: ${JSON.stringify(res.data)}`);
-  return res.data;
+    schedulingType: 'automatic',
+    mode: 'shareNow',
+  };
+
+  const metadata = buildMetadata(service);
+  if (metadata) input.metadata = metadata;
+
+  const res = await graphql(token, `
+    mutation CreatePost($input: CreatePostInput!) {
+      createPost(input: $input) {
+        ... on PostActionSuccess { post { id externalLink } }
+        ... on InvalidInputError { message }
+        ... on UnauthorizedError { message }
+        ... on UnexpectedError { message }
+        ... on LimitReachedError { message }
+        ... on RestProxyError { message }
+      }
+    }
+  `, { input });
+
+  const result = res.data?.data?.createPost;
+  if (result?.post) return result.post;
+  throw new Error(result?.message || JSON.stringify(res.data));
 }
 
 async function run() {
   const creds = loadCreds();
   if (!creds || !creds.token) {
-    log('SKIP — no Buffer token. Add token to .daily-creds.json');
+    log('SKIP — no Buffer token.');
     log('  1. buffer.com → avatar → API Access → copy Access Token');
-    log('  2. Add: { "buffer": { "token": "YOUR_TOKEN" } } to .daily-creds.json');
+    log('  2. Add to .daily-creds.json: { "buffer": { "token": "YOUR_TOKEN" } }');
     return { status: 'skipped', reason: 'no_credentials' };
   }
 
@@ -116,21 +157,33 @@ async function run() {
   const nextIndex = (tracker.lastIndex + 1) % SOCIAL_CONTENT.length;
   const text = SOCIAL_CONTENT[nextIndex];
 
-  log(`Scheduling post ${nextIndex + 1}/${SOCIAL_CONTENT.length}: "${text.slice(0, 60)}..."`);
+  log(`Post ${nextIndex + 1}/${SOCIAL_CONTENT.length}: "${text.slice(0, 70)}..."`);
 
   try {
-    const profileIds = await getProfiles(creds.token);
-    if (profileIds.length === 0) throw new Error('No Buffer profiles connected');
-    log(`Found ${profileIds.length} profile(s)`);
+    const channels = await getChannels(creds.token);
+    if (!channels.length) throw new Error('No active channels connected to Buffer');
+    log(`Found ${channels.length} channel(s): ${channels.map(c => `${c.service}/${c.name}`).join(', ')}`);
 
-    await schedulePost(creds.token, profileIds, text);
+    const results = [];
+    for (const channel of channels) {
+      try {
+        const post = await postToChannel(creds.token, channel.id, channel.service, text);
+        log(`  ✓ ${channel.service}/${channel.name}: ${post.externalLink || post.id}`);
+        results.push({ channel: channel.service, status: 'posted' });
+      } catch (e) {
+        log(`  ✗ ${channel.service}/${channel.name}: ${e.message}`);
+        results.push({ channel: channel.service, status: 'error', error: e.message });
+      }
+    }
 
     tracker.lastIndex = nextIndex;
-    tracker.posts.push({ text: text.slice(0, 80), postedAt: new Date().toISOString(), profiles: profileIds.length });
+    tracker.posts.push({ text: text.slice(0, 80), postedAt: new Date().toISOString(), results });
     saveTracker(tracker);
 
-    log(`Posted to ${profileIds.length} profiles`);
-    return { status: 'posted', profiles: profileIds.length, text: text.slice(0, 80) };
+    const posted = results.filter(r => r.status === 'posted').length;
+    log(`Done: ${posted}/${channels.length} channels posted`);
+    return { status: 'posted', channels: posted, text: text.slice(0, 80) };
+
   } catch (e) {
     log(`ERROR: ${e.message}`);
     return { status: 'error', error: e.message };
