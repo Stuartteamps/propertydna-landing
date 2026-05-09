@@ -61,12 +61,12 @@ for e in recent[:5]:
 ```
 Expected: delivered count >= 7/10. If bounce rate climbing, flag.
 
-**6. n8n webhook responsive**
+**6. Report enrichment end-to-end (validates n8n indirectly)**
+Use the viewToken from step 3. Wait 4 minutes, then check:
 ```bash
-curl -sI -X POST https://dillabean.app.n8n.cloud/webhook/homefax/report \
-  -H "Content-Type: application/json" -d '{"healthcheck":true}' | head -1
+curl -s "https://thepropertydna.com/.netlify/functions/get-report-by-token?token=$VIEW_TOKEN" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status','?'))"
 ```
-Expected: HTTP/2 200 or 204.
+Expected: status changes from "pending" to "completed" (n8n is alive). If still pending after 4 min, n8n is slow/stuck — flag it. Skip the direct n8n webhook ping — n8n cloud blocks empty bodies and returns 000, creating false positives.
 
 ## Output format
 
