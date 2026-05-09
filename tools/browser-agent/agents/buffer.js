@@ -185,15 +185,15 @@ async function run() {
     }
   }
   if (!text) {
-    // UTM template: per-channel UTM is added in postToChannel for proper attribution
+    // Luxury home provenance + investment intelligence positioning
     const FALLBACK = [
-      "168,000 parcels indexed across the Coachella Valley. Every permit, every owner change, every valuation update — in one place. https://www.thepropertydna.com",
-      "The listing appointment is won before you walk in the door. https://www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
-      "Permit history is the most under-used data point in real estate due diligence. https://www.thepropertydna.com",
-      "AI property reports vs. CMA — 4 minutes vs 4 hours. Same accuracy. https://www.thepropertydna.com/blog/ai-property-report-vs-cma",
-      "Off-market leads: filter for absentee owners 10+ years with no recent permits. https://www.thepropertydna.com",
-      "Zillow's Zestimate error rate on off-market homes is 6.9%. We do better. https://www.thepropertydna.com/blog/zillow-zestimate-accuracy",
-      "PropertyDNA heat map: real-time price-per-sqft movement across Coachella Valley. https://www.thepropertydna.com/market-heatmaps",
+      "PropertyDNA: institutional-grade dossiers for $5M+ luxury homes. Verified celebrity provenance, architect authentication, scarcity indexing. https://www.thepropertydna.com",
+      "70% of 'celebrity-owned' real estate claims aren't documentable. We verify provenance against deed history + primary source press. https://www.thepropertydna.com",
+      "Verified Albert Frey, John Lautner, and Richard Neutra commissions in Palm Springs trade once every 4-7 years. The scarcity premium is real, but only on authenticated attribution. https://www.thepropertydna.com",
+      "For $30M architectural estates, the dossier matters as much as it does for a Patek 1518 or a 1962 Ferrari. We build the documentation layer the auction houses don't. https://www.thepropertydna.com",
+      "Insurance replacement cost on irreplaceable estates often exceeds market value by 20%+. The data tells the asset story most appraisals miss. https://www.thepropertydna.com",
+      "Cross-asset luxury benchmarking: how does Coachella Valley architectural real estate perform vs Patek Philippe, Domaine Romanée-Conti, and the S&P 500? https://www.thepropertydna.com",
+      "We've documented 47 verified Albert Frey residential commissions in Palm Springs. Estate documentation that prevents value loss at sale or inheritance. https://www.thepropertydna.com",
     ];
     const idx = ((tracker.lastIndex ?? -1) + 1) % FALLBACK.length;
     text = FALLBACK[idx];
