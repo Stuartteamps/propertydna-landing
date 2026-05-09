@@ -179,6 +179,8 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   lastSalePrice = null, lastSaleDate = null, marketPriceYoY = null,
   aduSqft = null,       // explicit casita sqft (from n8n or auto-detected)
   luxuryTier = false,   // true if smart base > $1.5M
+  poolAddOnCost = null, // explicit pool capex (e.g. 100000); recoups 60% in luxury
+  recentReno = null,    // { cost: 50000, year: 2024 } recent renovation capex
 } = {}) {
   // Phase 1 — correct the AVM base using recent sale anchor
   const base = computeSmartBase(rawLow, rawMid, rawHigh, { lastSalePrice, lastSaleDate, marketPriceYoY });
@@ -235,7 +237,30 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     drivers.push({ key: "adu_casita", label: `ADU/Casita (~${aduSqft} sqft)`, dollar: aduUplift, pct: null });
   }
 
-  const featureCount = Object.values(features).filter(Boolean).length + (luxuryTier ? 1 : 0) + (aduSqft ? 1 : 0);
+  // Phase 4 — Pool capex add-on (luxury markets recoup 55–70% of pool investment)
+  let poolUplift = 0;
+  if (poolAddOnCost && poolAddOnCost > 10000) {
+    const recoupRate = luxuryTier ? 0.65 : 0.55;
+    poolUplift = Math.round(Math.min(poolAddOnCost, 250000) * recoupRate);
+    adjMid  = adjMid  ? adjMid  + poolUplift : poolUplift;
+    adjLow  = adjLow  ? adjLow  + Math.round(poolUplift * 0.75) : null;
+    adjHigh = adjHigh ? adjHigh + Math.round(poolUplift * 1.20) : null;
+    drivers.push({ key: "pool_capex", label: `Pool/Spa Add-On (~$${(poolAddOnCost / 1000).toFixed(0)}k @ ${Math.round(recoupRate*100)}% recoup)`, dollar: poolUplift, pct: null });
+  }
+
+  // Phase 5 — Recent renovation capex add-on (typical 70-80% recovery in <3yr window)
+  let renoUplift = 0;
+  if (recentReno && recentReno.cost > 5000) {
+    const yearsAgo = recentReno.year ? Math.max(0, new Date().getFullYear() - recentReno.year) : 0;
+    const recoupRate = yearsAgo < 2 ? 0.80 : yearsAgo < 5 ? 0.70 : 0.55;
+    renoUplift = Math.round(Math.min(recentReno.cost, 500000) * recoupRate);
+    adjMid  = adjMid  ? adjMid  + renoUplift : renoUplift;
+    adjLow  = adjLow  ? adjLow  + Math.round(renoUplift * 0.75) : null;
+    adjHigh = adjHigh ? adjHigh + Math.round(renoUplift * 1.20) : null;
+    drivers.push({ key: "recent_reno", label: `Recent Renovation (~$${(recentReno.cost / 1000).toFixed(0)}k @ ${Math.round(recoupRate*100)}% recoup)`, dollar: renoUplift, pct: null });
+  }
+
+  const featureCount = Object.values(features).filter(Boolean).length + (luxuryTier ? 1 : 0) + (aduSqft ? 1 : 0) + (poolAddOnCost ? 1 : 0) + (recentReno ? 1 : 0);
   const confidence = Math.max(0.52, 0.88 - featureCount * 0.03);
 
   return {
@@ -243,11 +268,135 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     rawLow, rawMid, rawHigh,
     smartLow, smartMid, smartHigh,
     confidence: Math.round(confidence * 100) / 100,
-    drivers: drivers.sort((a, b) => Math.abs(b.pct ?? 0) - Math.abs(a.pct ?? 0)).slice(0, 6),
+    drivers: drivers.sort((a, b) => Math.abs(b.pct ?? 0) - Math.abs(a.pct ?? 0)).slice(0, 8),
     totalPctMid: totalMid,
     aduUplift: aduUplift || null,
+    poolUplift: poolUplift || null,
+    renoUplift: renoUplift || null,
     baseAdjustment: baseAdjustment || null,
     luxuryTier,
+  };
+}
+
+// ── Synthesize neighborhood, risk, sales activity sections ────────────────────
+// n8n doesn't output these — we derive them from existing normalized data.
+
+function buildNeighborhoodProfile(normalized) {
+  if (!normalized) return null;
+  const demo  = normalized.demographics || {};
+  const subj  = normalized.subject || {};
+  const prop  = normalized.property || {};
+
+  const fmt$ = n => n && !isNaN(n) ? '$' + Math.round(Number(n)).toLocaleString() : '—';
+  const fmtPct = n => n && !isNaN(n) ? `${(n * 100).toFixed(0)}%` : '—';
+
+  const ownershipStability = demo.ownerOccupied
+    ? Number(demo.ownerOccupied) > 0.65 ? 'Owner-occupied dominant' :
+      Number(demo.ownerOccupied) > 0.45 ? 'Mixed ownership' : 'Renter-dominant'
+    : '—';
+
+  return {
+    medianIncome:    fmt$(demo.medianIncome),
+    medianHomeValue: fmt$(demo.medianHomeValue),
+    population:      demo.population ? Number(demo.population).toLocaleString() : '—',
+    ownerOccupiedPct: fmtPct(demo.ownerOccupied),
+    renterOccupiedPct: fmtPct(demo.renterOccupied),
+    ownershipStability,
+    city:  subj.city || '—',
+    state: subj.state || '—',
+    zip:   subj.zip || '—',
+    propertyType: prop.propertyType || '—',
+    yearBuilt: prop.yearBuilt || '—',
+    summary: `Located in ${subj.city || 'this area'}, where the median household income is ${fmt$(demo.medianIncome)} and median home value is ${fmt$(demo.medianHomeValue)}. ${ownershipStability} community with a population of ${demo.population ? Number(demo.population).toLocaleString() : 'unknown'}.`,
+  };
+}
+
+function buildRiskProfile(normalized) {
+  if (!normalized) return null;
+  const flood = normalized.flood || {};
+  const crime = normalized.crime || {};
+  const subj  = normalized.subject || {};
+
+  // Flood risk score 0-100 (higher = more risk)
+  const floodScore = flood.highRisk ? 85 : flood.zone === 'X' ? 15 : flood.zone && flood.zone !== '—' ? 45 : 30;
+
+  // Crime risk (we have city-level, not parcel) — derive from agency reporting
+  const crimeScore = crime.available
+    ? (crime.violentCrimeIndex || 50)
+    : 40; // unknown defaults to mid-low
+
+  // Wildfire — Coachella Valley has elevated wildfire in canyon-adjacent areas
+  const wildfireScore = subj.state === 'CA' && (subj.city || '').toLowerCase().includes('palm') ? 35 : 25;
+
+  // Earthquake — California baseline
+  const earthquakeScore = subj.state === 'CA' ? 60 : 25;
+
+  const overallScore = Math.round((floodScore + crimeScore + wildfireScore + earthquakeScore) / 4);
+  const overallRating = overallScore < 30 ? 'Low Risk' : overallScore < 55 ? 'Moderate Risk' : overallScore < 75 ? 'Elevated Risk' : 'High Risk';
+
+  return {
+    overallScore,
+    overallRating,
+    flood: {
+      score: floodScore,
+      zone: flood.zone || '—',
+      label: flood.label || (flood.highRisk ? 'High Risk' : 'Low Risk'),
+      highRisk: !!flood.highRisk,
+    },
+    crime: {
+      score: crimeScore,
+      label: crimeScore < 35 ? 'Low' : crimeScore < 55 ? 'Moderate' : 'Elevated',
+      city: crime.city || subj.city || '—',
+      reportingAgency: crime.agencyName || '—',
+    },
+    wildfire: {
+      score: wildfireScore,
+      label: wildfireScore < 30 ? 'Low' : wildfireScore < 55 ? 'Moderate' : 'Elevated',
+    },
+    earthquake: {
+      score: earthquakeScore,
+      label: earthquakeScore < 30 ? 'Low' : earthquakeScore < 55 ? 'Moderate' : 'Elevated',
+    },
+    summary: `Overall risk: ${overallRating} (${overallScore}/100). Flood: ${flood.label || 'Low'}. Crime: ${crimeScore < 35 ? 'Low' : crimeScore < 55 ? 'Moderate' : 'Elevated'} for ${crime.city || subj.city || 'area'}. ${subj.state === 'CA' ? 'California baseline earthquake exposure.' : ''}`,
+  };
+}
+
+function buildSalesActivity(normalized) {
+  if (!normalized) return null;
+  const comps = normalized.comps || [];
+  const sale  = normalized.sale  || {};
+  const subj  = normalized.subject || {};
+
+  const compsWithPrice = comps.filter(c => c.rawPrice && c.rawPrice > 0);
+  const prices = compsWithPrice.map(c => c.rawPrice);
+  const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null;
+  const minPrice = prices.length ? Math.min(...prices) : null;
+  const maxPrice = prices.length ? Math.max(...prices) : null;
+
+  const fmt$ = n => n ? '$' + Math.round(n).toLocaleString() : '—';
+
+  // Build map points (subject + comps with lat/lon)
+  const mapPoints = [];
+  if (subj.lat && subj.lon && subj.lat !== '—') {
+    mapPoints.push({ lat: Number(subj.lat), lon: Number(subj.lon), type: 'subject', label: 'Subject Property' });
+  }
+  for (const c of comps) {
+    if (c.lat && c.lon) {
+      mapPoints.push({ lat: Number(c.lat), lon: Number(c.lon), type: 'comp', label: c.address, price: c.price, distance: c.distance });
+    }
+  }
+
+  return {
+    totalComps: comps.length,
+    compsWithPrice: compsWithPrice.length,
+    avgPrice: fmt$(avgPrice),
+    minPrice: fmt$(minPrice),
+    maxPrice: fmt$(maxPrice),
+    avgPriceRaw: avgPrice,
+    lastSalePrice: fmt$(parseFloat(String(sale.lastSalePrice || '').replace(/[^0-9.]/g, ''))),
+    lastSaleDate: sale.lastSaleDate || '—',
+    mapPoints,
+    summary: `${comps.length} comparable sales analyzed within proximity. Sales range from ${fmt$(minPrice)} to ${fmt$(maxPrice)}, averaging ${fmt$(avgPrice)}.`,
   };
 }
 
@@ -294,6 +443,9 @@ exports.handler = async (event) => {
     lastSaleDate  = null,   // ISO string, e.g. "2023-08-15"
     marketPriceYoY = null,  // number, e.g. 5.2 (percentage)
     aduSqft = null,         // explicit casita sqft; auto-detected from reportData if null
+    poolAddOnCost = null,   // number, e.g. 100000 (pool capex investment)
+    recentRenoCost = null,  // number, e.g. 150000 (recent renovation total cost)
+    recentRenoYear = null,  // number, e.g. 2024 (year renovation completed)
   } = body;
 
   if (!email) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "email required" }) };
@@ -348,6 +500,8 @@ exports.handler = async (event) => {
         marketPriceYoY: marketPriceYoY != null ? Number(marketPriceYoY) : null,
         aduSqft:        effectiveAduSqft ? Number(effectiveAduSqft) : null,
         luxuryTier,
+        poolAddOnCost:  poolAddOnCost != null ? Number(poolAddOnCost) : null,
+        recentReno:     recentRenoCost ? { cost: Number(recentRenoCost), year: recentRenoYear ? Number(recentRenoYear) : null } : null,
       });
       featureProfile = { low, mid, high, dnaAdjusted };
 
@@ -357,10 +511,22 @@ exports.handler = async (event) => {
     }
   }
 
-  // Merge DNA adjustment into reportData so the hosted view can render it
+  // Merge DNA adjustment + synthesized sections into reportData so the hosted view can render
   let enrichedReportData = reportData;
-  if (reportData && dnaAdjusted) {
-    enrichedReportData = { ...reportData, dnaAdjusted };
+  if (reportData) {
+    const norm = reportData.normalized || {};
+    const neighborhood = buildNeighborhoodProfile(norm);
+    const risk         = buildRiskProfile(norm);
+    const salesActivity = buildSalesActivity(norm);
+
+    enrichedReportData = {
+      ...reportData,
+      ...(dnaAdjusted ? { dnaAdjusted } : {}),
+      neighborhood,
+      risk,
+      salesActivity,
+      normalized: { ...norm, neighborhood, risk, salesActivity },
+    };
   }
 
   try {
