@@ -232,7 +232,7 @@ export function NeighborhoodBreakdown({ apn, city }: { apn: string; city?: strin
   }
 
   const { property: p, neighborhood: n, ranks, deltas } = data;
-  const cityStats = (data as any).city || data.city_stats;
+  const cityStats = (data as any).cityStats || (data as any).city_stats;
 
   return (
     <div>

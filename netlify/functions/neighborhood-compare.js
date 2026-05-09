@@ -335,7 +335,7 @@ exports.handler = async (event) => {
         },
 
         neighborhood: neighborhoodStats,
-        city: cityStats,
+        cityStats,
 
         ranks: {
           overall:          overallNeighborhoodPct,
