@@ -10,7 +10,6 @@ import TeaserCard from '@/components/TeaserCard';
 import AddressAutocomplete, { type AddressResult } from '@/components/AddressAutocomplete';
 import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
-import { fireReport } from '@/lib/fireReport';
 import PropertyTicker from '@/components/PropertyTicker';
 
 type ModalView = 'signin' | 'pricing';
@@ -74,7 +73,7 @@ export default function Landing() {
 
   const openModal = (view: ModalView = 'signin') => { setModalView(view); setModalOpen(true); };
 
-  // Core submit: check usage then fire n8n or open pricing
+  // Core submit: check usage then route to /report-pending or open pricing
   const submitReport = async (addr: string, result?: AddressResult | null) => {
     if (!user?.email || !addr.trim()) return;
     setSubmitting(true);
@@ -89,22 +88,20 @@ export default function Landing() {
         setSubmitting(false);
         return;
       }
-      await fireReport({
-        email:    user.email,
-        fullName: user.user_metadata?.full_name || user.user_metadata?.name || '',
-        address:  result?.street || addr,
-        city:     result?.city   || '',
-        state:    result?.state  || '',
-        zip:      result?.zip    || '',
-      });
-      navigate('/dashboard?new=1');
-    } catch {
-      // Fail open
-      await fireReport({ email: user.email, fullName: '', address: addr });
-      navigate('/dashboard?new=1');
-    } finally {
-      setSubmitting(false);
-    }
+    } catch { /* fail open — proceed to report-pending */ }
+
+    const params = new URLSearchParams({
+      bypass:   '1',
+      email:    user.email,
+      fullName: user.user_metadata?.full_name || user.user_metadata?.name || '',
+      address:  result?.street || addr,
+      city:     result?.city   || '',
+      state:    result?.state  || '',
+      zip:      result?.zip    || '',
+      role:     'Buyer',
+      phone:    '',
+    });
+    navigate(`/report-pending?${params.toString()}`);
   };
 
   // After sign-in fires if user had a pending address
