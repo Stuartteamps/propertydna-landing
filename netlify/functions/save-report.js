@@ -77,8 +77,8 @@ async function fetchCensusByZip(zip) {
 // FEMA NFHL flood zone by lat/lon — fast official endpoint
 async function fetchFemaFlood(lat, lon) {
   if (!lat || !lon) return null;
-  // NFHL public ArcGIS endpoint
-  const url = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?` +
+  // NFHL public ArcGIS endpoint (correct URL — old gis/nfhl/ path is dead)
+  const url = `https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?` +
     `geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326&outFields=FLD_ZONE,SFHA_TF,ZONE_SUBTY&returnGeometry=false&f=json`;
   const res = await httpGetJson(url, 6000);
   const feat = res?.features?.[0]?.attributes;
