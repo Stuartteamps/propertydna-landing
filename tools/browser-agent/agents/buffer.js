@@ -161,15 +161,36 @@ async function run() {
     return { status: 'skipped', reason: 'no_credentials' };
   }
 
-  const entry = todayText();
-  if (!entry) {
-    log('No content found for today and no past entries. Add entries to data/content-calendar.json.');
-    return { status: 'skipped', reason: 'no_calendar_entry' };
-  }
-  if (!entry.found) log(`No entry for today — using closest past entry (${entry.date})`);
-  const { text } = entry;
+  const tracker = loadTracker();
 
-  log(`Today's post (${entry.date}): "${text.slice(0, 70)}..."`);
+  // Try calendar first, fall back to rotation
+  let text, dateLabel, image;
+  if (fs.existsSync(CALENDAR_FILE)) {
+    const entry = todayText();
+    if (entry) {
+      text = entry.text;
+      dateLabel = entry.date;
+      image = entry.image;
+      if (!entry.found) log(`No entry for today — using closest past entry (${entry.date})`);
+    }
+  }
+  if (!text) {
+    const FALLBACK = [
+      "168,000 parcels indexed across the Coachella Valley. Every permit, every owner change, every valuation update — in one place. www.thepropertydna.com",
+      "The listing appointment is won before you walk in the door. www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
+      "Permit history is the most under-used data point in real estate due diligence. www.thepropertydna.com",
+      "AI property reports vs. CMA — 4 minutes vs 4 hours. Same accuracy. www.thepropertydna.com/blog/ai-property-report-vs-cma",
+      "Off-market leads: filter for absentee owners 10+ years with no recent permits. www.thepropertydna.com",
+      "Zillow's Zestimate error rate on off-market homes is 6.9%. We do better. www.thepropertydna.com/blog/zillow-zestimate-accuracy",
+      "PropertyDNA heat map: real-time price-per-sqft movement across Coachella Valley. www.thepropertydna.com/market-heatmaps",
+    ];
+    const idx = ((tracker.lastIndex ?? -1) + 1) % FALLBACK.length;
+    text = FALLBACK[idx];
+    dateLabel = `rotation-${idx}`;
+    tracker.lastIndex = idx;
+  }
+
+  log(`Today's post (${dateLabel}): "${text.slice(0, 70)}..."`);
 
   try {
     const channels = await getChannels(creds.token);
@@ -179,7 +200,7 @@ async function run() {
     const results = [];
     for (const channel of channels) {
       try {
-        const post = await postToChannel(creds.token, channel.id, channel.service, text, entry.image);
+        const post = await postToChannel(creds.token, channel.id, channel.service, text, image);
         log(`  ✓ ${channel.service}/${channel.name}: ${post.externalLink || post.id}`);
         results.push({ channel: channel.service, status: 'posted' });
       } catch (e) {
@@ -188,8 +209,7 @@ async function run() {
       }
     }
 
-    tracker.lastIndex = (tracker.lastIndex || 0) + 1;
-    tracker.posts.push({ text: text.slice(0, 80), date: entry.date, postedAt: new Date().toISOString(), results });
+    tracker.posts.push({ text: text.slice(0, 80), date: dateLabel, postedAt: new Date().toISOString(), results });
     saveTracker(tracker);
 
     const posted = results.filter(r => r.status === 'posted').length;

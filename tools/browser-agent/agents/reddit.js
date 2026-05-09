@@ -104,12 +104,10 @@ async function run() {
   }
 
   const queue = JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8'));
-  const today = new Date().toISOString().slice(0, 10);
-  // Only post if a post is scheduled for today (or earlier and still unposted)
-  const pending = queue.reddit.find(p => !p.posted && p.scheduledFor && p.scheduledFor <= today);
+  // Take the next unposted item from the queue (one per day in queue order)
+  const pending = queue.reddit.find(p => !p.posted);
   if (!pending) {
-    const next = queue.reddit.find(p => !p.posted && p.scheduledFor);
-    log(next ? `No post due today. Next scheduled: ${next.scheduledFor} (${next.id})` : 'No pending posts in queue.');
+    log('No pending posts in queue.');
     return { status: 'nothing_to_post' };
   }
 

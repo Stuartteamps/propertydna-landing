@@ -3,7 +3,7 @@
     {
       "id": "reddit-001",
       "subreddit": "realtors",
-      "title": "We built an AI property intelligence platform from scratch and it's changing how we run listing appointments \u2014 here's what it does",
+      "title": "We built an AI property intelligence platform from scratch and it's changing how we run listing appointments — here's what it does",
       "body": "We're a real estate team in Palm Springs. Spent the last year building PropertyDNA, an AI platform that pulls county assessor data, permit history, and market comps into a single report in under 60 seconds.\n\nThe workflow change: agents generate the report, email it to the seller 24 hours before the listing appointment, and walk in to a conversation instead of a cold pitch. Sellers who receive the report beforehand have already spent 20 minutes with your research.\n\nWrote up a full explainer on what it does: https://www.thepropertydna.com/blog/what-is-propertydna\n\nHappy to answer questions about the tech stack or the workflow.",
       "posted": true,
       "postedAt": "2026-05-08T18:56:13.921Z",
@@ -13,7 +13,7 @@
       "id": "reddit-002",
       "subreddit": "realtors",
       "title": "Listing appointment prep used to take me 3 hours. Now it takes 5 minutes. Here's the workflow.",
-      "body": "Not trying to sell anything here \u2014 just sharing what's actually working for our team in the Coachella Valley.\n\nThe old workflow: pull MLS comps manually, navigate Riverside County permit portal (slow), build a PowerPoint, hope nothing changed before the appointment.\n\nThe new workflow: enter the address in PropertyDNA, get full permit history + comps + valuation in ~60 seconds, send to seller before the appointment.\n\nThe part that surprised us most: sellers who receive the report ahead of time arrive curious, not skeptical. The meeting becomes a data review instead of a pitch.\n\nFull breakdown: https://www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
+      "body": "Not trying to sell anything here — just sharing what's actually working for our team in the Coachella Valley.\n\nThe old workflow: pull MLS comps manually, navigate Riverside County permit portal (slow), build a PowerPoint, hope nothing changed before the appointment.\n\nThe new workflow: enter the address in PropertyDNA, get full permit history + comps + valuation in ~60 seconds, send to seller before the appointment.\n\nThe part that surprised us most: sellers who receive the report ahead of time arrive curious, not skeptical. The meeting becomes a data review instead of a pitch.\n\nFull breakdown: https://www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
       "posted": true,
       "postedAt": "2026-05-08T19:01:55.834Z",
       "url": "https://www.reddit.com/r/realtors/comments/1t7hbiu/listing_appointment_prep_used_to_take_me_3_hours/"
@@ -21,17 +21,18 @@
     {
       "id": "reddit-003",
       "subreddit": "RealEstate",
-      "title": "How to tell if a neighborhood is actually improving \u2014 the data signals most buyers miss",
-      "body": "Most buyers evaluate a neighborhood by walking around it once. Here are the data signals that actually predict whether a neighborhood is on the way up or down:\n\n1. Permit pull rate \u2014 neighborhoods seeing active remodeling permits are typically 12-18 months ahead of visible improvement\n2. Owner-occupancy ratio changes \u2014 absentee owners rising = rental conversion pressure, owner-occ rising = stabilization signal\n3. Price-per-sqft velocity, not absolute price \u2014 a flat market with rising ppsf often signals compression into smaller inventory\n4. School district rezoning activity \u2014 underreported driver of 5-year appreciation\n\nWrote this up in more detail here: https://www.thepropertydna.com/blog/neighborhood-data-signals\n\nHappy to discuss the data sources if anyone is interested.",
-      "posted": false,
-      "postedAt": null,
-      "scheduledFor": "2026-05-11"
+      "title": "How to tell if a neighborhood is actually improving — the data signals most buyers miss",
+      "body": "Most buyers evaluate a neighborhood by walking around it once. Here are the data signals that actually predict whether a neighborhood is on the way up or down:\n\n1. Permit pull rate — neighborhoods seeing active remodeling permits are typically 12-18 months ahead of visible improvement\n2. Owner-occupancy ratio changes — absentee owners rising = rental conversion pressure, owner-occ rising = stabilization signal\n3. Price-per-sqft velocity, not absolute price — a flat market with rising ppsf often signals compression into smaller inventory\n4. School district rezoning activity — underreported driver of 5-year appreciation\n\nWrote this up in more detail here: https://www.thepropertydna.com/blog/neighborhood-data-signals\n\nHappy to discuss the data sources if anyone is interested.",
+      "posted": true,
+      "postedAt": "2026-05-09T16:46:54.247Z",
+      "scheduledFor": "2026-05-11",
+      "url": "https://www.reddit.com/r/RealEstate/comments/1t8a3ce/how_to_tell_if_a_neighborhood_is_actually/"
     },
     {
       "id": "reddit-004",
       "subreddit": "FirstTimeHomeBuyer",
-      "title": "The permit history check that saved our buyer $40k \u2014 and how to do it yourself",
-      "body": "Before my client put in an offer, we pulled the permit history on the property. Found an addition built in 2019 with no permit pulled \u2014 which meant the square footage the seller was advertising included unpermitted space.\n\nThat's a financing problem, an insurance problem, and a resale problem. We renegotiated $40k off the price.\n\nHow to check permits:\n- County assessor website (free, slow)\n- City building department (free, requires phone call in most cities)\n- AI property platforms like PropertyDNA that aggregate this automatically\n\nFull guide: https://www.thepropertydna.com/blog/permit-history-property-purchase\n\nAlways check permits before submitting an offer.",
+      "title": "The permit history check that saved our buyer $40k — and how to do it yourself",
+      "body": "Before my client put in an offer, we pulled the permit history on the property. Found an addition built in 2019 with no permit pulled — which meant the square footage the seller was advertising included unpermitted space.\n\nThat's a financing problem, an insurance problem, and a resale problem. We renegotiated $40k off the price.\n\nHow to check permits:\n- County assessor website (free, slow)\n- City building department (free, requires phone call in most cities)\n- AI property platforms like PropertyDNA that aggregate this automatically\n\nFull guide: https://www.thepropertydna.com/blog/permit-history-property-purchase\n\nAlways check permits before submitting an offer.",
       "posted": false,
       "postedAt": null,
       "scheduledFor": "2026-05-15"
@@ -39,8 +40,8 @@
     {
       "id": "reddit-005",
       "subreddit": "investing",
-      "title": "How we identify off-market multifamily deals before they list \u2014 the data approach",
-      "body": "The best multifamily deals in our market don't hit the MLS. Here's how we find them:\n\n1. Filter county assessor data for properties owned 10+ years by absentee owners\n2. Cross-reference with permit data \u2014 long ownership + no recent reinvestment = motivated seller candidate\n3. Score by equity position (estimated via assessed value + origination date)\n4. Outreach to owners directly, before any listing agent is involved\n\nWe've automated this through PropertyDNA's off-market scoring. In our first batch of 300 letters, we got 12 responses and 2 under-contract deals.\n\nDetails: https://www.thepropertydna.com/blog/off-market-property-leads",
+      "title": "How we identify off-market multifamily deals before they list — the data approach",
+      "body": "The best multifamily deals in our market don't hit the MLS. Here's how we find them:\n\n1. Filter county assessor data for properties owned 10+ years by absentee owners\n2. Cross-reference with permit data — long ownership + no recent reinvestment = motivated seller candidate\n3. Score by equity position (estimated via assessed value + origination date)\n4. Outreach to owners directly, before any listing agent is involved\n\nWe've automated this through PropertyDNA's off-market scoring. In our first batch of 300 letters, we got 12 responses and 2 under-contract deals.\n\nDetails: https://www.thepropertydna.com/blog/off-market-property-leads",
       "posted": false,
       "postedAt": null,
       "scheduledFor": "2026-05-18"
@@ -48,8 +49,8 @@
     {
       "id": "reddit-006",
       "subreddit": "realtors",
-      "title": "AI property reports vs traditional CMA \u2014 direct comparison after running both for a year",
-      "body": "We've been running AI-generated property reports alongside traditional CMAs for a year now. Here's the actual comparison:\n\n**Time:** CMA = 2-4 hours. AI report = 4 minutes.\n**Permit data:** CMA = not included. AI = full history automatically.\n**Valuation accuracy:** CMA = depends on comp selection. AI = within 4.2% of sale price on average in our market.\n**Client reception:** CMA = expected. AI report = 'how did you find all this?'\n\nWe're not replacing the CMA \u2014 we're sending the AI report 24 hours before the appointment so the seller has already reviewed our research before we walk in.\n\nhttps://www.thepropertydna.com/blog/ai-property-report-vs-cma",
+      "title": "AI property reports vs traditional CMA — direct comparison after running both for a year",
+      "body": "We've been running AI-generated property reports alongside traditional CMAs for a year now. Here's the actual comparison:\n\n**Time:** CMA = 2-4 hours. AI report = 4 minutes.\n**Permit data:** CMA = not included. AI = full history automatically.\n**Valuation accuracy:** CMA = depends on comp selection. AI = within 4.2% of sale price on average in our market.\n**Client reception:** CMA = expected. AI report = 'how did you find all this?'\n\nWe're not replacing the CMA — we're sending the AI report 24 hours before the appointment so the seller has already reviewed our research before we walk in.\n\nhttps://www.thepropertydna.com/blog/ai-property-report-vs-cma",
       "posted": false,
       "postedAt": null,
       "scheduledFor": "2026-05-27"
@@ -57,7 +58,7 @@
     {
       "id": "reddit-007",
       "subreddit": "realtors",
-      "title": "Palm Springs market heat map \u2014 where price-per-sqft is actually moving right now",
+      "title": "Palm Springs market heat map — where price-per-sqft is actually moving right now",
       "body": "Sharing our current market heat map data for the Coachella Valley. Updated from live county assessor + MLS data.\n\nWhat's moving:\n- Movie Colony + Old Las Palmas: ppsf up 8.3% YoY, low DOM\n- South Palm Springs (below E Palm Canyon): flat, inventory building\n- Cathedral City Cove: price compression from seller movement into Palm Springs\n- Palm Desert Country Club: investor activity increasing, watching for flip premium compression\n\nFull interactive map: https://www.thepropertydna.com/market-heatmaps\n\nAnyone working this market? Happy to trade notes.",
       "posted": false,
       "postedAt": null,
@@ -66,8 +67,8 @@
     {
       "id": "reddit-008",
       "subreddit": "RealEstate",
-      "title": "Why Zillow's Zestimate is often wrong \u2014 and what to look at instead",
-      "body": "Zillow's Zestimate has a median error rate of ~2.4% on listed homes but jumps to 6.9%+ on off-market properties. Here's why:\n\n1. It doesn't see permit data \u2014 unreported upgrades are invisible\n2. It weights recent sales heavily, which creates lag in moving markets\n3. It doesn't adjust for micro-neighborhood variation (a street can have a 15% premium over adjacent streets)\n4. HOA quality and financial health aren't factored in\n\nBetter inputs: actual comp selection by a local agent, permit-adjusted square footage, owner-reported upgrade history.\n\nWe run a valuation model that incorporates all of this: https://www.thepropertydna.com/blog/zillow-zestimate-accuracy\n\nAlways verify with a human who knows the market.",
+      "title": "Why Zillow's Zestimate is often wrong — and what to look at instead",
+      "body": "Zillow's Zestimate has a median error rate of ~2.4% on listed homes but jumps to 6.9%+ on off-market properties. Here's why:\n\n1. It doesn't see permit data — unreported upgrades are invisible\n2. It weights recent sales heavily, which creates lag in moving markets\n3. It doesn't adjust for micro-neighborhood variation (a street can have a 15% premium over adjacent streets)\n4. HOA quality and financial health aren't factored in\n\nBetter inputs: actual comp selection by a local agent, permit-adjusted square footage, owner-reported upgrade history.\n\nWe run a valuation model that incorporates all of this: https://www.thepropertydna.com/blog/zillow-zestimate-accuracy\n\nAlways verify with a human who knows the market.",
       "posted": false,
       "postedAt": null,
       "scheduledFor": "2026-05-31"
@@ -75,8 +76,8 @@
     {
       "id": "reddit-009",
       "subreddit": "FirstTimeHomeBuyer",
-      "title": "Questions to ask before buying in a HOA \u2014 the ones agents often don't bring up",
-      "body": "HOA issues kill deals and kill resale value. Here's what to ask before you're under contract:\n\n1. What's the reserve fund % funded? (under 70% = assessment risk)\n2. Any active or pending litigation?\n3. What's the rental restriction policy? (affects future sale pool)\n4. Has the HOA raised dues more than once in 5 years?\n5. Is there deferred maintenance visible in common areas?\n\nGet the last 2 years of meeting minutes \u2014 they'll show you what management doesn't want to discuss.\n\nWe include HOA risk flags in every PropertyDNA report now: https://www.thepropertydna.com/blog/hoa-questions-before-buying\n\nHappy to help if you're evaluating a specific property.",
+      "title": "Questions to ask before buying in a HOA — the ones agents often don't bring up",
+      "body": "HOA issues kill deals and kill resale value. Here's what to ask before you're under contract:\n\n1. What's the reserve fund % funded? (under 70% = assessment risk)\n2. Any active or pending litigation?\n3. What's the rental restriction policy? (affects future sale pool)\n4. Has the HOA raised dues more than once in 5 years?\n5. Is there deferred maintenance visible in common areas?\n\nGet the last 2 years of meeting minutes — they'll show you what management doesn't want to discuss.\n\nWe include HOA risk flags in every PropertyDNA report now: https://www.thepropertydna.com/blog/hoa-questions-before-buying\n\nHappy to help if you're evaluating a specific property.",
       "posted": false,
       "postedAt": null,
       "scheduledFor": "2026-05-20"
@@ -168,6 +169,6 @@
     }
   ],
   "lastRun": null,
-  "lastRedditPost": "2026-05-08T19:01:55.834Z",
+  "lastRedditPost": "2026-05-09T16:46:54.247Z",
   "lastMediumPost": null
 }
