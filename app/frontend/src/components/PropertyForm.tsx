@@ -1,5 +1,5 @@
 // src/components/PropertyForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PricingGate from './PricingGate';
 import AddressAutocomplete from './AddressAutocomplete';
 import { parseIdxUrl } from '@/lib/parseIdxUrl';
@@ -98,6 +98,20 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
     propertyType: '', notes: '',
     idxUrl: '', mlsNumber: '', listingAgent: '', listingBrokerage: '',
   });
+
+  // Pre-fill from URL params (email campaigns pass ?email=&name=&address=)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailParam   = params.get('email');
+    const nameParam    = params.get('name');
+    const addressParam = params.get('address');
+    setForm(prev => ({
+      ...prev,
+      ...(emailParam   ? { email:    decodeURIComponent(emailParam)   } : {}),
+      ...(nameParam    ? { fullName:  decodeURIComponent(nameParam)    } : {}),
+      ...(addressParam ? { address:   decodeURIComponent(addressParam) } : {}),
+    }));
+  }, []);
   const [showIdxFields, setShowIdxFields] = useState(false);
 
   const isCondo = form.propertyType.toLowerCase().includes('condo')

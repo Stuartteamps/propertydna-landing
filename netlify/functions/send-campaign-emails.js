@@ -83,8 +83,8 @@ function buyerHtml(c, campaign) {
   const score     = c.neighborhood_score || 71;
   const label     = c.score_label || 'Buy';
   const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(c.email)}&amp;cid=${c.campaign_id}`;
-  const ctaUrl    = `${SITE_URL}/?ref=homeowner_campaign`;
-  const mapUrl    = `${SITE_URL}/market-heatmaps?ref=homeowner_campaign`;
+  const ctaUrl    = `${SITE_URL}/?ref=homeowner_campaign&email=${encodeURIComponent(c.email)}`;
+  const mapUrl    = `${SITE_URL}/market-heatmaps?ref=homeowner_campaign&email=${encodeURIComponent(c.email)}`;
 
   return `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PropertyDNA</title></head>
 <body style="margin:0;padding:0;background:#F4F0E8;font-family:Helvetica,Arial,sans-serif">

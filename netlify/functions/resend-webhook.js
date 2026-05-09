@@ -102,7 +102,8 @@ async function sendFollowUp(contact, step) {
   const city      = contact.city || 'Coachella Valley';
   const score     = contact.neighborhood_score || 71;
   const label     = contact.score_label || 'Buy';
-  const unsub     = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(contact.email)}&cid=${contact.campaign_id}`;
+  const unsub      = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(contact.email)}&cid=${contact.campaign_id}`;
+  const reportLink = `${SITE_URL}/?email=${encodeURIComponent(contact.email)}&name=${encodeURIComponent(contact.first_name || '')}&ref=`;
 
   const templates = {
     // Step 1: Immediate clicker auto-reply — confirm interest, strong CTA
@@ -130,7 +131,7 @@ async function sendFollowUp(contact, step) {
   <p>You checked your <strong>${city}</strong> ranking — <strong>${score}/100</strong>. That number tells a story about your property's position in the current market, but the full DNA report is where the real insight is.</p>
   <p>Your full report covers: <strong>property-level comps</strong>, renovation ROI estimate, flood and hazard exposure, rental demand score, and a 5-year value trajectory for your specific address.</p>
   <p><strong>It's free. Takes 60 seconds to request. Delivered to your inbox in minutes.</strong></p>
-  <a href="${SITE_URL}/?ref=followup_click" class="cta">→ Get My Free PropertyDNA Report Now</a>
+  <a href="${reportLink}followup_click" class="cta">→ Get My Free PropertyDNA Report Now</a>
   <p style="font-size:12px;color:#888">No credit card. No obligation. Just your property's full intelligence report.</p>
 </div>
 <div class="footer">PropertyDNA · thepropertydna.com · reports@thepropertydna.com<br>
@@ -166,7 +167,7 @@ async function sendFollowUp(contact, step) {
   <p>The biggest driver of ${city}'s <strong>${score}/100</strong> ranking right now is days on market velocity — properties in the top zip codes are moving <strong>37% faster</strong> than the same time last year.</p>
   <p>That signals one thing: demand is outpacing supply in specific pockets. Your full PropertyDNA report shows exactly which streets and price bands are accelerating — and whether your property is in one of them.</p>
   <p><strong>Claim your free report and see where you rank property-by-property.</strong></p>
-  <a href="${SITE_URL}/?ref=followup_open" class="cta">→ See My Property's Full Ranking</a>
+  <a href="${reportLink}followup_open" class="cta">→ See My Property's Full Ranking</a>
 </div>
 <div class="footer">PropertyDNA · thepropertydna.com · reports@thepropertydna.com<br>
 <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
@@ -194,7 +195,7 @@ async function sendFollowUp(contact, step) {
   <p>Markets don't wait. The <strong>${city}</strong> market has seen permit activity, new comps, and inventory changes in the past week — all of which affect your property's DNA score.</p>
   <p>Your free PropertyDNA report gives you the current picture: live comps, updated market trajectory, hazard exposure, and renovation ROI for your specific address.</p>
   <p>This is the last time we'll reach out about your free report.</p>
-  <a href="${SITE_URL}/?ref=followup_final" class="cta">→ Claim My Free Report — Final Notice</a>
+  <a href="${reportLink}followup_final" class="cta">→ Claim My Free Report — Final Notice</a>
   <p style="font-size:11px;color:#999;margin-top:8px">Free · No card required · Delivered in minutes</p>
 </div>
 <div class="footer">PropertyDNA · thepropertydna.com · reports@thepropertydna.com<br>
@@ -226,7 +227,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
   <div class="insight"><p><strong>2. Insurance-driven repricing.</strong> Climate risk scoring changes in CA are creating value gaps between similar addresses — your exposure matters more than ever.</p></div>
   <div class="insight"><p><strong>3. Days on market compression.</strong> The top third of ${city} properties by DNA score are moving in under 18 days. Bottom third: 60+ days.</p></div>
   <p>Your PropertyDNA report shows exactly where your property falls in each of these signals — free, your address, delivered in minutes.</p>
-  <a href="${SITE_URL}/?ref=drip4_insight" class="cta">→ Get My Property Intelligence Report</a>
+  <a href="${reportLink}drip4_insight" class="cta">→ Get My Property Intelligence Report</a>
 </div>
 <div class="footer">PropertyDNA · thepropertydna.com · <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
 </div></body></html>`,
@@ -257,7 +258,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
   <p>Most people don't know their property's real position in the market until they're already in a transaction — by which point leverage is limited.</p>
   <p>PropertyDNA gives you that picture <strong>before</strong> any decision: whether you're thinking about listing, refinancing, renovating, or just want to know what the data says about your home's trajectory.</p>
   <p>Your ranking is <strong>${score}/100</strong>. The full report tells you why — and what moves it.</p>
-  <a href="${SITE_URL}/?ref=drip5_proof" class="cta">→ See My Full Property Report (Free)</a>
+  <a href="${reportLink}drip5_proof" class="cta">→ See My Full Property Report (Free)</a>
 </div>
 <div class="footer">PropertyDNA · thepropertydna.com · <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
 </div></body></html>`,
@@ -287,7 +288,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
   <div class="item"><div class="num">2</div><div class="item-body"><strong>Rental demand trajectory.</strong> Short-term rental demand in ${city} is tracking up 19% YoY. If your property sits in a zone with favorable STR regulations, your upside story is stronger than your assessed value suggests.</div></div>
   <div class="item"><div class="num">3</div><div class="item-body"><strong>Flood/climate risk delta.</strong> Insurance repricing is creating divergence between similar properties. Low-risk properties in your zip are commanding premiums that didn't exist 18 months ago.</div></div>
   <p>Your PropertyDNA report shows all three of these signals for your specific address — free, instant, no strings.</p>
-  <a href="${SITE_URL}/?ref=drip6_value" class="cta">→ Unlock My Full Property Analysis</a>
+  <a href="${reportLink}drip6_value" class="cta">→ Unlock My Full Property Analysis</a>
 </div>
 <div class="footer">PropertyDNA · thepropertydna.com · <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
 </div></body></html>`,
@@ -312,7 +313,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
   <p>We built PropertyDNA to give property owners the same data-driven picture that institutional investors use. Not a Zestimate. Not an AVM. A full intelligence stack: permit signals, climate exposure, rental demand, comp velocity — all mapped to your specific address.</p>
   <p>If you've got questions about your property's ranking or what the data means, just reply to this email. I read every response.</p>
   <p>And if you haven't pulled your free report yet — it takes 60 seconds.</p>
-  <a href="${SITE_URL}/?ref=drip7_personal" class="cta">Get My Free Report →</a>
+  <a href="${reportLink}drip7_personal" class="cta">Get My Free Report →</a>
   <div class="sig">
     Dan Stuart<br>
     Founder, PropertyDNA<br>
@@ -347,7 +348,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
   <p>This is our last outreach — we don't want to overstay our welcome. But before we go, two things:</p>
   <p><strong>1. Your free report is still waiting.</strong> If you ever want to know exactly where your ${city} property stands in the current market, the link below takes 60 seconds.</p>
   <p><strong>2. Know someone who should know this data?</strong> If a neighbor, family member, or colleague owns property in ${city}, send them to thepropertydna.com. Their free report could be the most valuable thing they read this month.</p>
-  <a href="${SITE_URL}/?ref=drip8_final" class="cta">→ Get My Free PropertyDNA Report</a>
+  <a href="${reportLink}drip8_final" class="cta">→ Get My Free PropertyDNA Report</a>
   <p style="font-size:11px;color:#999">No card required · Delivered in minutes · Unsubscribe below if you'd prefer no further contact.</p>
 </div>
 <div class="footer">PropertyDNA · thepropertydna.com · <a href="${unsub}" style="color:#999">Unsubscribe</a></div>
