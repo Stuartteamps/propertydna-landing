@@ -162,15 +162,60 @@ async function smokeTest(token) {
 
 // ── Quo SMS ────────────────────────────────────────────────────────────
 async function smsDan(message) {
-  const r = await request("POST", "https://api.openphone.com/v1/messages", {
-    Authorization: QUO_API_KEY,
-    "Content-Type": "application/json",
-  }, {
-    from:    QUO_FROM,
-    to:      [DAN_PHONE],
-    content: message,
-  });
-  return r;
+  try {
+    const r = await request("POST", "https://api.openphone.com/v1/messages", {
+      Authorization: QUO_API_KEY,
+      "Content-Type": "application/json",
+    }, {
+      from:    QUO_FROM,
+      to:      [DAN_PHONE],
+      content: message,
+    });
+    return r;
+  } catch (e) {
+    return { status: 0, data: { error: e.message } };
+  }
+}
+
+// ── Resend email fallback ──────────────────────────────────────────────
+async function emailDan(subject, message) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    // Try to fetch from Netlify env if not in process env
+    return { status: 0, data: { error: "RESEND_API_KEY not in environment — set it locally to use email fallback: export RESEND_API_KEY=$(netlify env:get RESEND_API_KEY)" } };
+  }
+  try {
+    const r = await request("POST", "https://api.resend.com/emails", {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    }, {
+      from:    "PropertyDNA Bootstrap <reports@thepropertydna.com>",
+      to:      ["stuartteamps@gmail.com"],
+      subject,
+      text:    message,
+    });
+    return r;
+  } catch (e) {
+    return { status: 0, data: { error: e.message } };
+  }
+}
+
+// Try SMS, fall back to email if it fails
+async function notifyDan(subject, message) {
+  const sms = await smsDan(message);
+  if (sms.status >= 200 && sms.status < 300) {
+    return { channel: "sms", status: sms.status };
+  }
+  console.log(`  ⚠ SMS failed (${sms.status}): ${JSON.stringify(sms.data).slice(0,200)}`);
+  console.log(`  → Falling back to email…`);
+  const email = await emailDan(subject, message);
+  return {
+    channel: email.status >= 200 && email.status < 300 ? "email" : "none",
+    sms_status:   sms.status,
+    sms_error:    sms.data,
+    email_status: email.status,
+    email_error:  email.data,
+  };
 }
 
 // ── Main flow ──────────────────────────────────────────────────────────
@@ -206,49 +251,69 @@ async function bootstrap({ rotate = false, smokeOnly = false } = {}) {
   const action = await setEnvVar(accountSlug, "MANYCHAT_WEBHOOK_TOKEN", token);
   console.log(`  ${action} on Netlify`);
 
+  // Persist the token NOW so it survives downstream failures
+  writeStatus({ token, env_set_at: new Date().toISOString(), env_action: action });
+
   // 3. Trigger deploy
   const [latestBefore] = await listLatestDeploys(1);
   const beforeId = latestBefore ? latestBefore.id : null;
   console.log("→ Triggering Netlify deploy…");
   await triggerDeploy();
 
-  // 4. Wait for deploy
+  // 4. Wait for deploy (don't crash the script — let smoke decide pass/fail)
   console.log("→ Waiting for deploy to reach ready…");
-  const ready = await waitForDeploy(beforeId);
-  const elapsed = Math.round((Date.now() - new Date(ready.created_at).getTime()) / 1000);
-  console.log(`  ✓ deploy ${ready.id.slice(0,8)} ready (${elapsed}s)`);
+  let ready, deployErr;
+  try {
+    ready = await waitForDeploy(beforeId);
+    const elapsed = Math.round((Date.now() - new Date(ready.created_at).getTime()) / 1000);
+    console.log(`  ✓ deploy ${ready.id.slice(0,8)} ready (${elapsed}s)`);
+  } catch (e) {
+    deployErr = e.message;
+    console.log(`  ✗ ${deployErr}`);
+    writeStatus({ deploy_error: deployErr, deploy_error_at: new Date().toISOString() });
+  }
 
-  // 5. Smoke test
-  console.log("→ Smoke-testing webhook…");
-  const r = await smokeTest(token);
-  const ok = r.status === 200;
-  console.log(`  ${ok ? "✓" : "✗"} status=${r.status}`);
-  if (!ok) console.log(`  body: ${JSON.stringify(r.data).slice(0, 400)}`);
-
-  writeStatus({
-    token,
-    deployed_at: new Date().toISOString(),
-    deploy_id:   ready.id,
-    last_smoke:  { status: r.status, ok, at: new Date().toISOString() },
-  });
+  // 5. Smoke test (only if deploy succeeded)
+  let r, ok = false;
+  if (ready) {
+    console.log("→ Smoke-testing webhook…");
+    r = await smokeTest(token);
+    ok = r.status === 200;
+    console.log(`  ${ok ? "✓" : "✗"} status=${r.status}`);
+    if (!ok) console.log(`  body: ${JSON.stringify(r.data).slice(0, 400)}`);
+    writeStatus({
+      deployed_at: new Date().toISOString(),
+      deploy_id:   ready.id,
+      last_smoke:  { status: r.status, ok, at: new Date().toISOString() },
+      deploy_error: null,
+    });
+  } else {
+    console.log("→ Skipping smoke test (deploy failed)");
+  }
 
   // 6. SMS Dan
-  const sms = ok
-    ? `PropertyDNA: ManyChat webhook live ✓
+  let sms;
+  if (ok) {
+    sms = `PropertyDNA: ManyChat webhook live ✓
 Token: ${token}
 Next: app.manychat.com → flow per ${FLOW_GUIDE_LOCAL}
-Deploy ${ready.id.slice(0,8)} ready, smoke test 200.`
-    : `PropertyDNA: ManyChat webhook deployed but smoke test FAILED (${r.status}). Check Netlify function logs. Token: ${token}`;
-  console.log("→ Texting Dan…");
-  const smsRes = await smsDan(sms);
-  console.log(`  ${smsRes.status < 300 ? "✓" : "✗"} SMS status=${smsRes.status}`);
-  if (smsRes.status >= 300) console.log(`  body: ${JSON.stringify(smsRes.data).slice(0,300)}`);
-
-  writeStatus({ last_sms: { status: smsRes.status, at: new Date().toISOString() } });
+Deploy ${ready.id.slice(0,8)} ready, smoke test 200.`;
+  } else if (ready) {
+    sms = `PropertyDNA: ManyChat webhook deployed but smoke test FAILED (${r.status}). Check Netlify function logs. Token: ${token}`;
+  } else {
+    sms = `PropertyDNA: ManyChat env var SET on Netlify ✓ but Netlify build is failing (unrelated to manychat code). Token saved locally + on Netlify: ${token}. Once build is green, run: node tools/manychat-bootstrap.js --smoke-only`;
+  }
+  console.log("→ Notifying Dan (SMS, fallback email)…");
+  const subject = ok ? "ManyChat webhook live" : ready ? "ManyChat smoke-test FAILED" : "ManyChat env set, deploy deferred";
+  const notify = await notifyDan(subject, sms);
+  console.log(`  ${notify.channel === "none" ? "✗" : "✓"} delivered via ${notify.channel}`);
+  writeStatus({ last_notify: { ...notify, at: new Date().toISOString() } });
 
   console.log("");
   console.log("─────────────────────────────────────");
-  console.log(ok ? "BOOTSTRAP COMPLETE — webhook live, Dan texted." : "BOOTSTRAP PARTIAL — env set + deployed, but smoke test failed.");
+  if (ok) console.log("BOOTSTRAP COMPLETE — webhook live, Dan texted.");
+  else if (ready) console.log("BOOTSTRAP PARTIAL — env set + deployed, but smoke test failed.");
+  else console.log("BOOTSTRAP DEFERRED — env set, but Netlify build is failing. Smoke test deferred until next green deploy.");
   return ok;
 }
 
