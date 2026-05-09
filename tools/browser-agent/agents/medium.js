@@ -31,9 +31,16 @@ async function run() {
   }
 
   const queue = JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8'));
-  const pending = queue.medium.find(p => !p.posted);
+  const today = new Date().toISOString().slice(0, 10);
+  // Schedule: post to Medium weekly (every 7th day from calendar medium entries)
+  const CALENDAR_FILE = path.join(__dirname, '../data/content-calendar.json');
+  const calendar = JSON.parse(fs.readFileSync(CALENDAR_FILE, 'utf8'));
+  const mediumDates = new Set(calendar.posts.filter(p => p.medium).map(p => p.date));
+  const isPublishDay = mediumDates.has(today);
+  const pending = isPublishDay ? queue.medium.find(p => !p.posted) : null;
   if (!pending) {
-    log('No pending Medium posts.');
+    const nextDate = [...mediumDates].sort().find(d => d > today);
+    log(isPublishDay ? 'No pending Medium posts.' : `Not a Medium publish day. Next: ${nextDate || 'none scheduled'}`);
     return { status: 'nothing_to_post' };
   }
 

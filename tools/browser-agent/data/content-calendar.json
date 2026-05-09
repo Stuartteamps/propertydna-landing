@@ -1,0 +1,186 @@
+{
+  "generated": "2026-05-09",
+  "note": "One post per date. Buffer agent posts the entry matching today's date. Reddit posts spread every 2-3 days. Medium posts weekly.",
+  "posts": [
+    {
+      "date": "2026-05-09",
+      "text": "168,000 parcels indexed across the Coachella Valley.\n\nEvery permit filed. Every ownership transfer. Every valuation shift \u2014 mapped and searchable in real time.\n\nThis is the data that tells you which neighborhoods are quietly accelerating before anyone else notices. Which properties are priced against missing permit information. Which sellers are sitting on equity they do not know they have.\n\nThis is PropertyDNA.\n\nwww.thepropertydna.com/market-heatmaps",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-10",
+      "text": "Unpopular opinion: the CMA is dead.\n\nNot because the data is wrong. Because the prep takes 3 hours for a 30-minute conversation.\n\nWe generate a full property intelligence report \u2014 comps, permits, valuation, hazard, rental demand \u2014 in under 60 seconds. Same data. Zero prep time.\n\nThe agents winning listing appointments in 2026 are sending the report to the seller 24 hours early. They walk into a conversation instead of a cold pitch.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-11",
+      "text": "The most important number in real estate right now: 21.\n\nThat's the median days on market in Palm Springs. It was 42 days this time last year.\n\nWhen DOM cuts in half, everything changes. Buyers need to decide faster. Offers need to be cleaner. Agents who walk in prepared \u2014 with data \u2014 close more.\n\nThe PropertyDNA heat map tracks DOM by zip in real time.\n\nwww.thepropertydna.com/market-heatmaps",
+      "reddit": "reddit-003",
+      "medium": null
+    },
+    {
+      "date": "2026-05-12",
+      "text": "We found an unpermitted addition on a listing before our buyer made an offer.\n\nThe addition was 300 sqft. The seller was advertising it in the total square footage. That's a financing problem, an appraisal problem, and a disclosure problem.\n\nPermit check saved our client from a deal that would have blown up at inspection.\n\nWe now run permit history on every property, automatically, before our clients even schedule a showing.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": "medium-001"
+    },
+    {
+      "date": "2026-05-13",
+      "text": "What 168,000 parcels of Coachella Valley data tells us:\n\n\u2022 Movie Colony: ppsf up 8.3% YoY \u2014 inventory below 2019 levels\n\u2022 South Palm Springs: 90-day inventory building \u2014 first time since 2022\n\u2022 Cathedral City Cove: investor activity rising \u2014 23% of Q1 sales to LLCs\n\u2022 Palm Desert Country Club: permit pull rate up 31% \u2014 signal of incoming appreciation\n\nThe market isn't uniform. It's 12 different markets inside one county.\n\nwww.thepropertydna.com/market-heatmaps",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-14",
+      "text": "The listing appointment script that's working for us right now:\n\nStep 1: Send PropertyDNA report to seller 24 hours before meeting.\nStep 2: Walk in and ask \"what questions did the report bring up?\"\nStep 3: Answer their questions with your expertise.\nStep 4: Price the listing.\n\nThe old script: show up, present comps, overcome objections about price, fight for the listing.\n\nThe new script: the research arrived before you did. You're already the expert.\n\nwww.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-15",
+      "text": "Real estate investors: absentee owner + 10+ years of ownership + zero permits pulled in the last 5 years = motivated seller candidate.\n\nThis isn't theory. We filtered 168,000 Coachella Valley parcels with this logic and identified 2,400 properties matching the profile.\n\nFirst 300 outreach letters: 12 responses, 2 deals under contract.\n\nThe best off-market leads are hiding in public records. You just need the right filter.\n\nwww.thepropertydna.com/blog/off-market-property-leads",
+      "reddit": "reddit-004",
+      "medium": null
+    },
+    {
+      "date": "2026-05-16",
+      "text": "Short-term rental data that Palm Springs agents need to know:\n\nOld Las Palmas / Movie Colony: ADR $420, 64% occupancy \u2014 architecture commands a 47% premium over central PS\nCentral Palm Springs: ADR $285, 71% occupancy \u2014 highest occupancy, driven by walkability\nCathedral City: ADR $195, 58% occupancy \u2014 price-sensitive market, Coachella spike dependent\n\nIf your buyer is STR-motivated, neighborhood selection is everything. Central PS = occupancy. Old Las Palmas = nightly rate.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": "medium-002"
+    },
+    {
+      "date": "2026-05-17",
+      "text": "Why I stopped using Zillow's Zestimate for client conversations.\n\nIt has a 2.4% median error on listed homes. Fine.\n\nBut on off-market homes? 6.9% error. On a $900,000 property that's a $62,100 swing \u2014 in either direction.\n\nThe model doesn't see permits. A home with a permitted casita addition might be worth $75,000 more than its Zestimate. A home with 300sqft of unpermitted additions might appraise for less.\n\nWe stopped citing Zestimates. We send the PropertyDNA report instead.\n\nwww.thepropertydna.com/blog/zillow-zestimate-accuracy",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-18",
+      "text": "Permit velocity is the leading indicator most agents don't track.\n\nWhen a neighborhood sees a surge in remodel permits \u2014 kitchens, ADUs, pool additions \u2014 appreciation follows 12-18 months later. The money moves in before the prices do.\n\nWe track permit pull rates across every zip in the Coachella Valley. Right now:\n\u2022 92262 (PS Central): permits up 14% YoY\n\u2022 92260 (Palm Desert): ADU permits up 41% \u2014 largest jump in the valley\n\u2022 92253 (La Quinta): renovation permits down 8% \u2014 early inventory signal\n\nwww.thepropertydna.com/market-heatmaps",
+      "reddit": "reddit-005",
+      "medium": null
+    },
+    {
+      "date": "2026-05-19",
+      "text": "An agent on our team ran the numbers on her listing appointments from the last 6 months.\n\n\u2022 Appointments where she sent a PropertyDNA report in advance: 71% conversion to signed listing\n\u2022 Appointments without the report: 44% conversion\n\nSame agent. Same market. Same price range.\n\nThe report isn't closing the deal. It's changing the room she walks into. Informed sellers sign faster.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": "medium-003"
+    },
+    {
+      "date": "2026-05-20",
+      "text": "The 5 questions to ask before buying in any HOA \u2014 and why most agents skip them:\n\n1. What % is the reserve fund? (Under 70% = special assessment risk)\n2. Any pending litigation? (Ask for last 2 years of board minutes)\n3. What's the rental restriction policy? (Affects future buyer pool)\n4. Have dues increased more than once in 5 years?\n5. What's the deferred maintenance list?\n\nWe include HOA risk signals in every PropertyDNA report.\n\nThe answers are in the documents. Most people never ask for them.\n\nwww.thepropertydna.com/blog/hoa-questions-before-buying",
+      "reddit": "reddit-009",
+      "medium": null
+    },
+    {
+      "date": "2026-05-21",
+      "text": "Hot take: the 3-hour CMA is a liability, not a value-add.\n\nHere's why: you spend 3 hours pulling comps, building a presentation, and pricing a home \u2014 before you've even met the seller or seen the property.\n\nAll that prep is based on assumptions. The property might have issues you don't know about. The seller might have a completely different price expectation.\n\nWe generate the data report in 60 seconds. We spend the 3 hours on relationship \u2014 understanding the seller's situation, their timeline, what matters to them.\n\nData fast. Empathy slow.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-22",
+      "text": "The Coachella Valley market by the numbers \u2014 May 2026:\n\n\ud83d\udcca Palm Springs: Median DOM 21 days | Supply 1.8 months | YoY appreciation +4.2%\n\ud83d\udcca Palm Desert: Median DOM 28 days | Supply 2.1 months | YoY appreciation +3.1%\n\ud83d\udcca Rancho Mirage: Median DOM 19 days | Supply 1.4 months | YoY appreciation +5.7%\n\ud83d\udcca Indian Wells: Median DOM 34 days | Supply 2.8 months | YoY appreciation +2.9%\n\ud83d\udcca La Quinta: Median DOM 24 days | Supply 2.0 months | YoY appreciation +3.8%\n\nFull heat map: www.thepropertydna.com/market-heatmaps",
+      "reddit": "reddit-007",
+      "medium": null
+    },
+    {
+      "date": "2026-05-23",
+      "text": "Something we didn't expect when we started sending AI property reports to buyers:\n\nThey started asking better questions.\n\nInstead of \"is this a good deal?\" they were asking \"why is the flood zone rating different from the neighbor's?\" and \"what does the permit history tell us about how the owners maintained the property?\"\n\nBetter questions lead to better decisions. Better decisions lead to fewer post-close surprises.\n\nThe report doesn't replace agent expertise. It upgrades the conversation.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": "medium-004"
+    },
+    {
+      "date": "2026-05-24",
+      "text": "The hidden premium in Palm Springs real estate: mid-century modern architecture.\n\nWe analyzed 340 sales in the last 12 months. Verified MCM homes (built 1940-1975, original architectural integrity) sold at a 22% premium over comparable non-MCM properties \u2014 adjusting for size, condition, and location.\n\nThe premium is highest in Movie Colony (28%) and lowest in Desert Highland (11%).\n\nBuyers paying the MCM premium are buying a finite inventory. There are no new ones being built.\n\nwww.thepropertydna.com/market-heatmaps",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-25",
+      "text": "What Rancho Mirage's 1.4 months of supply actually means for buyers:\n\nAt 6 months of supply, buyers have leverage. At 3 months, it's balanced. At 1.4 months, sellers control everything.\n\nIn Rancho Mirage right now:\n\u2022 Average offer-to-list ratio: 101.3%\n\u2022 Median days to offer: 8\n\u2022 % of listings with multiple offers: 67%\n\nIf you're putting a buyer into Rancho Mirage without a pre-offer property report, you're putting them in a gunfight without ammunition.\n\nwww.thepropertydna.com/market-heatmaps",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-26",
+      "text": "Memorial Day weekend real estate reality check:\n\nPalm Springs sees its biggest buyer traffic surge of the year in late May. Seasonal buyers from LA and Phoenix visit for the long weekend and buy.\n\nThis year they're walking into a market with 1.8 months of supply and a median DOM of 21 days.\n\nIf you're representing a buyer this weekend: have the property report ready before the showing. Offers are being written the same day.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-27",
+      "text": "7 things the PropertyDNA report shows that a standard listing sheet doesn't:\n\n1. Full permit history back to 1990\n2. FEMA flood zone with subtype classification\n3. FEMA NRI composite hazard score (18 hazard categories)\n4. Wildfire, earthquake, wind, and flood individual scores\n5. Short-term rental demand and occupancy estimates\n6. 5-year value trajectory at market appreciation rate\n7. Renovation ROI estimates by improvement type\n\nAll of it generated in under 60 seconds.\n\nwww.thepropertydna.com",
+      "reddit": "reddit-006",
+      "medium": null
+    },
+    {
+      "date": "2026-05-28",
+      "text": "The real reason insurance premiums are spiking in California:\n\nClimate risk repricing. Insurers updated their models. Properties with similar addresses can now have wildfire or flood risk scores that differ by 40 points based on micro-geography \u2014 slope, vegetation density, proximity to fire roads.\n\nIn Palm Springs, we've seen insurance premium divergence of $3,200/year between adjacent properties.\n\nThis is now a material disclosure issue. We flag it in every PropertyDNA report.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-29",
+      "text": "This is what 168,000 indexed parcels looks like on a map.\n\nEvery neighborhood in the Coachella Valley. Every price-per-sqft movement. Every days-on-market trend. Updated from live county assessor data.\n\nZooming in on one zip code: 11 active listings, 4 under contract, median DOM 18 days, ppsf trending up 1.2% month-over-month.\n\nThis is the data your buyer needs before writing an offer. Not after.\n\nSee the live map: www.thepropertydna.com/market-heatmaps",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-05-30",
+      "text": "AI property reports have been out for about 2 years. Here's what actually changed for our team:\n\n\u2705 Listing appointment conversion: up 27 points\n\u2705 Buyer due diligence surprises: down significantly\n\u2705 Time spent on pre-appointment research: 3 hours \u2192 5 minutes\n\u2705 Average days to offer for our buyers: faster than market\n\n\u274c What didn't change: our judgment, our relationships, our local knowledge\n\nThe AI does the data assembly. The agent does the rest.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": "medium-005"
+    },
+    {
+      "date": "2026-05-31",
+      "text": "June outlook for the Coachella Valley:\n\nHistorically, Palm Springs sees volume soften in June as summer heat sets in. But this June is different:\n\n\u2022 Pre-summer inventory remains below 2 months across most cities\n\u2022 Rate-sensitive buyers who paused in Q1 are re-entering\n\u2022 Out-of-state buyers (WA, OR, CO) showing strong interest in price-adjusted properties\n\nPrediction: June will be slower on volume but not on price. Sellers who price correctly will still move fast.\n\nwww.thepropertydna.com/market-heatmaps",
+      "reddit": "reddit-008",
+      "medium": null
+    },
+    {
+      "date": "2026-06-01",
+      "text": "June 1st: here's where the Coachella Valley housing market stands:\n\nHomes sold in May 2026 vs May 2025:\n\u2022 Palm Springs: +11% volume, +4.2% price\n\u2022 Rancho Mirage: +7% volume, +5.7% price\n\u2022 Palm Desert: +3% volume, +3.1% price\n\u2022 La Quinta: +9% volume, +3.8% price\n\nYoY appreciation is holding across the valley despite national softening. Inventory constraints and seasonal demand are doing the work.\n\nFull breakdown: www.thepropertydna.com/market-heatmaps",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-06-02",
+      "text": "The most underrated tool in a real estate agent's technology stack: county assessor data.\n\nIt's free. It's public. It has permit history, ownership history, assessed value trends, and land use classifications.\n\nMost agents never look at it because the UI is unusable.\n\nWe built PropertyDNA to make assessor data as easy to read as a text message. Same data. No bureaucratic portal. Results in 60 seconds.\n\nwww.thepropertydna.com",
+      "reddit": "reddit-010",
+      "medium": null
+    },
+    {
+      "date": "2026-06-03",
+      "text": "Things that actually predict a neighborhood's 5-year trajectory:\n\n1. Owner-occupancy ratio trend (rising = stabilization, falling = rental conversion)\n2. Permit pull rate per 100 homes (investment signal)\n3. School district performance + rezoning activity\n4. Commercial permit activity within 0.5 miles (retail investment follows residential)\n5. Insurance premium spread vs. adjacent neighborhoods (risk divergence = value divergence)\n\nNone of these are in the MLS. All of them are in public records.\n\nwww.thepropertydna.com/blog/neighborhood-data-signals",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-06-04",
+      "text": "How to price a home in a seller's market without leaving money on the table:\n\nMost agents anchor to recent comps. That's correct \u2014 but incomplete.\n\nIn a sub-2-month supply market, you also need:\n\u2022 Absorption rate velocity (is supply dropping or holding?)\n\u2022 Days-to-offer trend (is it accelerating?)\n\u2022 Offer-to-list ratio on recent closes\n\u2022 Buyer pool depth for this price band\n\nWe include market velocity signals in every PropertyDNA report.\n\nRight now in Palm Springs: price 2-4% above the comp anchor. The market will validate it.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-06-05",
+      "text": "Every real estate market has a DNA score. Ours for June:\n\n\ud83d\udfe2 Rancho Mirage: 76/100 \u2014 Strong Buy. Lowest supply, highest appreciation. Move fast.\n\ud83d\udfe2 Indian Wells: 78/100 \u2014 Strong Buy. Luxury segment, ultra-low turnover, price resilient.\n\ud83d\udfe2 Palm Springs: 74/100 \u2014 Strong Buy. Volume leader, STR demand supporting prices.\n\ud83d\udfe1 La Quinta: 73/100 \u2014 Buy. Balanced market, CC communities providing price floor.\n\ud83d\udfe1 Palm Desert: 71/100 \u2014 Buy. More inventory than peers, better buyer leverage.\n\ud83d\udfe1 Indio: 65/100 \u2014 Buy. Entry price point attracting first-timers and investors.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-06-06",
+      "text": "The summer real estate season in the desert is a myth that costs sellers money.\n\n\"Nobody buys in Palm Springs in the summer\" \u2014 said agents who didn't study the data.\n\nReality: summer volume is 22% lower than spring peak. But buyer quality is higher. Summer buyers are motivated. They're not Sunday-driving \u2014 they're relocating, investing, or solving a problem.\n\nThe summer market is smaller and more serious. Price it right and it sells.\n\nwww.thepropertydna.com/market-heatmaps",
+      "reddit": null,
+      "medium": null
+    },
+    {
+      "date": "2026-06-07",
+      "text": "What separates the top 10% of real estate agents from the rest:\n\nIt's not the marketing. It's not the photography. It's not even the negotiation.\n\nIt's the depth of their market knowledge \u2014 delivered clearly, before the client asks.\n\nThe best agents we know don't answer questions. They anticipate them. They walk into every meeting with a clear picture of what the data says about that specific property, that specific neighborhood, that specific moment in the market.\n\nThat's the standard PropertyDNA is built to help you meet.\n\nwww.thepropertydna.com",
+      "reddit": null,
+      "medium": null
+    }
+  ]
+}

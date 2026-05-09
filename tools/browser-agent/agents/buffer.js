@@ -16,8 +16,9 @@ const https      = require('https');
 const fs         = require('fs');
 const path       = require('path');
 
-const CREDS_FILE   = path.join(__dirname, '../.daily-creds.json');
-const TRACKER_FILE = path.join(__dirname, '../data/buffer-tracker.json');
+const CREDS_FILE      = path.join(__dirname, '../.daily-creds.json');
+const TRACKER_FILE    = path.join(__dirname, '../data/buffer-tracker.json');
+const CALENDAR_FILE   = path.join(__dirname, '../data/content-calendar.json');
 
 function log(msg) { console.log(`[Buffer] ${msg}`); }
 
@@ -27,19 +28,16 @@ function loadCreds() {
   return c.buffer || null;
 }
 
-// Daily social content rotation
-const SOCIAL_CONTENT = [
-  "168,000 parcels indexed across the Coachella Valley. Every permit, every owner change, every valuation update — in one place. www.thepropertydna.com",
-  "The listing appointment is won before you walk in the door. Sellers who receive a property report 24 hours early arrive curious, not skeptical. www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
-  "Permit history is the most under-used data point in real estate due diligence. We check it automatically on every PropertyDNA report. www.thepropertydna.com",
-  "AI property reports vs. traditional CMA — we ran both for a year. The AI report takes 4 minutes. The CMA takes 4 hours. The accuracy is comparable. www.thepropertydna.com/blog/ai-property-report-vs-cma",
-  "Off-market leads: filter for absentee owners with 10+ years of ownership and no recent permits. That's your motivated seller list. www.thepropertydna.com",
-  "Zillow's Zestimate error rate on off-market homes is 6.9%. Our model incorporates permit data and micro-neighborhood variation. www.thepropertydna.com/blog/zillow-zestimate-accuracy",
-  "The PropertyDNA heat map shows price-per-sqft movement across the Coachella Valley in real time. See which neighborhoods are actually moving. www.thepropertydna.com/market-heatmaps",
-  "Real estate teams using AI property reports win listing appointments at higher rates. The research is done before the conversation starts. www.thepropertydna.com",
-  "Neighborhood data signals most buyers miss: permit pull rate, owner-occupancy ratio changes, ppsf velocity. All in one report. www.thepropertydna.com/blog/neighborhood-data-signals",
-  "STR performance in the Coachella Valley: Palm Springs central avg 71% occupancy, $285 ADR. Old Las Palmas: 64% occupancy, $420 ADR. www.thepropertydna.com",
-];
+function todayText() {
+  const today = new Date().toISOString().slice(0, 10);
+  const calendar = JSON.parse(fs.readFileSync(CALENDAR_FILE, 'utf8'));
+  const entry = calendar.posts.find(p => p.date === today);
+  if (entry) return { text: entry.text, date: today, found: true };
+  // Fallback: use the most recent past entry if today has no entry
+  const past = calendar.posts.filter(p => p.date <= today).sort((a, b) => b.date.localeCompare(a.date));
+  if (past.length) return { text: past[0].text, date: past[0].date, found: false };
+  return null;
+}
 
 function loadTracker() {
   if (fs.existsSync(TRACKER_FILE)) return JSON.parse(fs.readFileSync(TRACKER_FILE, 'utf8'));
@@ -153,11 +151,15 @@ async function run() {
     return { status: 'skipped', reason: 'no_credentials' };
   }
 
-  const tracker = loadTracker();
-  const nextIndex = (tracker.lastIndex + 1) % SOCIAL_CONTENT.length;
-  const text = SOCIAL_CONTENT[nextIndex];
+  const entry = todayText();
+  if (!entry) {
+    log('No content found for today and no past entries. Add entries to data/content-calendar.json.');
+    return { status: 'skipped', reason: 'no_calendar_entry' };
+  }
+  if (!entry.found) log(`No entry for today — using closest past entry (${entry.date})`);
+  const { text } = entry;
 
-  log(`Post ${nextIndex + 1}/${SOCIAL_CONTENT.length}: "${text.slice(0, 70)}..."`);
+  log(`Today's post (${entry.date}): "${text.slice(0, 70)}..."`);
 
   try {
     const channels = await getChannels(creds.token);
@@ -176,8 +178,8 @@ async function run() {
       }
     }
 
-    tracker.lastIndex = nextIndex;
-    tracker.posts.push({ text: text.slice(0, 80), postedAt: new Date().toISOString(), results });
+    tracker.lastIndex = (tracker.lastIndex || 0) + 1;
+    tracker.posts.push({ text: text.slice(0, 80), date: entry.date, postedAt: new Date().toISOString(), results });
     saveTracker(tracker);
 
     const posted = results.filter(r => r.status === 'posted').length;
