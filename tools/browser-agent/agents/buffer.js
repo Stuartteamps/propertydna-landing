@@ -107,10 +107,15 @@ function buildMetadata(service) {
 }
 
 // Services that require media — skip for text-only posts
-const MEDIA_REQUIRED = ['instagram', 'tiktok', 'youtube'];
+// Services that work with text + image
+const MEDIA_SUPPORTED = ['linkedin', 'facebook', 'googlebusiness', 'instagram', 'tiktok'];
+// Services that require media — skip if no image provided
+const MEDIA_REQUIRED  = ['instagram', 'tiktok', 'youtube'];
 
-async function postToChannel(token, channelId, service, text) {
-  if (MEDIA_REQUIRED.includes(service)) {
+async function postToChannel(token, channelId, service, text, imageUrl) {
+  const hasImage = !!imageUrl;
+
+  if (MEDIA_REQUIRED.includes(service) && !hasImage) {
     throw new Error(`SKIP — ${service} requires media (image/video)`);
   }
 
@@ -120,6 +125,11 @@ async function postToChannel(token, channelId, service, text) {
     schedulingType: 'automatic',
     mode: 'shareNow',
   };
+
+  // Attach image for all supported services
+  if (hasImage && MEDIA_SUPPORTED.includes(service)) {
+    input.media = [{ url: imageUrl, type: 'image' }];
+  }
 
   const metadata = buildMetadata(service);
   if (metadata) input.metadata = metadata;
@@ -169,7 +179,7 @@ async function run() {
     const results = [];
     for (const channel of channels) {
       try {
-        const post = await postToChannel(creds.token, channel.id, channel.service, text);
+        const post = await postToChannel(creds.token, channel.id, channel.service, text, entry.image);
         log(`  ✓ ${channel.service}/${channel.name}: ${post.externalLink || post.id}`);
         results.push({ channel: channel.service, status: 'posted' });
       } catch (e) {
