@@ -1,6 +1,6 @@
 [build]
   base = "app/frontend"
-  command = "corepack enable pnpm && corepack install && pnpm install --no-frozen-lockfile && NODE_OPTIONS=--max-old-space-size=4096 pnpm run build"
+  command = "pnpm install --no-frozen-lockfile && NODE_OPTIONS=--max-old-space-size=4096 pnpm run build"
   publish = "dist"
 
 [build.environment]

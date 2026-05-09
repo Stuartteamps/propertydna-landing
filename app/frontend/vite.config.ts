@@ -1,12 +1,22 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
-import { viteSourceLocator } from '@metagptx/vite-plugin-source-locator';
-import { atoms } from '@metagptx/web-sdk/plugins';
 import { vitePrerenderPlugin } from 'vite-prerender-plugin';
 import Sitemap from 'vite-plugin-sitemap';
 import { getBlogRoutes } from './prerender/blog-routes.js';
 import { getSitemapLastmod } from './prerender/blog-sitemap.js';
+
+// MGX dev-only scaffold tools — loaded dynamically to avoid breaking production builds
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let viteSourceLocator: (opts: any) => any = () => null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let atoms: () => any = () => null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  viteSourceLocator = require('@metagptx/vite-plugin-source-locator').viteSourceLocator;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  atoms = require('@metagptx/web-sdk/plugins').atoms;
+} catch { /* not available in production/CI — skip */ }
 
 function escapeHtmlAttr(str: string): string {
   return str
