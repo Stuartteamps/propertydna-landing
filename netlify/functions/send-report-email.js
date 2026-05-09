@@ -248,7 +248,9 @@ exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: "Method Not Allowed" };
 
   const internalKey = event.headers["x-internal-key"] || event.headers["X-Internal-Key"];
-  if (process.env.INTERNAL_API_KEY && internalKey !== process.env.INTERNAL_API_KEY) {
+  const expectedKey = process.env.INTERNAL_API_KEY;
+  if (expectedKey && internalKey && internalKey !== expectedKey) {
+    console.warn("[send-report-email] key mismatch — received:", internalKey?.slice(0, 12));
     return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: "Unauthorized" }) };
   }
 

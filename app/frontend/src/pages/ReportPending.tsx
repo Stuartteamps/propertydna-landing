@@ -5,27 +5,21 @@ import Footer from '@/components/Footer';
 
 type Status = 'verifying' | 'generating' | 'done' | 'error';
 
-const N8N_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'https://dillabean.app.n8n.cloud/webhook/homefax/report';
-
 async function fireReport(data: Record<string, string>, sessionId?: string) {
-  return fetch(N8N_URL, {
+  return fetch('/.netlify/functions/queue-report', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      fullName: data.fullName || '',
-      email: data.email || '',
-      phone: data.phone || '',
-      role: data.role || 'Buyer',
-      address: data.address || '',
-      city: data.city || '',
-      state: data.state || '',
-      zip: data.zip || '',
-      notes: data.notes || '',
+      fullName:        data.fullName || '',
+      email:           data.email || '',
+      phone:           data.phone || '',
+      role:            data.role || 'Buyer',
+      address:         data.address || '',
+      city:            data.city || '',
+      state:           data.state || '',
+      zip:             data.zip || '',
+      notes:           data.notes || '',
       stripeSessionId: sessionId || 'bypass',
-      paid: true,
-      leadSource: 'property_dna_paid',
-      pageUrl: 'https://thepropertydna.com',
-      timestamp: new Date().toISOString(),
     }),
   }).then(r => r.json()).catch(() => ({}));
 }

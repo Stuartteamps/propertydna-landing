@@ -1,0 +1,234 @@
+/**
+ * queue-report — the single entry point for all report requests.
+ *
+ * Replaces the browser→n8n direct call. This function:
+ *   1. Validates email + address
+ *   2. Saves a pending report record to Supabase (guarantees a viewToken)
+ *   3. Sends a "report queued" email to the user RIGHT NOW
+ *   4. Fires the n8n enrichment webhook in the background (fire-and-forget)
+ *
+ * n8n continues to enrich the report async. When it finishes it calls
+ * save-report to update status→completed. The user's email already has
+ * the view link so they can check back.
+ *
+ * POST /.netlify/functions/queue-report
+ * Body: { email, fullName, address, city, state, zip, role, phone, notes, stripeSessionId }
+ */
+
+const https = require("https");
+const crypto = require("crypto");
+const db = require("./_supabase");
+
+const CORS = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+const N8N_URL = process.env.N8N_WEBHOOK_URL || "https://dillabean.app.n8n.cloud/webhook/homefax/report";
+const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").replace(/\/$/, "");
+
+// ── Resend email (identical helper to send-report-email) ────────────────────
+function httpsPost(hostname, path, headers, body) {
+  const payload = JSON.stringify(body);
+  return new Promise((resolve) => {
+    const req = https.request(
+      { hostname, path, method: "POST", headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(payload), ...headers } },
+      (res) => { let raw = ""; res.on("data", c => raw += c); res.on("end", () => resolve({ status: res.statusCode })); }
+    );
+    req.on("error", () => resolve({ status: 0 }));
+    req.setTimeout(8000, () => { req.destroy(); resolve({ status: 0 }); });
+    req.write(payload);
+    req.end();
+  });
+}
+
+async function sendQueuedEmail({ recipientEmail, recipientName, propertyAddress, viewToken }) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return;
+
+  const reportUrl = `${APP_BASE}/report/view/${viewToken}`;
+  const dashUrl   = `${APP_BASE}/dashboard`;
+  const safeName    = (recipientName || "Valued Client").replace(/[<>]/g, "");
+  const safeAddress = (propertyAddress || "your property").replace(/[<>]/g, "");
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Property DNA Report — ${safeAddress}</title></head>
+<body style="margin:0;padding:0;background:#f9f7f4;font-family:Georgia,'Times New Roman',serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9f7f4;">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border:1px solid #e5e0d8;">
+        <tr><td style="padding:32px 40px 24px;border-bottom:1px solid #e5e0d8;">
+          <p style="margin:0;font-family:Georgia,serif;font-size:11px;color:#999;letter-spacing:3px;text-transform:uppercase;">Property DNA</p>
+          <p style="margin:6px 0 0;font-family:Georgia,serif;font-size:11px;color:#bbb;letter-spacing:1px;">Intelligence Report</p>
+        </td></tr>
+        <tr><td style="padding:32px 40px 0;">
+          <p style="margin:0 0 6px;font-family:Georgia,serif;font-size:22px;color:#1a1a1a;line-height:1.3;">${safeAddress}</p>
+          <p style="margin:0 0 24px;font-size:13px;color:#999;">Prepared for ${safeName}</p>
+          <p style="margin:0 0 20px;font-size:15px;color:#333;line-height:1.75;">Dear ${safeName},</p>
+          <p style="margin:0 0 20px;font-size:15px;color:#444;line-height:1.75;">We've received your request and your Property DNA intelligence report for <strong>${safeAddress}</strong> is being generated now. This typically takes under 3 minutes.</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#444;line-height:1.75;">Your report will appear in your dashboard automatically. Use the link below to view it:</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+            <tr><td style="background:#1a1a1a;">
+              <a href="${dashUrl}" style="display:inline-block;padding:14px 28px;color:#E8B84B;font-family:Georgia,serif;font-size:15px;text-decoration:none;letter-spacing:1px;">View Dashboard &rarr;</a>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 8px;font-size:12px;color:#aaa;">Direct report link (ready once generated):</p>
+          <p style="margin:0 0 32px;font-size:11px;color:#aaa;word-break:break-all;">${reportUrl}</p>
+        </td></tr>
+        <tr><td style="padding:24px 40px;border-top:1px solid #e5e0d8;background:#faf8f5;">
+          <p style="margin:0 0 4px;font-size:14px;color:#1a1a1a;">PropertyDNA</p>
+          <p style="margin:0;font-size:12px;color:#777;">thepropertydna.com</p>
+        </td></tr>
+        <tr><td style="padding:20px 40px;border-top:1px solid #e5e0d8;">
+          <p style="margin:0;font-size:11px;color:#bbb;line-height:1.6;">This report is for informational purposes only. &copy; ${new Date().getFullYear()} PropertyDNA.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  const text = [
+    "PROPERTY DNA — INTELLIGENCE REPORT", "".padEnd(50, "-"), "",
+    safeAddress, `Prepared for ${safeName}`, "",
+    `Dear ${safeName},`,
+    "",
+    `Your Property DNA report for ${safeAddress} is being generated. Check your dashboard:`,
+    dashUrl, "",
+    "Direct report link (available once generated):",
+    reportUrl, "",
+    `© ${new Date().getFullYear()} PropertyDNA — thepropertydna.com`,
+  ].join("\n");
+
+  const SENDER  = process.env.SENDER_EMAIL || "reports@thepropertydna.com";
+  const SENDER_NAME = process.env.SENDER_NAME || "PropertyDNA powered by IntellaGraphAI";
+
+  return httpsPost("api.resend.com", "/emails",
+    { Authorization: `Bearer ${key}` },
+    {
+      from:     `${SENDER_NAME} <${SENDER}>`,
+      reply_to: process.env.REPLY_TO_EMAIL || "stuartteamps@gmail.com",
+      to:       recipientEmail,
+      subject:  `Your PropertyDNA report is being generated — ${propertyAddress}`,
+      html,
+      text,
+    }
+  );
+}
+
+// ── Fire n8n enrichment (background) ───────────────────────────────────────
+function fireN8n(payload) {
+  const body = JSON.stringify(payload);
+  try {
+    const url = new URL(N8N_URL);
+    const req = https.request(
+      { hostname: url.hostname, path: url.pathname, method: "POST",
+        headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) } },
+      () => {}
+    );
+    req.on("error", () => {});
+    req.setTimeout(30000, () => { req.destroy(); });
+    req.write(body);
+    req.end();
+  } catch { /* ignore */ }
+}
+
+// ── Handler ────────────────────────────────────────────────────────────────
+exports.handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
+  if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: "Method Not Allowed" };
+
+  let body;
+  try { body = JSON.parse(event.body || "{}"); } catch {
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Invalid JSON" }) };
+  }
+
+  const { email, fullName, address, city, state, zip, role, phone, notes, stripeSessionId } = body;
+
+  if (!email || !email.includes("@")) {
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Valid email required" }) };
+  }
+  if (!address || !address.trim()) {
+    return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Address required" }) };
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const viewToken = crypto.randomUUID();
+  const reportId  = crypto.randomUUID();
+  const fullAddress = [address, city, state, zip].filter(Boolean).join(", ");
+
+  // ── 1. Save pending record ────────────────────────────────────────────────
+  try {
+    await db.insert("property_reports", {
+      id:           reportId,
+      email:        normalizedEmail,
+      address,
+      city:         city  || null,
+      state:        state || null,
+      zip:          zip   || null,
+      full_address: fullAddress,
+      role:         role  || "Buyer",
+      status:       "pending",
+      view_token:   viewToken,
+    });
+  } catch (e) {
+    console.error("[queue-report] failed to save pending record:", e.message);
+  }
+
+  // ── 2. Send queued email to user ──────────────────────────────────────────
+  const emailResult = await sendQueuedEmail({
+    recipientEmail: normalizedEmail,
+    recipientName:  fullName || null,
+    propertyAddress: fullAddress,
+    viewToken,
+  }).catch(e => { console.error("[queue-report] email error:", e.message); return null; });
+
+  // ── 3. Send owner copy ────────────────────────────────────────────────────
+  const OWNER = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
+  if (OWNER && OWNER !== normalizedEmail) {
+    sendQueuedEmail({
+      recipientEmail: OWNER,
+      recipientName:  `${fullName || normalizedEmail} (copy to owner)`,
+      propertyAddress: fullAddress,
+      viewToken,
+    }).catch(() => {});
+  }
+
+  // ── 4. Fire n8n enrichment in background ──────────────────────────────────
+  fireN8n({
+    fullName:        fullName || "",
+    email:           normalizedEmail,
+    phone:           phone   || "",
+    role:            role    || "Buyer",
+    address,
+    city:            city    || "",
+    state:           state   || "",
+    zip:             zip     || "",
+    notes:           notes   || "",
+    stripeSessionId: stripeSessionId || "bypass",
+    paid:            true,
+    viewToken,          // pass pre-generated token so n8n can update this exact record
+    reportId,           // pass pre-generated ID so n8n can update the correct row
+    leadSource:      "property_dna_web",
+    pageUrl:         APP_BASE,
+    timestamp:       new Date().toISOString(),
+  });
+
+  // ── 5. KPI log ────────────────────────────────────────────────────────────
+  db.kpi("report_queued", normalizedEmail, {
+    address, emailSent: !!(emailResult && emailResult.status < 300), viewToken,
+  });
+
+  return {
+    statusCode: 200,
+    headers: CORS,
+    body: JSON.stringify({
+      queued: true,
+      requestId: reportId.slice(-8).toUpperCase(),
+      viewToken,
+      viewUrl: `${APP_BASE}/report/view/${viewToken}`,
+    }),
+  };
+};
