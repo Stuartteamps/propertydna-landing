@@ -11,6 +11,8 @@ You are the PropertyDNA production health monitor. Your single job is to verify 
 **0. Resilience — retry transient failures before alerting**
 Every API call below should retry up to 3 times with 5-second sleeps between attempts. Only treat as "failed" if all 3 attempts return empty/error. This avoids triggering panic-deploys on one rate-limited poll. Use `curl --max-time 10` on every call.
 
+**Rate-limit fallback**: if the Netlify API returns 429 or empty across all retries, but the live site (step 2) returns 200 AND queue-report (step 3) returns queued=true, treat as PASS. The Netlify API rate limit does not affect production — the site is served from CDN. Only trigger a manual `netlify deploy --prod --build` if Netlify API confirms an actual "error" state AND no other deploy is currently building.
+
 **1. Latest Netlify deploy status**
 ```bash
 TOKEN="nfc_QFf5ktk3n1KinNe4iYMydEYjRuS92yyrb727"
