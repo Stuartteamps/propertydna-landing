@@ -153,8 +153,10 @@ async function clearControl() {
 async function pollFor(field, timeoutMs = 1800000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const state = await getState();
-    if (state[field]) return state[field];
+    try {
+      const state = await getState();
+      if (state[field]) return state[field];
+    } catch (e) { console.log(`  poll error (retrying): ${e.message}`); }
     await sleep(3000);
   }
   return null;
@@ -318,12 +320,44 @@ async function fillTextarea(page, kws, text, label) {
     // ── STEP 5: FILL SONA FIELDS ─────────────────────────────────────
     await setPhase('filling', 'Filling Sona fields (business info, greeting, instructions)...');
 
-    await fillTextarea(page, ['business','about','description','company'], BUSINESS_INFO, 'Business info');
+    let businessOk = await fillTextarea(page, ['business','about','description','company'], BUSINESS_INFO, 'Business info');
     await sleep(300);
-    await fillTextarea(page, ['greeting','welcome','intro'], GREETING, 'Greeting');
+    let greetingOk = await fillTextarea(page, ['greeting','welcome','intro'], GREETING, 'Greeting');
     await sleep(300);
-    await fillTextarea(page, ['instruct','custom','additional','context','rules'], INSTRUCTIONS, 'Instructions');
+    let instructionsOk = await fillTextarea(page, ['instruct','custom','additional','context','rules'], INSTRUCTIONS, 'Instructions');
     await sleep(300);
+
+    // FALLBACK: if specific selectors miss, find all visible textareas and fill in order
+    if (!businessOk || !greetingOk || !instructionsOk) {
+      console.log('   Falling back to positional textarea fill...');
+      const tas = await page.$$('textarea');
+      const visibleTas = [];
+      for (const t of tas) {
+        const visible = await t.isVisible().catch(() => false);
+        if (visible) visibleTas.push(t);
+      }
+      console.log(`   Found ${visibleTas.length} visible textareas`);
+      const fields = [
+        { ok: businessOk, text: BUSINESS_INFO, label: 'Business info' },
+        { ok: greetingOk, text: GREETING, label: 'Greeting' },
+        { ok: instructionsOk, text: INSTRUCTIONS, label: 'Instructions' },
+      ];
+      let ti = 0;
+      for (const f of fields) {
+        if (f.ok) continue;
+        if (ti >= visibleTas.length) break;
+        try {
+          await visibleTas[ti].scrollIntoViewIfNeeded();
+          await visibleTas[ti].click({ clickCount: 3 });
+          await page.keyboard.press('Meta+a');
+          await page.keyboard.press('Backspace');
+          for (const c of (f.text.match(/.{1,200}/gs) || [f.text])) await visibleTas[ti].type(c, { delay: 1 });
+          console.log(`   ✓ ${f.label} (positional)`);
+        } catch (e) { console.log(`   ⚠ ${f.label} positional fill failed: ${e.message}`); }
+        ti++;
+        await sleep(300);
+      }
+    }
 
     try { await page.getByText('Friendly').first().click({ timeout: 3000 }); console.log('   ✓ Tone Friendly'); } catch {}
     try { await page.getByText('Spanish').first().click({ timeout: 3000 }); console.log('   ✓ Spanish'); } catch {}
