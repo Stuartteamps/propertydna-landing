@@ -118,21 +118,40 @@ async function sendQueuedEmail({ recipientEmail, recipientName, propertyAddress,
   );
 }
 
-// ── Fire n8n enrichment (background) ───────────────────────────────────────
+// ── Fire n8n enrichment ────────────────────────────────────────────────────
+// AWS Lambda freezes the container the moment exports.handler returns. The
+// previous fire-and-forget pattern lost requests because the JS event loop
+// halted before the socket finished flushing. We resolve as soon as the
+// request body has been WRITTEN to the wire (req 'finish' event ~100ms),
+// without waiting for n8n's full 22s response — n8n calls save-report.js
+// when done. If n8n responds first (rare), we capture status; otherwise
+// we resolve at finish and trust the request is in flight.
 function fireN8n(payload) {
-  const body = JSON.stringify(payload);
-  try {
-    const url = new URL(N8N_URL);
-    const req = https.request(
+  return new Promise((resolve) => {
+    let resolved = false;
+    const done = (r) => { if (!resolved) { resolved = true; resolve(r); } };
+
+    const body = JSON.stringify(payload);
+    const url  = new URL(N8N_URL);
+    const req  = https.request(
       { hostname: url.hostname, path: url.pathname, method: "POST",
         headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) } },
-      () => {}
+      (res) => {
+        // Drain the response so the socket can close cleanly
+        res.on("data", () => {});
+        res.on("end", () => done({ status: res.statusCode, completed: true }));
+      }
     );
-    req.on("error", () => {});
-    req.setTimeout(30000, () => { req.destroy(); });
+    req.on("error",  (e) => done({ status: 0, error: e.message }));
+    req.on("finish", () => {
+      // Request body fully transmitted — safe to return; n8n will process async
+      // Wait one more tick to ensure the OS send buffer has flushed
+      setTimeout(() => done({ status: 202, completed: false, sent: true }), 250);
+    });
+    req.setTimeout(8000, () => { req.destroy(); done({ status: 0, error: "timeout" }); });
     req.write(body);
     req.end();
-  } catch { /* ignore */ }
+  });
 }
 
 // ── Handler ────────────────────────────────────────────────────────────────
@@ -152,6 +171,24 @@ exports.handler = async (event) => {
   }
   if (!address || !address.trim()) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Address required" }) };
+  }
+
+  // Address quality validation — must contain a street number AND a street name.
+  // Catches "Palm Springs, CA" (city only), "92262" (zip only), "Camino Norte" (no number).
+  const addrTrim = address.trim();
+  const hasStreetNum = /\b\d{1,6}\b/.test(addrTrim);
+  const hasStreetWords = /\b[a-zA-Z]{3,}\b/.test(addrTrim);
+  const looksLikeJustCity = /^([a-zA-Z\s]+,\s*[A-Z]{2})?$/i.test(addrTrim);
+
+  if (!hasStreetNum || !hasStreetWords || looksLikeJustCity) {
+    return {
+      statusCode: 400,
+      headers: CORS,
+      body: JSON.stringify({
+        error: "Please enter a complete street address (e.g., '420 S Camino Norte')",
+        field: "address",
+      }),
+    };
   }
 
   const normalizedEmail = email.toLowerCase().trim();
@@ -196,8 +233,8 @@ exports.handler = async (event) => {
     }).catch(() => {});
   }
 
-  // ── 4. Fire n8n enrichment in background ──────────────────────────────────
-  fireN8n({
+  // ── 4. Fire n8n enrichment (AWAITED — Lambda freezes on return) ───────────
+  const n8nResult = await fireN8n({
     fullName:        fullName || "",
     email:           normalizedEmail,
     phone:           phone   || "",
@@ -209,16 +246,25 @@ exports.handler = async (event) => {
     notes:           notes   || "",
     stripeSessionId: stripeSessionId || "bypass",
     paid:            true,
-    viewToken,          // pass pre-generated token so n8n can update this exact record
-    reportId,           // pass pre-generated ID so n8n can update the correct row
+    viewToken,
+    reportId,
     leadSource:      "property_dna_web",
     pageUrl:         APP_BASE,
     timestamp:       new Date().toISOString(),
   });
 
+  if (!n8nResult || n8nResult.status !== 200) {
+    console.error("[queue-report] n8n enrichment did NOT complete:", n8nResult);
+  } else {
+    console.log("[queue-report] n8n enrichment complete:", n8nResult.body);
+  }
+
   // ── 5. KPI log ────────────────────────────────────────────────────────────
   db.kpi("report_queued", normalizedEmail, {
-    address, emailSent: !!(emailResult && emailResult.status < 300), viewToken,
+    address,
+    emailSent: !!(emailResult && emailResult.status < 300),
+    n8nStatus: n8nResult?.status || 0,
+    viewToken,
   });
 
   return {

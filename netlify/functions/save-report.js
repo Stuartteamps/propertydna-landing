@@ -223,12 +223,128 @@ function detectADU(reportData) {
   return { keywords: found, sqft: aduSqft || 480 }; // 480 sqft default if not found
 }
 
+// ── Closest-comp anchor ─────────────────────────────────────────────────────
+// When 2+ comps within 0.30 mi have correlation >= 95%, blend their average
+// into the AVM mid. Catches "AVM ignores the $3.6M next-door sale" cases.
+// Returns null if not applicable.
+function computeClosestCompAnchor(avmMid, comps = []) {
+  if (!avmMid || !Array.isArray(comps) || comps.length === 0) return null;
+
+  const parseNum = (v) => {
+    if (v == null) return null;
+    if (typeof v === "number") return v;
+    const n = parseFloat(String(v).replace(/[^0-9.]/g, ""));
+    return isNaN(n) ? null : n;
+  };
+  const parseDist = (v) => {
+    const n = parseFloat(String(v || "").replace(/[^0-9.]/g, ""));
+    return isNaN(n) ? null : n;
+  };
+  const parseCorr = (v) => {
+    const n = parseFloat(String(v || "").replace(/[^0-9.]/g, ""));
+    return isNaN(n) ? null : (n > 1 ? n : n * 100);
+  };
+
+  const enriched = comps
+    .map(c => ({
+      raw: c,
+      price: parseNum(c.rawPrice ?? c.price),
+      dist:  parseDist(c.distance),
+      corr:  parseCorr(c.correlation),
+      sqft:  parseNum(c.sqft),
+    }))
+    .filter(c => c.price && c.price > 50000);
+
+  // Tier 1: tightest filter — within 0.30 mi AND correlation >= 95%
+  let qualifying = enriched.filter(c => c.dist != null && c.dist <= 0.30 && c.corr != null && c.corr >= 95);
+
+  // Tier 2 fallback: top 3 by correlation if no tight matches
+  if (qualifying.length < 2) {
+    qualifying = enriched
+      .filter(c => c.corr != null && c.corr >= 90)
+      .sort((a, b) => b.corr - a.corr)
+      .slice(0, 3);
+  }
+  if (qualifying.length < 2) return null;
+
+  const avgComp = Math.round(qualifying.reduce((s, c) => s + c.price, 0) / qualifying.length);
+  const gap = (avgComp - avmMid) / avmMid;
+
+  // Only anchor when comps suggest valuation is too LOW by >10%
+  if (gap < 0.10) return null;
+
+  const compWeight = Math.min(0.45, 0.30 + qualifying.length * 0.05);
+  const blendMid = Math.round(avmMid * (1 - compWeight) + avgComp * compWeight);
+
+  return {
+    blendMid,
+    avgComp,
+    compCount: qualifying.length,
+    gapPct: Math.round(gap * 100),
+    weight: Math.round(compWeight * 100),
+    label: `Comp anchor: ${qualifying.length} comps avg $${(avgComp / 1e6).toFixed(2)}M (${Math.round(compWeight * 100)}% weight)`,
+  };
+}
+
+// Auto-detect features from RentCast `property` block + listing fallback
+function autoDetectFeatures(reportData) {
+  const features = {};
+  let aduSqft = null;
+  let poolAddOnCost = null;
+
+  const prop = reportData?.normalized?.property || {};
+  const subj = reportData?.normalized?.subject  || {};
+
+  const num = (v) => { const n = parseFloat(String(v ?? "").replace(/[^0-9.]/g, "")); return isNaN(n) ? null : n; };
+  const lotSqft  = num(prop.lotSize);
+  const sqft     = num(prop.sqft);
+  const desertCity = ["palm springs","palm desert","la quinta","indio","rancho mirage","indian wells","cathedral city","desert hot springs","coachella","thousand palms","bermuda dunes"]
+    .some(c => (subj.city || "").toLowerCase().includes(c));
+
+  // Oversized lot: > 12,000 sqft (typical CV lot is 7,500-10,000)
+  if (lotSqft && lotSqft >= 12000) features.oversized_lot = true;
+
+  // Premium luxury (built earlier, large home)
+  if (sqft && sqft >= 3000) features.premium_community = true;
+
+  // Pool: explicit field if present, else listing keyword
+  const poolField = String(prop.pool ?? prop.hasPool ?? "").toLowerCase();
+  const explicitPool = poolField === "true" || poolField === "yes" || poolField === "1";
+  const listingText = [
+    reportData?.normalized?.property?.description,
+    reportData?.normalized?.listing?.remarks,
+    reportData?.normalized?.listing?.publicRemarks,
+    reportData?.normalized?.subject?.description,
+  ].filter(Boolean).join(" ").toLowerCase();
+  const poolKeyword = /\b(pool|salt[- ]?water pool|infinity pool|spool|pool\/spa)\b/.test(listingText);
+  if (explicitPool || poolKeyword) {
+    features.pool = true;
+    poolAddOnCost = 80000; // typical CV pool capex; recoup logic in computeDnaAdjustment
+  } else if (desertCity) {
+    features.no_pool_desert_penalty = true;
+  }
+
+  // ADU/casita auto-detect (re-uses existing keyword scanner)
+  const adu = detectADU(reportData);
+  if (adu) {
+    aduSqft = adu.sqft;
+  }
+
+  // Gated community / golf course / mountain view from listing text
+  if (/\b(gated|guard[- ]?gated|24[- ]?hour security)\b/.test(listingText)) features.gated_community = true;
+  if (/\b(golf course|fairway|country club)\b/.test(listingText))           features.golf_course = true;
+  if (/\b(mountain view|mountain views|panoramic view)\b/.test(listingText)) features.mountain_view = true;
+
+  return { features, aduSqft, poolAddOnCost };
+}
+
 // Compute sale-anchored smart base values
 // Returns corrected {smartLow, smartMid, smartHigh, baseAdjustment}
 function computeSmartBase(avmLow, avmMid, avmHigh, {
   lastSalePrice = null,
   lastSaleDate = null,
   marketPriceYoY = null,
+  comps = null,
 } = {}) {
   if (!avmMid) return { smartLow: avmLow, smartMid: avmMid, smartHigh: avmHigh, baseAdjustment: null };
 
@@ -294,6 +410,22 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
     }
   }
 
+  // ── Layer 2: closest-comp anchor (independent of sale) ────────────────────
+  // Take the HIGHER of sale anchor vs comp anchor — both protect against undervaluation.
+  if (Array.isArray(comps) && comps.length > 0) {
+    const compAnchor = computeClosestCompAnchor(smartMid, comps);
+    if (compAnchor && compAnchor.blendMid > smartMid) {
+      const scale = compAnchor.blendMid / smartMid;
+      smartMid  = compAnchor.blendMid;
+      smartLow  = smartLow  ? Math.round(smartLow  * scale) : Math.round(smartMid * 0.82);
+      smartHigh = smartHigh ? Math.round(smartHigh * scale) : Math.round(smartMid * 1.18);
+      const compLabel = compAnchor.label;
+      baseAdjustment = baseAdjustment
+        ? { ...baseAdjustment, compAnchor, label: `${baseAdjustment.label} + ${compLabel}` }
+        : { type: "comp_anchor_only", compAnchor, label: compLabel };
+    }
+  }
+
   return { smartLow, smartMid, smartHigh, baseAdjustment };
 }
 
@@ -303,9 +435,10 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   luxuryTier = false,   // true if smart base > $1.5M
   poolAddOnCost = null, // explicit pool capex (e.g. 100000); recoups 60% in luxury
   recentReno = null,    // { cost: 50000, year: 2024 } recent renovation capex
+  comps = null,         // comps array for closest-comp anchor
 } = {}) {
-  // Phase 1 — correct the AVM base using recent sale anchor
-  const base = computeSmartBase(rawLow, rawMid, rawHigh, { lastSalePrice, lastSaleDate, marketPriceYoY });
+  // Phase 1 — correct the AVM base using recent sale anchor + closest-comp anchor
+  const base = computeSmartBase(rawLow, rawMid, rawHigh, { lastSalePrice, lastSaleDate, marketPriceYoY, comps });
   const { smartLow, smartMid, smartHigh, baseAdjustment } = base;
 
   // Phase 2 — percentage adjustments from DNA feature flags
@@ -598,9 +731,12 @@ exports.handler = async (event) => {
   if (reportData) {
     const { low, mid, high } = extractValuation(reportData);
     if (low || mid || high) {
-      // Auto-detect casita/ADU from listing text when not explicitly provided
-      const autoADU = (!aduSqft) ? detectADU(reportData) : null;
-      const effectiveAduSqft = aduSqft || autoADU?.sqft || null;
+      // Auto-detect features from RentCast property block + listing text.
+      // Caller-supplied features win on conflict.
+      const autoDetected     = autoDetectFeatures(reportData);
+      const mergedFeatures   = { ...autoDetected.features, ...features };
+      const effectiveAduSqft = aduSqft || autoDetected.aduSqft || null;
+      const effectivePoolCost = poolAddOnCost != null ? poolAddOnCost : autoDetected.poolAddOnCost;
 
       // Extract last sale from reportData fallback when not in body.
       // n8n stores it under normalized.sale (RentCast); legacy code wrote to normalized.subject.
@@ -617,20 +753,26 @@ exports.handler = async (event) => {
       // Luxury tier: base AVM (mid) above $1.5M
       const luxuryTier = !!(mid && mid >= 1500000);
 
-      dnaAdjusted = computeDnaAdjustment(low, mid, high, features, {
+      const comps = reportData?.normalized?.comps || [];
+
+      dnaAdjusted = computeDnaAdjustment(low, mid, high, mergedFeatures, {
         lastSalePrice:  effectiveLastSalePrice ? Number(effectiveLastSalePrice) : null,
         lastSaleDate:   effectiveLastSaleDate,
         marketPriceYoY: marketPriceYoY != null ? Number(marketPriceYoY) : null,
         aduSqft:        effectiveAduSqft ? Number(effectiveAduSqft) : null,
         luxuryTier,
-        poolAddOnCost:  poolAddOnCost != null ? Number(poolAddOnCost) : null,
+        poolAddOnCost:  effectivePoolCost != null ? Number(effectivePoolCost) : null,
         recentReno:     recentRenoCost ? { cost: Number(recentRenoCost), year: recentRenoYear ? Number(recentRenoYear) : null } : null,
+        comps,
       });
-      featureProfile = { low, mid, high, dnaAdjusted };
+      featureProfile = { low, mid, high, dnaAdjusted, autoDetected: mergedFeatures };
 
-      if (autoADU) {
-        console.log(`[save-report] auto-detected ADU: ${autoADU.keywords.join(",")} sqft=${autoADU.sqft}`);
-      }
+      console.log(`[save-report] auto-detected:`, {
+        features: Object.keys(mergedFeatures).filter(k => mergedFeatures[k]),
+        aduSqft:  effectiveAduSqft,
+        poolCost: effectivePoolCost,
+        comps:    comps.length,
+      });
     }
   }
 
