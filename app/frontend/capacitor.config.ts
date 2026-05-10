@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.propertydna.app',
+  appId: 'com.thepropertydna.app',
   appName: 'PropertyDNA',
   webDir: 'dist',
   // Load live site so content updates ship without App Store review

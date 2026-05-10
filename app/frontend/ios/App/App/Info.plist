@@ -109,11 +109,11 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.propertydna.app</string>
+			<string>com.thepropertydna.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.propertydna.app</string>
-				<string>com.googleusercontent.apps.262652433329-bhjt157o9i14c2rgftbo3isr1u5o5pco</string>
+				<string>com.thepropertydna.app</string>
+				<string>com.googleusercontent.apps.262652433329-1th34cp0n0dtob46n7qr4s2tlnen3l0a</string>
 			</array>
 		</dict>
 	</array>

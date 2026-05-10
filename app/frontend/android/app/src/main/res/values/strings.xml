@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PropertyDNA</string>
+    <string name="title_activity_main">PropertyDNA</string>
+    <string name="package_name">com.thepropertydna.app</string>
+    <string name="custom_url_scheme">com.thepropertydna.app</string>
+</resources>
