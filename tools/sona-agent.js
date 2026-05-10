@@ -13,7 +13,7 @@
 const { chromium } = require('/Users/danstuart/propertydna-landing/app/frontend/node_modules/.pnpm/playwright@1.59.1/node_modules/playwright');
 const https = require('https');
 
-const SITE        = 'https://www.thepropertydna.com';
+const SITE        = 'https://thepropertydna.com';
 const CONTROL_URL = `${SITE}/.netlify/functions/sona-control`;
 const PUBLIC_PAGE = `${SITE}/sona-control.html`;
 const NOTIFY_EMAIL = 'stuartteamps@gmail.com';
