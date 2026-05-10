@@ -86,6 +86,7 @@ function httpsPost(url, body, headers) {
 // Subreddits where we got banned 2026-05-10 — agent skips any pending posts to these
 const BANNED_SUBS = new Set([
   'realtors',
+  'realtor',
   'RealEstate',
   // Add more as they ban us — check post-queue.json results for "banned" errors
 ]);
