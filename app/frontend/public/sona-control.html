@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Sona Agent Control</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0F0E0D; color: #F0EBE0; margin: 0; padding: 24px; min-height: 100vh; }
+  .wrap { max-width: 480px; margin: 40px auto; }
+  h1 { font-family: Georgia, serif; font-weight: 300; font-size: 28px; color: #F0EBE0; margin: 0 0 6px; }
+  .sub { color: #6B6252; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 32px; }
+  .card { background: #1A1816; border: 1px solid #2A2825; padding: 24px; margin-bottom: 16px; border-radius: 4px; }
+  .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #6B6252; margin-bottom: 8px; }
+  input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #3A3835; color: #F0EBE0; font-size: 22px; padding: 10px 0; outline: none; font-family: inherit; letter-spacing: 4px; }
+  input:focus { border-bottom-color: #C9A84C; }
+  button { width: 100%; background: #C9A84C; color: #000; border: none; padding: 14px; font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; margin-top: 16px; }
+  button:hover { background: #E8C96A; }
+  button.cancel { background: #5A2828; color: #F0EBE0; margin-top: 8px; }
+  button.cancel:hover { background: #7A3838; }
+  .status { background: #1A1816; padding: 16px; border-left: 3px solid #C9A84C; font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+  .phase { color: #C9A84C; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 11px; }
+  .msg { color: #F0EBE0; margin-top: 6px; }
+  .ts { color: #6B6252; font-size: 10px; margin-top: 8px; }
+  .hide { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sona Agent Control</h1>
+  <div class="sub">PropertyDNA · (213) 205-4933</div>
+
+  <div id="status" class="status">Loading status…</div>
+
+  <div id="codeBox" class="card hide">
+    <div class="label">6-Digit Quo Verification Code</div>
+    <input id="code" type="text" inputmode="numeric" maxlength="6" placeholder="• • • • • •" autocomplete="off">
+    <button onclick="submitCode()">Submit Code</button>
+  </div>
+
+  <div id="confirmBox" class="card hide">
+    <div class="label">Confirmation Word — Type warhorse7308 to Publish</div>
+    <input id="confirm" type="text" placeholder="warhorse7308" autocomplete="off">
+    <button onclick="submitConfirm()">Confirm & Publish</button>
+    <button class="cancel" onclick="cancel()">Cancel Deployment</button>
+  </div>
+</div>
+
+<script>
+const API = '/.netlify/functions/sona-control';
+
+async function submitCode() {
+  const code = document.getElementById('code').value.trim();
+  if (!/^\d{6}$/.test(code)) { alert('Must be exactly 6 digits'); return; }
+  await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) });
+  document.getElementById('code').value = '';
+  refresh();
+}
+
+async function submitConfirm() {
+  const confirm = document.getElementById('confirm').value.trim();
+  if (!confirm) { alert('Type warhorse7308 to publish, or cancel to abort'); return; }
+  await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm }) });
+  document.getElementById('confirm').value = '';
+  refresh();
+}
+
+async function cancel() {
+  if (!window.confirm('Cancel the Sona deployment?')) return;
+  await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: 'cancel' }) });
+  refresh();
+}
+
+async function refresh() {
+  try {
+    const r = await fetch(API);
+    const s = await r.json();
+    const phase = s.phase || 'idle';
+    const msg = s.message || '';
+    const ts = s.updated_at ? new Date(s.updated_at).toLocaleTimeString() : '';
+
+    document.getElementById('status').innerHTML =
+      '<div class="phase">' + phase.replace(/_/g, ' ') + '</div>' +
+      '<div class="msg">' + msg + '</div>' +
+      '<div class="ts">Updated: ' + ts + '</div>';
+
+    document.getElementById('codeBox').classList.toggle('hide', phase !== 'awaiting_code');
+    document.getElementById('confirmBox').classList.toggle('hide', phase !== 'awaiting_publish_confirm');
+  } catch (e) {
+    document.getElementById('status').innerHTML = 'Error: ' + e.message;
+  }
+}
+
+refresh();
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>
