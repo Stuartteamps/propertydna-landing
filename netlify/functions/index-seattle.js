@@ -27,21 +27,14 @@ const CORS = {
   "Access-Control-Allow-Headers": "Content-Type, x-internal-key",
 };
 
-// Source definitions
+// Source definitions — fields confirmed from live API inspection
 const SOURCES = {
   snohomish: {
     base: SNOHOMISH_BASE,
     fips: "53061",
     label: "Snohomish County WA",
-    where: "Owner_Name IS NOT NULL AND yearhousebuilt > 0",
-    ownerField: "Owner_Name",
-    addressField: "siteaddress",
-    yearField: "yearhousebuilt",
-    sqftField: "bldgsqft",
-    valueField: "assessedvalue",
-    apnField: "parcelid",
-    zipField: "zip",
-    cityField: "situs_city",
+    where: "OWNERNAME IS NOT NULL AND PARCEL_ID IS NOT NULL AND USECODE LIKE '11%'",
+    // ^ filter to residential use codes (11x in WA = residential)
   },
 };
 
@@ -94,19 +87,30 @@ async function fetchCount(src) {
   return Number(res.data?.features?.[0]?.attributes?.cnt) || 0;
 }
 
-function computeWADNA(row, src) {
-  const yrBlt   = Number(row[src.yearField]) || 0;
-  const sqft    = Number(row[src.sqftField] || row.calculatedarea || 0);
-  const assessed = Number(row[src.valueField] || row.taxablevalue || 0);
-  const age     = yrBlt > 1800 ? new Date().getFullYear() - yrBlt : 30;
-  const depr    = Math.max(0.20, 1 - age * 0.009);
-  const expected = sqft > 0 ? sqft * COST_SQFT * depr : 0;
-  const rr      = expected > 0 ? Math.round((assessed / expected) * 100) / 100 : 1.0;
-  const cond    = rr > 1.5 ? 93 : rr > 1.3 ? 82 : rr > 1.1 ? 72 : rr > 0.9 ? 63 : rr > 0.7 ? 50 : 38;
+function buildSitusAddress(row) {
+  return [row.SITUSHOUSE, row.SITUSPREFX, row.SITUSSTRT, row.SITUSTTYP, row.SITUSPOSTD]
+    .map(s => String(s || "").trim()).filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+}
+
+function buildOwnerAddress(row) {
+  return [row.OWNERLINE1, row.OWNERLINE2, row.OWNERLINE3]
+    .map(s => String(s || "").trim()).filter(Boolean).join(", ");
+}
+
+function computeWADNA(row) {
+  const lotSqft  = Number(row.GIS_SQ_FT) || 0;
+  const mkImp    = Number(row.MKIMP) || 0;
+  const mkLnd    = Number(row.MKLND) || 0;
+  const mkTotal  = Number(row.MKTTL) || (mkImp + mkLnd);
+  const cuTotal  = Number(row.CUIMP || 0) + Number(row.CULND || 0);
+  // Snohomish doesn't expose year built in this service — use a generic ratio
+  const expected = lotSqft > 0 ? lotSqft * 50 : 0; // rough land-only baseline
+  const rr       = expected > 0 ? Math.round((mkTotal / expected) * 100) / 100 : 1.0;
   return {
-    renovationRatio: rr, conditionScore: cond,
-    assessedValue: assessed || null,
-    dataQuality: sqft > 0 && yrBlt > 0 && assessed > 0 ? "complete" : "partial",
+    renovationRatio: rr,
+    marketTotal: mkTotal || null, marketImp: mkImp || null, marketLand: mkLnd || null,
+    currentUseTotal: cuTotal || null,
+    dataQuality: mkTotal > 0 ? "complete" : "partial",
     scoredAt: new Date().toISOString(),
   };
 }
@@ -114,32 +118,41 @@ function computeWADNA(row, src) {
 function buildRows(rows, src, today) {
   const master = [], history = [];
   for (const row of rows) {
-    const apn = String(row[src.apnField] || row.OBJECTID || "").trim();
+    const apn = String(row.PARCEL_ID || row.OBJECTID || "").trim();
     if (!apn) continue;
-    const ownerName = String(row[src.ownerField] || "").trim();
+    const ownerName = String(row.OWNERNAME || "").trim();
     if (!ownerName) continue;
-    const addr = String(row[src.addressField] || row.siteaddress || "").trim();
-    const dna  = computeWADNA(row, src);
+
+    const situsAddr = buildSitusAddress(row);
+    const dna = computeWADNA(row);
 
     master.push({
-      apn: `WA-${src.fips}-${apn}`,
-      county_fips: src.fips,
-      address: addr || null,
-      city: String(row[src.cityField] || row.situs_city || "").trim() || null,
-      state: "WA", zip: String(row[src.zipField] || "").trim().slice(0, 5) || null,
-      sqft: Number(row[src.sqftField]) || null,
-      year_built: Number(row[src.yearField]) > 1800 ? Number(row[src.yearField]) : null,
-      tax_assessed_value: Number(row[src.valueField]) || null,
+      apn: `WA-${src.fips}-${apn}`, county_fips: src.fips,
+      address: situsAddr || null,
+      city: String(row.SITUSCITY || "").trim() || null,
+      state: "WA",
+      zip: String(row.SITUSZIP || "").trim().slice(0, 5) || null,
+      property_type: String(row.USECODE || "").trim() || null,
+      tax_assessed_value: Number(row.MKTTL) || null,
       last_updated: new Date().toISOString(),
     });
     history.push({
       apn: `WA-${src.fips}-${apn}`, event_type: "assessment", event_date: today,
-      source: `wa_${src.label.toLowerCase().replace(/\s+/g, "_")}`,
+      source: "wa_snohomish",
       data: {
-        address: addr, county: src.label, ownerName,
-        yearBuilt: Number(row[src.yearField]) || null,
-        sqft: Number(row[src.sqftField]) || null,
-        assessedValue: Number(row[src.valueField]) || null,
+        address: situsAddr, city: row.SITUSCITY || null, zip: row.SITUSZIP || null,
+        ownerName,
+        ownerAddr: buildOwnerAddress(row),
+        ownerCity: String(row.OWNERCITY || "").trim() || null,
+        ownerState: String(row.OWNERSTATE || "").trim() || null,
+        ownerZip: String(row.OWNERZIP || "").trim() || null,
+        absentee: (row.OWNERSTATE || "").trim().toUpperCase() !== "WA",
+        taxpayerName: String(row.TAXPRNAME || "").trim() || null,
+        useCode: row.USECODE || null,
+        marketTotal: Number(row.MKTTL) || null,
+        marketImprovement: Number(row.MKIMP) || null,
+        marketLand: Number(row.MKLND) || null,
+        lotSqft: Number(row.GIS_SQ_FT) || null,
         ...dna,
       },
     });

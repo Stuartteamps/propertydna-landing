@@ -155,13 +155,15 @@ function computeCTDNA(row) {
 function buildRows(rows, fips, townName, today) {
   const master = [], history = [];
   for (const row of rows) {
-    const rawApn = String(row.Parcel_ID || row.CAMA_Link || row.OBJECTID || "").trim();
+    // CAMA_Link includes town code prefix (e.g. "08070-134-41A" for Bridgeport)
+    // — guarantees uniqueness across CT towns, unlike bare Parcel_ID
+    const rawApn = String(row.CAMA_Link || row.Parcel_ID || row.OBJECTID || "").trim();
     if (!rawApn) continue;
     const ownerName = String(row.Owner || "").trim();
     if (!ownerName || ownerName.toUpperCase() === "CURRENT OWNER") continue;
 
     const addr = String(row.Full_Address || row.Location || "").trim();
-    const uniqueApn = `CT-${fips}-${rawApn}`;
+    const uniqueApn = `CT-${rawApn}`;
     const dna = computeCTDNA(row);
 
     master.push({
