@@ -83,6 +83,13 @@ function httpsPost(url, body, headers) {
   });
 }
 
+// Subreddits where we got banned 2026-05-10 — agent skips any pending posts to these
+const BANNED_SUBS = new Set([
+  'realtors',
+  'RealEstate',
+  // Add more as they ban us — check post-queue.json results for "banned" errors
+]);
+
 // Default flair per subreddit (fetched 2026-05-08)
 const SUBREDDIT_FLAIR = {
   'realtors':            { id: '9898f1f0-a686-11ea-be7e-0e4ce16dfe07', text: 'Discussion' },
@@ -105,9 +112,11 @@ async function run() {
 
   const queue = JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8'));
   // Take the next unposted item from the queue (one per day in queue order)
-  const pending = queue.reddit.find(p => !p.posted);
+  // Skip any post targeted at a sub that's banned us
+  const pending = queue.reddit.find(p => !p.posted && !BANNED_SUBS.has(p.subreddit));
   if (!pending) {
-    log('No pending posts in queue.');
+    const blockedCount = queue.reddit.filter(p => !p.posted && BANNED_SUBS.has(p.subreddit)).length;
+    log(blockedCount ? `No safe posts. ${blockedCount} skipped (banned subs).` : 'No pending posts in queue.');
     return { status: 'nothing_to_post' };
   }
 

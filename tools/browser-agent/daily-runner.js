@@ -95,13 +95,13 @@ async function runCCRefresh() {
   log('\n[1/5] Constant Contact token refresh');
   results.cc = await runCCRefresh();
 
-  // 2. Reddit post
+  // 2. Reddit posting — agent now skips banned subs (see SUBREDDIT_BANNED list in agent)
   log('\n[2/5] Reddit posting');
   results.reddit = await runAgent('reddit', path.join(__dirname, 'agents/reddit.js'));
 
-  // 3. Medium cross-post
-  log('\n[3/5] Medium cross-posting');
-  results.medium = await runAgent('medium', path.join(__dirname, 'agents/medium.js'));
+  // 3. Medium cross-post — DISABLED 2026-05-10 (Medium discontinued integration tokens)
+  log('\n[3/5] Medium cross-posting — SKIPPED (API discontinued)');
+  results.medium = { status: 'disabled', reason: 'api_discontinued' };
 
   // 4. Buffer social post
   log('\n[4/5] Buffer social posting');

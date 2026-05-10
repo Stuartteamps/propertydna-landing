@@ -3,7 +3,7 @@
     {
       "id": "reddit-001",
       "subreddit": "realtors",
-      "title": "We built an AI property intelligence platform from scratch and it's changing how we run listing appointments — here's what it does",
+      "title": "We built an AI property intelligence platform from scratch and it's changing how we run listing appointments \u2014 here's what it does",
       "body": "We're a real estate team in Palm Springs. Spent the last year building PropertyDNA, an AI platform that pulls county assessor data, permit history, and market comps into a single report in under 60 seconds.\n\nThe workflow change: agents generate the report, email it to the seller 24 hours before the listing appointment, and walk in to a conversation instead of a cold pitch. Sellers who receive the report beforehand have already spent 20 minutes with your research.\n\nWrote up a full explainer on what it does: https://www.thepropertydna.com/blog/what-is-propertydna\n\nHappy to answer questions about the tech stack or the workflow.",
       "posted": true,
       "postedAt": "2026-05-08T18:56:13.921Z",
@@ -13,7 +13,7 @@
       "id": "reddit-002",
       "subreddit": "realtors",
       "title": "Listing appointment prep used to take me 3 hours. Now it takes 5 minutes. Here's the workflow.",
-      "body": "Not trying to sell anything here — just sharing what's actually working for our team in the Coachella Valley.\n\nThe old workflow: pull MLS comps manually, navigate Riverside County permit portal (slow), build a PowerPoint, hope nothing changed before the appointment.\n\nThe new workflow: enter the address in PropertyDNA, get full permit history + comps + valuation in ~60 seconds, send to seller before the appointment.\n\nThe part that surprised us most: sellers who receive the report ahead of time arrive curious, not skeptical. The meeting becomes a data review instead of a pitch.\n\nFull breakdown: https://www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
+      "body": "Not trying to sell anything here \u2014 just sharing what's actually working for our team in the Coachella Valley.\n\nThe old workflow: pull MLS comps manually, navigate Riverside County permit portal (slow), build a PowerPoint, hope nothing changed before the appointment.\n\nThe new workflow: enter the address in PropertyDNA, get full permit history + comps + valuation in ~60 seconds, send to seller before the appointment.\n\nThe part that surprised us most: sellers who receive the report ahead of time arrive curious, not skeptical. The meeting becomes a data review instead of a pitch.\n\nFull breakdown: https://www.thepropertydna.com/blog/win-listing-appointment-ai-property-data",
       "posted": true,
       "postedAt": "2026-05-08T19:01:55.834Z",
       "url": "https://www.reddit.com/r/realtors/comments/1t7hbiu/listing_appointment_prep_used_to_take_me_3_hours/"
@@ -21,8 +21,8 @@
     {
       "id": "reddit-003",
       "subreddit": "RealEstate",
-      "title": "How to tell if a neighborhood is actually improving — the data signals most buyers miss",
-      "body": "Most buyers evaluate a neighborhood by walking around it once. Here are the data signals that actually predict whether a neighborhood is on the way up or down:\n\n1. Permit pull rate — neighborhoods seeing active remodeling permits are typically 12-18 months ahead of visible improvement\n2. Owner-occupancy ratio changes — absentee owners rising = rental conversion pressure, owner-occ rising = stabilization signal\n3. Price-per-sqft velocity, not absolute price — a flat market with rising ppsf often signals compression into smaller inventory\n4. School district rezoning activity — underreported driver of 5-year appreciation\n\nWrote this up in more detail here: https://www.thepropertydna.com/blog/neighborhood-data-signals\n\nHappy to discuss the data sources if anyone is interested.",
+      "title": "How to tell if a neighborhood is actually improving \u2014 the data signals most buyers miss",
+      "body": "Most buyers evaluate a neighborhood by walking around it once. Here are the data signals that actually predict whether a neighborhood is on the way up or down:\n\n1. Permit pull rate \u2014 neighborhoods seeing active remodeling permits are typically 12-18 months ahead of visible improvement\n2. Owner-occupancy ratio changes \u2014 absentee owners rising = rental conversion pressure, owner-occ rising = stabilization signal\n3. Price-per-sqft velocity, not absolute price \u2014 a flat market with rising ppsf often signals compression into smaller inventory\n4. School district rezoning activity \u2014 underreported driver of 5-year appreciation\n\nWrote this up in more detail here: https://www.thepropertydna.com/blog/neighborhood-data-signals\n\nHappy to discuss the data sources if anyone is interested.",
       "posted": true,
       "postedAt": "2026-05-09T16:46:54.247Z",
       "scheduledFor": "2026-05-11",
@@ -31,18 +31,20 @@
     {
       "id": "lux-001",
       "subreddit": "fatFIRE",
-      "title": "Built a provenance and investment-grade dossier system for $5M+ homes — like Barrett-Jackson catalog meets CarFax",
-      "body": "For luxury home transactions, the auction houses (Sotheby's, Christie's) charge 15% commissions because they generate the dossier — provenance, architectural authentication, comparable sales, condition documentation.\n\nFor the broader $5M+ market that doesn't go through auction, that dossier doesn't exist. Buyers do due diligence ad-hoc. Sellers leave value on the table because they can't substantiate the story.\n\nWe built PropertyDNA originally for general real estate, then realized the unique value is at the top of the market. Now generating institutional-grade dossiers covering:\n\n- Celebrity/notable owner provenance (verified, not claimed)\n- Architect attribution + pedigree (Albert Frey, John Lautner, Richard Neutra documentation)\n- Insurance replacement cost vs market value (often inverted on irreplaceable estates)\n- Scarcity index (how long since a comparable architect-attributed home traded)\n- 50-year climate-adjusted asset value\n- Comparable luxury asset performance (vs Patek Philippe, Domaine Romanée-Conti, S&P 500)\n\nLaunching with Coachella Valley luxury inventory — every Old Las Palmas, Movie Colony, and Las Palmas estate.\n\nhttps://www.thepropertydna.com\n\nIs anyone else thinking about the dossier gap in the $5-50M home segment?",
-      "posted": false,
-      "postedAt": null
+      "title": "Built a provenance and investment-grade dossier system for $5M+ homes \u2014 like Barrett-Jackson catalog meets CarFax",
+      "body": "For luxury home transactions, the auction houses (Sotheby's, Christie's) charge 15% commissions because they generate the dossier \u2014 provenance, architectural authentication, comparable sales, condition documentation.\n\nFor the broader $5M+ market that doesn't go through auction, that dossier doesn't exist. Buyers do due diligence ad-hoc. Sellers leave value on the table because they can't substantiate the story.\n\nWe built PropertyDNA originally for general real estate, then realized the unique value is at the top of the market. Now generating institutional-grade dossiers covering:\n\n- Celebrity/notable owner provenance (verified, not claimed)\n- Architect attribution + pedigree (Albert Frey, John Lautner, Richard Neutra documentation)\n- Insurance replacement cost vs market value (often inverted on irreplaceable estates)\n- Scarcity index (how long since a comparable architect-attributed home traded)\n- 50-year climate-adjusted asset value\n- Comparable luxury asset performance (vs Patek Philippe, Domaine Roman\u00e9e-Conti, S&P 500)\n\nLaunching with Coachella Valley luxury inventory \u2014 every Old Las Palmas, Movie Colony, and Las Palmas estate.\n\nhttps://www.thepropertydna.com\n\nIs anyone else thinking about the dossier gap in the $5-50M home segment?",
+      "posted": true,
+      "postedAt": "2026-05-10T14:00:06.047Z",
+      "url": "https://www.reddit.com/r/fatFIRE/comments/1t97pvh/built_a_provenance_and_investmentgrade_dossier/"
     },
     {
       "id": "lux-002",
       "subreddit": "luxurylifestyle",
-      "title": "Sinatra, Elvis, and JFK all owned Palm Springs homes — we built a verified celebrity provenance index",
-      "body": "Approximately 70% of 'celebrity-owned' real estate listings include claims that aren't documentable. We've spent the last year building a verified celebrity provenance index for Palm Springs estates.\n\nWhat we've documented:\n- 47 estates with verified celebrity ownership records (deed history + period press)\n- 12 estates where claimed celebrity history is unsupported by primary sources\n- 8 estates with documented celebrity events (specific dinners, recorded sessions, film shoots)\n\nThe premium is real but only on verified provenance. Frank Sinatra's Twin Palms estate (where he lived 1947-1957) traded last at a verified premium. Marlon Brando's home, by contrast, has a claimed connection that records don't fully support.\n\nFull provenance methodology: https://www.thepropertydna.com\n\nFor luxury collectors — provenance verification matters as much in real estate as it does in watches and art.",
+      "title": "Sinatra, Elvis, and JFK all owned Palm Springs homes \u2014 we built a verified celebrity provenance index",
+      "body": "Approximately 70% of 'celebrity-owned' real estate listings include claims that aren't documentable. We've spent the last year building a verified celebrity provenance index for Palm Springs estates.\n\nWhat we've documented:\n- 47 estates with verified celebrity ownership records (deed history + period press)\n- 12 estates where claimed celebrity history is unsupported by primary sources\n- 8 estates with documented celebrity events (specific dinners, recorded sessions, film shoots)\n\nThe premium is real but only on verified provenance. Frank Sinatra's Twin Palms estate (where he lived 1947-1957) traded last at a verified premium. Marlon Brando's home, by contrast, has a claimed connection that records don't fully support.\n\nFull provenance methodology: https://www.thepropertydna.com\n\nFor luxury collectors \u2014 provenance verification matters as much in real estate as it does in watches and art.",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     },
     {
       "id": "lux-003",
@@ -50,7 +52,8 @@
       "title": "Considering a $5M+ Palm Springs estate? The provenance data layer most buyers miss",
       "body": "If you're looking at architecturally significant homes in the $5-30M range, the standard buyer due diligence process is broken.\n\nWhat your buyer's agent typically delivers:\n- MLS comp analysis (works for tract homes, fails for irreplaceable assets)\n- A general inspection report\n- Title search\n\nWhat actually drives long-term value on this tier:\n- Architect attribution authenticity (is this really an Albert Frey, or a Frey-influenced spec build?)\n- Original drawing access (existence of architect's original plans = 8-12% premium at resale)\n- Modification history (every owner's renovations either preserved or diluted the architectural integrity)\n- Comparable architect's work trade frequency (Lautner originals trade once every 4.7 years on average)\n- Insurance replacement cost analysis (often dramatically higher than purchase price for true rarities)\n\nWe pull all of this automatically for Coachella Valley estates. https://www.thepropertydna.com\n\nThe top of the luxury market deserves better data.",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     },
     {
       "id": "lux-004",
@@ -58,55 +61,62 @@
       "title": "How we authenticate architectural attribution claims for luxury home valuation",
       "body": "Cross-posting an architectural research project. We've been working on systematic authentication of 'mid-century modern' attribution claims in Palm Springs real estate.\n\nThe problem: many luxury listings claim association with named architects (Frey, Neutra, Lautner, Krisel, Wexler) without primary source documentation. Real attribution dramatically affects long-term value. False attribution evaporates at the first sophisticated buyer.\n\nOur authentication framework:\n1. Original drawings (Palm Springs Modernism Committee archives + university collections)\n2. Building permit pull dates + architect-of-record\n3. Period press features (Architectural Digest, House Beautiful, Sunset Magazine 1947-1972)\n4. Architect's known commission lists\n5. Stylistic forensic analysis (proportions, materials, signature details)\n\nApplied to 240+ Palm Springs homes claiming MCM attribution. ~63% are fully verifiable, 19% are partially, 18% are inflated claims.\n\nhttps://www.thepropertydna.com\n\nHappy to discuss the methodology with anyone working in architectural preservation or valuation.",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     },
     {
       "id": "lux-005",
       "subreddit": "RealEstateInvesting",
-      "title": "Why $5M+ luxury real estate underperforms wealth metrics — and the data that fixes it",
-      "body": "Luxury real estate is widely under-analyzed compared to other alternative assets in HNW portfolios.\n\nFor a Patek Philippe Nautilus, you have:\n- Verified provenance (papers, service records)\n- Auction history database (Phillips, Christie's results)\n- Production scarcity data\n- Comparable sales by reference\n\nFor a $15M architecturally-significant estate, you typically have:\n- A general MLS history\n- Some recent comp data\n- Vague claims about architect/celebrity history\n\nThe asymmetry is massive. We've been building the missing data layer for the top of the residential market — verified provenance, architect attribution, scarcity indexing, comparable luxury asset benchmarking.\n\nApplied to the Coachella Valley first (Palm Springs being uniquely architecturally significant). Indexing 168k parcels but the value concentrates in ~600 estates above $5M.\n\nhttps://www.thepropertydna.com/blog/what-is-propertydna\n\nIs anyone else solving the data gap at the top of luxury real estate?",
+      "title": "Why $5M+ luxury real estate underperforms wealth metrics \u2014 and the data that fixes it",
+      "body": "Luxury real estate is widely under-analyzed compared to other alternative assets in HNW portfolios.\n\nFor a Patek Philippe Nautilus, you have:\n- Verified provenance (papers, service records)\n- Auction history database (Phillips, Christie's results)\n- Production scarcity data\n- Comparable sales by reference\n\nFor a $15M architecturally-significant estate, you typically have:\n- A general MLS history\n- Some recent comp data\n- Vague claims about architect/celebrity history\n\nThe asymmetry is massive. We've been building the missing data layer for the top of the residential market \u2014 verified provenance, architect attribution, scarcity indexing, comparable luxury asset benchmarking.\n\nApplied to the Coachella Valley first (Palm Springs being uniquely architecturally significant). Indexing 168k parcels but the value concentrates in ~600 estates above $5M.\n\nhttps://www.thepropertydna.com/blog/what-is-propertydna\n\nIs anyone else solving the data gap at the top of luxury real estate?",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     },
     {
       "id": "lux-006",
       "subreddit": "MidCenturyModernArch",
-      "title": "Palm Springs MCM authentication — we built a verification system",
-      "body": "Built a research system specifically for verifying mid-century modern architect attribution on Palm Springs real estate listings.\n\nThe core dataset:\n- Albert Frey: 47 documented residential commissions in PS\n- Richard Neutra: 12\n- John Lautner: 8\n- William Krisel: 2,500+ tract homes (mostly Alexander Construction Company collaborations)\n- Donald Wexler: 31 (including the famous steel houses)\n- E. Stewart Williams: 17\n\nVerification sources: Palm Springs Modernism Week archive, Palm Springs Preservation Foundation, USC architectural archives, period press.\n\nFor anyone interested in MCM authentication or preservation, the data is fascinating — many homes claimed as Frey originals are actually Frey-influenced contemporaries by Krisel or other contemporaries.\n\nhttps://www.thepropertydna.com\n\nWho else is preserving and documenting MCM architecture? Always looking for collaboration.",
+      "title": "Palm Springs MCM authentication \u2014 we built a verification system",
+      "body": "Built a research system specifically for verifying mid-century modern architect attribution on Palm Springs real estate listings.\n\nThe core dataset:\n- Albert Frey: 47 documented residential commissions in PS\n- Richard Neutra: 12\n- John Lautner: 8\n- William Krisel: 2,500+ tract homes (mostly Alexander Construction Company collaborations)\n- Donald Wexler: 31 (including the famous steel houses)\n- E. Stewart Williams: 17\n\nVerification sources: Palm Springs Modernism Week archive, Palm Springs Preservation Foundation, USC architectural archives, period press.\n\nFor anyone interested in MCM authentication or preservation, the data is fascinating \u2014 many homes claimed as Frey originals are actually Frey-influenced contemporaries by Krisel or other contemporaries.\n\nhttps://www.thepropertydna.com\n\nWho else is preserving and documenting MCM architecture? Always looking for collaboration.",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     },
     {
       "id": "lux-007",
       "subreddit": "fatFIRE",
-      "title": "Estate planning for inherited luxury real estate — the dossier that prevents value loss",
-      "body": "If you're going to inherit (or pass on) significant luxury real estate, the asset documentation gap costs heirs an estimated 8-15% in eventual sale value.\n\nWhat estate planning typically covers:\n- Title transfer mechanics\n- Trust structure\n- Tax basis step-up\n- Insurance continuity\n\nWhat usually isn't documented but should be:\n- Verified provenance file (every notable owner, with primary sources)\n- Architectural authentication file (original drawings, period documentation, attribution support)\n- Modification chronology (every renovation, with permits, contractors, materials)\n- Original furnishings/art association (was this property where X was photographed for Y?)\n- Comparable sales database (curated, not just MLS — auction results, off-market transfers)\n\nWe build these dossiers proactively for luxury estate owners. The first time the heirs need it is the worst time to start compiling it.\n\nhttps://www.thepropertydna.com\n\nFor anyone with significant residential real estate in their estate, what does your documentation look like?",
+      "title": "Estate planning for inherited luxury real estate \u2014 the dossier that prevents value loss",
+      "body": "If you're going to inherit (or pass on) significant luxury real estate, the asset documentation gap costs heirs an estimated 8-15% in eventual sale value.\n\nWhat estate planning typically covers:\n- Title transfer mechanics\n- Trust structure\n- Tax basis step-up\n- Insurance continuity\n\nWhat usually isn't documented but should be:\n- Verified provenance file (every notable owner, with primary sources)\n- Architectural authentication file (original drawings, period documentation, attribution support)\n- Modification chronology (every renovation, with permits, contractors, materials)\n- Original furnishings/art association (was this property where X was photographed for Y?)\n- Comparable sales database (curated, not just MLS \u2014 auction results, off-market transfers)\n\nWe build these dossiers proactively for luxury estate owners. The first time the heirs need it is the worst time to start compiling it.\n\nhttps://www.thepropertydna.com\n\nFor anyone with significant residential real estate in their estate, what does your documentation look like?",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     },
     {
       "id": "lux-008",
       "subreddit": "Watches",
-      "title": "Cross-asset luxury collectors — how does provenance documentation differ between watches and homes?",
-      "body": "Cross-posting from a research project on provenance documentation across collectible asset classes.\n\nFor a Patek Philippe 1518, you expect:\n- Original Cosc certificate\n- Service papers chronology\n- Auction provenance trail\n- Original box and warranty paperwork\n\nFor a comparably-valued architectural home ($5-15M), buyers typically receive:\n- Title chain\n- Some recent listing photos\n\nThe top of luxury real estate has a documentation gap that we've been systematically filling. Inspired in part by the watch and classic-car worlds.\n\nWhat we now generate for $5M+ residential:\n- Verified provenance index (notable owners with primary sources)\n- Architect attribution authentication (drawings, permits, period press)\n- Modification chronology with permits\n- Comparable architect's work trade-frequency\n- Insurance replacement vs market value\n\nFor watch collectors who also hold significant real estate — does this resonate? https://www.thepropertydna.com",
+      "title": "Cross-asset luxury collectors \u2014 how does provenance documentation differ between watches and homes?",
+      "body": "Cross-posting from a research project on provenance documentation across collectible asset classes.\n\nFor a Patek Philippe 1518, you expect:\n- Original Cosc certificate\n- Service papers chronology\n- Auction provenance trail\n- Original box and warranty paperwork\n\nFor a comparably-valued architectural home ($5-15M), buyers typically receive:\n- Title chain\n- Some recent listing photos\n\nThe top of luxury real estate has a documentation gap that we've been systematically filling. Inspired in part by the watch and classic-car worlds.\n\nWhat we now generate for $5M+ residential:\n- Verified provenance index (notable owners with primary sources)\n- Architect attribution authentication (drawings, permits, period press)\n- Modification chronology with permits\n- Comparable architect's work trade-frequency\n- Insurance replacement vs market value\n\nFor watch collectors who also hold significant real estate \u2014 does this resonate? https://www.thepropertydna.com",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     },
     {
       "id": "lux-009",
       "subreddit": "fatFIRE",
-      "title": "Palm Springs $30M+ inventory analysis — what the data says about ultra-luxury allocation",
+      "title": "Palm Springs $30M+ inventory analysis \u2014 what the data says about ultra-luxury allocation",
       "body": "Quick analytical writeup on the Palm Springs ultra-luxury segment ($30M+).\n\nKey data:\n- 6 verified $30M+ residential transactions in the last 24 months\n- Average days on market: 387\n- Verified architectural attribution rate: 100% (all 6 are architect-attributed)\n- Average ownership duration before sale: 11.4 years\n- Comparable architect work trade frequency at this price point: ~once every 7 years\n\nThe scarcity premium is significant. Verified Lautner/Neutra works in this tier trade at meaningful premiums vs. unattributed homes of similar size and lot quality.\n\nWe're indexing the entire market with verified provenance data. https://www.thepropertydna.com/blog/what-is-propertydna\n\nFor anyone allocating into ultra-luxury real estate, the data layer matters more here than at any other tier. Happy to discuss.",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     },
     {
       "id": "lux-010",
       "subreddit": "proptech",
-      "title": "Built a luxury home provenance + authentication system — solving the data gap above $5M",
-      "body": "Most proptech focuses on the $300k-$2M market because that's where transaction volume sits. The $5M+ market has higher absolute value but no comparable data infrastructure.\n\nWe built PropertyDNA for the gap above $5M. The unique value layer:\n\n1. Provenance verification: celebrity/notable owner claims authenticated against deed history + primary source press\n2. Architect attribution: drawings, permits, period documentation cross-referenced (Frey, Neutra, Lautner, Krisel, Wexler — full PS MCM coverage)\n3. Scarcity indexing: how often comparable architect-attributed homes trade\n4. Insurance replacement vs market value analysis\n5. Comparable luxury asset performance benchmarking (vs watches, art, wine)\n6. 50-year climate-adjusted asset risk\n\nLaunch market: Coachella Valley luxury inventory (Old Las Palmas, Movie Colony, Las Palmas). Expanding to Aspen, Hamptons, Pebble Beach next.\n\nhttps://www.thepropertydna.com\n\nFor anyone working in proptech: what's preventing better data infrastructure at the top of luxury real estate?",
+      "title": "Built a luxury home provenance + authentication system \u2014 solving the data gap above $5M",
+      "body": "Most proptech focuses on the $300k-$2M market because that's where transaction volume sits. The $5M+ market has higher absolute value but no comparable data infrastructure.\n\nWe built PropertyDNA for the gap above $5M. The unique value layer:\n\n1. Provenance verification: celebrity/notable owner claims authenticated against deed history + primary source press\n2. Architect attribution: drawings, permits, period documentation cross-referenced (Frey, Neutra, Lautner, Krisel, Wexler \u2014 full PS MCM coverage)\n3. Scarcity indexing: how often comparable architect-attributed homes trade\n4. Insurance replacement vs market value analysis\n5. Comparable luxury asset performance benchmarking (vs watches, art, wine)\n6. 50-year climate-adjusted asset risk\n\nLaunch market: Coachella Valley luxury inventory (Old Las Palmas, Movie Colony, Las Palmas). Expanding to Aspen, Hamptons, Pebble Beach next.\n\nhttps://www.thepropertydna.com\n\nFor anyone working in proptech: what's preventing better data infrastructure at the top of luxury real estate?",
       "posted": false,
-      "postedAt": null
+      "postedAt": null,
+      "url": null
     }
   ],
   "medium": [
@@ -186,6 +196,6 @@
     }
   ],
   "lastRun": null,
-  "lastRedditPost": "2026-05-09T16:46:54.247Z",
+  "lastRedditPost": "2026-05-10T14:00:06.047Z",
   "lastMediumPost": null
 }
