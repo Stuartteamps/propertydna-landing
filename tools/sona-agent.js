@@ -429,10 +429,26 @@ async function fillTextarea(page, kws, text, label) {
       return;
     }
 
-    if (confirmation !== SECRET_WORD) {
-      await setPhase('error', `Wrong confirmation word ("${confirmation}"). Expected "${SECRET_WORD}".`);
-      await notifyEmail('❌ Wrong confirmation word', `<p>You typed: <b>${confirmation}</b><br>Expected: <b>${SECRET_WORD}</b></p><p>Re-run the agent to try again.</p>`);
-      throw new Error('Wrong confirmation');
+    // Loop on wrong confirmation — just clear and re-prompt
+    let attempts = 0;
+    while (confirmation !== SECRET_WORD && confirmation.toLowerCase() !== 'cancel') {
+      attempts++;
+      console.log(`Wrong word: "${confirmation}". Re-prompting...`);
+      await httpsPost(CONTROL_URL, { confirm: null }, { 'x-internal-key': INTERNAL_KEY });
+      await setPhase('awaiting_publish_confirm', `Wrong word (attempt ${attempts}). Type "${SECRET_WORD}" to publish, or "cancel" to abort.`);
+      const next = await pollFor('confirm', 60 * 60 * 1000);
+      if (!next) {
+        await setPhase('error', 'Timed out waiting for publish confirmation');
+        throw new Error('Confirmation timeout');
+      }
+      confirmation = next;
+    }
+    if (confirmation.toLowerCase() === 'cancel') {
+      await setPhase('cancelled', 'Cancelled by user');
+      await notifyEmail('🛑 Sona deployment cancelled', '<p>Setup was cancelled. Browser is open if you want to review manually.</p>');
+      console.log('Cancelled. Browser stays open.');
+      await new Promise(() => {});
+      return;
     }
 
     // ── STEP 7: PUBLISH ──────────────────────────────────────────────
