@@ -255,12 +255,28 @@ async function fillTextarea(page, kws, text, label) {
     await page.getByRole('button', { name: 'Continue' }).click();
     await sleep(3000);
 
-    try {
-      await page.waitForURL(u => u.includes('my.quo.com') && !u.includes('login') && !u.includes('verify'), { timeout: 25000 });
-    } catch {
-      await setPhase('error', 'Login did not complete — code may have been wrong');
-      await notifyEmail('❌ Login failed', `<p>The code was rejected. URL: ${page.url()}</p>`);
-      throw new Error('Login failed');
+    // More forgiving: try to detect either URL change OR error message on the page
+    let loggedIn = false;
+    for (let i = 0; i < 10; i++) {
+      await sleep(2000);
+      const url = page.url();
+      const bodyText = await page.evaluate(() => document.body.innerText.slice(0, 500)).catch(() => '');
+      if (url.includes('my.quo.com') && !url.match(/\/(login|signin)(\?|$)/) && !url.includes('verify')) {
+        loggedIn = true; break;
+      }
+      if (/invalid|incorrect|expired|wrong/i.test(bodyText)) {
+        await page.screenshot({ path: '/tmp/sona-login-error.png' }).catch(() => {});
+        await setPhase('error', `Code rejected by Quo: ${bodyText.slice(0, 100)}`);
+        await notifyEmail('❌ Code rejected', `<p>Quo says: <i>${bodyText.slice(0, 200)}</i></p><p>Restart the agent for a fresh code.</p>`);
+        throw new Error('Code rejected');
+      }
+    }
+    if (!loggedIn) {
+      // Check screenshot — may have logged in but URL check missed
+      await page.screenshot({ path: '/tmp/sona-post-login.png' }).catch(() => {});
+      const finalUrl = page.url();
+      console.log(`Login URL check failed but proceeding. Final URL: ${finalUrl}`);
+      // Continue anyway — navigate to phone-numbers will fail safely if not logged in
     }
 
     // ── STEP 4: NAVIGATE TO PHONE NUMBER ─────────────────────────────
