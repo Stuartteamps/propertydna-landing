@@ -33,10 +33,6 @@ const fs   = require("fs");
 const readline = require("readline");
 
 // Resolve Playwright from the frontend node_modules (no separate install needed)
-const PW_PATH = require("glob")?.sync
-  ? null
-  : null;
-
 let chromium;
 try {
   chromium = require("/Users/danstuart/propertydna-landing/app/frontend/node_modules/.pnpm/playwright@1.59.1/node_modules/playwright").chromium;
@@ -69,31 +65,56 @@ function waitForEnter(prompt) {
   });
 }
 
-// ── Login flow — saves storage state ───────────────────────────────────
+// ── Login flow — saves storage state when dashboard is detected ────────
 async function loginFlow() {
-  console.log("→ Opening Chromium…");
+  console.log("→ Opening Chromium (you'll see a window pop up)…");
   const browser = await chromium.launch({ headless: false });
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
 
   console.log("→ Navigating to app.manychat.com…");
-  await page.goto("https://app.manychat.com/", { waitUntil: "domcontentloaded" });
+  await page.goto("https://app.manychat.com/", { waitUntil: "commit", timeout: 90000 });
 
   console.log("");
   console.log("─────────────────────────────────────");
-  console.log("Log into ManyChat (FB login + 2FA if prompted)");
-  console.log("Make sure you can see the Automation / Settings / Audience sidebar");
-  console.log("Then come back here and press ENTER");
+  console.log("ACTION REQUIRED IN THE BROWSER WINDOW:");
+  console.log("  Log in to ManyChat (Facebook login + 2FA if prompted)");
+  console.log("  Pick the 'Daniel Stuart Team Real Estate' page if asked");
+  console.log("");
+  console.log("Watching for you to reach the dashboard…");
   console.log("─────────────────────────────────────");
 
-  await waitForEnter("Press ENTER once fully logged in… ");
+  // Poll for the dashboard URL (post-login state)
+  const start = Date.now();
+  const TIMEOUT = 5 * 60 * 1000; // 5 minutes max
+  let detected = false;
+  while (Date.now() - start < TIMEOUT) {
+    try {
+      const url = page.url();
+      if (url.includes("/cms/") || url.includes("/dashboard") || url.includes("/fb" + "2304092946501728")) {
+        // Wait a beat for any final auth cookies to be set
+        await page.waitForTimeout(2000);
+        detected = true;
+        console.log(`✓ Dashboard detected at ${url}`);
+        break;
+      }
+    } catch { /* page may be navigating */ }
+    await page.waitForTimeout(2000);
+  }
+
+  if (!detected) {
+    console.error("Timed out waiting for login. If you logged in successfully, run again.");
+    await browser.close();
+    process.exit(2);
+  }
 
   console.log("→ Saving storage state…");
   await ctx.storageState({ path: STATE_FILE });
   console.log(`  ✓ saved ${STATE_FILE}`);
 
   await browser.close();
-  console.log("DONE — you can now run: node tools/manychat-flow-playwright.js");
+  console.log("");
+  console.log("LOGIN CAPTURED — proceeding to flow build…");
 }
 
 // ── Inspect — open ManyChat, dump some structural info, exit ───────────
@@ -106,7 +127,7 @@ async function inspectFlow() {
   const ctx = await browser.newContext({ storageState: STATE_FILE });
   const page = await ctx.newPage();
 
-  await page.goto("https://app.manychat.com/", { waitUntil: "domcontentloaded" });
+  await page.goto("https://app.manychat.com/", { waitUntil: "commit", timeout: 90000 });
   await page.waitForTimeout(3000);
 
   console.log("→ Page title:", await page.title());
@@ -123,10 +144,20 @@ async function inspectFlow() {
   await browser.close();
 }
 
-// ── Build — drive the flow construction ────────────────────────────────
+// ── Build — assist + verify autonomously ───────────────────────────────
+//
+// ManyChat's flow editor is a React canvas. Driving its DnD interactions
+// blindly with brittle selectors would burn hours and break next release.
+//
+// Instead the autonomous role is:
+//   1. Open ManyChat to the right page so Dan starts in the right place
+//   2. Print the EXACT clicks + the External Request body Dan needs
+//   3. Poll the ManyChat API every 8s for a new flow (or a new keyword
+//      trigger) — when one shows up, the build is detected as complete
+//   4. Then run the live smoke test that simulates a real DM → webhook
 async function buildFlow() {
   if (!fs.existsSync(STATE_FILE)) {
-    console.error(`No session at ${STATE_FILE}. Run --login first to capture a logged-in browser state.`);
+    console.error(`No session at ${STATE_FILE}. Run --login first.`);
     process.exit(2);
   }
   const webhookToken = getWebhookToken();
@@ -134,69 +165,186 @@ async function buildFlow() {
     console.error("No webhook token in manychat-status.json — run the orchestrator bootstrap first.");
     process.exit(2);
   }
+  const apiKey = process.env.MANYCHAT_API_KEY;
+  if (!apiKey) {
+    console.error("MANYCHAT_API_KEY not in env — required to poll for completion. Set it then re-run.");
+    process.exit(2);
+  }
 
-  console.log("→ Launching browser with saved session…");
-  const browser = await chromium.launch({ headless: !MODE.headed });
+  console.log("→ Launching ManyChat in your browser (headed)…");
+  const browser = await chromium.launch({ headless: false });
   const ctx = await browser.newContext({ storageState: STATE_FILE });
   const page = await ctx.newPage();
 
-  // ── Step 1: navigate to Automation ───────────────────────────────────
-  console.log("→ STEP 1: Automation home");
-  await page.goto("https://app.manychat.com/", { waitUntil: "domcontentloaded" });
-  await page.waitForTimeout(2000);
-
-  // The ManyChat sidebar uses translatable labels; rely on URL navigation when possible
-  await page.goto("https://app.manychat.com/cms/automation", { waitUntil: "domcontentloaded" });
+  await page.goto("https://app.manychat.com/cms/automation", { waitUntil: "commit", timeout: 90000 });
   await page.waitForTimeout(3000);
 
-  // Verify we're authenticated
   if (page.url().includes("/login")) {
     console.error("✗ Session expired — re-run --login");
     await browser.close();
     process.exit(3);
   }
-  console.log("  ✓ Automation page loaded");
+  console.log("  ✓ Automation page open in browser");
 
-  // ── Step 2-5: ManyChat's flow builder is a complex React/Canvas app ──
-  // The DOM is deeply nested with auto-generated classnames and many actions
-  // require drag-and-drop. Reliable selectors would need ManyChat-specific
-  // recording (use Playwright codegen against a recorded session).
-  //
-  // PUNT: rather than guess at brittle selectors, leave the visual build to
-  // the human + print the exact instructions tightly. The script's value
-  // is being IN POSITION to drive once selectors are captured.
+  // Print exact clicks
+  console.log("");
+  console.log("══════════════════════════════════════════════════════════════");
+  console.log("DO THESE IN THE BROWSER (I'll detect when you're done):");
+  console.log("══════════════════════════════════════════════════════════════");
+  console.log("");
+  console.log("1. Click + New Automation → pick \"Start from scratch\"");
+  console.log("");
+  console.log("2. Add Trigger → \"User sends a message with Keyword\"");
+  console.log("   Keywords: DNA, REPORT, VALUE, HOUSE");
+  console.log("   Channels: Instagram + Facebook Messenger");
+  console.log("");
+  console.log("3. Build the flow (use Quick Reply, User Input blocks):");
+  console.log("");
+  console.log("   • Text + Quick Replies → save to {{lead_role}}");
+  console.log("     [Buying] → buyer    [Selling] → seller");
+  console.log("     [Agent]  → agent    [Investor] → investor");
+  console.log("");
+  console.log("   • User Input (Text) → save to {{lead_first_name}}");
+  console.log("     Prompt: \"What's your first name?\"");
+  console.log("");
+  console.log("   • User Input (Email, with validation) → save to {{lead_email}}");
+  console.log("     Prompt: \"Best email for your report?\"");
+  console.log("");
+  console.log("   • Condition: IF {{lead_role}} == seller →");
+  console.log("       User Input (Text) → save to {{lead_address}}");
+  console.log("       Prompt: \"What address would you like valued?\"");
+  console.log("");
+  console.log("4. Add External Request (Action):");
+  console.log("   URL: https://thepropertydna.com/.netlify/functions/manychat-webhook");
+  console.log("   Method: POST");
+  console.log("   Headers:");
+  console.log("     Content-Type: application/json");
+  console.log("     x-manychat-token: " + webhookToken);
+  console.log("   Body:");
+  console.log("     {");
+  console.log("       \"role\": \"{{lead_role}}\",");
+  console.log("       \"firstName\": \"{{lead_first_name}}\",");
+  console.log("       \"email\": \"{{lead_email}}\",");
+  console.log("       \"address\": \"{{lead_address}}\",");
+  console.log("       \"platform\": \"ig\"");
+  console.log("     }");
+  console.log("   Toggle ON: \"Use response as message\"");
+  console.log("");
+  console.log("5. Apply Tag → dna_qualifier_complete");
+  console.log("");
+  console.log("6. Publish (top right) — flow goes live for IG + FB");
+  console.log("");
+  console.log("══════════════════════════════════════════════════════════════");
+  console.log("Polling ManyChat API every 8s — I'll detect when the flow exists.");
+  console.log("══════════════════════════════════════════════════════════════");
+  console.log("");
 
-  console.log("");
-  console.log("─────────────────────────────────────");
-  console.log("INTERACTIVE BUILDER NOT YET WIRED");
-  console.log("─────────────────────────────────────");
-  console.log("ManyChat's flow editor is a React canvas — selectors are brittle");
-  console.log("and recording is the recommended approach. To complete this:");
-  console.log("");
-  console.log("  1. Run: npx playwright codegen --load-storage=tools/.manychat-state.json https://app.manychat.com/cms/automation");
-  console.log("  2. Click through one full DM-qualifier flow build manually");
-  console.log("  3. Paste the generated selectors into the placeholder section below");
-  console.log("  4. Re-run this script to replay the build");
-  console.log("");
-  console.log("For now the script verifies your session is alive and you can navigate.");
-  console.log("Webhook token (paste into External Request header):");
-  console.log("  " + webhookToken);
-  console.log("─────────────────────────────────────");
+  // ── Poll the Public API for a new flow ────────────────────────────────
+  const baselineFlows = await mcGetFlows(apiKey);
+  const baselineNames = new Set(baselineFlows.map(f => f.name));
+  console.log(`Baseline: ${baselineFlows.length} existing flows. Watching for new ones…`);
 
-  // Keep the browser open briefly so the human can verify state visually
-  if (MODE.headed) {
-    console.log("Browser open — press Ctrl+C to close");
-    await page.waitForTimeout(60000);
+  const start = Date.now();
+  const TIMEOUT = 30 * 60 * 1000; // 30 min
+  let newFlow = null;
+  while (Date.now() - start < TIMEOUT) {
+    await sleep(8000);
+    const flows = await mcGetFlows(apiKey);
+    const fresh = flows.filter(f => !baselineNames.has(f.name) && !f.ns.startsWith("system_"));
+    if (fresh.length > 0) {
+      newFlow = fresh[0];
+      console.log(`✓ DETECTED new flow: "${newFlow.name}" (ns=${newFlow.ns})`);
+      break;
+    }
+    process.stdout.write(".");
   }
+
+  if (!newFlow) {
+    console.error("\nTimed out after 30 min. Re-run when flow is published.");
+    await browser.close();
+    process.exit(4);
+  }
+
+  console.log("");
+  console.log("→ Triggering live smoke test against the webhook…");
+  const smoke = await runWebhookSmokeTest(webhookToken);
+  console.log(`  ${smoke.ok ? "✓" : "✗"} webhook returned ${smoke.status}`);
+
+  console.log("");
+  console.log("BUILD COMPLETE");
+  console.log("  Flow:     " + newFlow.name + " (ns=" + newFlow.ns + ")");
+  console.log("  Webhook:  " + (smoke.ok ? "live + verified" : "DEGRADED — investigate"));
+  console.log("");
+  console.log("Browser will stay open 30s so you can confirm Publish, then close.");
+  await page.waitForTimeout(30000);
   await browser.close();
 }
+
+// ── Helpers for build mode ─────────────────────────────────────────────
+async function mcGetFlows(apiKey) {
+  const https = require("https");
+  return new Promise(resolve => {
+    https.request({
+      hostname: "api.manychat.com",
+      path:     "/fb/page/getFlows",
+      method:   "GET",
+      headers:  { Authorization: `Bearer ${apiKey}` },
+    }, r => {
+      let b = ""; r.on("data", c => b += c);
+      r.on("end", () => {
+        try { resolve(JSON.parse(b)?.data?.flows || []); }
+        catch { resolve([]); }
+      });
+    }).on("error", () => resolve([])).end();
+  });
+}
+
+async function runWebhookSmokeTest(token) {
+  const https = require("https");
+  const body = JSON.stringify({
+    role:      "buyer",
+    firstName: "PlaywrightCheck",
+    email:     `playwright+${Date.now()}@thepropertydna.com`,
+    platform:  "ig",
+  });
+  return new Promise(resolve => {
+    const req = https.request({
+      hostname: "thepropertydna.com",
+      path:     "/.netlify/functions/manychat-webhook",
+      method:   "POST",
+      headers:  {
+        "Content-Type":     "application/json",
+        "x-manychat-token": token,
+        "Content-Length":   Buffer.byteLength(body),
+      },
+    }, r => {
+      let b = ""; r.on("data", c => b += c);
+      r.on("end", () => resolve({ status: r.statusCode, ok: r.statusCode === 200, body: b.slice(0,200) }));
+    });
+    req.on("error", e => resolve({ status: 0, ok: false, error: e.message }));
+    req.write(body); req.end();
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ── Dispatch ───────────────────────────────────────────────────────────
 (async () => {
   try {
-    if (MODE.login)        await loginFlow();
-    else if (MODE.inspect) await inspectFlow();
-    else                   await buildFlow();
+    if (MODE.inspect) {
+      await inspectFlow();
+    } else if (MODE.login) {
+      await loginFlow();
+      // Chain into build immediately after login captures the session
+      await buildFlow();
+    } else {
+      // Default: build with existing session (no login attempt)
+      if (!fs.existsSync(STATE_FILE)) {
+        console.error("No session captured yet. Run with --login first.");
+        process.exit(2);
+      }
+      await buildFlow();
+    }
   } catch (err) {
     console.error("FATAL:", err.message);
     process.exit(1);
