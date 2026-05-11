@@ -32,10 +32,10 @@ function todayText() {
   const today = new Date().toISOString().slice(0, 10);
   const calendar = JSON.parse(fs.readFileSync(CALENDAR_FILE, 'utf8'));
   const entry = calendar.posts.find(p => p.date === today);
-  if (entry) return { text: entry.text, date: today, found: true };
+  if (entry) return { text: entry.text, date: today, image: entry.image, found: true };
   // Fallback: use the most recent past entry if today has no entry
   const past = calendar.posts.filter(p => p.date <= today).sort((a, b) => b.date.localeCompare(a.date));
-  if (past.length) return { text: past[0].text, date: past[0].date, found: false };
+  if (past.length) return { text: past[0].text, date: past[0].date, image: past[0].image, found: false };
   return null;
 }
 
@@ -99,6 +99,8 @@ function buildMetadata(service) {
   switch (service) {
     case 'facebook':
       return { facebook: { type: 'post' } };
+    case 'instagram':
+      return { instagram: { type: 'post', shouldShareToFeed: true } };
     case 'googlebusiness':
       return { google: { type: 'whats_new', detailsWhatsNew: { button: 'learn_more', link: 'https://www.thepropertydna.com' } } };
     default:
@@ -136,9 +138,9 @@ async function postToChannel(token, channelId, service, text, imageUrl) {
     mode: 'shareNow',
   };
 
-  // Attach image for all supported services
+  // Attach image for all supported services (Buffer GraphQL: assets.images[])
   if (hasImage && MEDIA_SUPPORTED.includes(service)) {
-    input.media = [{ url: imageUrl, type: 'image' }];
+    input.assets = { images: [{ url: imageUrl }] };
   }
 
   const metadata = buildMetadata(service);
