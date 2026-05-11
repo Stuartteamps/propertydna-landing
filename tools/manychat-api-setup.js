@@ -180,7 +180,7 @@ async function provision(key) {
     console.error(`  ✗ list failed (${cfList.status}): ${JSON.stringify(cfList.error).slice(0,200)}`);
     return { ok: false, stage: "list_fields", error: cfList };
   }
-  const existing = new Set(cfList.fields.map(f => f.caption));
+  const existing = new Set(cfList.fields.map(f => f.name || f.caption));
   console.log(`  found ${cfList.fields.length} existing fields`);
 
   const fieldResults = [];
