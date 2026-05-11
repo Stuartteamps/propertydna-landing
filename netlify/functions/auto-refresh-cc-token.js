@@ -12,10 +12,15 @@
  */
 
 const https   = require('https');
+const db      = require('./_supabase');
 
 const CC_SITE_ID    = '784437c8-12f8-470b-bb0b-ccf5ec9c0a4a';
 const CLIENT_ID     = 'f626272f-4940-42e3-b0d6-d4ffc0366337';
 const CLIENT_SECRET = 'UCMY_HNPbhCRENfCi_uK8g';
+// Persist tokens in Supabase rather than Netlify env. Netlify env vars are
+// shared across every Lambda function and AWS imposes a 4KB ceiling on the
+// combined K=V pairs — a 1.2KB CC JWT was burning ~30% of that budget.
+const STORE_IN_SUPABASE = (process.env.OAUTH_STORE || 'supabase') !== 'netlify_env';
 
 function post(hostname, path, headers, body) {
   return new Promise((resolve, reject) => {
@@ -89,41 +94,55 @@ async function updateNetlifyEnv(netlifyPat, key, value) {
   return res.data;
 }
 
+async function loadRefreshToken() {
+  if (STORE_IN_SUPABASE) {
+    try {
+      const rows = await db.from('oauth_tokens').select('refresh_token').eq('provider', 'constant_contact').limit(1).get();
+      if (rows?.[0]?.refresh_token) return rows[0].refresh_token;
+    } catch { /* table may not exist yet, fall through */ }
+  }
+  return process.env.CC_REFRESH_TOKEN || null;
+}
+
+async function persistTokens(tokens) {
+  const expiresAt = tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null;
+  if (STORE_IN_SUPABASE) {
+    await db.upsert('oauth_tokens', {
+      provider:      'constant_contact',
+      access_token:  tokens.access_token,
+      refresh_token: tokens.refresh_token || undefined,
+      expires_at:    expiresAt,
+      metadata:      { scope: tokens.scope || null, token_type: tokens.token_type || null },
+      updated_at:    new Date().toISOString(),
+    }, 'provider');
+    return { mode: 'supabase', expires: expiresAt };
+  }
+
+  // Fallback: write back to Netlify env (legacy path, requires NETLIFY_PAT)
+  const netlifyPat = process.env.NETLIFY_PAT;
+  if (!netlifyPat) throw new Error('NETLIFY_PAT not set and OAUTH_STORE != supabase');
+  await updateNetlifyEnv(netlifyPat, 'CC_ACCESS_TOKEN', tokens.access_token);
+  if (tokens.refresh_token) await updateNetlifyEnv(netlifyPat, 'CC_REFRESH_TOKEN', tokens.refresh_token);
+  return { mode: 'netlify_env', expires: expiresAt };
+}
+
 exports.handler = async () => {
   console.log('[auto-refresh-cc-token] Starting...');
 
-  const refreshToken = process.env.CC_REFRESH_TOKEN;
-  const netlifyPat   = process.env.NETLIFY_PAT;
-
+  const refreshToken = await loadRefreshToken();
   if (!refreshToken) {
-    console.error('[auto-refresh-cc-token] CC_REFRESH_TOKEN not set — run node tools/refresh-cc-token.js first');
-    return { statusCode: 500, body: 'CC_REFRESH_TOKEN not set' };
-  }
-
-  if (!netlifyPat) {
-    console.error('[auto-refresh-cc-token] NETLIFY_PAT not set — add it in Netlify env vars');
-    return { statusCode: 500, body: 'NETLIFY_PAT not set' };
+    console.error('[auto-refresh-cc-token] No refresh token found in oauth_tokens or env — run tools/refresh-cc-token.js first');
+    return { statusCode: 500, body: 'CC refresh token not set' };
   }
 
   try {
     const tokens = await refreshCCToken(refreshToken);
     console.log('[auto-refresh-cc-token] New access token received.');
 
-    await updateNetlifyEnv(netlifyPat, 'CC_ACCESS_TOKEN', tokens.access_token);
-    console.log('[auto-refresh-cc-token] CC_ACCESS_TOKEN updated in Netlify.');
+    const persisted = await persistTokens(tokens);
+    console.log(`[auto-refresh-cc-token] Persisted via ${persisted.mode}. Expires: ${persisted.expires || 'unknown'}`);
 
-    // If CC returned a new refresh token, save it too
-    if (tokens.refresh_token && tokens.refresh_token !== refreshToken) {
-      await updateNetlifyEnv(netlifyPat, 'CC_REFRESH_TOKEN', tokens.refresh_token);
-      console.log('[auto-refresh-cc-token] CC_REFRESH_TOKEN rotated.');
-    }
-
-    const exp = tokens.expires_in
-      ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
-      : 'unknown';
-
-    console.log(`[auto-refresh-cc-token] Done. Token expires: ${exp}`);
-    return { statusCode: 200, body: JSON.stringify({ ok: true, expires: exp }) };
+    return { statusCode: 200, body: JSON.stringify({ ok: true, expires: persisted.expires, mode: persisted.mode }) };
 
   } catch (err) {
     console.error('[auto-refresh-cc-token] FAILED:', err.message);

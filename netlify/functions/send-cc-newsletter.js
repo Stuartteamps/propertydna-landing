@@ -270,7 +270,14 @@ exports.handler = async (event) => {
   const subject        = `The Stuart Team Weekly - ${weekLabel}`;
   const html           = buildHtml(weatherText, marketNarrative, weekLabel);
 
-  const ccToken = process.env.CC_ACCESS_TOKEN;
+  // Token storage was moved out of Netlify env (4KB Lambda ceiling) into
+  // Supabase. Prefer the DB; fall back to env for legacy compatibility.
+  let ccToken = null;
+  try {
+    const rows = await db.from('oauth_tokens').select('access_token,expires_at').eq('provider', 'constant_contact').limit(1).get();
+    if (rows?.[0]?.access_token) ccToken = rows[0].access_token;
+  } catch { /* table may not exist yet — fall back to env */ }
+  if (!ccToken) ccToken = process.env.CC_ACCESS_TOKEN || null;
   let result;
 
   if (ccToken) {
