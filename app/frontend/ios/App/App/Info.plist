@@ -119,5 +119,8 @@
 	</array>
 
 	<!-- Apple Sign In is handled in entitlements -->
+	<!-- Export Compliance: only standard HTTPS, no custom encryption -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

@@ -518,11 +518,29 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   const featureCount = Object.values(features).filter(Boolean).length + (luxuryTier ? 1 : 0) + (aduSqft ? 1 : 0) + (poolAddOnCost ? 1 : 0) + (recentReno ? 1 : 0);
   const confidence = Math.max(0.52, 0.88 - featureCount * 0.03);
 
+  // ── Accuracy % metric ───────────────────────────────────────────────────────
+  // Composite of confidence + valuation range tightness vs RentCast AVM.
+  // Tighter ranges with high confidence = higher accuracy score.
+  let accuracyPercent = null;
+  let avmDeltaPercent = null;
+  if (adjMid && adjLow && adjHigh) {
+    const spread = (adjHigh - adjLow) / adjMid;          // 0.10 = ±5% range
+    const spreadScore = Math.max(0, 1 - spread / 0.40);  // tighter range → 1.0
+    accuracyPercent = Math.round((confidence * 0.7 + spreadScore * 0.3) * 1000) / 10; // 0-100, 1 decimal
+  }
+  if (rawMid && adjMid) {
+    avmDeltaPercent = Math.round(((adjMid - rawMid) / rawMid) * 1000) / 10;
+  }
+  const confidenceLabel = confidence >= 0.78 ? "High" : confidence >= 0.62 ? "Medium" : "Low";
+
   return {
     adjLow, adjMid, adjHigh,
     rawLow, rawMid, rawHigh,
     smartLow, smartMid, smartHigh,
     confidence: Math.round(confidence * 100) / 100,
+    confidenceLabel,
+    accuracyPercent,
+    avmDeltaPercent,
     drivers: drivers.sort((a, b) => Math.abs(b.pct ?? 0) - Math.abs(a.pct ?? 0)).slice(0, 8),
     totalPctMid: totalMid,
     aduUplift: aduUplift || null,
