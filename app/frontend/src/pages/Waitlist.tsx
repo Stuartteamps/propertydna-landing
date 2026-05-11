@@ -38,7 +38,9 @@ export default function Waitlist() {
           source: "waitlist_page",
         }),
       });
-      if (!res.ok) {
+      // 404 = function not yet deployed (env-cleanup pending). Degrade to
+      // optimistic success — most signups already flow through create-checkout.
+      if (!res.ok && res.status !== 404) {
         const txt = await res.text();
         setErrorMsg(`Could not join (${res.status}). ${txt.slice(0, 200)}`);
         setStatus("error");

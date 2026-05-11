@@ -39,3 +39,9 @@ tools/**/*.json
 *.credentials.json
 *_token.json
 .claude/settings.local.json
+
+# Android signing — NEVER commit keystores
+*.jks
+*.keystore
+android/app/release/
+**/local.properties
