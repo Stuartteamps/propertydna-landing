@@ -32,6 +32,7 @@ import Listings from "./pages/Listings";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Privacy from "./pages/Privacy";
+import Waitlist from "./pages/Waitlist";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const AppRoutes = () => (
     <Route path="/blog/:slug" element={<BlogPost />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="/privacy" element={<Privacy />} />
+    <Route path="/waitlist" element={<Waitlist />} />
   </Routes>
 );
 

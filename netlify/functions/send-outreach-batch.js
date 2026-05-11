@@ -227,13 +227,18 @@ function buildOutreachEmail({ contact, market, subject, campaignId }) {
 }
 
 // ── Resend sender ─────────────────────────────────────────────────────────────
-async function sendEmail({ to, subject, html, text }) {
+async function sendEmail({ to, subject, html, text, unsubUrl }) {
   const key    = process.env.RESEND_API_KEY;
   const from   = `${process.env.CAMPAIGN_SENDER_NAME || "PropertyDNA"} <${process.env.CAMPAIGN_SENDER_EMAIL || "hello@mail.thepropertydna.com"}>`;
   const replyTo = process.env.REPLY_TO_EMAIL || "stuartteamps@gmail.com";
+  const unsubMailto = process.env.UNSUB_MAILTO || "unsubscribe@mail.thepropertydna.com";
   if (!key) throw new Error("RESEND_API_KEY not set");
+  const headers = unsubUrl ? {
+    "List-Unsubscribe":      `<mailto:${unsubMailto}?subject=unsubscribe>, <${unsubUrl}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  } : undefined;
   return httpsPost("api.resend.com", "/emails", { Authorization: `Bearer ${key}` }, {
-    from, reply_to: replyTo, to, subject, html, text,
+    from, reply_to: replyTo, to, subject, html, text, ...(headers ? { headers } : {}),
   });
 }
 
@@ -316,7 +321,8 @@ exports.handler = async (event) => {
     }
 
     try {
-      const result = await sendEmail({ to: contact.email, subject, html, text });
+      const unsubUrl = `${SITE}/.netlify/functions/unsubscribe?e=${Buffer.from(contact.email).toString("base64")}&c=${campaignId}`;
+      const result = await sendEmail({ to: contact.email, subject, html, text, unsubUrl });
       const ok = result.status < 300;
 
       const sentAt = new Date().toISOString();

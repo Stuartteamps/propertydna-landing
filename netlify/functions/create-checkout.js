@@ -7,6 +7,60 @@ const CORS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
+// ── Geo-gating ──────────────────────────────────────────────────────────────
+// PropertyDNA only has data coverage in the US today. Non-US visitors are
+// routed to /waitlist instead of paying for a thin report. The supported
+// list is intentionally narrow — expand once data partners are wired up.
+const SUPPORTED_COUNTRIES = new Set(
+  (process.env.SUPPORTED_COUNTRIES || "US").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
+);
+const GEO_GATE_ENABLED = (process.env.GEO_GATE_ENABLED || "1") !== "0";
+
+function decodeNetlifyGeo(event) {
+  // Netlify Edge sets x-nf-geo (base64 JSON: {country:{code,name},city,...})
+  const raw = event.headers["x-nf-geo"] || event.headers["X-NF-Geo"];
+  if (!raw) return null;
+  try { return JSON.parse(Buffer.from(raw, "base64").toString("utf8")); }
+  catch { return null; }
+}
+
+function lookupCountryByIp(ip) {
+  // Lightweight free service (no key). 1s budget so we never block checkout.
+  return new Promise((resolve) => {
+    if (!ip) return resolve(null);
+    const req = https.request(
+      { hostname: "ipapi.co", path: `/${encodeURIComponent(ip)}/json/`, method: "GET", headers: { "User-Agent": "PropertyDNA/1.0" } },
+      (res) => {
+        let raw = "";
+        res.on("data", (c) => (raw += c));
+        res.on("end", () => { try { resolve(JSON.parse(raw)); } catch { resolve(null); } });
+      }
+    );
+    req.on("error", () => resolve(null));
+    req.setTimeout(1200, () => { req.destroy(); resolve(null); });
+    req.end();
+  });
+}
+
+async function detectCountry(event, body) {
+  // 1) Explicit signal from the client wins (browser geolocation / manual select)
+  const explicit = (body.countryCode || body.country || "").toString().toUpperCase().slice(0, 2);
+  if (explicit) return { code: explicit, name: body.countryName || null, source: "client" };
+
+  // 2) Netlify Edge geo header
+  const nf = decodeNetlifyGeo(event);
+  if (nf?.country?.code) return { code: nf.country.code.toUpperCase(), name: nf.country.name || null, source: "edge" };
+
+  // 3) IP lookup (best-effort)
+  const ip = event.headers["x-nf-client-connection-ip"]
+          || (event.headers["x-forwarded-for"] || "").split(",")[0].trim()
+          || null;
+  const ipInfo = await lookupCountryByIp(ip);
+  if (ipInfo?.country) return { code: ipInfo.country.toUpperCase(), name: ipInfo.country_name || null, source: "ip" };
+
+  return { code: null, name: null, source: "unknown" };
+}
+
 function stripePost(path, data, key) {
   const body = new URLSearchParams(data).toString();
   return new Promise((resolve, reject) => {
@@ -80,7 +134,32 @@ exports.handler = async (event) => {
 
   // ── Owner bypass — platform owner is never charged ────────────────
   const OWNER_EMAIL = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
-  if (normalizedEmail === OWNER_EMAIL) {
+  const isOwner = normalizedEmail === OWNER_EMAIL;
+
+  // ── Geo-gate — non-US visitors land on /waitlist (owner is exempt) ─
+  if (GEO_GATE_ENABLED && !isOwner) {
+    const geo = await detectCountry(event, body);
+    if (geo.code && !SUPPORTED_COUNTRIES.has(geo.code)) {
+      const waitlistRow = {
+        email:        normalizedEmail,
+        full_name:    fullName || null,
+        country_code: geo.code,
+        country_name: geo.name,
+        city:         city || null,
+        state:        state || null,
+        address:      address || null,
+        source:       "create_checkout",
+        ip:           event.headers["x-nf-client-connection-ip"] || (event.headers["x-forwarded-for"] || "").split(",")[0].trim() || null,
+        user_agent:   event.headers["user-agent"] || null,
+      };
+      db.insert("waitlist", waitlistRow).catch(() => {}); // table may not exist yet; non-blocking
+      db.kpi("geo_blocked", normalizedEmail, { country: geo.code, source: geo.source, mode });
+      const params = new URLSearchParams({ country: geo.code, email: normalizedEmail, joined: "1" });
+      return { statusCode: 200, headers: CORS, body: JSON.stringify({ url: `${origin}/waitlist?${params.toString()}`, gated: true, country: geo.code }) };
+    }
+  }
+
+  if (isOwner) {
     // Always ensure owner has enterprise subscription in DB
     db.upsert("subscriptions", {
       email: OWNER_EMAIL,

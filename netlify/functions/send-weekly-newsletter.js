@@ -13,10 +13,13 @@ const https = require('https');
 const db    = require('./_supabase');
 
 const CC_CAMPAIGN_ID   = '3bbbef67-eebe-418a-90d2-96e8f5a9e42a'; // Sphere of Influence — CC import (734 contacts)
-const SENDER      = process.env.SENDER_EMAIL  || 'reports@thepropertydna.com';
+// Bulk newsletter sends from the marketing subdomain, not the transactional one.
+// Splitting protects reports@ deliverability (see memory/email_deliverability.md).
+const SENDER      = process.env.NEWSLETTER_SENDER_EMAIL || process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
 const SENDER_NAME = 'Daniel Stuart | Stuart Team'; // Stuart Team newsletter — separate from PropertyDNA
 const REPLY_TO    = process.env.REPLY_TO_EMAIL || 'stuartteamps@gmail.com';
 const SITE        = 'https://thepropertydna.com';
+const UNSUB_MAILTO = process.env.UNSUB_MAILTO || 'unsubscribe@mail.thepropertydna.com';
 
 // ── Inline newsletter generator (same logic as generate-newsletter.js) ────────
 function apiGet(hostname, path) {
@@ -137,8 +140,17 @@ Daniel Stuart · Coldwell Banker Realty · Palm Springs, CA<br>
 
 // ── Resend sender ─────────────────────────────────────────────────────────────
 function sendEmail(to, subject, html) {
-  const key     = process.env.RESEND_API_KEY;
-  const payload = JSON.stringify({ from: `${SENDER_NAME} <${SENDER}>`, reply_to: REPLY_TO, to, subject, html });
+  const key      = process.env.RESEND_API_KEY;
+  const unsubUrl = `${SITE}/.netlify/functions/unsubscribe?e=${Buffer.from(to).toString('base64')}`;
+  const payload  = JSON.stringify({
+    from: `${SENDER_NAME} <${SENDER}>`,
+    reply_to: REPLY_TO,
+    to, subject, html,
+    headers: {
+      'List-Unsubscribe':      `<mailto:${UNSUB_MAILTO}?subject=unsubscribe>, <${unsubUrl}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
+  });
   return new Promise((resolve) => {
     const req = https.request({
       hostname: 'api.resend.com', path: '/emails', method: 'POST',

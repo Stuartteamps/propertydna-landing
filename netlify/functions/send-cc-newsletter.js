@@ -14,9 +14,11 @@ const db    = require('./_supabase');
 const CC_API     = 'api.cc.email';
 const CC_LIST_ID = '662ac8de-4599-11f1-8c5f-02420a320003';
 const SITE       = 'https://thepropertydna.com';
-const SENDER     = 'reports@thepropertydna.com';
+// Newsletter sends from marketing subdomain to protect reports@ deliverability.
+const SENDER     = process.env.NEWSLETTER_SENDER_EMAIL || process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
 const SENDER_NAME = 'Daniel Stuart | Stuart Team';
-const REPLY_TO   = 'stuartteamps@gmail.com';
+const REPLY_TO   = process.env.REPLY_TO_EMAIL || 'stuartteamps@gmail.com';
+const UNSUB_MAILTO = process.env.UNSUB_MAILTO || 'unsubscribe@mail.thepropertydna.com';
 
 // ── HTTP helpers ──────────────────────────────────────────────────────────────
 
@@ -190,9 +192,14 @@ async function sendViaResend(subject, html, weatherText, marketNarrative, weekLa
         `/.netlify/functions/campaign-unsubscribe?email={{contact.email}}`,
         `${unsubUrl}?email=${Buffer.from(c.email).toString('base64')}`
       );
+      const oneClickUnsub = `${unsubUrl}?email=${Buffer.from(c.email).toString('base64')}`;
       const payload = JSON.stringify({
         from: `${SENDER_NAME} <${SENDER}>`, reply_to: REPLY_TO,
         to: c.email, subject, html: perEmailHtml,
+        headers: {
+          'List-Unsubscribe':      `<mailto:${UNSUB_MAILTO}?subject=unsubscribe>, <${oneClickUnsub}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       });
       await new Promise((resolve) => {
         const req = https.request({

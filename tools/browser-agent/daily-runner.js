@@ -95,9 +95,10 @@ async function runCCRefresh() {
   log('\n[1/5] Constant Contact token refresh');
   results.cc = await runCCRefresh();
 
-  // 2. Reddit posting — agent now skips banned subs (see SUBREDDIT_BANNED list in agent)
-  log('\n[2/5] Reddit posting');
-  results.reddit = await runAgent('reddit', path.join(__dirname, 'agents/reddit.js'));
+  // 2. Reddit posting — PAUSED 2026-05-11 (engagement too low, downvoted on r/fatFIRE; banned r/realtors and r/RealEstate)
+  // Focus shifted to Buffer (LinkedIn, FB, IG, TikTok, GBP) — much higher value for luxury audience
+  log('\n[2/5] Reddit posting — PAUSED (focus shifted to Buffer)');
+  results.reddit = { status: 'paused', reason: 'low_engagement_pivot_to_buffer' };
 
   // 3. Medium cross-post — DISABLED 2026-05-10 (Medium discontinued integration tokens)
   log('\n[3/5] Medium cross-posting — SKIPPED (API discontinued)');

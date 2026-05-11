@@ -359,6 +359,7 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
   const tmpl = templates[step];
   if (!tmpl) return;
 
+  const unsubMailto = process.env.UNSUB_MAILTO || 'unsubscribe@mail.thepropertydna.com';
   const body = JSON.stringify({
     from: `PropertyDNA <${SENDER}>`,
     reply_to: process.env.OWNER_EMAIL || 'stuartteamps@gmail.com',
@@ -366,6 +367,10 @@ This is our last outreach. <a href="${unsub}" style="color:#999">Unsubscribe</a>
     subject: tmpl.subject,
     html: tmpl.html,
     tags: [{ name: 'campaign_id', value: contact.campaign_id }, { name: 'drip_step', value: String(step) }],
+    headers: {
+      'List-Unsubscribe':      `<mailto:${unsubMailto}?subject=unsubscribe>, <${unsub}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   });
 
   return new Promise((resolve) => {

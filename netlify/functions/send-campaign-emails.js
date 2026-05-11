@@ -9,10 +9,11 @@ const CORS = {
   'Content-Type': 'application/json',
 };
 
-const BATCH_SIZE  = 50;
-const SENDER      = process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
-const SENDER_NAME = process.env.CAMPAIGN_SENDER_NAME || 'PropertyDNA';
-const SITE_URL    = 'https://thepropertydna.com';
+const BATCH_SIZE   = 50;
+const SENDER       = process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
+const SENDER_NAME  = process.env.CAMPAIGN_SENDER_NAME  || 'PropertyDNA';
+const SITE_URL     = 'https://thepropertydna.com';
+const UNSUB_MAILTO = process.env.UNSUB_MAILTO || 'unsubscribe@mail.thepropertydna.com';
 
 function resendPost(payload) {
   return new Promise((resolve, reject) => {
@@ -184,6 +185,7 @@ exports.handler = async (event) => {
       continue;
     }
     try {
+      const oneClickUnsub = `${SITE_URL}/.netlify/functions/campaign-unsubscribe?email=${encodeURIComponent(contact.email)}&cid=${campaignId}`;
       const result = await resendPost({
         from: `${SENDER_NAME} <${SENDER}>`,
         reply_to: process.env.REPLY_TO_EMAIL || 'stuartteamps@gmail.com',
@@ -191,6 +193,10 @@ exports.handler = async (event) => {
         subject: getSubject(contact, campaign),
         html: getHtml(contact, campaign),
         tags: [{ name: 'campaign_id', value: campaignId }],
+        headers: {
+          'List-Unsubscribe':      `<mailto:${UNSUB_MAILTO}?subject=unsubscribe>, <${oneClickUnsub}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       });
       const ok = result.status < 300;
       const sentAt = new Date().toISOString();
