@@ -197,7 +197,7 @@ export default function About() {
             </p>
             <div className="border-t border-white/10 pt-6">
               <div className="font-serif text-lg font-light text-canvas mb-1">Daniel Stuart</div>
-              <div className="font-sans text-[11px] tracking-[1px] text-canvas/45 uppercase">Founder · PropertyDNA · Stuart Team Real Estate</div>
+              <div className="font-sans text-[11px] tracking-[1px] text-canvas/45 uppercase">Founder · PropertyDNA</div>
             </div>
           </FadeUp>
         </div>

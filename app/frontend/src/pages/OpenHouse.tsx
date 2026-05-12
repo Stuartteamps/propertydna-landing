@@ -91,7 +91,7 @@ export default function OpenHouse() {
           <div style={{ width: 28, height: 28, border: '1px solid #C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" stroke="#C9A84C" strokeWidth="1"/><line x1="7" y1="1" x2="7" y2="13" stroke="#C9A84C" strokeWidth="0.75"/><line x1="1" y1="7" x2="13" y2="7" stroke="#C9A84C" strokeWidth="0.75"/></svg>
           </div>
-          Stuart Team · PropertyDNA
+          PropertyDNA
         </Link>
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#C9A84C' }}>Open House Check-In</div>
       </header>

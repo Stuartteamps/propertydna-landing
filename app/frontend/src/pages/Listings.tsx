@@ -229,7 +229,7 @@ export default function Listings() {
       <section style={{ padding: 'clamp(100px,12vw,160px) clamp(24px,6vw,80px) 60px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 16 }}>
-            Stuart Team · Live Listings
+            PropertyDNA · Live Listings
           </div>
           <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(40px,5vw,68px)', fontWeight: 300, color: '#F0EBE0', margin: '0 0 12px', lineHeight: 1.05 }}>
             {cfg.title}

@@ -10,14 +10,13 @@ const linkStyle: React.CSSProperties = {
   transition: 'color 0.2s', padding: 0, textDecoration: 'none',
 };
 
+// Simple, user-friendly nav. Core flow: Login → enter property address → get report.
+// Map and IntellaGraph AI showcase the data depth. Everything else moves to Footer.
 const navLinks = [
-  { label: 'Analyze',      href: '/analyze' },
-  { label: 'How It Works', href: '/how-it-works' },
-  { label: 'Pricing',      href: '/pricing' },
-  { label: 'Heat Maps',    href: '/market-heatmaps' },
+  { label: 'Analyze',         href: '/analyze' },
+  { label: 'Heat Map',        href: '/market-heatmaps' },
   { label: 'IntellaGraph AI', href: '/intellagraph' },
-  { label: 'Journal',      href: '/blog' },
-  { label: 'About',        href: '/about' },
+  { label: 'About',           href: '/about' },
 ];
 
 interface NavProps {

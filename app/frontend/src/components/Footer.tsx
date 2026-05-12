@@ -54,19 +54,15 @@ const SOCIAL = [
 ];
 
 const links = [
-  { label: 'Buy',             href: '/buyer-access' },
-  { label: 'Sell',            href: '/seller-valuation' },
-  { label: 'Off-Market',      href: '/off-market' },
-  { label: 'Property DNA',    href: '/property-dna' },
-  { label: 'Heat Maps',       href: '/market-heatmaps' },
-  { label: 'Professionals',   href: '/professionals' },
-  { label: 'Open House',      href: '/open-house' },
-  { label: 'Newsletter',      href: '/newsletter' },
-  { label: 'Contact',         href: '/contact' },
+  { label: 'Analyze',         href: '/analyze' },
   { label: 'Sample Report',   href: '/sample-report' },
+  { label: 'Heat Maps',       href: '/market-heatmaps' },
+  { label: 'IntellaGraph AI', href: '/intellagraph' },
   { label: 'How It Works',    href: '/how-it-works' },
+  { label: 'Pricing',         href: '/pricing' },
   { label: 'About',           href: '/about' },
-  { label: 'Dashboard',       href: '/dashboard' },
+  { label: 'Contact',         href: '/contact' },
+  { label: 'Privacy',         href: '/privacy' },
 ];
 
 export default function Footer() {
@@ -122,7 +118,7 @@ export default function Footer() {
 
         <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="font-sans text-[11px] font-light text-canvas/40">
-            © {new Date().getFullYear()} Stuart Team Real Estate · PropertyDNA
+            © {new Date().getFullYear()} PropertyDNA, LLC
           </div>
           <div className="font-sans text-[11px] text-canvas/30">
             Not a licensed appraisal. For informational purposes only.

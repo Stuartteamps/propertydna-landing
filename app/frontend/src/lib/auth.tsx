@@ -4,7 +4,25 @@ import { Capacitor } from '@capacitor/core';
 import { supabase } from './supabase';
 import { planToTier, fetchUserTier, type Tier } from './tier';
 
-const isNative = Capacitor.isNativePlatform();
+// Robust native detection — multiple signals because Capacitor's bridge
+// can be slow/unreliable when loading a remote URL via server.url.
+// Checks: Capacitor API, user agent, platform, then bridge object.
+function detectNative(): boolean {
+  try {
+    if (Capacitor.isNativePlatform?.()) return true;
+    if (Capacitor.getPlatform?.() === 'ios' || Capacitor.getPlatform?.() === 'android') return true;
+  } catch { /* Capacitor not loaded yet */ }
+  if (typeof window !== 'undefined') {
+    const ua = navigator.userAgent || '';
+    // Capacitor injects 'CapacitorBridge' on iOS WebView
+    if ((window as any).Capacitor?.isNativePlatform?.()) return true;
+    // iOS WebView in Capacitor app sends specific UA markers
+    if (/PropertyDNA/i.test(ua)) return true;
+  }
+  return false;
+}
+// Read fresh inside auth functions — module-load time may be too early when WebView loads remote URL
+const isNative = detectNative();
 
 interface AuthState {
   user: User | null;
@@ -89,14 +107,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function signInWithGoogle() {
-    if (isNative) {
-      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithGoogle();
-      const idToken = result.credential?.idToken;
-      if (!idToken) throw new Error('Google sign-in failed — no token returned.');
-      const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
-      if (error) throw error;
-      return;
+    // Re-detect native at call time (Capacitor bridge may have loaded after module init)
+    const native = detectNative();
+    if (native) {
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        const idToken = result.credential?.idToken;
+        if (!idToken) throw new Error('Google sign-in failed — no token returned.');
+        const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
+        if (error) throw error;
+        return;
+      } catch (e) {
+        console.error('Native Google sign-in failed, falling back to web:', e);
+        // Fall through to web OAuth
+      }
     }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -110,15 +135,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signInWithApple() {
-    if (isNative) {
-      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithApple();
-      const idToken = result.credential?.idToken;
-      const nonce = result.credential?.nonce;
-      if (!idToken) throw new Error('Apple sign-in failed — no token returned.');
-      const { error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token: idToken, nonce });
-      if (error) throw error;
-      return;
+    const native = detectNative();
+    if (native) {
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const result = await FirebaseAuthentication.signInWithApple();
+        const idToken = result.credential?.idToken;
+        const nonce = result.credential?.nonce;
+        if (!idToken) throw new Error('Apple sign-in failed — no token returned.');
+        const { error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token: idToken, nonce });
+        if (error) throw error;
+        return;
+      } catch (e) {
+        console.error('Native Apple sign-in failed, falling back to web:', e);
+      }
     }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',

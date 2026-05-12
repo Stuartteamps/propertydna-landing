@@ -34,7 +34,7 @@ export default function Newsletter() {
 
       <section style={{ padding: 'clamp(100px,14vw,180px) clamp(24px,6vw,80px)', maxWidth: 680, margin: '0 auto', textAlign: 'center' }}>
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 20 }}>
-          Stuart Team Weekly
+          PropertyDNA Weekly
         </div>
         <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(40px,6vw,72px)', fontWeight: 300, lineHeight: 1.05, color: '#F0EBE0', marginBottom: 20 }}>
           The market, decoded<br /><em style={{ color: '#C9A84C' }}>every week.</em>
