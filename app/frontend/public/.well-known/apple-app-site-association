@@ -1,0 +1,23 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "8NR9GCA6GQ.com.thepropertydna.app",
+        "paths": [
+          "/report/view/*",
+          "/report/*",
+          "/dashboard*",
+          "/analyze*",
+          "/market-heatmaps*",
+          "/intellagraph*",
+          "/auth/callback*",
+          "*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["8NR9GCA6GQ.com.thepropertydna.app"]
+  }
+}

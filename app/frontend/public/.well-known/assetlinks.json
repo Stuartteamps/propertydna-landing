@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.thepropertydna.app",
+      "sha256_cert_fingerprints": ["C5:90:31:DC:47:EF:72:BC:B9:F0:9D:3F:89:C1:DF:89:0D:C6:9E:5A:92:24:9E:81:C7:87:55:29:B9:BF:5C:65"]
+    }
+  }
+]
