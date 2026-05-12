@@ -1,5 +1,5 @@
 // src/components/PropertyForm.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PricingGate from './PricingGate';
 import AddressAutocomplete from './AddressAutocomplete';
 import { parseIdxUrl } from '@/lib/parseIdxUrl';
@@ -124,15 +124,34 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
   const [gateLoading, setGateLoading] = useState(false);
   const [quota, setQuota] = useState<{ limit: number | null; used: number; remaining: number | null; tierLabel: string } | null>(null);
 
+  // GA4 event helper
+  const track = (name: string, params?: Record<string, unknown>) => {
+    try { (window as unknown as { pdnaTrack?: (n: string, p?: unknown) => void }).pdnaTrack?.(name, params); } catch { /* ignore */ }
+  };
+
+  // Fire form_started once when the user begins typing
+  const formStartedRef = useRef(false);
   const set = (field: keyof FormState) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      if (!formStartedRef.current) {
+        formStartedRef.current = true;
+        track('form_started', { first_field: String(field) });
+      }
       setForm(prev => ({ ...prev, [field]: e.target.value }));
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.email.includes('@')) { setStatus('error'); setErrorMsg('Please enter a valid email address.'); return; }
-    if (!form.address.trim()) { setStatus('error'); setErrorMsg('Property address is required.'); return; }
+    if (!form.email.includes('@')) {
+      track('form_validation_error', { reason: 'invalid_email' });
+      setStatus('error'); setErrorMsg('Please enter a valid email address.'); return;
+    }
+    if (!form.address.trim()) {
+      track('form_validation_error', { reason: 'no_address' });
+      setStatus('error'); setErrorMsg('Property address is required.'); return;
+    }
 
+    track('form_submitted', { role: form.role, has_idx_url: !!form.idxUrl });
     setStatus('loading');
     setErrorMsg('');
 

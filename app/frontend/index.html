@@ -8,13 +8,32 @@
     <meta name="description" content="PropertyDNA delivers institutional-grade property intelligence — valuations, risk profiles, permit history, and neighborhood analytics for every home." />
     <meta name="author" content="PropertyDNA" />
 
-    <!-- Google Analytics -->
+    <!-- Google Analytics — bot + email-scanner suppression -->
+    <script>
+      (function() {
+        var ua = navigator.userAgent || '';
+        var botPattern = /bot|crawl|spider|slurp|wget|curl|httpclient|headless|phantom|selenium|playwright|puppeteer|safelinks|fetch|prerender|monitoring|gtmetrix|lighthouse|pagespeed|scanner/i;
+        var isBot = botPattern.test(ua) || !navigator.languages || navigator.languages.length === 0;
+        var isFramedExternal = false;
+        try { isFramedExternal = (window.top !== window.self) && (window.top.location.host !== window.location.host); } catch(e) { isFramedExternal = true; }
+        window.__pdnaSkipGA = isBot || isFramedExternal;
+      })();
+    </script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-S09N9KX1D6"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-S09N9KX1D6');
+      if (!window.__pdnaSkipGA) {
+        gtag('config', 'G-S09N9KX1D6', { send_page_view: true });
+      } else {
+        window['ga-disable-G-S09N9KX1D6'] = true;
+      }
+      // Helper for app-level event tracking
+      window.pdnaTrack = function(name, params) {
+        if (window.__pdnaSkipGA) return;
+        try { gtag('event', name, params || {}); } catch(e) {}
+      };
     </script>
 
     <meta property="og:title" content="PropertyDNA — Property Intelligence" />

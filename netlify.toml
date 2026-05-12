@@ -31,7 +31,30 @@
 [functions."drip-sequence"]
   schedule = "0 * * * *"
 
+[functions."key-watchdog"]
+  schedule = "0 16 * * 1"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Anti-piracy: keep report URLs out of search engines + AI crawlers
+[[headers]]
+  for = "/report/view/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "SAMEORIGIN"
+
+[[headers]]
+  for = "/report/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "SAMEORIGIN"
+
+# Block AI training crawlers across the whole site
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
