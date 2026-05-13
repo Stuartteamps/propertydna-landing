@@ -4,12 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.thepropertydna.app',
   appName: 'PropertyDNA',
   webDir: 'dist',
-  // Load live site so content updates ship without App Store review
-  server: {
-    url: 'https://thepropertydna.com',
-    cleartext: false,
-    allowNavigation: ['*.thepropertydna.com', '*.supabase.co'],
-  },
   plugins: {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],

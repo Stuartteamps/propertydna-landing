@@ -181,21 +181,6 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
                 )}
               </button>
 
-              {/* Facebook */}
-              <button
-                onClick={() => handleOAuth('facebook')}
-                disabled={providerLoading !== null}
-                style={{ ...btnBase, background: providerLoading === 'facebook' ? '#166fe5' : '#1877F2', color: '#fff', opacity: providerLoading !== null && providerLoading !== 'facebook' ? 0.5 : 1 }}
-                onMouseEnter={e => { if (!providerLoading) e.currentTarget.style.background = '#166fe5'; }}
-                onMouseLeave={e => { if (!providerLoading) e.currentTarget.style.background = '#1877F2'; }}
-              >
-                {providerLoading === 'facebook' ? (
-                  <span>Connecting…</span>
-                ) : (
-                  <><FacebookIcon /> Continue with Facebook</>
-                )}
-              </button>
-
               {/* Apple */}
               <button
                 onClick={() => handleOAuth('apple')}
