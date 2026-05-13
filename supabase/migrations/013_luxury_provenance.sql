@@ -61,10 +61,13 @@ COMMENT ON COLUMN architects.reputation_tier IS
 COMMENT ON COLUMN architects.trade_frequency_years IS
   'Average years between sales of comparable architect-attributed works';
 
--- Foreign key from property_master to architects
-ALTER TABLE property_master
-  ADD CONSTRAINT IF NOT EXISTS fk_property_master_architect
-  FOREIGN KEY (architect_id) REFERENCES architects(id) ON DELETE SET NULL;
+-- Foreign key from property_master to architects (idempotent)
+DO $$ BEGIN
+  ALTER TABLE property_master
+    ADD CONSTRAINT fk_property_master_architect
+    FOREIGN KEY (architect_id) REFERENCES architects(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ── 3. Notable owners (celebrity provenance) ──────────────────────────────
 CREATE TABLE IF NOT EXISTS notable_owners (
