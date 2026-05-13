@@ -95,14 +95,17 @@ async function runCCRefresh() {
   log('\n[1/5] Constant Contact token refresh');
   results.cc = await runCCRefresh();
 
-  // 2. Reddit posting — PAUSED 2026-05-11 (engagement too low, downvoted on r/fatFIRE; banned r/realtors and r/RealEstate)
-  // Focus shifted to Buffer (LinkedIn, FB, IG, TikTok, GBP) — much higher value for luxury audience
-  log('\n[2/5] Reddit posting — PAUSED (focus shifted to Buffer)');
-  results.reddit = { status: 'paused', reason: 'low_engagement_pivot_to_buffer' };
+  // 2. Reddit posting — re-enabled 2026-05-13. Agent auto-skips BANNED_SUBS
+  // (r/realtors, r/realtor, r/RealEstate). Queue targets luxury/HENRY/architecture
+  // /investing subs which tolerate brand mentions when content is informative.
+  log('\n[2/5] Reddit posting');
+  results.reddit = await runAgent('reddit', path.join(__dirname, 'agents/reddit.js'));
 
-  // 3. Medium cross-post — DISABLED 2026-05-10 (Medium discontinued integration tokens)
-  log('\n[3/5] Medium cross-posting — SKIPPED (API discontinued)');
-  results.medium = { status: 'disabled', reason: 'api_discontinued' };
+  // 3. Medium cross-post — DISABLED. Medium killed integration tokens for accounts
+  // post-2023 (verified in browser 2026-05-10). Cross-post via Buffer's Medium
+  // channel instead — connect at buffer.com/manage/channels.
+  log('\n[3/5] Medium cross-posting — SKIPPED (use Buffer Medium channel instead)');
+  results.medium = { status: 'disabled', reason: 'use_buffer_channel_instead' };
 
   // 4. Buffer social post
   log('\n[4/5] Buffer social posting');
