@@ -5,26 +5,14 @@
 - Magic-link emails now redirect to `https://thepropertydna.com/auth/callback` (instead of `capacitor://localhost`) so Universal Links bounce the user back into the app.
 - `signInWithFacebook` now throws a native-only error message in the app (Facebook button is already hidden from the iOS UI).
 
-## ⚠️ Required action before resubmitting — Supabase auth provider config
+## Supabase audience config — DONE ✅ (2026-05-13)
 
-Native Firebase tokens won't be accepted by Supabase until two changes are made in the Supabase Dashboard.
-Project: `https://supabase.com/dashboard/project/neccpdfhmfnvyjgyrysy`
+Configured via Management API. The Supabase API unifies `client_id` + `additional_client_ids` into one comma-separated `external_*_client_id` string. Both web (OAuth) and native (ID token) flows now validate.
 
-### 1. Google provider → "Authorized Client IDs"
-Add the **iOS Firebase Client ID**:
-```
-262652433329-1th34cp0n0dtob46n7qr4s2tlnen3l0a.apps.googleusercontent.com
-```
-Path: **Authentication → Providers → Google → Authorized Client IDs (for native sign in with ID tokens)**
+- `external_google_client_id` = `36707276836-idmbikoddd2v4f0a3145hle3h459l5ea.apps.googleusercontent.com,262652433329-1th34cp0n0dtob46n7qr4s2tlnen3l0a.apps.googleusercontent.com`
+- `external_apple_client_id` = `com.thepropertydna.auth,com.thepropertydna.app`
 
-### 2. Apple provider → "Authorized Client IDs"
-Add the **iOS Bundle ID**:
-```
-com.thepropertydna.app
-```
-Path: **Authentication → Providers → Apple → Authorized Client IDs**
-
-Without these, native sign-in still surfaces a clean inline error and the user can fall back to email magic link. With them, native sign-in completes end-to-end.
+Native Apple/Google sign-in in Build 8 should now complete the Supabase session end-to-end.
 
 ## Resolution Center reply (paste into ASC)
 Submission to reply to: previous Build 7 review.
