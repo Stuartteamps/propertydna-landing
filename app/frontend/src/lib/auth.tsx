@@ -107,22 +107,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function signInWithGoogle() {
-    // Re-detect native at call time (Capacitor bridge may have loaded after module init)
     const native = detectNative();
     if (native) {
-      try {
-        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-        const result = await FirebaseAuthentication.signInWithGoogle();
-        const idToken = result.credential?.idToken;
-        if (!idToken) throw new Error('Google sign-in failed — no token returned.');
-        const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
-        if (error) throw error;
-        return;
-      } catch (e) {
-        console.error('Native Google sign-in failed, falling back to web:', e);
-        // Fall through to web OAuth
-      }
+      // Native iOS/Android: only use Firebase Auth. Never fall through to Safari —
+      // Apple rejects apps that open Safari for sign-in and never return (Guideline 2.1(a)).
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const idToken = result.credential?.idToken;
+      if (!idToken) throw new Error('Google sign-in did not return a token. Please try email.');
+      const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
+      if (error) throw new Error(`Google sign-in failed: ${error.message}. Please try email.`);
+      return;
     }
+    // Browser only
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -131,34 +128,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     if (error) throw error;
-    if (!data?.url) throw new Error('Google sign-in is not configured. Please use email or Facebook.');
+    if (!data?.url) throw new Error('Google sign-in is not configured. Please use email.');
   }
 
   async function signInWithApple() {
     const native = detectNative();
     if (native) {
-      try {
-        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-        const result = await FirebaseAuthentication.signInWithApple();
-        const idToken = result.credential?.idToken;
-        const nonce = result.credential?.nonce;
-        if (!idToken) throw new Error('Apple sign-in failed — no token returned.');
-        const { error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token: idToken, nonce });
-        if (error) throw error;
-        return;
-      } catch (e) {
-        console.error('Native Apple sign-in failed, falling back to web:', e);
-      }
+      // Native iOS: use Firebase Auth's bridge to Sign in with Apple (system sheet).
+      // Never fall through to Safari — Apple rejects apps that do this.
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithApple();
+      const idToken = result.credential?.idToken;
+      const nonce = result.credential?.nonce;
+      if (!idToken) throw new Error('Apple sign-in did not return a token. Please try email.');
+      const { error } = await supabase.auth.signInWithIdToken({ provider: 'apple', token: idToken, nonce });
+      if (error) throw new Error(`Apple sign-in failed: ${error.message}. Please try email.`);
+      return;
     }
+    // Browser only
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) throw error;
-    if (!data?.url) throw new Error('Apple sign-in is not configured yet. Please use email or Facebook.');
+    if (!data?.url) throw new Error('Apple sign-in is not configured yet. Please use email.');
   }
 
   async function signInWithFacebook() {
+    const native = detectNative();
+    if (native) {
+      // Facebook sign-in is not available in the iOS/Android app — email only.
+      throw new Error('Facebook sign-in is not available in the app. Please use email.');
+    }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'facebook',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -168,9 +169,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signInWithEmail(email: string) {
+    // In the Capacitor app, window.location.origin is "capacitor://localhost" — emails
+    // need a real https URL. Universal Links (apple-app-site-association + assetlinks.json)
+    // bounce that URL back into the app automatically.
+    const native = detectNative();
+    const origin = native ? 'https://thepropertydna.com' : window.location.origin;
     const { error } = await supabase.auth.signInWithOtp({
       email: email.toLowerCase().trim(),
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: `${origin}/auth/callback` },
     });
     if (error) throw error;
   }
