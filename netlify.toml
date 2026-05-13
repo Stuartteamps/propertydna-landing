@@ -19,8 +19,12 @@
 [functions."index-florida"]
   timeout = 26
 
-[functions."send-weekly-newsletter"]
-  schedule = "20 23 * * 4"
+# send-weekly-newsletter was firing on the same Thursday schedule as
+# send-cc-newsletter, causing every contact to receive 2 identical emails
+# 30s apart — a strong spam-folder signal. Schedule removed; the function
+# remains callable manually via HTTP POST.
+# [functions."send-weekly-newsletter"]
+#   schedule = "20 23 * * 4"
 
 [functions."send-cc-newsletter"]
   schedule = "20 23 * * 4"

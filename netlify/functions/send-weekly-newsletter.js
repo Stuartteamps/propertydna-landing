@@ -86,6 +86,9 @@ function getWeekLabel() {
 function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel) {
   const unsubUrl = `${SITE}/.netlify/functions/unsubscribe?e=${Buffer.from(to).toString('base64')}`;
   const name     = firstName || 'there';
+  // Coachella Valley lifestyle photo for the send day (replaces the stale
+  // stagecoach festival image). /social/photo/YYYY-MM-DD.jpg is pre-generated.
+  const eventImageDate = new Date().toISOString().slice(0, 10);
   return `<!DOCTYPE html>
 <html><body style="margin:0;padding:0;background:#efe7dc;font-family:Arial,Helvetica,sans-serif;color:#2c241d;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#efe7dc;padding:30px 0;">
@@ -105,9 +108,9 @@ function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel) {
 <a href="https://weather.com/weather/weekend/l/Palm+Springs+California+92264" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Full Forecast</a></td></tr>
 <tr><td style="padding:0 40px 20px;"><img src="https://files.constantcontact.com/5cd96ebd701/8e0a1559-bca4-4956-9f12-51e8208523a1.png" width="100%"></td></tr>
 <tr><td style="padding:0 40px;font-family:Georgia,serif;font-size:26px;">Things To Do This Week</td></tr>
-<tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">The Coachella Valley is alive this week with food, music, and desert lifestyle events — from gallery openings in Palm Springs to festival season in the east valley.<br><br>
+<tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">Post-festival calm has settled across the valley — golden-hour patios, weekly farmers markets, and gallery openings before summer heat takes over.<br><br>
 <a href="https://visitpalmsprings.com/events/this-weekend/" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">Explore This Week's Events</a></td></tr>
-<tr><td style="padding:0 40px;"><img src="https://files.constantcontact.com/5cd96ebd701/2a371c70-06d5-468c-baa6-940469a499c5.png" width="100%"></td></tr>
+<tr><td style="padding:0 40px;"><img src="${SITE}/social/photo/${eventImageDate}.jpg" width="100%" alt="Coachella Valley this week" style="display:block;"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">West Valley New Listings</td></tr>
 <tr><td style="padding:0 40px 30px;font-size:15px;line-height:1.8;">Palm Springs and Cathedral City continue to lead activity. Updated homes with strong design and lifestyle appeal are moving quickly.<br><br>
 <a href="${SITE}/listings/west-valley" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View West Valley Listings</a></td></tr>
