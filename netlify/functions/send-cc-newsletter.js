@@ -274,6 +274,49 @@ exports.handler = async (event) => {
   const subject        = `The Stuart Team Weekly - ${weekLabel}`;
   const html           = buildHtml(weatherText, marketNarrative, weekLabel);
 
+  // Test mode: ?testEmail=foo@bar.com → send ONE email to that address via
+  // Resend (skips CC API + skips the full contact list). Used to preview
+  // the newsletter before the Thursday cron fires.
+  const testEmail = (event?.queryStringParameters?.testEmail || '').toLowerCase().trim();
+  if (testEmail && testEmail.includes('@')) {
+    console.log('[send-cc-newsletter] TEST MODE — sending only to', testEmail);
+    const oneClickUnsub = `${SITE}/.netlify/functions/unsubscribe?e=${Buffer.from(testEmail).toString('base64')}`;
+    const perEmailHtml  = html.replace(
+      '/.netlify/functions/campaign-unsubscribe?email={{contact.email}}',
+      oneClickUnsub
+    );
+    const key = process.env.RESEND_API_KEY;
+    const unsubMailto = process.env.UNSUB_MAILTO || 'unsubscribe@mail.thepropertydna.com';
+    const payload = JSON.stringify({
+      from: `${SENDER_NAME} <${SENDER}>`,
+      reply_to: REPLY_TO,
+      to: testEmail,
+      subject: `[TEST] ${subject}`,
+      html: perEmailHtml,
+      headers: {
+        'List-Unsubscribe':      `<mailto:${unsubMailto}?subject=unsubscribe>, <${oneClickUnsub}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
+    });
+    const sendResult = await new Promise((resolve) => {
+      const req = https.request({
+        hostname: 'api.resend.com', path: '/emails', method: 'POST',
+        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
+      }, (res) => {
+        let raw = ''; res.on('data', c => raw += c);
+        res.on('end', () => { try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); } catch { resolve({ status: res.statusCode, data: raw }); } });
+      });
+      req.on('error', (e) => resolve({ status: 0, data: { error: e.message } }));
+      req.write(payload); req.end();
+    });
+    db.kpi('cc_newsletter_test', testEmail, { subject, week: weekLabel, status: sendResult.status });
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ test: true, recipient: testEmail, subject, status: sendResult.status, resend_id: sendResult.data?.id || null }),
+    };
+  }
+
   // Token storage was moved out of Netlify env (4KB Lambda ceiling) into
   // Supabase. Prefer the DB; fall back to env for legacy compatibility.
   let ccToken = null;
