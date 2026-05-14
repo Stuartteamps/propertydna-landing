@@ -83,7 +83,7 @@ function getWeekLabel() {
   return `Week of ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
 }
 
-function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel) {
+function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel, links) {
   const unsubUrl = `${SITE}/.netlify/functions/unsubscribe?e=${Buffer.from(to).toString('base64')}`;
   const name     = firstName || 'there';
   // Two different dated photos so the weather-section and events-section
@@ -91,6 +91,10 @@ function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel) {
   const today           = new Date();
   const weatherImageDate = new Date(today.getTime() + 2 * 86400000).toISOString().slice(0, 10);
   const eventImageDate   = today.toISOString().slice(0, 10);
+  // Weekly listing links from newsletter_links table; fall back to own pages.
+  const wvLink   = links?.west_valley_new || `${SITE}/listings/west-valley`;
+  const evLink   = links?.east_valley_new || `${SITE}/listings/east-valley`;
+  const soldLink = links?.recently_sold   || `${SITE}/listings/recently-sold`;
   return `<!DOCTYPE html>
 <html><body style="margin:0;padding:0;background:#efe7dc;font-family:Arial,Helvetica,sans-serif;color:#2c241d;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#efe7dc;padding:30px 0;">
@@ -115,15 +119,15 @@ function buildHtml(to, firstName, weatherText, marketNarrative, weekLabel) {
 <tr><td style="padding:0 40px;"><img src="${SITE}/social/photo/${eventImageDate}.jpg" width="100%" alt="Coachella Valley this week" style="display:block;"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">West Valley New Listings</td></tr>
 <tr><td style="padding:0 40px 30px;font-size:15px;line-height:1.8;">Palm Springs and Cathedral City continue to lead activity. Updated homes with strong design and lifestyle appeal are moving quickly.<br><br>
-<a href="${SITE}/listings/west-valley" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View West Valley Listings</a></td></tr>
+<a href="${wvLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View West Valley Listings</a></td></tr>
 <tr><td style="padding:0 40px;"><img src="https://files.constantcontact.com/5cd96ebd701/f61407b8-ee7f-459d-b22c-f284bc6999d2.png" width="100%"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">East Valley New Listings</td></tr>
 <tr><td style="padding:0 40px 30px;font-size:15px;line-height:1.8;">La Quinta, Palm Desert, and Rancho Mirage continue offering strong value and lifestyle. Buyers are active when homes feel turnkey and priced right.<br><br>
-<a href="${SITE}/listings/east-valley" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View East Valley Listings</a></td></tr>
+<a href="${evLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View East Valley Listings</a></td></tr>
 <tr><td style="padding:0 40px;"><img src="https://files.constantcontact.com/5cd96ebd701/1288b08d-b5bc-4d8f-865b-45159e4d6f8d.png" width="100%"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">Recently Sold</td></tr>
 <tr><td style="padding:0 40px 40px;font-size:15px;line-height:1.8;">Closed sales confirm that well-presented homes are winning. See what actually sold this week across the valley.<br><br>
-<a href="${SITE}/listings/recently-sold" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Recent Sales</a></td></tr>
+<a href="${soldLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Recent Sales</a></td></tr>
 <tr><td style="padding:40px;background:#f4ede4;text-align:center;">
 <div style="font-family:Georgia,serif;font-size:28px;">Property DNA</div>
 <p style="font-size:15px;line-height:1.8;">Before you buy or sell, understand the real story behind the property. Property DNA gives you data-driven intelligence most buyers never see.</p>
