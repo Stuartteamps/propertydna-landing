@@ -29,6 +29,7 @@ interface AuthState {
   session: Session | null;
   tier: Tier;
   plan: string | null;
+  reportCount: number;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
@@ -38,7 +39,7 @@ interface AuthState {
 }
 
 const AuthContext = createContext<AuthState>({
-  user: null, session: null, tier: 'free', plan: null, loading: true,
+  user: null, session: null, tier: 'free', plan: null, reportCount: 0, loading: true,
   signInWithGoogle: async () => {},
   signInWithApple: async () => {},
   signInWithFacebook: async () => {},
@@ -51,13 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [tier, setTier]       = useState<Tier>('free');
   const [plan, setPlan]       = useState<string | null>(null);
+  const [reportCount, setReportCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   async function loadTier(email: string) {
     try { sessionStorage.setItem('pdna_email', email.toLowerCase().trim()); } catch { /* sessionStorage unavailable */ }
-    const { tier: t, plan: p } = await fetchUserTier(email);
+    const { tier: t, plan: p, reportCount: rc } = await fetchUserTier(email);
     setTier(t);
     setPlan(p);
+    setReportCount(rc);
     try {
       sessionStorage.setItem('pdna_subscribed', t !== 'free' ? 'true' : 'false');
       sessionStorage.setItem('pdna_plan', p ?? '');
@@ -100,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setTier('free');
         setPlan(null);
+        setReportCount(0);
       }
     });
 
@@ -193,7 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, tier, plan, loading, signInWithGoogle, signInWithApple, signInWithFacebook, signInWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, session, tier, plan, reportCount, loading, signInWithGoogle, signInWithApple, signInWithFacebook, signInWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );

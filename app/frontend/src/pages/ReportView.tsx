@@ -77,10 +77,17 @@ export default function ReportView() {
 
   // Tier state
   const [userTier, setUserTier] = useState<Tier>('free');
+  const [reportCount, setReportCount] = useState(0);
   const [tierEmail, setTierEmail] = useState('');
   const [showTierPrompt, setShowTierPrompt] = useState(false);
   const [tierCheckEmail, setTierCheckEmail] = useState('');
   const [tierChecking, setTierChecking] = useState(false);
+
+  // First-report Enterprise preview: anyone on the free tier with ≤1 lifetime
+  // reports sees every section (heat-map intel, micro-location, full adjustments,
+  // event timeline) on their first report only. Paid users always see the full set.
+  const isFirstReportPreview = userTier === 'free' && reportCount <= 1;
+  const effectiveTier: Tier = isFirstReportPreview ? 'enterprise' : userTier;
 
   useEffect(() => {
     if (!reportId) { setError('No report ID provided.'); setLoading(false); return; }
@@ -108,14 +115,18 @@ export default function ReportView() {
     if (!email) return;
     setTierEmail(email);
     setTierCheckEmail(email);
-    fetchUserTier(email).then(({ tier }) => setUserTier(tier));
+    fetchUserTier(email).then(({ tier, reportCount: rc }) => {
+      setUserTier(tier);
+      setReportCount(rc);
+    });
   }, []);
 
   const handleTierCheck = async () => {
     if (!tierCheckEmail.includes('@')) return;
     setTierChecking(true);
-    const { tier } = await fetchUserTier(tierCheckEmail);
+    const { tier, reportCount: rc } = await fetchUserTier(tierCheckEmail);
     setUserTier(tier);
+    setReportCount(rc);
     setTierEmail(tierCheckEmail);
     try { sessionStorage.setItem('pdna_email', tierCheckEmail.toLowerCase().trim()); } catch { /* sessionStorage unavailable */ }
     setShowTierPrompt(false);
@@ -600,6 +611,37 @@ export default function ReportView() {
           />
         )}
 
+        {/* ── FIRST REPORT · ENTERPRISE PREVIEW ── */}
+        {isFirstReportPreview && (
+          <div style={{
+            marginTop: 32,
+            border: '1px solid rgba(201,168,76,0.45)',
+            background: 'linear-gradient(135deg, rgba(201,168,76,0.10) 0%, rgba(201,168,76,0.02) 100%)',
+            padding: '20px 24px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap',
+          }}>
+            <div style={{ flex: 1, minWidth: 240 }}>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 8 }}>
+                First Report · Full Enterprise Preview
+              </div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.7 }}>
+                You're seeing every section we offer — market trend intelligence, micro-location scoring, full adjustment-factor breakdown, and property event timeline. Subsequent reports use your current plan.
+              </div>
+            </div>
+            <a
+              href="/pricing"
+              style={{
+                fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500,
+                letterSpacing: '3px', textTransform: 'uppercase',
+                color: '#000', background: '#C9A84C',
+                padding: '12px 22px', textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Keep Enterprise →
+            </a>
+          </div>
+        )}
+
         {/* ── TIER BANNER ── */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 28, marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
@@ -649,28 +691,28 @@ export default function ReportView() {
 
         {/* ── PRO TIER: Market Intelligence ── */}
         <Section title="Market Intelligence">
-          <TierGate userTier={userTier} requiredTier="monthly">
+          <TierGate userTier={effectiveTier} requiredTier="monthly">
             <MarketTrendPanel zip={reportZip} neighborhood={reportNeighborhood || undefined} />
           </TierGate>
         </Section>
 
         {/* ── ENTERPRISE: Micro-Location Scoring ── */}
         <Section title="Micro-Location Analysis">
-          <TierGate userTier={userTier} requiredTier="enterprise">
+          <TierGate userTier={effectiveTier} requiredTier="enterprise">
             <LocationScorePanel address={report?.address} lat={subjectLat} lon={subjectLon} />
           </TierGate>
         </Section>
 
         {/* ── ENTERPRISE: Property Event Timeline ── */}
         <Section title="Property Event Timeline">
-          <TierGate userTier={userTier} requiredTier="enterprise">
+          <TierGate userTier={effectiveTier} requiredTier="enterprise">
             <PropertyEventsPanel address={report?.address} />
           </TierGate>
         </Section>
 
         {/* ── ENTERPRISE: Full Adjustment Factors ── */}
         <Section title="Adjustment Factor Breakdown">
-          <TierGate userTier={userTier} requiredTier="enterprise">
+          <TierGate userTier={effectiveTier} requiredTier="enterprise">
             <AdjustmentFactorPanel dna={dna} comps={comps} />
           </TierGate>
         </Section>

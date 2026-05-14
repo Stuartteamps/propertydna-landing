@@ -17,7 +17,7 @@ export const TIER_LABELS: Record<Tier, string> = {
   enterprise: 'Enterprise',
 };
 
-export async function fetchUserTier(email: string): Promise<{ tier: Tier; plan: string | null }> {
+export async function fetchUserTier(email: string): Promise<{ tier: Tier; plan: string | null; reportCount: number }> {
   try {
     const res = await fetch('/.netlify/functions/check-usage', {
       method: 'POST',
@@ -25,8 +25,8 @@ export async function fetchUserTier(email: string): Promise<{ tier: Tier; plan: 
       body: JSON.stringify({ email }),
     });
     const data = await res.json();
-    return { tier: planToTier(data.plan), plan: data.plan || null };
+    return { tier: planToTier(data.plan), plan: data.plan || null, reportCount: data.reportCount ?? 0 };
   } catch {
-    return { tier: 'free', plan: null };
+    return { tier: 'free', plan: null, reportCount: 0 };
   }
 }
