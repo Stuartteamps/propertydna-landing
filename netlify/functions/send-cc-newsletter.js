@@ -14,10 +14,17 @@ const db    = require('./_supabase');
 const CC_API     = 'api.cc.email';
 const CC_LIST_ID = '662ac8de-4599-11f1-8c5f-02420a320003';
 const SITE       = 'https://thepropertydna.com';
-// Newsletter sends from marketing subdomain to protect reports@ deliverability.
-const SENDER     = process.env.NEWSLETTER_SENDER_EMAIL || process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
-const SENDER_NAME = 'Daniel Stuart | Stuart Team';
-const REPLY_TO   = process.env.REPLY_TO_EMAIL || 'stuartteamps@gmail.com';
+// Two senders by path:
+//  - CC API path → reports@thepropertydna.com (verified in CC's account UI;
+//    test sends and campaigns to verified lists require this)
+//  - Resend fallback → hello@mail.thepropertydna.com (marketing subdomain
+//    isolated from transactional reports@ reputation)
+const SENDER_CC      = process.env.CC_SENDER_EMAIL || 'reports@thepropertydna.com';
+const SENDER_RESEND  = process.env.NEWSLETTER_SENDER_EMAIL || process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
+// Back-compat alias — old code referenced `SENDER`; CC path uses it directly.
+const SENDER       = SENDER_CC;
+const SENDER_NAME  = 'Daniel Stuart | Stuart Team';
+const REPLY_TO     = process.env.REPLY_TO_EMAIL || 'stuartteamps@gmail.com';
 const UNSUB_MAILTO = process.env.UNSUB_MAILTO || 'unsubscribe@mail.thepropertydna.com';
 
 // ── HTTP helpers ──────────────────────────────────────────────────────────────
@@ -205,7 +212,7 @@ async function sendViaResend(subject, html, weatherText, marketNarrative, weekLa
       );
       const oneClickUnsub = `${unsubUrl}?email=${Buffer.from(c.email).toString('base64')}`;
       const payload = JSON.stringify({
-        from: `${SENDER_NAME} <${SENDER}>`, reply_to: REPLY_TO,
+        from: `${SENDER_NAME} <${SENDER_RESEND}>`, reply_to: REPLY_TO,
         to: c.email, subject, html: perEmailHtml,
         headers: {
           'List-Unsubscribe':      `<mailto:${UNSUB_MAILTO}?subject=unsubscribe>, <${oneClickUnsub}>`,
