@@ -250,8 +250,11 @@ async function sendViaCC(token, subject, html, weekLabel) {
     throw new Error(`CC create campaign failed: ${createRes.status} ${JSON.stringify(createRes.data).slice(0, 200)}`);
   }
 
-  const activityId = createRes.data?.campaign_activity_id;
-  if (!activityId) throw new Error('CC response missing campaign_activity_id');
+  // CC v3 returns activity ids nested in campaign_activities[] keyed by role.
+  const activities = createRes.data?.campaign_activities || [];
+  const primary    = activities.find(a => a.role === 'primary_email') || activities[0];
+  const activityId = primary?.campaign_activity_id || createRes.data?.campaign_activity_id;
+  if (!activityId) throw new Error(`CC response missing campaign_activity_id: ${JSON.stringify(createRes.data).slice(0, 400)}`);
 
   // 2. Schedule send (ASAP)
   const schedRes = await apiPost(CC_API, '/v3/activities/email_schedule', token, {
@@ -336,9 +339,13 @@ exports.handler = async (event) => {
       if (createRes.status !== 201 && createRes.status !== 200) {
         return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stage: 'create_campaign', status: createRes.status, data: createRes.data }) };
       }
-      const activityId = createRes.data?.campaign_activity_id;
+      // CC nests activity ids in campaign_activities[] keyed by role. Old code
+      // expected top-level campaign_activity_id and threw on every send.
+      const activities = createRes.data?.campaign_activities || [];
+      const primary    = activities.find(a => a.role === 'primary_email') || activities[0];
+      const activityId = primary?.campaign_activity_id || createRes.data?.campaign_activity_id;
       if (!activityId) {
-        return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'No campaign_activity_id', data: createRes.data }) };
+        return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'No campaign_activity_id in any role', data: createRes.data }) };
       }
       // 2. Fire CC's test-send endpoint
       const testRes = await apiPost(CC_API, `/v3/emails/activities/${activityId}/tests`, ccTokenLocal, {
