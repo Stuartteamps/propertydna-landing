@@ -33,6 +33,7 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Privacy from "./pages/Privacy";
 import Waitlist from "./pages/Waitlist";
+import Dossier from "./pages/Dossier";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const AppRoutes = () => (
     <Route path="/how-it-works" element={<HowItWorks />} />
     <Route path="/sample-report" element={<SampleReport />} />
     <Route path="/report/view/:token" element={<ReportViewByToken />} />
+    <Route path="/dossier/:apn" element={<Dossier />} />
     <Route path="/report/:id" element={<ReportView />} />
     <Route path="/professionals" element={<Professionals />} />
     <Route path="/market-heatmaps" element={<MarketHeatMap />} />
