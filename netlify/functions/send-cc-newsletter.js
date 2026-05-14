@@ -267,18 +267,29 @@ async function sendViaCC(token, subject, html, weekLabel) {
 exports.handler = async (event) => {
   console.log('[send-cc-newsletter] Starting...');
 
-  const [weatherPeriods, markets] = await Promise.all([getWeather(), getMarketData()]);
+  const testEmail = (event?.queryStringParameters?.testEmail || '').toLowerCase().trim();
+  const isTest    = testEmail && testEmail.includes('@');
+
+  // Fetch weather + market with bounded budget so the 26s gateway deadline
+  // never kills us. If a fetch hangs, we degrade to defaults — the layout +
+  // sender + unsubscribe headers are what we're previewing in test mode anyway.
+  const withTimeout = (p, ms, fallback) => Promise.race([
+    p.catch(() => fallback),
+    new Promise((res) => setTimeout(() => res(fallback), ms)),
+  ]);
+  const [weatherPeriods, markets] = await Promise.all([
+    withTimeout(getWeather(), isTest ? 6000 : 12000, null),
+    withTimeout(getMarketData(), isTest ? 6000 : 12000, []),
+  ]);
   const weatherText    = buildWeatherText(weatherPeriods);
   const marketNarrative = buildMarketNarrative(markets);
   const weekLabel      = getWeekLabel();
   const subject        = `The Stuart Team Weekly - ${weekLabel}`;
   const html           = buildHtml(weatherText, marketNarrative, weekLabel);
 
-  // Test mode: ?testEmail=foo@bar.com → send ONE email to that address via
-  // Resend (skips CC API + skips the full contact list). Used to preview
-  // the newsletter before the Thursday cron fires.
-  const testEmail = (event?.queryStringParameters?.testEmail || '').toLowerCase().trim();
-  if (testEmail && testEmail.includes('@')) {
+  // Test mode: ?testEmail=foo@bar.com → send ONE email via Resend, skipping
+  // CC API + the full contact loop. Used to preview before the cron fires.
+  if (isTest) {
     console.log('[send-cc-newsletter] TEST MODE — sending only to', testEmail);
     const oneClickUnsub = `${SITE}/.netlify/functions/unsubscribe?e=${Buffer.from(testEmail).toString('base64')}`;
     const perEmailHtml  = html.replace(
@@ -307,6 +318,7 @@ exports.handler = async (event) => {
         res.on('end', () => { try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); } catch { resolve({ status: res.statusCode, data: raw }); } });
       });
       req.on('error', (e) => resolve({ status: 0, data: { error: e.message } }));
+      req.setTimeout(10000, () => { req.destroy(); resolve({ status: 0, data: { error: 'resend timeout' } }); });
       req.write(payload); req.end();
     });
     db.kpi('cc_newsletter_test', testEmail, { subject, week: weekLabel, status: sendResult.status });
