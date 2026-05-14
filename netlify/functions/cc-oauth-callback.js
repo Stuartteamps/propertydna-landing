@@ -86,9 +86,15 @@ exports.handler = async (event) => {
     };
   }
 
-  // Exchange code for tokens
+  // Exchange code for tokens. Logging is verbose by design — when this fails,
+  // the diagnostics are the only thing that tells us whether it's a secret,
+  // redirect_uri, or expired-code problem.
   const creds = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
   const tokenBody = `grant_type=authorization_code&code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+  console.log('[cc-oauth-callback] code received, length=', (code || '').length, 'first8=', (code || '').slice(0, 8));
+  console.log('[cc-oauth-callback] redirect_uri=', REDIRECT_URI);
+  console.log('[cc-oauth-callback] client_id=',    CLIENT_ID);
+  console.log('[cc-oauth-callback] client_secret prefix=', CLIENT_SECRET.slice(0, 4) + '...');
 
   let tokenData;
   try {
@@ -102,15 +108,25 @@ exports.handler = async (event) => {
       },
       tokenBody
     );
+    console.log('[cc-oauth-callback] CC response status=', res.status);
+    console.log('[cc-oauth-callback] CC response body=', JSON.stringify(res.data).slice(0, 800));
     if (res.status !== 200 || !res.data.access_token) {
-      throw new Error(`Token exchange failed: ${JSON.stringify(res.data)}`);
+      const errorDetail = typeof res.data === 'object' ? JSON.stringify(res.data) : String(res.data);
+      throw new Error(`status ${res.status}: ${errorDetail}`);
     }
     tokenData = res.data;
   } catch (err) {
+    console.error('[cc-oauth-callback] EXCHANGE FAILED:', err.message);
+    const safeDetails = `<br><br><strong>Diagnostic detail (also in Netlify function logs):</strong><br>
+       Client ID: ${CLIENT_ID}<br>
+       Client secret prefix: ${CLIENT_SECRET.slice(0, 4)}...<br>
+       Redirect URI sent: ${REDIRECT_URI}<br>
+       Code length: ${(code || '').length}<br>
+       Error: ${err.message.replace(/</g, '&lt;')}`;
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'text/html' },
-      body: page('Token Exchange Failed', err.message, '#ef4444'),
+      body: page('Token Exchange Failed', err.message + safeDetails, '#ef4444'),
     };
   }
 
