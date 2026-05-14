@@ -33,6 +33,17 @@
 [functions."auto-refresh-cc-token"]
   schedule = "59 7 * * 4"
 
+# Wed 14:00 UTC = 7 AM PDT — 33h before Thursday's 4:20 PM PT newsletter send.
+# Checks CC OAuth token freshness, refreshes if <40h to expiry, alerts Dan
+# if refresh fails or token is missing entirely.
+[functions."newsletter-preflight"]
+  schedule = "0 14 * * 3"
+
+# Fri 16:00 UTC = 9 AM PDT — verifies Thursday's send actually happened
+# (CC API path preferred, Resend fallback flagged as warning).
+[functions."newsletter-postflight"]
+  schedule = "0 16 * * 5"
+
 [functions."drip-sequence"]
   schedule = "0 * * * *"
 
