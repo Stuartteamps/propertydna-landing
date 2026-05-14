@@ -52,6 +52,59 @@ def supa_get(path, params=None):
 
 # ── Pull FL owner data from property_history ──────────────────────────────────
 
+def pull_all_owners_priority(min_value=500000, tier_max=3, absentee_only=True, limit=25000):
+    """
+    Pulls highest-priority owners across ALL indexed markets via v_skip_trace_priority.
+    Requires migration 017_skip_trace_priority_view.sql.
+    Tier 1 = absentee luxury $1M+, Tier 2 = absentee $500k-$1M, Tier 3 = renovated premium.
+    """
+    print(f"Pulling top priority owners (tier<={tier_max}, min_value>=${min_value:,})...")
+    params = {
+        "priority_tier": f"lte.{tier_max}",
+        "select": "*",
+        "order": "priority_tier.asc,market_value.desc",
+        "limit": str(limit),
+    }
+    if absentee_only:
+        params["is_absentee"] = "eq.true"
+    if min_value > 0:
+        params["market_value"] = f"gte.{min_value}"
+
+    r = requests.get(f"{SUPABASE_URL}/rest/v1/v_skip_trace_priority",
+                     headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                     params=params, timeout=180)
+    if not r.ok:
+        print(f"  View query failed: {r.status_code} {r.text[:200]}")
+        print(f"  → Apply migration 017_skip_trace_priority_view.sql in Supabase SQL Editor")
+        return []
+    rows = r.json()
+    records = []
+    for row in rows:
+        owner_name = (row.get("owner_name") or "").strip()
+        if not owner_name or len(owner_name) < 3: continue
+        first, last = parse_owner_name(owner_name)
+        records.append({
+            "apn": row.get("apn"),
+            "firstName": first, "lastName": last, "fullOwnerName": owner_name,
+            "address": (row.get("address") or "").strip(),
+            "city": (row.get("city") or "").strip(),
+            "state": (row.get("state") or "").strip(),
+            "zip": (row.get("zip") or "").strip(),
+            "mailAddress": (row.get("mailing_addr") or row.get("address") or "").strip(),
+            "mailCity":    (row.get("mailing_city") or row.get("city") or "").strip(),
+            "mailState":   (row.get("mailing_state") or row.get("state") or "").strip(),
+            "mailZip":     (row.get("mailing_zip") or row.get("zip") or "").strip(),
+            "marketValue": float(row.get("market_value") or 0),
+            "absentee": bool(row.get("is_absentee")),
+            "renovationRecognized": bool(row.get("renovation_recognized")),
+            "tier": row.get("priority_tier"),
+            "tierLabel": row.get("tier_label"),
+            "source": row.get("source"),
+        })
+    print(f"  Got {len(records)} records across all markets")
+    return records
+
+
 def pull_fl_owners(co_nos=None, absentee_only=False, min_jv=0, limit=50000):
     """
     Pulls FL parcels from property_history where source='fl_fdor_cadastral'.
@@ -315,7 +368,9 @@ def save_campaign_csv(path, records):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", choices=["fl","ca","all"], default="fl")
+    parser.add_argument("--source", choices=["fl","ca","all","priority"], default="priority",
+                        help="priority = top-tier across all markets (recommended); fl/ca = legacy source filters")
+    parser.add_argument("--tier-max", type=int, default=3, help="Max priority tier to include (1-8)")
     parser.add_argument("--absentee-only", action="store_true")
     parser.add_argument("--min-jv", type=float, default=0)
     parser.add_argument("--limit", type=int, default=50000)
@@ -331,7 +386,16 @@ def main():
     all_records = []
 
     if not args.fetch_only:
-        if args.source in ("fl","all"):
+        if args.source == "priority":
+            # New unified path — uses v_skip_trace_priority across all markets
+            recs = pull_all_owners_priority(
+                min_value=args.min_jv or 500000,
+                tier_max=args.tier_max,
+                absentee_only=args.absentee_only,
+                limit=args.limit,
+            )
+            all_records.extend(recs)
+        elif args.source in ("fl","all"):
             fl = pull_fl_owners(
                 absentee_only=args.absentee_only,
                 min_jv=args.min_jv,
