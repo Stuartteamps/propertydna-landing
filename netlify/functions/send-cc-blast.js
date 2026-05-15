@@ -30,29 +30,32 @@ const CORS = {
 
 const CC_API = 'api.cc.email';
 
-function apiPost(hostname, path, token, payload) {
+function apiCall(method, hostname, path, token, payload) {
   return new Promise((resolve, reject) => {
-    const body = JSON.stringify(payload);
+    const body = payload ? JSON.stringify(payload) : '';
     const req = https.request({
-      hostname, path, method: 'POST',
+      hostname, path, method,
       headers: {
         'Authorization':  `Bearer ${token}`,
         'Content-Type':   'application/json',
-        'Content-Length': Buffer.byteLength(body),
+        ...(body ? { 'Content-Length': Buffer.byteLength(body) } : {}),
       },
     }, (res) => {
       let raw = '';
       res.on('data', d => raw += d);
       res.on('end', () => {
-        try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); }
+        try { resolve({ status: res.statusCode, data: raw ? JSON.parse(raw) : null }); }
         catch { resolve({ status: res.statusCode, data: raw }); }
       });
     });
     req.on('error', reject);
-    req.write(body);
+    if (body) req.write(body);
     req.end();
   });
 }
+const apiPost = (h, p, t, b) => apiCall('POST', h, p, t, b);
+const apiPut  = (h, p, t, b) => apiCall('PUT',  h, p, t, b);
+const apiGet  = (h, p, t)    => apiCall('GET',  h, p, t, null);
 
 async function loadCcToken() {
   try {
@@ -121,7 +124,30 @@ exports.handler = async (event) => {
   const campaignId = create.data?.campaign_id;
   if (!activityId) return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'no activity id', data: create.data }) };
 
-  // 2. Schedule send — POST to /v3/emails/activities/{activity_id}/schedules
+  // 2. Get current activity, then PUT it back with contact_list_ids attached
+  const current = await apiGet(CC_API, `/v3/emails/activities/${activityId}`, token);
+  if (current.status !== 200) {
+    return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'failed to fetch activity', details: current.data, campaignId, activityId }) };
+  }
+  const activityBody = {
+    ...current.data,
+    contact_list_ids: listIds,
+  };
+  // Remove read-only fields that CC rejects on PUT
+  delete activityBody.created_at;
+  delete activityBody.updated_at;
+  delete activityBody.last_sent_date;
+  delete activityBody.last_edit_date;
+  delete activityBody.campaign_id;
+  delete activityBody.campaign_activity_id;
+  delete activityBody.role;
+  delete activityBody.current_status;
+  delete activityBody.errors;
+  delete activityBody.warnings;
+
+  const putRes = await apiPut(CC_API, `/v3/emails/activities/${activityId}`, token, activityBody);
+
+  // 3. Schedule send
   const sched = await apiPost(CC_API,
     `/v3/emails/activities/${activityId}/schedules`,
     token,
@@ -144,6 +170,7 @@ exports.handler = async (event) => {
       ok,
       campaignId,
       activityId,
+      put_lists_http: putRes.status,
       schedule: sched.data,
       schedule_http: sched.status,
       message: ok ? 'Campaign created and scheduled. CC will send shortly.' : 'Created but schedule failed — manual send from CC dashboard.',
