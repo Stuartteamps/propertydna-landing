@@ -39,11 +39,11 @@ function apiGet(hostname, path, headers = {}) {
   });
 }
 
-function apiPost(hostname, path, token, payload) {
+function apiCall(method, hostname, path, token, payload) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
     const req  = https.request({
-      hostname, path, method: 'POST',
+      hostname, path, method,
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type':  'application/json',
@@ -62,6 +62,8 @@ function apiPost(hostname, path, token, payload) {
     req.end();
   });
 }
+function apiPost(h, p, t, b) { return apiCall('POST', h, p, t, b); }
+function apiPut(h, p, t, b)  { return apiCall('PUT',  h, p, t, b); }
 
 // ── Content generators (inline from generate-newsletter.js) ──────────────────
 
@@ -241,7 +243,7 @@ async function sendViaResend(subject, html, weatherText, marketNarrative, weekLa
 async function sendViaCC(token, subject, html, weekLabel) {
   // 1. Create campaign
   const createRes = await apiPost(CC_API, '/v3/emails', token, {
-    name: `Stuart Team Weekly - ${weekLabel}`,
+    name: `Stuart Team Weekly - ${weekLabel} - ${Date.now()}`,
     email_campaign_activities: [{
       format_type: 5,
       from_name:    SENDER_NAME,
@@ -249,7 +251,13 @@ async function sendViaCC(token, subject, html, weekLabel) {
       reply_to_email: REPLY_TO,
       subject,
       html_content: html,
-      permalink_name: '',
+      physical_address_in_footer: {
+        address_line1: '777 E Tahquitz Canyon Way',
+        city:          'Palm Springs',
+        state_code:    'CA',
+        postal_code:   '92262',
+        country_code:  'US',
+      },
     }],
   });
 
@@ -257,21 +265,30 @@ async function sendViaCC(token, subject, html, weekLabel) {
     throw new Error(`CC create campaign failed: ${createRes.status} ${JSON.stringify(createRes.data).slice(0, 200)}`);
   }
 
-  // CC v3 returns activity ids nested in campaign_activities[] keyed by role.
   const activities = createRes.data?.campaign_activities || [];
   const primary    = activities.find(a => a.role === 'primary_email') || activities[0];
-  const activityId = primary?.campaign_activity_id || createRes.data?.campaign_activity_id;
+  const activityId = primary?.campaign_activity_id;
   if (!activityId) throw new Error(`CC response missing campaign_activity_id: ${JSON.stringify(createRes.data).slice(0, 400)}`);
 
-  // 2. Schedule send (ASAP)
-  const schedRes = await apiPost(CC_API, '/v3/activities/email_schedule', token, {
-    scheduled_date: '0',
-    campaign_activities: [{
-      campaign_activity_id: activityId,
-      contact_list_ids: [CC_LIST_ID],
-    }],
+  // 2. Attach the contact list to the activity (CC v3 separates this step).
+  const listRes = await apiPost(CC_API, `/v3/emails/activities/${activityId}/contact_list_ids`, token, {
+    contact_list_ids: [CC_LIST_ID],
   });
+  if (listRes.status >= 300) {
+    // PUT instead of POST in some accounts
+    const listRes2 = await apiPut(CC_API, `/v3/emails/activities/${activityId}/contact_list_ids`, token, {
+      contact_list_ids: [CC_LIST_ID],
+    });
+    if (listRes2.status >= 300) {
+      throw new Error(`CC attach list failed: ${listRes.status}/${listRes2.status} ${JSON.stringify(listRes.data).slice(0, 200)} ${JSON.stringify(listRes2.data).slice(0, 200)}`);
+    }
+  }
 
+  // 3. Schedule send (immediate). Per-activity endpoint, not the legacy
+  // /v3/activities/email_schedule which now returns 404.
+  const schedRes = await apiPost(CC_API, `/v3/emails/activities/${activityId}/schedules`, token, {
+    scheduled_date: '0',
+  });
   if (schedRes.status !== 201 && schedRes.status !== 200) {
     throw new Error(`CC schedule failed: ${schedRes.status} ${JSON.stringify(schedRes.data).slice(0, 200)}`);
   }
