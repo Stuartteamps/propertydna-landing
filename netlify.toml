@@ -89,6 +89,19 @@
   status = 200
   force = true
 
+# Public JSON API for dossier inventory
+[[redirects]]
+  from = "/api/dossiers/*"
+  to = "/.netlify/functions/api-dossiers/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/dossiers"
+  to = "/.netlify/functions/api-dossiers"
+  status = 200
+  force = true
+
 [[headers]]
   for = "/.well-known/assetlinks.json"
   [headers.values]

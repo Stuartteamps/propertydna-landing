@@ -42,6 +42,7 @@ import ArchitectProfile from "./pages/ArchitectProfile";
 import ArchitectsIndex from "./pages/ArchitectsIndex";
 import PressKit from "./pages/PressKit";
 import DossierRequest from "./pages/DossierRequest";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ const AppRoutes = () => (
     <Route path="/blog" element={<Blog />} />
     <Route path="/privacy" element={<Privacy />} />
     <Route path="/waitlist" element={<Waitlist />} />
+    <Route path="*" element={<NotFound />} />
   </Routes>
 );
 
