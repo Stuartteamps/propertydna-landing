@@ -24,27 +24,44 @@ const https = require('https');
 const INTERNAL_KEY = process.env.INTERNAL_API_KEY || '271d07f203bc34ba8574988ac272ab15ac60c5dbf25dd9391403d54c6a7fd977';
 const SITE = 'https://thepropertydna.com';
 
-// The 20 warmest contacts — Dan's personal sphere. Replace these with real
-// names from Stuart Team CRM before sending. Below are placeholders for the
-// 3 real product users we have + 17 to fill in.
+// 20 warmest contacts pulled from Sphere of Influence CC list (2026-05-14).
+// First-name personalization, no fake address — uses generic "your Coachella
+// Valley property" so the message reads natural even for contacts whose
+// address we don't have stored.
 const RECIPIENTS = [
-  // ── Real product users (highest priority) ──
-  { email: 'tinderfallbrook@gmail.com',  firstName: 'there', address: '2667 Desert Breeze Way' },
-  // ── Add real contacts from your Stuart Team list here ──
-  // { email: 'someone@example.com',     firstName: 'John',  address: 'their property' },
+  { email: 'lemerson@dc.rr.com',           firstName: 'Adam' },
+  { email: 'travegram66@icloud.com',       firstName: 'Jude' },
+  { email: 'btomb@shaw.ca',                firstName: 'Tom' },
+  { email: 'tburt61@gmail.com',            firstName: 'Tamara' },
+  { email: 'annamoreno7203@gmail.com',     firstName: 'Annamarie' },
+  { email: 'michellecortes11@icloud.com',  firstName: 'Michelle' },
+  { email: 'aluna92037@gmail.com',         firstName: 'Tony' },
+  { email: 'theocsonja@gmail.com',         firstName: 'Sonja' },
+  { email: 'trmasonusa@gmail.com',         firstName: 'Mark' },
+  { email: 'jim.helke@gmail.com',          firstName: 'James' },
+  { email: 'kgbear56@gmail.com',           firstName: 'Lisa' },
+  { email: 'ajtickell@hotmail.com',        firstName: 'Robert' },
+  { email: 'youdavp@msn.com',              firstName: 'David' },
+  { email: 'jeanbrayford@gmail.com',       firstName: 'Jean' },
+  { email: 'msachs@dc.rr.com',             firstName: 'Mike' },
+  { email: 'smithtomj13@gmail.com',        firstName: 'Tom' },
+  { email: 'emily@brooke.com',             firstName: 'Emily' },
+  { email: 'mj-river@hotmail.com',         firstName: 'Marlin' },
+  { email: 'freddysanchez21@hotmail.com',  firstName: 'Freddy' },
+  { email: 'wrestler1961@yahoo.com',       firstName: 'Romney' },
 ];
 
 const SUBJECT = 'quick question, {{firstName}}';
 
 const BODY_TEXT = `Hey {{firstName}} -
 
-I was looking at properties in your area today and remembered you. Quick yes/no question:
+Hope all is well. Quick yes/no question for you.
 
-Would it help if I sent you a free intelligence report on {{address}}? It pulls together permit history, true valuation (sale price + improvements), risk profile, comparable sales — the kind of analysis I do for my own clients before they buy or sell.
+Would it help if I pulled a free intelligence report on your Coachella Valley property? It includes permit history, true valuation (last sale + improvements + market shift), risk profile (flood, fault zone, fire), and the comparable sales I'd use as a listing agent.
 
-Takes me 60 seconds. No catch, no signup hassle.
+Takes me about 60 seconds to run. No signup or hassle on your end.
 
-Just reply "yes" and I'll send the report straight back. Or "not now" and I'll leave you alone.
+Just reply "yes" and I'll send the report back, or "not now" and I'll leave you alone.
 
 Daniel
 Stuart Team | Coldwell Banker Palm Springs

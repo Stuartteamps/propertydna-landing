@@ -147,6 +147,10 @@ exports.handler = async (event) => {
       if (ok) sent++; else failed++;
       results.push({ email, status: ok ? 'sent' : 'failed', resend_id: res.data?.id || null });
 
+      // Pacing — Resend rate limit is 2/sec; we space at 1/sec which also
+      // looks more natural to ISPs (bulk patterns send in <1 sec/email).
+      await new Promise(r => setTimeout(r, 1000));
+
       db.insert('email_delivery_events', {
         recipient_email: email,
         sender_email:    SENDER,
