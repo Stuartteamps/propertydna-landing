@@ -18,7 +18,8 @@ const https = require('https');
 const { execSync } = require('child_process');
 
 const PROJECT_REF = 'neccpdfhmfnvyjgyrysy';
-const CC_LIST_ID  = '662ac8de-4599-11f1-8c5f-02420a320003'; // PropertyDNA — All Contacts
+const CC_LIST_ID  = '662ac8de-4599-11f1-8c5f-02420a320003'; // PropertyDNA — All Contacts (added to this list too)
+const DEDICATED_LIST_NAME = 'Luxury Absentee 2026-05';      // separate targeted list
 const TAG_NAME    = 'Luxury Absentee 2026-05';
 const EXECUTE     = process.argv.includes('--execute');
 const CSV_PATH    = process.env.CSV_PATH ||
@@ -100,6 +101,25 @@ function parseCsv(text) {
   });
 }
 
+// ── Get or create a dedicated CC list ────────────────────────────────────────
+async function getOrCreateList(ccToken) {
+  const search = await getJson('api.cc.email', `/v3/contact_lists?include_count=false&limit=500`,
+    { Authorization: `Bearer ${ccToken}` });
+  if (search.status === 200 && Array.isArray(search.data?.lists)) {
+    const existing = search.data.lists.find(l => l.name === DEDICATED_LIST_NAME);
+    if (existing) { console.log(`  Reusing list "${DEDICATED_LIST_NAME}": ${existing.list_id}`); return existing.list_id; }
+  }
+  const create = await postJson('api.cc.email', `/v3/contact_lists`,
+    { Authorization: `Bearer ${ccToken}` },
+    { name: DEDICATED_LIST_NAME, description: 'Skip-traced luxury absentee owners — Greenwich/Miami burn 2026-05-15' });
+  if (create.status === 201 && create.data?.list_id) {
+    console.log(`  Created list "${DEDICATED_LIST_NAME}": ${create.data.list_id}`);
+    return create.data.list_id;
+  }
+  console.warn(`  Could not create list: ${create.status} ${JSON.stringify(create.data).slice(0,200)}`);
+  return null;
+}
+
 // ── Get or create the tag ────────────────────────────────────────────────────
 async function getOrCreateTag(ccToken) {
   // Search for existing tag
@@ -145,8 +165,10 @@ async function main() {
   const ccToken  = await getCCToken(sbpToken);
   console.log(`got cc token (${ccToken.length} chars)`);
 
-  const tagId = await getOrCreateTag(ccToken);
-  console.log(`tag id: ${tagId || '(none — proceeding without tag)'}`);
+  const tagId  = await getOrCreateTag(ccToken);
+  const listId = await getOrCreateList(ccToken);
+  console.log(`tag id:  ${tagId || '(none)'}`);
+  console.log(`list id: ${listId || '(none)'}`);
 
   // CC bulk import endpoint accepts up to 500 per call
   const BATCH = 500;
@@ -165,7 +187,7 @@ async function main() {
         state:  r.state || '',
         zip:    r.zip || '',
       })),
-      list_ids: [CC_LIST_ID],
+      list_ids: listId ? [CC_LIST_ID, listId] : [CC_LIST_ID],
       tag_ids: tagId ? [tagId] : [],
     };
 
