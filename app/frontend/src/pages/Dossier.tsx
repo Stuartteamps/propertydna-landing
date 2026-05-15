@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import RequestDossierModal from '@/components/RequestDossierModal';
 
 type Property = {
   apn: string;
@@ -110,6 +111,7 @@ export default function Dossier() {
   const [events, setEvents] = useState<ProvenanceEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -322,10 +324,19 @@ export default function Dossier() {
           <p style={{ color: '#cbd5e1', fontSize: 15, lineHeight: 1.6, maxWidth: 560, margin: '0 auto 24px' }}>
             Verified celebrity provenance · Architect attribution · Cross-asset benchmarking · 50-year climate-adjusted asset value. The documentation layer Sotheby's charges 15% for.
           </p>
-          <Link to="/contact" style={{ display: 'inline-block', padding: '14px 32px', background: '#fbbf24', color: '#0a0a0a', textDecoration: 'none', borderRadius: 4, fontWeight: 600, fontSize: 14, letterSpacing: 1, textTransform: 'uppercase' }}>
+          <button onClick={() => setModalOpen(true)} style={{ display: 'inline-block', padding: '14px 32px', background: '#fbbf24', color: '#0a0a0a', textDecoration: 'none', borderRadius: 4, fontWeight: 600, fontSize: 14, letterSpacing: 1, textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}>
             Request Your Dossier
-          </Link>
+          </button>
         </div>
+
+        <RequestDossierModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          apn={property.apn}
+          propertyAddress={`${property.address}, ${property.city}`}
+          pedigreeTier={property.pedigree_tier}
+          sourcePage={`dossier/${property.apn}`}
+        />
 
         <div style={{ marginTop: 48, fontSize: 11, color: '#475569', textAlign: 'center' }}>
           PropertyDNA · APN {property.apn}

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import RequestDossierModal from '@/components/RequestDossierModal';
 
 type InventoryRow = {
   apn: string;
@@ -54,6 +55,7 @@ export default function LuxuryInventory() {
   const [neighborhood, setNeighborhood] = useState<string>('');
   const [architectVerified, setArchitectVerified] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   // Load counts on mount
   useEffect(() => {
@@ -236,10 +238,16 @@ export default function LuxuryInventory() {
           <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 26, margin: '0 0 14px', color: '#fafafa', fontWeight: 400 }}>
             We build verified A-tier dossiers for $5M+ luxury estates.
           </h3>
-          <Link to="/contact" style={{ display: 'inline-block', padding: '14px 32px', background: '#fbbf24', color: '#0a0a0a', textDecoration: 'none', borderRadius: 4, fontWeight: 600, fontSize: 14, letterSpacing: 1, textTransform: 'uppercase', marginTop: 8 }}>
+          <button onClick={() => setModalOpen(true)} style={{ display: 'inline-block', padding: '14px 32px', background: '#fbbf24', color: '#0a0a0a', borderRadius: 4, fontWeight: 600, fontSize: 14, letterSpacing: 1, textTransform: 'uppercase', marginTop: 8, border: 'none', cursor: 'pointer' }}>
             Request Your Dossier
-          </Link>
+          </button>
         </div>
+
+        <RequestDossierModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          sourcePage="luxury-inventory"
+        />
       </div>
     </div>
   );
