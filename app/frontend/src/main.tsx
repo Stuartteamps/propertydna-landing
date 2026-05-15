@@ -1,7 +1,29 @@
 import { createRoot } from 'react-dom/client';
+import { Capacitor } from '@capacitor/core';
 import App from './App.tsx';
 import './index.css';
 import { loadRuntimeConfig } from './lib/config.ts';
+
+// In the iOS/Android app, window.location.origin is "capacitor://localhost",
+// so a fetch to "/.netlify/functions/X" resolves to "capacitor://localhost/..."
+// and fails. Rewrite those calls to the production domain so every Netlify
+// function (checkout, get-reports, queue-report, etc.) works in the native app.
+if (Capacitor.isNativePlatform()) {
+  const API_BASE = 'https://thepropertydna.com';
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = function patchedFetch(input: RequestInfo | URL, init?: RequestInit) {
+    if (typeof input === 'string') {
+      if (input.startsWith('/.netlify/')) input = API_BASE + input;
+      else if (input.startsWith('capacitor://localhost/.netlify/')) input = API_BASE + input.slice('capacitor://localhost'.length);
+    } else if (input instanceof URL) {
+      if (input.pathname.startsWith('/.netlify/')) input = new URL(API_BASE + input.pathname + input.search);
+    } else if (input instanceof Request && input.url.includes('/.netlify/')) {
+      const u = new URL(input.url);
+      input = new Request(API_BASE + u.pathname + u.search, input);
+    }
+    return originalFetch(input, init);
+  };
+}
 
 // Load runtime configuration before rendering the app
 async function initializeApp() {

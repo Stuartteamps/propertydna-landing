@@ -5,6 +5,7 @@ import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
 import { useAuth } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 interface Report {
   id: string;
@@ -28,6 +29,8 @@ export default function Dashboard() {
   const [modalOpen, setModalOpen]     = useState(false);
   const [modalTab, setModalTab]       = useState<'signin' | 'pricing'>('signin');
   const [pricingOpen, setPricingOpen] = useState(false);
+  const [deleteState, setDeleteState] = useState<'idle' | 'confirming' | 'deleting' | 'error'>('idle');
+  const [deleteError, setDeleteError] = useState('');
 
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
   const avatarUrl   = user?.user_metadata?.avatar_url;
@@ -66,6 +69,28 @@ export default function Dashboard() {
     try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
     catch { return iso; }
   };
+
+  async function handleDeleteAccount() {
+    setDeleteState('deleting');
+    setDeleteError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) throw new Error('Not signed in.');
+      const res = await fetch('/.netlify/functions/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.deleted) throw new Error(data.error || 'Failed to delete account.');
+      await signOut();
+      window.location.href = '/?account_deleted=1';
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Failed to delete account.');
+      setDeleteState('error');
+    }
+  }
 
   const planLabel = (p: string | null) => {
     if (!p) return 'Pro';
@@ -259,6 +284,72 @@ export default function Dashboard() {
             </>
           )
         )}
+
+        {/* ── Danger Zone: account deletion (Apple Guideline 5.1.1(v)) ── */}
+        <div style={{ marginTop: 60, paddingTop: 32, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252', marginBottom: 16 }}>
+            Account
+          </div>
+
+          {deleteState === 'idle' && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, maxWidth: 520 }}>
+                Permanently delete your PropertyDNA account, sign-in identity, saved reports, and subscription record. This cannot be undone.
+              </div>
+              <button
+                onClick={() => setDeleteState('confirming')}
+                style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#C94C4C', background: 'transparent', border: '1px solid rgba(201,76,76,0.35)', padding: '11px 18px', cursor: 'pointer' }}
+              >
+                Delete Account
+              </button>
+            </div>
+          )}
+
+          {deleteState === 'confirming' && (
+            <div style={{ border: '1px solid rgba(201,76,76,0.4)', background: 'rgba(201,76,76,0.05)', padding: 20 }}>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 300, color: '#F0EBE0', marginBottom: 8 }}>
+                Delete your account?
+              </div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, marginBottom: 18 }}>
+                This will permanently erase <strong style={{ color: '#F0EBE0' }}>{user.email}</strong> from PropertyDNA — sign-in identity, profile, subscription record, and report history. You will need to start over with a new account.
+              </div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button
+                  onClick={handleDeleteAccount}
+                  style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#fff', background: '#C94C4C', border: 'none', padding: '12px 20px', cursor: 'pointer' }}
+                >
+                  Yes, delete permanently
+                </button>
+                <button
+                  onClick={() => setDeleteState('idle')}
+                  style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#F0EBE0', background: 'none', border: '1px solid rgba(255,255,255,0.15)', padding: '12px 20px', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {deleteState === 'deleting' && (
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', letterSpacing: 2, textTransform: 'uppercase' }}>
+              Deleting account…
+            </div>
+          )}
+
+          {deleteState === 'error' && (
+            <div style={{ border: '1px solid rgba(201,76,76,0.4)', background: 'rgba(201,76,76,0.05)', padding: 16 }}>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#C94C4C', marginBottom: 12 }}>
+                {deleteError || 'Failed to delete account. Please try again.'}
+              </div>
+              <button
+                onClick={() => { setDeleteState('idle'); setDeleteError(''); }}
+                style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#F0EBE0', background: 'none', border: '1px solid rgba(255,255,255,0.15)', padding: '10px 16px', cursor: 'pointer' }}
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+        </div>
       </section>
       <Footer />
     </div>
