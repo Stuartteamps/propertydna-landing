@@ -1,0 +1,443 @@
+first_name,last_name,email,phone,address,city,state,zip,years_owned,estimated_value,sell_score,tier
+Family,Clark,jmiller1355@yahoo.com,9094996077,34175 Monterey Ave,Rancho Mirage,CA,92270,19,7630832,39,2
+Terry,Sheward,acin1@sbcglobal.net,9494003661,75550 Beryl Ln,Indian Wells,CA,92210,14,6880000,39,2
+Tracey,Gaede,lirvinso53@rcn.com,7144945477,47245 Agate Ct,Indian Wells,CA,92210,14,2783000,39,2
+Stephen,Berman,stephenb@jakks.net,3104556269,76291 Via Chianti,Indian Wells,CA,92210,10,4093000,38,2
+,4 Ascona Terrace,taktalb@msn.com,6512638380,4 Ascona Ter,Rancho Mirage,CA,92270,14,3789000,38,2
+Matt,Lyons,mlyons2623@aol.com,2134404549,77892 Cottonwood Cv,Indian Wells,CA,92210,10,2309000,38,2
+Joan,Shodeen,kshodeen@herringtoninn.com,5204001122,5 Eaton Ct,Rancho Mirage,CA,92270,17,2226000,38,2
+James,Dunlop,thekeelie1@aol.com,9257915385,77324 Chocolate Mountain Rd,Indian Wells,CA,92210,10,2083000,38,2
+Charles,Lynch,clynch@mvp-co.com,6508540616,74917 S Cove Dr,Indian Wells,CA,92210,13,2056000,38,2
+Nancy,Machetta,machetta@alaska.net,6232053305,10 Ledgestone Ln,Rancho Mirage,CA,92270,16,1987857,38,2
+David,Knox,david@davidknox.com,6125908955,304 Loch Lomond Rd,Rancho Mirage,CA,92270,10,1454000,38,2
+Jayne,Paterson,david@dpaterson.com,9094992827,75083 Gleneagles Cir,Indian Wells,CA,92210,13,1390000,38,2
+Carolyn,Jacobs,cfjacobs@cox.net,6192542343,70 Via Bella,Rancho Mirage,CA,92270,11,1330000,38,2
+John,Flynn,johnflynn@alltel.net,3106126562,75057 Spyglass Dr,Indian Wells,CA,92210,21,1066000,38,2
+,Joseph & Margaret Viland Family,jviland@yahoo.com,8013808360,24 Dartmouth Dr,Rancho Mirage,CA,92270,22,1032000,38,2
+Neal,Stehly,kamnut@roadrunner.com,7608223822,126 Avenida Las Palmas,Rancho Mirage,CA,92270,17,643000,38,2
+Thomas,Smith,cfthomas1030@hotmail.com,4024235910,40990 Paxton Dr Unit 5,Rancho Mirage,CA,92270,12,634000,38,2
+Robert,Newlin,bob.newlin@gmail.com,3129095710,39 Barcelona Dr,Rancho Mirage,CA,92270,22,627000,38,2
+Leslee,Fennell,tjfnl@sbcglobal.net,6507147074,77 La Ronda Dr,Rancho Mirage,CA,92270,22,535000,38,2
+Curtis,Wilson,curtwilson99@gmail.com,2183483878,5 Juan Carlos Dr,Rancho Mirage,CA,92270,19,478000,38,2
+Richard,Collins,rickum2@aol.com,7603248695,34330 Denise Way,Rancho Mirage,CA,92270,15,301000,38,2
+Richard,Mogan Iii,sally.mogan@yahoo.com,7605689277,47100 Agate Ct,Indian Wells,CA,92210,22,4101000,37,2
+Adnan,Cobanoglu,brendacobanoglu@yahoo.com,2162805544,70285 Thunderbird Rd,Rancho Mirage,CA,92270,26,3054000,37,2
+Ernest,Odell,t8aodell@yahoo.com,3107533885,12 Whittier Ct,Rancho Mirage,CA,92270,13,909000,37,2
+Dennis,Sein,dsinfinity@aol.com,9493786283,45501 Club Dr,Indian Wells,CA,92210,27,675000,37,2
+Scott,Burack,sburack2@comcast.net,3122032404,70471 Boothill Rd,Rancho Mirage,CA,92270,26,3716000,36,2
+Robert,Bushman,robere38@hotmail.com,9137496800,55 Oakmont Dr,Rancho Mirage,CA,92270,13,1755000,36,2
+Bernard,Sacks,bernardjob@hotmail.com,8475400570,41910 Tonopah Rd,Rancho Mirage,CA,92270,23,6901000,35,2
+Jerry,Grundhofer,jagrundhofer@gmail.com,7346492045,75900 Carnelian Ln,Indian Wells,CA,92210,14,6240000,35,2
+Edward,Moreton,electro70@hotmail.com,8014861514,71175 W Thunderbird Ter,Rancho Mirage,CA,92270,20,3452000,35,2
+Pamela,Hart,gammiehart1@gmail.com,7607735729,47235 Crystal Loop,Indian Wells,CA,92210,22,3249000,35,2
+Prop,Musgrave,tmusgrave3@aol.com,2107486666,76267 Via Volterra,Indian Wells,CA,92210,19,2970000,35,2
+Paul,Shimoff,ashimoff3@juno.com,6502552385,47211 Vintage Dr E # 213,Indian Wells,CA,92210,21,2687000,35,2
+Julie,Klaus,c.klaus4@gmail.com,3104139456,74632 Arroyo Dr,Indian Wells,CA,92210,21,2148000,35,2
+David,Burstein,outlawolds@aol.com,3104638600,75585 Mary Ln,Indian Wells,CA,92210,12,1651000,35,2
+Patricia,Greytak,traylous@aol.com,4062392771,72310 Barbara Dr,Rancho Mirage,CA,92270,13,1172000,35,2
+Stuart,Hall,iamamyhall@hotmail.com,5032421800,40096 Paseo Entrada,Rancho Mirage,CA,92270,10,1088000,35,2
+Michael,Masoncup,hulaflygirl@aol.com,6303272107,75579 Desert Horizons Dr,Indian Wells,CA,92210,21,985000,35,2
+James,Johnson,johnsonjd@live.com,2064844823,45635 Pueblo Rd,Indian Wells,CA,92210,16,960000,35,2
+Bruce,Forcum,bruceforcum@excite.com,5034904590,78605 Vista Del Fuente,Indian Wells,CA,92210,22,882000,35,2
+Orville,Rule Iii,peter_rule2001@yahoo.com,6502795261,74 Palma Dr,Rancho Mirage,CA,92270,22,711000,35,2
+John,Sund,johnasund@aol.com,5072503459,74855 Chateau Cir,Indian Wells,CA,92210,26,638000,35,2
+,22 El Toro,cooleydb@comcast.net,2062260133,22 El Toro Dr,Rancho Mirage,CA,92270,26,630000,35,2
+Timothy,Murray,tmurray@purcellmurray.com,4154205076,74502 Desert Arroyo Trl,Indian Wells,CA,92210,11,6387000,33,2
+Kcb,Hpc,bgwitkow@gmail.com,3103449557,72765 Dinah Shore Dr,Rancho Mirage,CA,92270,14,5181221,33,2
+Norman,Mcintyre,gale.carr@gmail.com,7024996662,75811 Via Cortona,Indian Wells,CA,92210,14,4513000,33,2
+Peter,Bassi,petebassi@aol.com,2147334201,76315 Via Chianti,Indian Wells,CA,92210,22,4093000,33,2
+Gerald,Jebejian,gerald5713@att.net,3108902720,76135 Via Chianti,Indian Wells,CA,92210,22,3070000,33,2
+Gary,Schahet,schahet@gmail.com,3174424776,35 Sun Ridge Cir,Rancho Mirage,CA,92270,20,2960000,33,2
+,399459 B C,sousavds@yahoo.com,9184880755,46424 War Bonnet Cir,Indian Wells,CA,92210,15,1890000,33,2
+Charles,Baer,goolfur@aol.com,6102208278,75064 Gleneagles Cir,Indian Wells,CA,92210,21,1887000,33,2
+Ronald,Leibsohn,prleibsohnv3@leibsohn.com,2062327935,5 Baker Ct,Rancho Mirage,CA,92270,15,1803000,33,2
+Mary,Sweetman,juergenfarr@bellsouth.net,6053516684,9 Sussex Ct,Rancho Mirage,CA,92270,16,1763000,33,2
+Leo,Mallette,kathymallette@hotmail.com,7607990700,28 Mirage Cove Dr,Rancho Mirage,CA,92270,16,1560000,33,2
+Frank,Shadpour,wfshadpour@cox.net,8587220349,44320 Michigan Ct,Indian Wells,CA,92210,16,1149000,33,2
+Management,Bayview,jlmontg1080@aol.com,6193415308,73 Calle Encinitas,Rancho Mirage,CA,92270,10,668000,33,2
+Nick,Iuliano,niuliano@hotmail.com,8314761990,1 Calle Encinitas,Rancho Mirage,CA,92270,16,644000,33,2
+Arthur,Mcgurn,annemarielanza@fillmore.com,2693750123,47 Palma Dr,Rancho Mirage,CA,92270,15,475000,33,2
+Joel,Byars Iii,jobyars@yahoo.com,8055987068,42531 Rancho Mirage Ln,Rancho Mirage,CA,92270,12,708000,32,2
+William,Brooks,william@lagunaloans.com,7142670711,77379 Blackfoot Dr,Indian Wells,CA,92210,13,681000,32,2
+Beverly,Weinstein,beverly.weinstein@gmail.com,9176963441,1012 Tamarisk West St,Rancho Mirage,CA,92270,14,662000,32,2
+Frank,Harrington,karenpetromilli@me.com,9254971559,20 Via Haciendas,Rancho Mirage,CA,92270,14,1544000,31,2
+John,Ditoppa,carolynlayne1924@yahoo.com,7608355455,11 Pinewood Cir,Rancho Mirage,CA,92270,15,1504000,31,2
+James,Johnson,jamesjrjohnson@hotmail.com,3174961429,10 Via Solana,Rancho Mirage,CA,92270,14,1499000,31,2
+Jcp,Inv,jackiepat3@msn.com,3109776928,14 Birkdale Cir,Rancho Mirage,CA,92270,11,1282000,31,2
+Liona,Teufel,jslovak23@gmail.com,5037817788,69829 Camino Pacifico,Rancho Mirage,CA,92270,11,1265000,31,2
+Ronald,Kirchoff,rrkirchoff@aol.com,6514553182,2 Bellisimo Ct,Rancho Mirage,CA,92270,15,1215000,31,2
+,City Of Rancho Mirage,autodyne1@mindspring.com,7146310409,37972 Da Vall Dr,Rancho Mirage,CA,92270,17,783000,31,2
+John,Morris,jgmucla@msn.com,3109481500,74625 Palo Verde Dr,Indian Wells,CA,92210,24,3760000,30,2
+Elaine,Scibelli,elainescibelli@yahoo.com,3035062659,75424 Stardust Ln,Indian Wells,CA,92210,13,1520000,30,2
+James,Hansen,kristiehansen@comcast.net,5595390418,75497 Riviera Dr,Indian Wells,CA,92210,23,1413000,30,2
+Eileen,Barich,ebarich@yahoo.com,3107223509,899 Island Dr Apt 113,Rancho Mirage,CA,92270,11,637000,30,2
+Robert,Elliott,zig450@yahoo.com,9496738865,12 Cartagena Way,Rancho Mirage,CA,92270,21,519000,30,2
+,Fasa Real Estate,garzonlm@yahoo.com,7608808220,72780 Country Club Dr Ste 105,Rancho Mirage,CA,92270,18,2268431,29,2
+Cdasco,One,mdevinki@yahoo.com,9133411291,136 Loch Lomond Rd,Rancho Mirage,CA,92270,19,1610000,29,2
+G,Fitch,emorley@ix.netcom.com,7608618707,23 Stanford Dr,Rancho Mirage,CA,92270,12,1435000,29,2
+Brian,Kelly,julieakelly42@gmail.com,5109141764,74327 Desert Oasis Trl,Indian Wells,CA,92210,22,4662000,28,2
+L,Pasquesi,rjpasquesi@yahoo.com,3129610302,74480 Palo Verde Dr,Indian Wells,CA,92210,23,4557000,28,2
+Grove,Birch,wburkland@cs.com,7245936295,74129 Desert Oasis Trl,Indian Wells,CA,92210,13,2551000,28,2
+Gregory,Miller,gregory.miller@nwpump.com,5037893932,258 Loch Lomond Rd,Rancho Mirage,CA,92270,13,2073000,28,2
+William,Zirkle,christinegagnon65@yahoo.com,5099527021,75100 Inverness Dr,Indian Wells,CA,92210,14,1870000,28,2
+Walter,Berberich,laura.berberich@gmail.com,7148152536,56 Via Bella,Rancho Mirage,CA,92270,22,1424000,28,2
+Michael,Dene,mdene1@mac.com,5629723118,45 Marbella Dr,Rancho Mirage,CA,92270,19,674650,28,2
+John,Prosser,munchiehk@yahoo.com,3602023891,19 Oak Tree Dr,Rancho Mirage,CA,92270,18,638000,28,2
+Rondald,Rowbotham,rrowbotham4@yahoo.com,7607791899,1 Terra Vista Ct,Rancho Mirage,CA,92270,18,4125000,26,2
+Hamir,Bhatia,acsvision@hotmail.com,7142690252,9 Via Bella,Rancho Mirage,CA,92270,10,1394000,26,2
+John,Ferlin,j.ferlin@brooksmfg.com,3602244205,74295 Quail Lakes Dr,Indian Wells,CA,92210,12,4856000,23,2
+,72114 Follansbee Llc,josh@worldskoolest.com,7604086040,72114 Follensbee St,Rancho Mirage,CA,92270,1,4450000,68,3
+Janet,French,trickybitz@yahoo.com,7144214309,45700 Navajo Rd,Indian Wells,CA,92210,3,1704000,62,3
+Gholam,Zadeii,mhsdancer19@hotmail.com,6512314545,70341 Chappel Rd,Rancho Mirage,CA,92270,1,850000,62,3
+Nathan Sinclair,Goodly,lyricaljane@hotmail.com,3105027677,34351 Denise Way,Rancho Mirage,CA,92270,3,378000,60,3
+Brian,Boespflug,brianblb@hotmail.com,7607742334,44053 Silver Creek Cir,Indian Wells,CA,92210,4,718000,58,3
+Andrew,Sorenson,andrewsoreson81@gmail.com,8013614097,75230 Purple Hills Rd,Indian Wells,CA,92210,2,1842000,57,3
+David,Foster,davidf2624@gmail.com,3038883638,49 Columbia Dr,Rancho Mirage,CA,92270,4,1191000,55,3
+Frederick,Shervey,joybratt@aol.com,6123969870,15 Via Verde,Rancho Mirage,CA,92270,2,1476000,53,3
+Steven,Hytry,hytrys@cshs.org,6264374717,52 Columbia Dr,Rancho Mirage,CA,92270,1,1067000,52,3
+Frank,Sillman,frank.sillman@gmail.com,3102925659,8 Oak Tree Dr,Rancho Mirage,CA,92270,4,748000,52,3
+Kyle L,Manderscheid,kylem95@verizon.net,9512326496,54 Via Bella,Rancho Mirage,CA,92270,1,1100000,51,3
+,Anderson Family Revocable Living Trust,saskatertt@gmail.com,2066585922,45755 Cielito Dr,Indian Wells,CA,92210,0,3494000,50,3
+Donald,Cox,luccaitaly@mac.com,6507038364,76160 Zuni Rd,Indian Wells,CA,92210,1,1953000,50,3
+Jaime,Banfield,jaimebanfield@gmail.com,7145590855,33 Lafayette Dr,Rancho Mirage,CA,92270,3,949000,50,3
+,Marcia G Riggio Survivors Trust,jriggio@comcast.net,4086235484,84 Sunrise Dr,Rancho Mirage,CA,92270,0,508000,50,3
+James A,Paige,colin1327@gmail.com,8187205845,44732 Dakota Trl,Indian Wells,CA,92210,4,645000,49,3
+Christopher Thomas,Manning,ctmanning@hotmail.com,7209843298,74624 Arroyo Dr,Indian Wells,CA,92210,1,1844000,48,3
+,John A Vannucci & Gayle Vannucci 2000 Re,gvannucci@hotmail.com,6506924196,77380 Blackfoot Dr,Indian Wells,CA,92210,0,571000,48,3
+,Porcupine Realty Llc,dellison@skydance.com,3108807648,71401 Gardess Rd,Rancho Mirage,CA,92270,3,1248000,47,3
+,Taus Zuanich Family Trust,beningtonchester11@gmail.com,3103513528,1016 Tamarisk West St,Rancho Mirage,CA,92270,0,1072000,47,3
+,The Johnson Living Trust,melindarjohnson@msn.com,4257654081,76875 Lark Dr,Indian Wells,CA,92210,0,939000,47,3
+Leland R,Wehland,habu911@comcast.net,2068181960,17 La Cerra Dr,Rancho Mirage,CA,92270,1,573000,47,3
+Mary,Novak,marynovak838@gmail.com,9099382894,39 Colonial Dr,Rancho Mirage,CA,92270,3,534000,47,3
+,Victory Christian Center Of The Desert I,lucygranados@hotmail.com,7605789648,72125 Via Vail,Rancho Mirage,CA,92270,2,1584000,46,3
+Mona,Kaufman,ikac@sbcglobal.net,3102720687,11 Mcgill Dr,Rancho Mirage,CA,92270,4,1259000,46,3
+Matthew,Halvorson,mhalvor21@gmail.com,3109081044,76911 Inca Dr,Indian Wells,CA,92210,4,1161000,46,3
+Dean,Curci,caprate@gmail.com,9497018132,77855 Cottonwood Cv,Indian Wells,CA,92210,2,1067000,46,3
+Andrew,Reid,f.william@wmpaulco.com,7143496727,78155 Cabrillo Ln Unit 30,Indian Wells,CA,92210,1,280000,46,3
+Robert,Steinbacher,corvetteconnection@wi.rr.com,4142171770,35980 Novio Ct,Rancho Mirage,CA,92270,2,254000,46,3
+,Forehandthe Revocable Living Trust,maggielouforehand@hotmail.com,2094842584,45490 Apache Rd,Indian Wells,CA,92210,0,2176000,45,3
+,Peach Family Trust,loisapeach@gmail.com,5037081760,76145 Zuni Rd,Indian Wells,CA,92210,3,2074000,45,3
+,Orlovic Holdings Llc,ilijaorlovic@comcast.net,4258022441,70600 Country Club Dr,Rancho Mirage,CA,92270,0,1369000,45,3
+Barbara Hyde,Evans,barbhe@msn.com,2066799092,1 Saturn Cir,Rancho Mirage,CA,92270,2,1204000,45,3
+Adrina,Agakhanyan,adrina.agakhanyan@verizon.net,2016384864,70799 Jasmine Ln,Rancho Mirage,CA,92270,4,1106000,45,3
+John G,Oakson,napagirl@me.com,9493511741,50 Columbia Dr,Rancho Mirage,CA,92270,3,1010000,45,3
+Brian,Davidoff,148benner@gmail.com,2134713547,75695 Valle Vis,Indian Wells,CA,92210,3,994000,45,3
+,The Kelli B Tabb Trust,dylanbodet@me.com,2102746183,10305 Sunningdale Dr,Rancho Mirage,CA,92270,0,762000,45,3
+,The Kelli B Tabb Trust,ronaldjaffe@gmail.com,7603216644,10110 Lakeview Dr,Rancho Mirage,CA,92270,0,748000,45,3
+Laurie,Johnson,laurie.johnson@johnson-advisors.com,7022850622,352 Forest Hills Dr,Rancho Mirage,CA,92270,2,647700,45,3
+Stacy L,Barnard,jennann29@yahoo.com,9098278229,56 Palma Dr,Rancho Mirage,CA,92270,2,470000,45,3
+Xiaoyan,He,xiaoyan_he2002@yahoo.com,3133071020,52 Sunrise Dr,Rancho Mirage,CA,92270,4,450000,45,3
+David,Juarez,davidjuarez@cox.net,7148569891,34071 Denise Way,Rancho Mirage,CA,92270,0,350000,45,3
+Todd,Ammons,ammons4@hotmail.com,6263883315,78250 Cortez Ln Unit 139,Indian Wells,CA,92210,3,318000,45,3
+David,Beck Jr,mkmgmt3@aol.com,4255089663,76156 Via Firenze,Indian Wells,CA,92210,3,2883000,43,3
+Candace,Holzgrafe,cholzgrafe@yahoo.com,5037085739,75075 Inverness Dr,Indian Wells,CA,92210,4,1791000,43,3
+David,Jack,djgj@home.com,2062365907,32 Oakmont Dr,Rancho Mirage,CA,92270,3,1535000,43,3
+Abbas,Mobine,cmobine@gmail.com,8586992085,71983 Desert Dr,Rancho Mirage,CA,92270,4,1496000,43,3
+Kevin,Collins,kccoll@comcast.net,6506780135,76870 Tomahawk Run,Indian Wells,CA,92210,4,1327000,43,3
+,Cheryl C Craven Trust,cherylcraven10@gmail.com,3104931857,19 Calle Del Norte,Rancho Mirage,CA,92270,0,1241000,43,3
+Joseph,Shabatian,jennyrox103@gmail.com,3238047718,25 Champagne Cir,Rancho Mirage,CA,92270,1,1065000,43,3
+Matthew,Mara,gerret35@aol.com,7143450015,39 Augusta Dr,Rancho Mirage,CA,92270,4,752000,43,3
+,Norman S Don Reallocation Gst Exempt Tr,abbydon17@contractor.net,9495727961,36 Malaga Dr,Rancho Mirage,CA,92270,0,565000,43,3
+Michele,Jarvis,m_jarvis98@yahoo.com,3107417058,46639 Arapahoe # A,Indian Wells,CA,92210,2,409000,43,3
+Joseph G,Svatos,jsvat@aol.com,2025317326,7 Vista Loma Dr,Rancho Mirage,CA,92270,3,1643832,42,3
+Robert,Neil,micah-1@hotmail.com,3035179589,77048 Iroquois Dr,Indian Wells,CA,92210,2,1165000,42,3
+,R&S Ellenbogen 2025 Revocable Trust,sandyellenbogen@comcast.net,2066604179,5 Reed Ct,Rancho Mirage,CA,92270,0,1164000,42,3
+,Richter Fam Tr Under The Richter Fam Tr,pattysprints0@gmail.com,3602026337,46544 Arapahoe,Indian Wells,CA,92210,0,859000,42,3
+Yakov E,Shpolyansky,boats59@aol.com,3108970402,18 Kavenish Dr,Rancho Mirage,CA,92270,2,817000,42,3
+,Knochenhauer Family Trust,jlweiss25@yahoo.com,9496832928,44725 Dakota Trl,Indian Wells,CA,92210,0,572000,42,3
+Jean,Sheridan,jas3228@yahoo.com,3607480121,6 Tortosa Dr,Rancho Mirage,CA,92270,4,536000,42,3
+Wendy,Barrett,martamom@hotmail.com,4087268268,69616 Heather Way,Rancho Mirage,CA,92270,0,371000,42,3
+,Slavic Desert Connection Real Estate Services Inc,davegrus@hotmail.com,7607705466,35604 Feliz Ct,Rancho Mirage,CA,92270,2,253000,42,3
+Brad,Miller,judymmiller@hotmail.com,2062355122,71225 W Thunderbird Ter,Rancho Mirage,CA,92270,2,3919000,41,3
+,Rancho Mirage Properties Llc,wall2street@yahoo.com,6239798731,2 Dominion Ct,Rancho Mirage,CA,92270,3,1902000,41,3
+Vincent X,Rigali,vince@metrotruckbody.com,3103870772,290 Loch Lomond Rd,Rancho Mirage,CA,92270,3,1891000,41,3
+Raymond,Hatfield,kristi2kay@aol.com,2082846921,35303 Vista Hermosa,Rancho Mirage,CA,92270,4,1070000,41,3
+,56 Tennis Club Drive Llc,palmercait@gmail.com,7146973655,56 Tennis Club Dr,Rancho Mirage,CA,92270,0,537000,41,3
+,Js Downsize Llc,jhchaparral66@aol.com,7607735311,46000 E Eldorado Dr # 1,Indian Wells,CA,92210,0,5348000,40,3
+Sean,Odriscoll,seanod@live.com,4254437064,71353 Country Club Dr,Rancho Mirage,CA,92270,4,3284000,40,3
+Ronald,Goldberg,goldbergrandi@yahoo.com,3014619148,77290 Black Mountain Trl,Indian Wells,CA,92210,2,2221000,40,3
+Reed,Mandel,greatlygreeny@aol.com,9524541722,39880 Morningsprings Rd,Rancho Mirage,CA,92270,3,2065000,40,3
+David,Morris,ssdmorris@aol.com,8478672663,35002 Vista Del Ladero,Rancho Mirage,CA,92270,2,1614000,40,3
+Keith,Thomas,krtfamily@gmail.com,5102834712,75124 Concho Dr,Indian Wells,CA,92210,3,1140000,40,3
+Scott,Johnston,lazybum98734@gmail.com,9099537593,70819 Jasmine Ln,Rancho Mirage,CA,92270,3,1076814,40,3
+,Kenney Living Trust,circlejwk@aol.com,2065502225,75250 Inverness Dr,Indian Wells,CA,92210,0,931000,40,3
+,The Hanson Family Revocable Trust,garyhan@roadrunner.com,2133996556,28 Pebble Beach Dr,Rancho Mirage,CA,92270,0,735000,40,3
+Douglas R,Simmons,douglas.simmons@tivejo.com,4257530185,23 Kavenish Dr,Rancho Mirage,CA,92270,2,719000,40,3
+Kerri,Deutsch,heidin@ci.issaquah.wa.us,4253060722,31 Cueta Dr,Rancho Mirage,CA,92270,4,671000,40,3
+Cynthia,Moran,moranv1993@gmail.com,8183318497,2 Padron Way,Rancho Mirage,CA,92270,2,651000,40,3
+Robert,Forsey,rforsey@comcast.net,8015561174,71 Sunrise Dr,Rancho Mirage,CA,92270,3,498000,40,3
+Margaret C,Flaherty,cflaherty@magnoliagarden.com,2062281161,52 La Ronda Dr,Rancho Mirage,CA,92270,1,469000,40,3
+Michael,Johnson,mgj1212@aol.com,9492855223,75805 Altamira Dr,Indian Wells,CA,92210,9,1492000,39,3
+Bruce,Dupont,scrippscreek@yahoo.com,8586216215,72075 Clancy Ln,Rancho Mirage,CA,92270,5,1382000,39,3
+Steven,Vitero,svito3@yahoo.com,3107217956,74976 Tahoe Cir,Indian Wells,CA,92210,7,1234000,39,3
+Gerald A,Heiner,heinerrealty@yahoo.com,8053776900,3 Pine Valley Dr,Rancho Mirage,CA,92270,2,994499,39,3
+Rena,Robbins,askhollywood@gmail.com,9496774471,75184 Concho Dr,Indian Wells,CA,92210,7,986000,39,3
+Robert,Gore,rbgore@aya.yale.edu,7209395609,45735 Pueblo Rd,Indian Wells,CA,92210,7,950000,39,3
+,The Akira And Kimiko Sato Trust,kimikosato@gmail.com,6269054024,170 Lake Shore Dr,Rancho Mirage,CA,92270,0,905000,39,3
+Richard,Hauck,adunn51@hotmail.com,3144229476,48 Pine Valley Dr,Rancho Mirage,CA,92270,7,900000,39,3
+Laura,Bakken,bakkenspdx@aol.com,3606088687,23 Lincoln Pl,Rancho Mirage,CA,92270,1,791000,39,3
+Marilyn,Penitsch,penitsch@juno.com,7602024550,32 Pine Valley Dr,Rancho Mirage,CA,92270,8,692000,39,3
+M,Williams,williamsrealestate2004@gmail.com,7025381310,4 Kevin Lee Ln,Rancho Mirage,CA,92270,9,557000,39,3
+Yrone,Sewell,kristinsewell1@aol.com,3106122870,14 La Cerra Dr,Rancho Mirage,CA,92270,8,520000,39,3
+Ken,Hepler,krh7777@yahoo.com,9517418621,29 Juan Carlos Dr,Rancho Mirage,CA,92270,7,482000,39,3
+,Frederick D Robinson Irrevocable Tr Iv,marlingroupca@yahoo.ca,,77702 N Via Villaggio,Indian Wells,CA,92210,0,2590000,38,3
+Michael Lee,Christen,mchristen117@gmail.com,3603313918,74009 Desert Tenaja Trl,Indian Wells,CA,92210,1,2054000,38,3
+,Antony J Ainsworth Living Trust,gramercyparkave@gmail.com,2124480036,10 Calle La Reina,Rancho Mirage,CA,92270,0,1691000,38,3
+,Schreiber Llc,davidpschreiber@msn.com,7608954260,8 Scarborough Way,Rancho Mirage,CA,92270,2,1655000,38,3
+Robert,Schubert,teirobertschubert@msn.com,5105077226,10 Saturn Cir,Rancho Mirage,CA,92270,5,1359000,38,3
+,Martin Family Trust,karenjmartin10@gmail.com,4054089524,45415 Delgado Dr,Indian Wells,CA,92210,0,1181000,38,3
+Detlof,Von Winterfeldt,detlof@aol.com,9498878048,25 Stonecrest Cir,Rancho Mirage,CA,92270,4,1127000,38,3
+Elaine,Gershenson,lkirkpatrick@alltel.net,2145482246,13 Marseilles Rd,Rancho Mirage,CA,92270,0,1029179,38,3
+Thomas,Hanan,funboy_niceboy@yahoo.com,2065515455,75217 Spyglass Dr,Indian Wells,CA,92210,4,985000,38,3
+Gerard,Burns,gwburns@aol.com,4153100100,744 Inverness Dr,Rancho Mirage,CA,92270,0,911000,38,3
+Anne,Bothe,meghanbothe@aol.com,4023330141,75610 Calle Del Sur,Indian Wells,CA,92210,4,809000,38,3
+Michael,Dibernardo,mikeydibernardo@sbcglobal.net,3102515669,53 Lake Shore Dr,Rancho Mirage,CA,92270,6,617000,38,3
+Michael,Minnick,michaeljminnick@aol.com,5053532495,23 Granada Dr,Rancho Mirage,CA,92270,3,591000,38,3
+Ronald,Hamlin,rhamlinimid@hotmail.com,2063642440,78175 Cabrillo Ln Unit 49,Indian Wells,CA,92210,6,307000,38,3
+Panagiotis,Lianopoulos,p45572@aol.com,9543533367,69706 Del Valle Ct,Rancho Mirage,CA,92270,6,280000,38,3
+Roger,Kirwan,gailkirwan@comcast.net,9493003151,50675 Desert Arroyo Trl,Indian Wells,CA,92210,7,3669000,37,3
+Lori,Gill,lorigill@windermere.com,4253739577,45731 Paradise Valley Rd,Indian Wells,CA,92210,4,3514000,37,3
+Bear,Papa,jennifer.neighbours@gmail.com,3128109395,37690 Golf Cir,Rancho Mirage,CA,92270,5,2442000,37,3
+Eric,Toker,bboreman@att.net,3107707018,71331 Country Club Dr,Rancho Mirage,CA,92270,4,1992000,37,3
+Kevin,Keenan,kevkeenan@aol.com,3107955354,76228 Via Montelena,Indian Wells,CA,92210,8,1742000,37,3
+Michael,Stead,smashandpack@gmail.com,8473725566,23 Vista Encantada,Rancho Mirage,CA,92270,9,1676000,37,3
+Theresa,Ward,theresa_ward@ml.com,6122803254,6 Kimberly Ct,Rancho Mirage,CA,92270,9,1361000,37,3
+Kenneth,Talmage,kentalmage@aol.com,8319016310,29 Sherwood Rd,Rancho Mirage,CA,92270,8,1250000,37,3
+Donald,Pooley,davidmalan50@hotmail.com,7142966600,75929 Camino Cielo,Indian Wells,CA,92210,9,1163000,37,3
+Midori,Lawler,midorilawler@msn.com,2067183276,40990 Paxton Dr Unit 28,Rancho Mirage,CA,92270,5,975000,37,3
+Cynthia G,Cotton,ctc2123@aol.com,7143970809,36829 Palm View Rd,Rancho Mirage,CA,92270,1,948000,37,3
+Carl,Guardino,cguardino@svlg.org,4086661944,112 Shoreline Dr,Rancho Mirage,CA,92270,8,804000,37,3
+Rebecca,Pantuso,desertsprinkle@aol.com,9492301060,44804 Del Dios Cir,Indian Wells,CA,92210,9,749000,37,3
+Jace W,Coleman,jacenjamie@yahoo.com,6199575223,86 Sunrise Dr,Rancho Mirage,CA,92270,2,550000,37,3
+Keith,Sander,sandersail@aol.com,2087614259,21 Toledo Dr,Rancho Mirage,CA,92270,3,484000,37,3
+Russell,Jackson,wjax@hotmail.com,6198401739,34151 Denise Way,Rancho Mirage,CA,92270,8,368000,37,3
+Steven,Kinney,sjkin661@gmail.com,6617061283,70260 Highway 111 Spc 61,Rancho Mirage,CA,92270,4,170000,37,3
+,Giraudo Trust,kgriggi@aol.com,7068170815,72390 Silver Spur Ln,Rancho Mirage,CA,92270,4,5289000,36,3
+,Joyce Kraines 2021 Irrevocable Trust,joycekraines@yahoo.com,3102518695,2 Rocky Ln,Rancho Mirage,CA,92270,0,4274000,36,3
+Malcolm,Wing,cindy.wing@iwon.com,9493515501,75689 Camino De Paco,Indian Wells,CA,92210,4,2842000,36,3
+Michael,Shadman,shadman@sbcglobal.net,4084724285,140 Waterford Cir,Rancho Mirage,CA,92270,5,2787000,36,3
+Dmitri,Triphon,thepolina@aol.com,3109228603,202 Crystal Bay Ct,Rancho Mirage,CA,92270,5,2515000,36,3
+Ronald,Jacobs,lrglabs@comcast.net,4253444434,77749 Cove Pointe Cir,Indian Wells,CA,92210,2,1764000,36,3
+Barry,Golden,tgbarrygolden71@gmail.com,8474717000,10 Boulder Ln,Rancho Mirage,CA,92270,2,1683000,36,3
+Anthony,Budrovich,nbudrovich@gmail.com,3109083522,77339 Mallorca Ln,Indian Wells,CA,92210,5,1600000,36,3
+Antonio,Augello,acaugello@ca.rr.com,3105053130,192 Loch Lomond Rd,Rancho Mirage,CA,92270,4,1549000,36,3
+Bob,Waddell,bob.waddell@yahoo.com,7146556037,7 Voltaire Ct,Rancho Mirage,CA,92270,5,1308000,36,3
+Robin,Foster,barbarahelder@gmail.com,9132620656,75229 Kiowa Dr,Indian Wells,CA,92210,5,1088000,36,3
+,Bantley Oksana Revocable Trust,stevehickscares@gmail.com,8472125484,3 Lake Louise Ct,Rancho Mirage,CA,92270,5,1027000,36,3
+,Boyd And Pam Trimble Trust,huskeylover321@yahoo.com,9096763648,41 Via San Marco,Rancho Mirage,CA,92270,0,978000,36,3
+Derek,Chou,chouca@gmail.com,9173193100,75708 Valle Vis,Indian Wells,CA,92210,6,844000,36,3
+Maria,Ferrufino,mferrufino@comcast.net,8186871587,78585 Vista Del Fuente,Indian Wells,CA,92210,5,840000,36,3
+Steven,Wheeler,gone2june@gmail.com,9519668034,99 Avenida Las Palmas,Rancho Mirage,CA,92270,1,651000,36,3
+William,Elliott,ame420nb@yahoo.com,9072234982,34017 Emily Way,Rancho Mirage,CA,92270,5,365000,36,3
+Arthur,Kocsis,arthur.kocsis@gmail.com,7145393808,34089 Emily Way,Rancho Mirage,CA,92270,0,349000,36,3
+John,Eicher,g.eicher@earthlink.net,2064510598,69700 Campana Ct,Rancho Mirage,CA,92270,6,256000,36,3
+Walter,Musselman,gene_musselman09@comcast.net,9256428233,74348 Desert Bajada Trl,Indian Wells,CA,92210,8,4291000,35,3
+Sterling Conley,Ball,stacey.ball@mac.com,6309360579,71035 Cypress Dr,Rancho Mirage,CA,92270,4,3003000,35,3
+Michael,Larson,daishimech4@gmail.com,2069103900,49826 Hidden Valley Trl N,Indian Wells,CA,92210,9,2503000,35,3
+Lance,Lopes,stefan.cobb@worldnet.att.net,2063547440,76180 Osage Trl,Indian Wells,CA,92210,3,2276000,35,3
+Steven,Schaffer,sschaffer33@yahoo.com,5037094640,75645 Painted Desert Dr,Indian Wells,CA,92210,3,1756000,35,3
+Jean,Pappani,perpap@sbcglobal.net,4083485101,21 Summer Sky Cir,Rancho Mirage,CA,92270,7,1536000,35,3
+Mark,Zepp,markszepp1989@yahoo.com,5202414812,71305 Halgar Rd,Rancho Mirage,CA,92270,6,1316000,35,3
+Evan Tian Ming,Lalonde,dickjennin@aol.com,7607730704,75852 Camino Cielo,Indian Wells,CA,92210,2,1252000,35,3
+Christopher,Baker,clsbaker@hotmail.com,6197093873,75204 Concho Dr,Indian Wells,CA,92210,3,1245000,35,3
+Glenn,Elliott,glennelliott3@gmail.com,5038606546,44846 Oro Grande Cir,Indian Wells,CA,92210,5,1035000,35,3
+Sharon,Devenish,michael.c.devenish@gmail.com,6086984055,23 Dartmouth Dr,Rancho Mirage,CA,92270,2,1030000,35,3
+Sofia,Peterson,aneresstar@aol.com,9095538712,130 Clearwater Way,Rancho Mirage,CA,92270,8,1004000,35,3
+Steven,Estrella Jr,duostar@sbcglobal.net,9253833873,44032 Erie Ct,Indian Wells,CA,92210,5,956000,35,3
+Tyrone,Perkins,ptyrone07@yahoo.com,3102662019,37 Colgate Dr,Rancho Mirage,CA,92270,6,948000,35,3
+Mark,Stone,mstone8568@aol.com,2069541427,38 Santa Ynez,Rancho Mirage,CA,92270,7,923000,35,3
+Bradey,Heyborne,bradyheyborne@gmail.com,3109948234,33 San Marino Cir,Rancho Mirage,CA,92270,6,909000,35,3
+Kevin James,Dale,kjdale@roadrunner.com,4164205203,10610 Wimbledon Dr,Rancho Mirage,CA,92270,3,884000,35,3
+Salvador,Hernandez,saherndz@yahoo.com,6505766691,250 Via San Lucia,Rancho Mirage,CA,92270,9,884000,35,3
+,The Connie Franko Family Trust,conniefranko@gmail.com,3232286496,607 Desert West Dr,Rancho Mirage,CA,92270,0,829000,35,3
+Thomas,Legierski,tlegierski@comcast.net,6126183621,7 Loch Ness Lake Ct,Rancho Mirage,CA,92270,9,769000,35,3
+Dwight,Drake,joanna.shields@verizon.net,4252811493,45884 Algonquin Cir,Indian Wells,CA,92210,0,769000,35,3
+Andrew,Torrance,andrew.torrance@gmail.com,2068984554,161 Avenida Las Palmas,Rancho Mirage,CA,92270,5,630000,35,3
+Peter,Hodson,ipsum@aol.com,2134342180,3 Tennis Club Dr,Rancho Mirage,CA,92270,5,628000,35,3
+B,Dolby,jeandolby@yahoo.com,3608661981,75612 Camino De Plata N,Indian Wells,CA,92210,4,615000,35,3
+Christina M,Szarka,chris@coloradohealthcenter.com,7203413857,28 Mission Ct,Rancho Mirage,CA,92270,2,588000,35,3
+Azeem,Virjee,sponby@cox.net,6192242604,34922 Mission Hills Dr,Rancho Mirage,CA,92270,1,581000,35,3
+Waad,Hanna,drjoseph61@hotmail.com,8185356453,5 Don Quixote Dr,Rancho Mirage,CA,92270,5,541000,35,3
+Robert P,Dalton,robdalton@sbcglobal.net,9257853498,35 Calle Encinitas,Rancho Mirage,CA,92270,1,530000,35,3
+Nick,Nazarians,nicknazarians@gmail.com,8186534201,52 Pebble Beach Dr,Rancho Mirage,CA,92270,5,443000,35,3
+James,Thomas,torithomas@outlook.com,7606722364,307 Forest Hills Dr,Rancho Mirage,CA,92270,6,386000,35,3
+Sandra Salter,Rose,ybarose@verizon.net,3233085908,448 Sunningdale Dr,Rancho Mirage,CA,92270,2,348000,35,3
+Thomas,Stagner,tstag222@aol.com,8183891570,78155 Cabrillo Ln Unit 37,Indian Wells,CA,92210,4,333000,35,3
+Edward J,Wald,ed.wald@gmail.com,8184148884,6 La Cerra Cir,Rancho Mirage,CA,92270,1,324000,35,3
+,The Byrne Revocable Trust,cbyrne@arn.com,3038181515,76402 Via Uzzano,Indian Wells,CA,92210,0,2832000,34,3
+Richard,Moore,carol_smith@progressive.com,2165771995,53 Oakmont Dr,Rancho Mirage,CA,92270,5,1876000,34,3
+Michael,Balian,michaelsbalian@gmail.com,8183953470,96 Avenida Lirio Blanco,Rancho Mirage,CA,92270,4,1255000,34,3
+,Burke Pasadena Apartments Inc,dcholman661@yahoo.com,9492468103,736 Inverness Dr,Rancho Mirage,CA,92270,0,753000,34,3
+Julian,Carranza,jcarranza9@gmail.com,6268408998,40901 Bob Hope Dr,Rancho Mirage,CA,92270,0,730000,34,3
+Chris,Warmuth,warmuth@gmail.com,3109933737,2 Mirada Cir,Rancho Mirage,CA,92270,6,4019000,33,3
+Thomas,Richmond,sktir@aol.com,7148756352,77924 Cottonwood Cv,Indian Wells,CA,92210,4,3736000,33,3
+,Clarkson D Lauritzen Revocable Trust,emilylauritzen@yahoo.com,4022136993,74562 Palo Verde Dr,Indian Wells,CA,92210,0,3673000,33,3
+Mark Steven,Scarpitti,markk7779@aol.com,7607740848,70168 Carson Rd,Rancho Mirage,CA,92270,2,2897000,33,3
+Cassandra,Mittleberg,cmittelberg@aol.com,8186361568,47 Evening Star Dr,Rancho Mirage,CA,92270,5,2842000,33,3
+Appian,Way,brucedaly@hotmail.com,2132198213,45611 Appian Way,Indian Wells,CA,92210,5,2606000,33,3
+Ps,St,rickylivesay@yahoo.com,4105985573,120 Royal Saint Georges Way,Rancho Mirage,CA,92270,4,2331000,33,3
+,The Raymond Family Inter Vivos Rev Trust,louray@cox.net,9493099914,77908 Cottonwood Cv,Indian Wells,CA,92210,0,2058000,33,3
+Stephen M Lowry,Brand,sbrand@intracomsystem.com,3102661693,45570 Pawnee Cir,Indian Wells,CA,92210,2,1827000,33,3
+John,Sullivan,gretelg@hotmail.com,7604081470,218 Loch Lomond Rd,Rancho Mirage,CA,92270,5,1811000,33,3
+Carrington,Clark Jr,crrngtnclrk@aol.com,7603281255,250 Loch Lomond Rd,Rancho Mirage,CA,92270,6,1796000,33,3
+Diana,Powell,derrickbrill@gmail.com,7739516572,230 Loch Lomond Rd,Rancho Mirage,CA,92270,0,1793000,33,3
+Christopher,Duggan,christa@dugganla.com,3109511072,109 Royal Saint Georges Way,Rancho Mirage,CA,92270,5,1755000,33,3
+Steven,Bushong,vbsaxo@gmail.com,3233631445,3 Pinewood Cir,Rancho Mirage,CA,92270,4,1687000,33,3
+Pamela,Tinsley,tinsley.pamela@yahoo.com,2132721171,36780 Nancy Ln,Rancho Mirage,CA,92270,6,1440000,33,3
+Karla,Banuelos,arg_kalita@hotmail.com,6198844865,75377 Spyglass Dr,Indian Wells,CA,92210,3,1168000,33,3
+James,Light,jlightm5@epix.net,9496832654,75153 Concho Dr,Indian Wells,CA,92210,1,1142000,33,3
+Dorothy,Knight,dorothyknight@aol.com,8059343577,75154 Concho Dr,Indian Wells,CA,92210,5,1032000,33,3
+Eber,Jaques,eberjaques@comcast.net,4158459169,44000 Lakeside Dr,Indian Wells,CA,92210,2,1032000,33,3
+Jeffrey L,Moore,anntraversomoore@gmail.com,8027458615,53 Via Santo Tomas,Rancho Mirage,CA,92270,2,943499,33,3
+,Finney Separate Property Trust,afinney619@gmail.com,4252812079,74998 Tahoe Cir,Indian Wells,CA,92210,0,847000,33,3
+Laurie,Lindner,laurie.lindner@thedacare.org,9085101965,44816 Oro Grande Cir,Indian Wells,CA,92210,3,819000,33,3
+Dennis,Pittelko,dkaminski1@hotmail.com,2064235368,900 Island Dr Apt 608,Rancho Mirage,CA,92270,5,680000,33,3
+David,Aldridge,dmaldri@yahoo.com,2065503270,4 Cartagena Way,Rancho Mirage,CA,92270,2,637000,33,3
+,Kelly Mackay Revocable Living Trust,kate.harrington@p-i-d.biz,2132150070,23 Medina Way,Rancho Mirage,CA,92270,4,616000,33,3
+Mark,Seegel,gmarky49@levineseegel.com,3104303148,10 Durango Cir,Rancho Mirage,CA,92270,1,607000,33,3
+Brooke S,Bustrum,bsbustrum@yahoo.com,7143340595,77 La Cerra Dr,Rancho Mirage,CA,92270,2,561000,33,3
+,Grillos Revocable Trust,jgrillos@aol.com,9253890889,402 Forest Hills Dr,Rancho Mirage,CA,92270,0,553949,33,3
+,Butterflies Are Free Enterprises Llc,mjdeangeles@earthlink.net,9286071895,92 Palma Dr,Rancho Mirage,CA,92270,3,492000,33,3
+Edgar,Panadero Jr,laqtboy@sbcglobal.net,2134581873,34189 Anita Way,Rancho Mirage,CA,92270,3,369000,33,3
+,Henlor Holdings Llc,jvertal@sbcglobal.net,5164249013,125 Racquet Club Dr,Rancho Mirage,CA,92270,2,322605,33,3
+Dale,Rudy,rudydale@yahoo.com,4145597871,69560 Iberia Ct,Rancho Mirage,CA,92270,2,281000,33,3
+Elizabeth,Peterson,e4mick@aol.com,5417533944,69567 Iberia Ct,Rancho Mirage,CA,92270,4,276000,33,3
+Connie,Askew,kenneth.askew@yahoo.com,6123259395,69637 Encanto Ct,Rancho Mirage,CA,92270,6,228000,33,3
+Catherine,Phelps,lriccobuono@gmail.com,7607024756,74568 Desert Arroyo Trl,Indian Wells,CA,92210,9,5207000,32,3
+John,Anderson,maryphil5@msn.com,7756716943,75284 Skylark Trl,Indian Wells,CA,92210,3,1845000,32,3
+,Lipetz Family 2018 Trust,erleholm@gmail.com,7609008805,11 Boulder Ln,Rancho Mirage,CA,92270,7,1423000,32,3
+Daniel,Miranda,daniel.miranda@comcast.com,7144934748,38 Barcelona Dr,Rancho Mirage,CA,92270,9,500000,32,3
+Dannie,Tobias,tobiastat@aol.com,8586881011,69730 Barranca Ct,Rancho Mirage,CA,92270,8,225000,32,3
+Kevin Michael,Taylor,kevinmichaeltaylor@gmail.com,4155182249,75290 Desert Park Dr,Indian Wells,CA,92210,2,2803000,31,3
+Randy,Marcus,blkarns@aol.com,7603246525,70421 Placerville Rd,Rancho Mirage,CA,92270,2,2467000,31,3
+Loretta,Evensen,levensen@gte.net,8186457724,45567 Appian Way,Indian Wells,CA,92210,1,2413000,31,3
+Evan,Chuck,evanchuck@aol.com,3103511556,43197 Joshua Rd,Rancho Mirage,CA,92270,5,2165000,31,3
+David,Betanzos,davidbetanzos@yahoo.com,3104046496,74349 Desert Oasis Trl,Indian Wells,CA,92210,5,2083000,31,3
+,Country Club Village,glen.richardson@safeway.com,6238693100,40101 Monterey Ave,Rancho Mirage,CA,92270,0,1865426,31,3
+Robert,Dougherty,gbmerrill@cox.net,9498612895,19 Calle La Reina,Rancho Mirage,CA,92270,5,1478000,31,3
+Kent,Benson,kent.benson@gmail.com,5037057710,14 Calle La Reina,Rancho Mirage,CA,92270,3,1475000,31,3
+,Oakhurst International Inc,triderrealestate@aol.com,9493062526,76956 Comanche Ln,Indian Wells,CA,92210,3,1197000,31,3
+Robert,Fetta,rfetta@aol.com,7142640702,30 Calle La Reina,Rancho Mirage,CA,92270,1,1182000,31,3
+Cricket,Bella,jodie.mccollum@gmail.com,7143947151,46 Via Bella,Rancho Mirage,CA,92270,4,1146103,31,3
+Judi,Barker,emilybrophy@gmail.com,8184041399,71659 Estellita Dr,Rancho Mirage,CA,92270,3,1129000,31,3
+Darrell,Jensen,andreac1217@yahoo.com,3102512404,14 Hilton Head Dr,Rancho Mirage,CA,92270,4,1003412,31,3
+Jacqueline,Denning,ljdennizng1273@yahoo.com,4155188491,53 Vista Mirage Way,Rancho Mirage,CA,92270,2,1000000,31,3
+Michael,Kocin,suzy_92064@hotmail.com,8583950142,12 Shoreline Dr,Rancho Mirage,CA,92270,6,821000,31,3
+John,Saeman,seamanj@medallionllc.com,7205454883,74495 Quail Lakes Dr,Indian Wells,CA,92210,8,5458000,30,3
+Via,Corona,tommy_99_day@yahoo.com,6105541673,75776 Via Cortona,Indian Wells,CA,92210,8,4362000,30,3
+Paul,Carkonen,carkonen@aol.com,2066126207,43315 Via Siena,Indian Wells,CA,92210,8,4094000,30,3
+Christopher,White,chriswhitegroup@bellsouth.net,9494337180,38705 Vista Del Sol,Rancho Mirage,CA,92270,9,3090000,30,3
+John,Delea,katiedelea@aol.com,5086923265,12 Windemere Ct,Rancho Mirage,CA,92270,4,2175475,30,3
+Richard,Hirschmann,rhirsch1215@comcast.net,8472802575,1 Windemere Ct,Rancho Mirage,CA,92270,2,1973700,30,3
+David,Kirk,dhkirk@gmail.com,4422348406,19 Birkdale Cir,Rancho Mirage,CA,92270,8,1654000,30,3
+,Gilbertson Family Trust,chrisnkong@comcast.net,2395374347,4 Calle La Reina,Rancho Mirage,CA,92270,0,1407000,30,3
+Jennifer Ann,Czeisler,jczeisler@yahoo.com,2068490305,72211 Rancho Rd,Rancho Mirage,CA,92270,1,1403000,30,3
+,Gramercy Designs Llc,simon.appraiser@gmail.com,7606101820,75153 Spyglass Dr,Indian Wells,CA,92210,0,1225000,30,3
+William E,Bassett,webassett13@yahoo.com,2069100428,57 Colgate Dr,Rancho Mirage,CA,92270,4,965000,30,3
+Michael,Olsen,deannah725@yahoo.com,7147136923,44808 Oro Grande Cir,Indian Wells,CA,92210,3,940000,30,3
+Thomas,Higgins,khiggins@limerickventures.com,3104296482,75140 Chippewa Dr,Indian Wells,CA,92210,1,910000,30,3
+Michael W,Jones,kbjones57@gmail.com,5036948065,918 Inverness Dr,Rancho Mirage,CA,92270,3,792784,30,3
+Michael Walter,Davis,kylecdavis@gmail.com,5034622927,34910 Mission Hills Dr,Rancho Mirage,CA,92270,3,716314,30,3
+Paula,Alderman,paulalderman@juno.com,5098999936,41 Juan Carlos Dr,Rancho Mirage,CA,92270,2,632000,30,3
+Zohrab,Zabounian,zazinc19@yahoo.com,6264838946,8 Durango Cir,Rancho Mirage,CA,92270,5,605000,30,3
+Kathleen,Cavanaugh,klcavanaugh7@gmail.com,4135307343,10 Sunrise Dr,Rancho Mirage,CA,92270,4,585000,30,3
+Hascal,Weaver Jr,gopweaver@gmail.com,2149573963,22 Barcelona Dr,Rancho Mirage,CA,92270,2,561000,30,3
+John,Bianchi,jbsixgun@aol.com,7607741049,70053 Highway 111,Rancho Mirage,CA,92270,2,499489,30,3
+Clinton,Moore,cadenmf@me.com,7604082288,39810 Bedford Dr,Rancho Mirage,CA,92270,0,487000,30,3
+Rebecca,Mclucas,rmclucas@netscape.net,3038033624,451 Sunningdale Dr,Rancho Mirage,CA,92270,0,482000,30,3
+Glen,Halvorson,ghalvorson@earthlink.net,9168023970,15 Palma Dr,Rancho Mirage,CA,92270,7,470000,30,3
+Elliott,Bickle,etrshep@hotmail.com,7272075397,70100 Mirage Cove Dr Unit 53,Rancho Mirage,CA,92270,3,354000,30,3
+,Jhs Enterprises,909mag@gmail.com,9092613900,35066 Mission Hills Dr,Rancho Mirage,CA,92270,4,349000,30,3
+Danielle,Stein,danielle.stein@yahoo.com,8187233961,35607 Feliz Ct,Rancho Mirage,CA,92270,5,291000,30,3
+Jonathan,Temple,jrp.temple@gmail.com,6508626585,76289 Via Volterra,Indian Wells,CA,92210,8,4230000,28,3
+Dan,Ware,waredanj@gmail.com,5037895675,71250 N Thunderbird Ter,Rancho Mirage,CA,92270,3,3992000,28,3
+Bradley,Mcmurchie,bmcmurchie@tumac.com,5033147753,70553 Boothill Rd,Rancho Mirage,CA,92270,6,3564000,28,3
+Roy,Clark,marparlj@aol.com,8584548541,77635 N Via Villaggio,Indian Wells,CA,92210,4,3029000,28,3
+Christopher,Campbell,itswest@yahoo.com,3102164382,45699 W Via Villaggio,Indian Wells,CA,92210,5,2467000,28,3
+Patrick,Burton,patrick.burton@me.com,6128174226,238 Loch Lomond Rd,Rancho Mirage,CA,92270,5,2150000,28,3
+Richard,Pluss,richardpluss@yahoo.com,3034785685,12 Collegiate Cir,Rancho Mirage,CA,92270,3,1927000,28,3
+Craig,Wade,bmwwade@aol.com,8178325000,75984 Altamira Dr,Indian Wells,CA,92210,6,1846000,28,3
+Paul,Votta,paulvotta@yahoo.com,7606371962,79 Calle Manzanita,Rancho Mirage,CA,92270,4,1502000,28,3
+Victoria Jackson,Bridges,vbellejewels@gmail.com,9045532601,69706 Camino Pacifico,Rancho Mirage,CA,92270,1,1485000,28,3
+George,Haralambous,alexandrah44@gmail.com,6104205353,8 Queens Ct,Rancho Mirage,CA,92270,5,1348000,28,3
+,The Kelli B Tabb Trust,edfineman@yahoo.com,3102745955,10314 Sunningdale Dr,Rancho Mirage,CA,92270,0,1148000,28,3
+Allan,Kaye,sheila.kaye@yahoo.com,8189931580,34 Killian Way,Rancho Mirage,CA,92270,5,1135000,28,3
+Jeffrey I,Bedell,jeff_bedell@yahoo.com,8318691630,15 Vista Mirage Way,Rancho Mirage,CA,92270,2,966000,28,3
+,Thomas R Stewart Family Trust,andreamikha@gmail.com,5595614754,44140 Lakeside Dr,Indian Wells,CA,92210,0,794000,28,3
+Tony,Brasil,brsroofing@msn.com,9094963113,34065 Emily Way,Rancho Mirage,CA,92270,5,353000,28,3
+Merry,Abeel,michaelshunta@gmail.com,4254554242,70260 Highway 111 Spc 26,Rancho Mirage,CA,92270,4,166000,28,3
+Maral,Nigolian,maraln@me.com,3104905301,70418 Placerville Rd,Rancho Mirage,CA,92270,8,6925000,27,3
+,Wolff Family Revocable Trust,awolff@latinmail.com,4807847864,74695 Arroyo Dr,Indian Wells,CA,92210,0,2995000,27,3
+Douglas,Olson,fcsodeagler@aol.com,3196515901,75677 Camino De Paco,Indian Wells,CA,92210,7,2858000,27,3
+James,Younkin,younkintim@gmail.com,6149495863,76850 Lark Dr,Indian Wells,CA,92210,1,958800,27,3
+Jeffrey T,Jacobs,debbiefoltzb@yahoo.com,9495006468,45830 Pawnee Rd,Indian Wells,CA,92210,2,881000,27,3
+James,Halton Iii,npbjim@gmail.com,9499339321,75543 Calle Del Norte,Indian Wells,CA,92210,1,738000,27,3
+Paul,Ofer,pokoto@verizon.net,8056250387,72360 Rodeo Way,Rancho Mirage,CA,92270,9,539000,27,3
+Wendy,Schnetz,words2wendy@gmail.com,4422274905,78255 Cabrillo Ln Unit 121,Indian Wells,CA,92210,9,350000,27,3
+James,Johnson,jim@jmj5.com,9179912006,40720 Smoketree Ln,Rancho Mirage,CA,92270,1,5812000,26,3
+Steven,Lamb,jeffrey.a.lamb@gmail.com,7034057172,74645 Desert Arroyo Trl,Indian Wells,CA,92210,0,4846000,26,3
+Neil,Sherman,9nealsherman3@gmail.com,8188491733,79 Royal Saint Georges Way,Rancho Mirage,CA,92270,1,3788146,26,3
+Robert J,Rudolph,rjrud@comcast.net,2064985051,76181 Via Volterra,Indian Wells,CA,92210,0,3565000,26,3
+William,Sommerville,zawsommerville41@hotmail.com,9492937838,45722 Appian Way,Indian Wells,CA,92210,3,2148000,26,3
+Stuart,Ferguson,stuart@stuartferguson.biz,4085960627,9 Via Santa Ramona,Rancho Mirage,CA,92270,3,1636000,26,3
+Dj,Villas,lsuit@hotmail.com,2067796229,69817 Camino Pacifico,Rancho Mirage,CA,92270,4,1202000,26,3
+Richard,Seay,rics95829@email.com,9165951355,12 Mount Holyoke,Rancho Mirage,CA,92270,6,1122000,26,3
+,75684 Valle Vista Llc,stevemcle@aol.com,8185226434,75684 Valle Vis,Indian Wells,CA,92210,0,1034000,26,3
+I,Hanna,ahanna@dc.rr.com,7607764847,44134 Elkhorn Trl,Indian Wells,CA,92210,2,824000,26,3
+W,Clark,eugeneotto@pacbell.net,5099984158,62 Vista Mirage Way,Rancho Mirage,CA,92270,2,783000,26,3
+Randall,Uyeno,youwinno@gmail.com,4253011155,68 La Ronda Dr,Rancho Mirage,CA,92270,0,674000,26,3
+Robert N,Friedman,alycat1122@aol.com,8183994524,105 Mission Hills Dr,Rancho Mirage,CA,92270,2,595000,26,3
+Michael,Tutmarc,atutmarc@gmail.com,2064599375,123 Waterford Cir,Rancho Mirage,CA,92270,1,528000,26,3
+Allen,Brecke,abrecke@yahoo.com,5095390300,34790 Mission Hills Dr # 19,Rancho Mirage,CA,92270,0,402000,26,3
+Carlton,Burlison,carltonlb@earthlink.net,,35903 Matiliza Ct,Rancho Mirage,CA,92270,0,240000,26,3
+Kevin,Hughes,kristajhughes@yahoo.com,2063995801,74930 Hummingbird Ln,Indian Wells,CA,92210,6,5500000,25,3
+Michael,Banks,mbanks2547@aol.com,2064666462,45545 Appian Way,Indian Wells,CA,92210,8,2269000,25,3
+David,Fuhrman,davidafuhrman@gmail.com,5622012032,77375 Iroquois Dr,Indian Wells,CA,92210,8,2029000,25,3
+William J,Dodds,dodds4@hotmail.com,7604475259,46580 Quail Run Dr,Indian Wells,CA,92210,2,1402500,25,3
+Edward,Heim,edwardheim@yahoo.com,6462427247,66 Dartmouth Dr,Rancho Mirage,CA,92270,0,1269286,25,3
+John,Sapiente,luis.barrera1992@yahoo.com,8473347500,910 Island Dr Apt 313,Rancho Mirage,CA,92270,6,1159260,25,3
+Barry Craig,Wachter,yvonne@monitorsecuritysystems.com,6268311650,210 Desert Lakes Dr,Rancho Mirage,CA,92270,4,1015000,25,3
+Paul,Kaimakis,pkaimakis@yahoo.com,2066190107,40160 Via Los Altos,Rancho Mirage,CA,92270,0,869000,25,3
+Barbara,Pukenas,bubz@bellsouth.net,2158804689,184 Desert Lakes Dr,Rancho Mirage,CA,92270,4,868000,25,3
+Gary D,Koessler,wendy.koessler@yahoo.com,4253871108,76990 Sandpiper Dr,Indian Wells,CA,92210,1,842724,25,3
+,Rutter Family Revocable Living Trust,nrutterslp@aol.com,2069637217,75673 Calle Del Norte,Indian Wells,CA,92210,0,790000,25,3
+Kim J,Karbum,bkarbum@yahoo.com,5867471081,42 Durango Cir,Rancho Mirage,CA,92270,3,623000,25,3
+James Dudley,Mcgee,j.mcgee@greatfloors.com,2086599609,73 La Cerra Dr,Rancho Mirage,CA,92270,3,613835,25,3
+John Eugene,Miller,megan.miller.m@gmail.com,4258916662,69 Calle Encinitas,Rancho Mirage,CA,92270,2,606900,25,3
+Meredith,Rosenberg,meredithrosenburg@aol.com,5305811831,99 Augusta Dr,Rancho Mirage,CA,92270,2,586499,25,3
+Donald,Vandecoevering,jvandecoevering@webtv.net,5038302422,34179 Anita Way,Rancho Mirage,CA,92270,2,336600,25,3
+Carrie,Wallace,kitchensbylynn@verizon.net,7605677250,35602 Feliz Ct,Rancho Mirage,CA,92270,7,260000,25,3
+Family,Endee,almaendee@hotmail.com,5169469895,77701 N Via Villaggio,Indian Wells,CA,92210,5,2099000,24,3
+Medicial,Eisenhower,sarahrdreis@yahoo.com,7604061732,39800 Bob Hope Dr,Rancho Mirage,CA,92270,5,6099503,23,3
+William,Passo,passo@centurytel.net,9497596915,74450 Mountain Vista Dr,Palm Desert,CA,92210,2,4956000,23,3
+Frederick,Gould,gouldfb@yahoo.com,2066192354,74381 Desert Bajada Trl,Indian Wells,CA,92210,2,4278000,23,3
+Mark,Noue,mnoue@msn.com,5037817796,75205 Kavenish Way,Indian Wells,CA,92210,6,2433000,23,3
+Stacy,Schlinger,sschlinger01@gmail.com,7145010899,45766 Appian Way,Indian Wells,CA,92210,1,2022000,23,3
+Marilyn,Chernis,lchernis@gmail.com,7608355911,31 Birkdale Cir,Rancho Mirage,CA,92270,1,1622000,23,3
+Jason,Watson,tinawatsoncpa@gmail.com,7196410201,16 Alta Vis,Rancho Mirage,CA,92270,4,1610000,23,3
+Mauro,Manzi,johnlaff1@earthlink.net,3108807917,76061 Via Fiore,Indian Wells,CA,92210,2,1318000,23,3
+Cheryl,Holman,caholman@me.com,3144583583,11 Mount Holyoke,Rancho Mirage,CA,92270,5,1265000,23,3
+George,Laplante Jr,j.toulze@hotmail.com,7074786620,77027 Seneca Ln,Indian Wells,CA,92210,5,1206000,23,3
+John,Gibbs,robert.andersen@mailcity.com,4252543620,63 San Marino Cir,Rancho Mirage,CA,92270,1,862290,23,3
+,Wvc Rancho Mirage Inc,karynarptr@aol.com,2137003640,45 Oak Tree Dr,Rancho Mirage,CA,92270,1,846000,23,3
+Flora,Rosman,florarosman@comcast.net,3109360292,623 Hospitality Dr,Rancho Mirage,CA,92270,0,844000,23,3
+John M,Connell,sinnr2@aol.com,3034894300,34700 Mission Hills Dr,Rancho Mirage,CA,92270,0,487000,23,3
+Kerri,Smith,evansuit@yahoo.com,3034196617,899 Island Dr Apt 109,Rancho Mirage,CA,92270,4,478000,23,3
+Timothy,Carmel,t.carmel@carnaclaw.com,8055506170,21 Juan Carlos Dr,Rancho Mirage,CA,92270,0,478000,23,3
+Alejandro,Cervantes,alejandrocervantes@tampabay.rr.com,7605673045,33 Carla Ln,Rancho Mirage,CA,92270,0,118000,23,3
+Richard,Wayman,richard.v.wayman@tsocorp.com,5627439765,69524 Huerta Ct,Rancho Mirage,CA,92270,7,262000,22,3
+Edward,Poplawski,jancel_1027@hotmail.com,2067558111,74597 Palo Verde Dr,Indian Wells,CA,92210,2,4360500,21,3
+Rne,Capital,menglekirk@psemi.com,3104546978,40477 Desert Creek Ln,Rancho Mirage,CA,92270,0,4147000,21,3
+Howard,Tager,howardtager@gmail.com,8189159150,76339 Via Chianti,Indian Wells,CA,92210,5,4104000,21,3
+Kay,Constantine,kconstantine@netzero.net,2064856657,76081 Via Saturnia,Indian Wells,CA,92210,4,3364000,21,3
+,Jeffrey W Wade & Julie A Wade Liv Tr,wadewife4life@gmail.com,8184008644,76133 Via Volterra,Indian Wells,CA,92210,0,3013000,21,3
+Lee,Lin,lily_dindon@msn.com,5629645582,74 Via Bella,Rancho Mirage,CA,92270,6,1509000,21,3
+Donna,Caponi,byrnes1029@gmail.com,6176334040,719 Inverness Dr,Rancho Mirage,CA,92270,0,1005000,21,3
+Glen,Hammond,g.hammond@reliancefire.com,4255570144,44 Via Bella,Rancho Mirage,CA,92270,6,964000,21,3
+,Basswood Executive Llc,honorlynn.macklin@gmail.com,4047597840,619 Hospitality Dr,Rancho Mirage,CA,92270,0,655000,21,3
+Peter,Smith,johansmith@comcast.com,3055889388,18 Mesa Vista Ln,Rancho Mirage,CA,92270,4,4685232,19,3
+Claire,Gagan,clarsky@aol.com,2194656940,1 Primrose Ct,Rancho Mirage,CA,92270,3,2009000,18,3
+Christopher,Calhoon,calhoon72@gmail.com,8184583857,102 Mission Hills Dr,Rancho Mirage,CA,92270,0,520200,18,3
+Elizabeth Victoria,Gordon,reemelgo@hotmail.com,3232910492,35064 Mission Hills Dr,Rancho Mirage,CA,92270,3,421362,18,3
+Edwin,Hupp,angiebatson645@gmail.com,9492740850,143 Royal Saint Georges Way,Rancho Mirage,CA,92270,0,1811000,16,3
+Jpmorgan,Chase,edaltinsley@msn.com,2489092293,71939 Highway 111,Rancho Mirage,CA,92270,6,820229,16,3
