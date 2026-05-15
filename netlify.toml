@@ -8,6 +8,7 @@
   PNPM_VERSION = "9.15.0"
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
   VITE_N8N_WEBHOOK_URL = "https://dillabean.app.n8n.cloud/webhook/homefax/report"
+  SECRETS_SCAN_OMIT_PATHS = "node_modules/**,app/frontend/node_modules/**,**/*.d.ts"
 
 [functions]
   directory = "../../netlify/functions"
