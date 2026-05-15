@@ -133,10 +133,12 @@ exports.handler = async (event) => {
     { contact_lists: listIds.map(id => ({ contact_list_id: id })) }
   );
 
-  // Log it
-  db.kpi('cc_blast_sent', null, {
-    campaignId, activityId, subject, listIds, sched_status: sched.status,
-  }).catch(() => {});
+  // Log it (kpi is fire-and-forget, doesn't return a promise)
+  try {
+    db.kpi('cc_blast_sent', null, {
+      campaignId, activityId, subject, listIds, sched_status: sched.status,
+    });
+  } catch { /* ignore */ }
 
   return {
     statusCode: 200,
