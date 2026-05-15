@@ -93,10 +93,11 @@ exports.handler = async (event) => {
   const token = await loadCcToken();
   if (!token) return { statusCode: 500, headers: CORS, body: '{"error":"no CC token"}' };
 
-  // 1. Create campaign
+  // 1. Create campaign with lists embedded in the activity
   const name = campaignName || `${subject.slice(0,40)} - ${Date.now()}`;
   const create = await apiPost(CC_API, '/v3/emails', token, {
     name,
+    contact_list_ids: listIds,
     email_campaign_activities: [{
       format_type: 5,
       from_name:    fromName,
@@ -105,6 +106,7 @@ exports.handler = async (event) => {
       subject,
       html_content: html,
       permalink_name: '',
+      contact_list_ids: listIds,
     }],
   });
 
@@ -119,17 +121,11 @@ exports.handler = async (event) => {
   const campaignId = create.data?.campaign_id;
   if (!activityId) return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'no activity id', data: create.data }) };
 
-  // 2. Schedule send with attached lists (same pattern as send-cc-newsletter.js)
+  // 2. Schedule send — POST to /v3/emails/activities/{activity_id}/schedules
   const sched = await apiPost(CC_API,
-    '/v3/activities/email_schedule',
+    `/v3/emails/activities/${activityId}/schedules`,
     token,
-    {
-      scheduled_date: '0',
-      campaign_activities: [{
-        campaign_activity_id: activityId,
-        contact_list_ids: listIds,
-      }],
-    }
+    { scheduled_date: '0' }   // immediate
   );
 
   // Log it (kpi is fire-and-forget, doesn't return a promise)
