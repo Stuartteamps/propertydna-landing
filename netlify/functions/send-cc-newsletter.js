@@ -140,10 +140,11 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <table width="100%"><tr><td>The Stuart Team</td><td align="right">${weekLabel}</td></tr></table>
 </td></tr>
 <tr><td><img src="https://files.constantcontact.com/5cd96ebd701/1071b613-147b-4079-89fa-195924b75343.png" width="100%" style="display:block;"></td></tr>
-<tr><td align="center" style="padding:40px;">
+<tr><td align="center" style="padding:40px 40px 24px;">
 <div style="font-family:Georgia,serif;font-size:38px;">The Stuart Team Weekly</div>
 <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9a8671;padding-top:10px;">Luxury Real Estate &bull; Market Insight &bull; Desert Lifestyle</div>
 </td></tr>
+<tr><td style="padding:0 60px 16px;font-size:17px;line-height:1.7;color:#2c241d;">Hi {{contact.first_name}},</td></tr>
 <tr><td align="center" style="padding:0 60px 30px;font-size:16px;line-height:1.8;">${marketNarrative}</td></tr>
 <tr><td style="padding:0 40px;font-family:Georgia,serif;font-size:26px;">This Week's Weather</td></tr>
 <tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">${weatherText}<br><br>
@@ -165,9 +166,10 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <tr><td style="padding:0 40px 40px;font-size:15px;line-height:1.8;">See what actually sold this week across the valley — the most accurate read on where the market stands.<br><br>
 <a href="${soldLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Recent Sales</a></td></tr>
 <tr><td style="padding:40px;background:#f4ede4;text-align:center;">
-<div style="font-family:Georgia,serif;font-size:28px;">Property DNA</div>
-<p style="font-size:15px;line-height:1.8;">Before you buy or sell, understand the real story behind the property. Property DNA gives you the data-driven intelligence most buyers never see.</p>
-<a href="${SITE}" target="_blank" style="background:#1f1a15;color:#fff;padding:14px 26px;text-decoration:none;">Request Your Free Report</a>
+<div style="font-family:Georgia,serif;font-size:28px;">Your Property DNA Report — Free</div>
+<p style="font-size:15px;line-height:1.8;color:#2c241d;">{{contact.first_name}}, before you buy or sell, see the real story your property tells. Property DNA shows comps, valuation, permits, flood risk, and a 5&#8209;year trajectory most buyers never get to see.</p>
+<p style="font-size:14px;line-height:1.7;color:#5a4e3f;margin:6px 0 18px;"><strong>No card. 60 seconds. Delivered to your inbox.</strong></p>
+<a href="${SITE}/?ref=newsletter&email={{contact.email}}&firstName={{contact.first_name}}&lastName={{contact.last_name}}" target="_blank" style="background:#1f1a15;color:#fff;padding:14px 26px;text-decoration:none;">Get My Free Report &rarr;</a>
 </td></tr>
 <tr><td align="center" style="padding:30px;">
 <a href="https://instagram.com/danielstuartps" style="margin:5px;background:#1f1a15;color:#fff;padding:10px 18px;text-decoration:none;">Instagram</a>

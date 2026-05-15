@@ -99,17 +99,25 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
     idxUrl: '', mlsNumber: '', listingAgent: '', listingBrokerage: '',
   });
 
-  // Pre-fill from URL params (email campaigns pass ?email=&name=&address=)
+  // Pre-fill from URL params. Newsletter CC merge tags pass first/last
+  // separately; legacy campaigns pass combined `name` and `address`.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const emailParam   = params.get('email');
     const nameParam    = params.get('name');
+    const firstParam   = params.get('firstName');
+    const lastParam    = params.get('lastName');
     const addressParam = params.get('address');
+    const cityParam    = params.get('city');
+    const composedName = nameParam
+      ? decodeURIComponent(nameParam)
+      : [firstParam, lastParam].filter(Boolean).map(decodeURIComponent).join(' ').trim();
     setForm(prev => ({
       ...prev,
-      ...(emailParam   ? { email:    decodeURIComponent(emailParam)   } : {}),
-      ...(nameParam    ? { fullName:  decodeURIComponent(nameParam)    } : {}),
-      ...(addressParam ? { address:   decodeURIComponent(addressParam) } : {}),
+      ...(emailParam     ? { email:    decodeURIComponent(emailParam)   } : {}),
+      ...(composedName   ? { fullName: composedName                     } : {}),
+      ...(addressParam   ? { address:  decodeURIComponent(addressParam) } : {}),
+      ...(cityParam      ? { city:     decodeURIComponent(cityParam)    } : {}),
     }));
   }, []);
   const [showIdxFields, setShowIdxFields] = useState(false);
