@@ -270,26 +270,26 @@ async function sendViaCC(token, subject, html, weekLabel) {
   const activityId = primary?.campaign_activity_id;
   if (!activityId) throw new Error(`CC response missing campaign_activity_id: ${JSON.stringify(createRes.data).slice(0, 400)}`);
 
-  // 2. Attach the contact list by PUTting the full activity with contact_list_ids.
-  // CC v3 verified pattern (inspected from a recently-sent campaign): the lists
-  // live on the activity object itself, updated via PUT to the activity URL.
-  const existing = await apiCall('GET', CC_API, `/v3/emails/activities/${activityId}`, token, {});
-  if (existing.status >= 300) {
-    throw new Error(`CC get activity failed: ${existing.status} ${JSON.stringify(existing.data).slice(0, 200)}`);
-  }
-  const activityBody = {
-    ...existing.data,
+  // 2. Attach the contact list. PUT the full activity payload (CC v3 requires
+  // the complete activity body, not a partial update).
+  const listRes = await apiPut(CC_API, `/v3/emails/activities/${activityId}`, token, {
+    format_type:    5,
+    from_name:      SENDER_NAME,
+    from_email:     SENDER,
+    reply_to_email: REPLY_TO,
+    subject,
+    html_content:   html,
     contact_list_ids: [CC_LIST_ID],
-  };
-  delete activityBody.campaign_activity_id;
-  delete activityBody.campaign_id;
-  delete activityBody.role;
-  delete activityBody.current_status;
-  delete activityBody.created_at;
-  delete activityBody.updated_at;
-  const listRes = await apiPut(CC_API, `/v3/emails/activities/${activityId}`, token, activityBody);
+    physical_address_in_footer: {
+      address_line1: '777 E Tahquitz Canyon Way',
+      city:          'Palm Springs',
+      state_code:    'CA',
+      postal_code:   '92262',
+      country_code:  'US',
+    },
+  });
   if (listRes.status >= 300) {
-    throw new Error(`CC attach list (PUT activity) failed: ${listRes.status} ${JSON.stringify(listRes.data).slice(0, 300)}`);
+    throw new Error(`CC attach list failed: ${listRes.status} ${JSON.stringify(listRes.data).slice(0, 300)}`);
   }
 
   // 3. Schedule send (immediate)
