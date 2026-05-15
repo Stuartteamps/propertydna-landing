@@ -119,18 +119,17 @@ exports.handler = async (event) => {
   const campaignId = create.data?.campaign_id;
   if (!activityId) return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'no activity id', data: create.data }) };
 
-  // 2. Schedule immediate send
+  // 2. Schedule send with attached lists (same pattern as send-cc-newsletter.js)
   const sched = await apiPost(CC_API,
-    `/v3/emails/activities/${activityId}/schedules`,
+    '/v3/activities/email_schedule',
     token,
-    { scheduled_date: '0' }   // immediate
-  );
-
-  // 3. Attach list ids to the activity (PUT to update target lists)
-  const listAttach = await apiPost(CC_API,
-    `/v3/emails/activities/${activityId}/email_activity_contact_lists`,
-    token,
-    { contact_lists: listIds.map(id => ({ contact_list_id: id })) }
+    {
+      scheduled_date: '0',
+      campaign_activities: [{
+        campaign_activity_id: activityId,
+        contact_list_ids: listIds,
+      }],
+    }
   );
 
   // Log it (kpi is fire-and-forget, doesn't return a promise)
@@ -140,16 +139,18 @@ exports.handler = async (event) => {
     });
   } catch { /* ignore */ }
 
+  const ok = sched.status === 201 || sched.status === 200;
+
   return {
-    statusCode: 200,
+    statusCode: ok ? 200 : 502,
     headers: CORS,
     body: JSON.stringify({
-      ok: true,
+      ok,
       campaignId,
       activityId,
       schedule: sched.data,
-      listAttach: listAttach.data,
-      message: 'Campaign created and scheduled. Check CC dashboard for delivery progress.',
+      schedule_http: sched.status,
+      message: ok ? 'Campaign created and scheduled. CC will send shortly.' : 'Created but schedule failed — manual send from CC dashboard.',
     }),
   };
 };
