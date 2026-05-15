@@ -57,6 +57,11 @@
 [functions."cc-followup-scheduler"]
   schedule = "0 16 * * *"
 
+# Daily 10 AM PT — nurture inbound form submitters who didn't subscribe.
+# 3-touch sequence: Day 2 (educate), Day 5 (market move), Day 10 (personal).
+[functions."submitter-drip"]
+  schedule = "0 17 * * *"
+
 # Apple Universal Links — must NOT be SPA-redirected, must have correct Content-Type
 [[redirects]]
   from = "/.well-known/apple-app-site-association"

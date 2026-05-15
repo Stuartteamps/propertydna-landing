@@ -79,6 +79,11 @@ export default function PedigreeIndex() {
             We've systematically classified {total.toLocaleString()} Coachella Valley properties by architectural and cultural pedigree.
             Verified celebrity provenance. Verified architect attribution. Indexed against Palm Springs Modernism Committee, Preservation Foundation, and primary source archives.
           </p>
+          <div style={{ marginTop: 14, fontSize: 13 }}>
+            <Link to="/blog/luxury-home-provenance-pedigree-classification" style={{ color: '#fbbf24', textDecoration: 'underline', textDecorationThickness: 1 }}>Read the full methodology →</Link>
+            <span style={{ color: '#475569', margin: '0 10px' }}>·</span>
+            <Link to="/architects" style={{ color: '#fbbf24', textDecoration: 'underline', textDecorationThickness: 1 }}>Browse the 11 documented architects</Link>
+          </div>
         </div>
 
         {/* Tier breakdown — large numbers */}

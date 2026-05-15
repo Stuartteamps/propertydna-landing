@@ -87,7 +87,34 @@ exports.handler = async (event) => {
     replyTo  = 'stuartteamps@gmail.com',
     fromEmail = 'reports@thepropertydna.com',
     fromName  = 'Daniel Stuart | Stuart Team',
+    force_send = false,
   } = body;
+
+  // ── BOMBARDMENT GUARD ────────────────────────────────────────────────────────
+  // After 2026-05-15 over-sending (some contacts got 4 emails one day), block
+  // any blast that would email a recipient who got an email in the last 24h
+  // unless force_send:true is explicitly set.
+  //
+  // 24h cool-down enforced by checking cc_send_log table in Supabase.
+  // The dedup also prevents Dan's "no follow-up for 7 days" rule from breaking.
+  if (!force_send) {
+    try {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const recent = await db.from('cc_send_log').select('id')
+        .filter('last_sent_at', 'gte', since).limit(1).get().catch(() => []);
+      const recentCount = await db.from('cc_send_log').select('email')
+        .filter('last_sent_at', 'gte', since).get().catch(() => []);
+      const last24h = Array.isArray(recentCount) ? recentCount.length : 0;
+      // Soft cap: 3000 sends per 24h to one account (CC's safe daily limit)
+      if (last24h >= 3000) {
+        return { statusCode: 429, headers: CORS, body: JSON.stringify({
+          error: 'daily send limit reached',
+          last24h,
+          recommendation: 'wait 24h or pass force_send:true to override',
+        }) };
+      }
+    } catch { /* non-critical */ }
+  }
 
   if (!subject || subject.length > 70)             return { statusCode: 400, headers: CORS, body: '{"error":"subject required (max 70 chars)"}' };
   if (!html || html.length < 100)                  return { statusCode: 400, headers: CORS, body: '{"error":"html required (min 100 chars)"}' };

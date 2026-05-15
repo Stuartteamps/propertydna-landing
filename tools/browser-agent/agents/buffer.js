@@ -189,13 +189,13 @@ async function run() {
   if (!text) {
     // Luxury home provenance + investment intelligence positioning
     const FALLBACK = [
-      "PropertyDNA: institutional-grade dossiers for $5M+ luxury homes. Verified celebrity provenance, architect authentication, scarcity indexing. https://www.thepropertydna.com",
-      "70% of 'celebrity-owned' real estate claims aren't documentable. We verify provenance against deed history + primary source press. https://www.thepropertydna.com",
-      "Verified Albert Frey, John Lautner, and Richard Neutra commissions in Palm Springs trade once every 4-7 years. The scarcity premium is real, but only on authenticated attribution. https://www.thepropertydna.com",
-      "For $30M architectural estates, the dossier matters as much as it does for a Patek 1518 or a 1962 Ferrari. We build the documentation layer the auction houses don't. https://www.thepropertydna.com",
-      "Insurance replacement cost on irreplaceable estates often exceeds market value by 20%+. The data tells the asset story most appraisals miss. https://www.thepropertydna.com",
-      "Cross-asset luxury benchmarking: how does Coachella Valley architectural real estate perform vs Patek Philippe, Domaine Romanée-Conti, and the S&P 500? https://www.thepropertydna.com",
-      "We've documented 47 verified Albert Frey residential commissions in Palm Springs. Estate documentation that prevents value loss at sale or inheritance. https://www.thepropertydna.com",
+      "52 verified pedigree dossiers across Palm Springs and the Coachella Valley. Verified celebrity ownership, verified architect attribution, primary-source documentation. https://www.thepropertydna.com/pedigree-index",
+      "16,787 Coachella Valley properties pedigree-classified into A/B/C/D tiers. The first systematic index of architectural and cultural pedigree at the top of luxury real estate. https://www.thepropertydna.com/pedigree-index",
+      "The Kaufmann Desert House dossier — Richard Neutra 1946, Slim Aarons 'Poolside Gossip', Barry Manilow ownership. Live provenance file: https://www.thepropertydna.com/dossier/504292010",
+      "The Bob Hope House dossier — John Lautner 1973, rebuilt after the original burned. Architecture meets Hollywood provenance: https://www.thepropertydna.com/dossier/510260033",
+      "Albert Frey designed 47 documented Palm Springs commissions. We've pedigree-classified every one. https://www.thepropertydna.com/architect/albert-frey",
+      "13 named Palm Springs luxury neighborhoods systematically indexed — Movie Colony, Old Las Palmas, Vista Las Palmas, Thunderbird Heights, Smoke Tree Ranch, more. https://www.thepropertydna.com/pedigree-index",
+      "For a Patek 1518, you get verified provenance papers. For a $50M architectural estate, you typically don't. PropertyDNA builds the dossier the auction houses charge 15% for. https://www.thepropertydna.com/press",
     ];
     const idx = ((tracker.lastIndex ?? -1) + 1) % FALLBACK.length;
     text = FALLBACK[idx];

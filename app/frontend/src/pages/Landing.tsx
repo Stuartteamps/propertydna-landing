@@ -11,6 +11,7 @@ import AddressAutocomplete, { type AddressResult } from '@/components/AddressAut
 import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
 import PropertyTicker from '@/components/PropertyTicker';
+import FeaturedDossiers from '@/components/FeaturedDossiers';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -355,6 +356,9 @@ export default function Landing() {
           ))}
         </div>
       </div>
+
+      {/* ── FEATURED VERIFIED DOSSIERS ─────────────────────────────── */}
+      <FeaturedDossiers />
 
       {/* ── CAPABILITY STACK ───────────────────────────────────────── */}
       <section id="platform" className="px-6 md:px-12 py-24 md:py-32" style={{ background: '#0A0908' }}>
