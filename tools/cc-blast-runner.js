@@ -25,7 +25,7 @@ const HTML = `<!DOCTYPE html>
 <table width="580" cellpadding="0" cellspacing="0" style="background:#fff;max-width:580px;border:1px solid #e8e4dc;">
 
 <tr><td style="padding:32px 40px 16px;font-size:14px;color:#1f1a15;line-height:1.7;">
-<p style="margin:0 0 16px;">Hi {{contact.first_name}},</p>
+<p style="margin:0 0 16px;">Hi there,</p>
 
 <p style="margin:0 0 16px;">Hope you've been well. Quick note from my side.</p>
 
@@ -37,7 +37,7 @@ const HTML = `<!DOCTYPE html>
 
 <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;"><tr>
 <td bgcolor="#1f1a15" style="border-radius:2px;background:#1f1a15;">
-<a href="https://thepropertydna.com/?ref=cc_personal_outreach_may15&email={{contact.email}}&firstName={{contact.first_name}}" target="_blank" style="display:inline-block;padding:14px 28px;color:#fff;font-size:14px;text-decoration:none;letter-spacing:0.05em;">
+<a href="https://thepropertydna.com/?ref=cc_personal_outreach_may15&email={{contact.email}}&firstName=there" target="_blank" style="display:inline-block;padding:14px 28px;color:#fff;font-size:14px;text-decoration:none;letter-spacing:0.05em;">
 Pull My Free Report →
 </a>
 </td>
