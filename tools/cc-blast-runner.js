@@ -95,6 +95,9 @@ async function main() {
     html: HTML,
     listIds: [LIST_ALL_CONTACTS],
     campaignName: `PropertyDNA Personal Outreach - May 15 - ${Date.now()}`,
+    fromEmail: 'stuartteamps@gmail.com',         // CC-verified sender
+    fromName:  'Daniel Stuart | Stuart Team',
+    replyTo:   'stuartteamps@gmail.com',
   }, { 'x-internal-key': INTERNAL_KEY });
 
   console.log('Result:', JSON.stringify(res.d, null, 2));
