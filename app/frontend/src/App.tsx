@@ -34,6 +34,7 @@ import BlogPost from "./pages/BlogPost";
 import Privacy from "./pages/Privacy";
 import Waitlist from "./pages/Waitlist";
 import Dossier from "./pages/Dossier";
+import LuxuryInventory from "./pages/LuxuryInventory";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const AppRoutes = () => (
     <Route path="/sample-report" element={<SampleReport />} />
     <Route path="/report/view/:token" element={<ReportViewByToken />} />
     <Route path="/dossier/:apn" element={<Dossier />} />
+    <Route path="/luxury-inventory" element={<LuxuryInventory />} />
     <Route path="/report/:id" element={<ReportView />} />
     <Route path="/professionals" element={<Professionals />} />
     <Route path="/market-heatmaps" element={<MarketHeatMap />} />
