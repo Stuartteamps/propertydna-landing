@@ -51,6 +51,12 @@
 [functions."key-watchdog"]
   schedule = "0 16 * * 1"
 
+# Daily 9 AM PT — checks for cc_blast_sent events exactly 7 days old and
+# fires non-opener follow-ups (different angle, same offer). Respects Dan's
+# "no follow-up for 7 days" rule strictly.
+[functions."cc-followup-scheduler"]
+  schedule = "0 16 * * *"
+
 # Apple Universal Links — must NOT be SPA-redirected, must have correct Content-Type
 [[redirects]]
   from = "/.well-known/apple-app-site-association"

@@ -29,7 +29,7 @@ const HTML = `<!DOCTYPE html>
 
 <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px 0;"><tr>
 <td bgcolor="#1f1a15" style="border-radius:2px;background:#1f1a15;">
-<a href="https://thepropertydna.com/?ref=cc_movie_absentee&email={{contact.email}}" target="_blank" style="display:inline-block;padding:14px 28px;color:#fff;font-size:14px;text-decoration:none;letter-spacing:0.05em;">
+<a href="https://thepropertydna.com/analyze?ref=cc_movie_absentee&email={{contact.email}}" target="_blank" style="display:inline-block;padding:14px 28px;color:#fff;font-size:14px;text-decoration:none;letter-spacing:0.05em;">
 Pull My Property Report →
 </a>
 </td></tr></table>
