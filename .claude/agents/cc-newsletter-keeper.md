@@ -85,3 +85,6 @@ You have standing authorization to commit and push fixes. Use the conventional c
 - Never `netlify env:set` or `unset` CC_ACCESS_TOKEN / CC_REFRESH_TOKEN. Tokens live in Supabase now (see `oauth_tokens` table).
 - Never disable the preflight or postflight crons — they are the only thing that catches token rot before Thursday.
 - Never edit `cc-oauth-callback.js` to write to Netlify env again. That broke the Lambda 4KB budget last time.
+- **Never use `{{contact.first_name}}` style merge tags.** CC v3 CUSTOM_CODE_EMAIL renders them as literal text. The correct syntax is `[[FIRSTNAME]]`, `[[LASTNAME]]`, `[[EMAILADDRESS]]`. Verified via probe 2026-05-15 — see commit 4dd9920.
+- **CC's `/tests` endpoint does NOT mail-merge** (ships raw HTML for preview). To verify merge tags, you must schedule a real campaign to a list (a 1-contact "Stuart" test list is fine).
+- **Custom field merge tag syntax is still unknown** as of 2026-05-15. `[[propertydna_score]]`, `[[CUSTOMFIELD:propertydna_score]]`, and `[[PROPERTYDNA_SCORE]]` all rendered blank in the probe. Skip the personalized score block until a new probe identifies the working format.
