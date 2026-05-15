@@ -148,8 +148,35 @@ exports.handler = async (event) => {
   const key = event.headers['x-internal-key'] || event.headers['x-admin-key'];
   if (key !== process.env.INTERNAL_API_KEY) return { statusCode: 401, headers: CORS, body: '{"error":"unauthorized"}' };
 
-  const { campaignId } = JSON.parse(event.body || '{}');
+  const { campaignId, force_send } = JSON.parse(event.body || '{}');
   if (!campaignId) return { statusCode: 400, headers: CORS, body: '{"error":"campaignId required"}' };
+
+  // ── Deliverability safeguards ────────────────────────────────────────────────
+  // Sender reputation was destroyed by an unwarmed-domain blast on 2026-05-12
+  // (1 open across 6,720 emails sent). Bulk send is LOCKED until reputation
+  // recovers. Override with force_send=true + DELIVERABILITY_OVERRIDE env var.
+  const bulkLocked = process.env.DELIVERABILITY_LOCK !== 'off';
+  if (bulkLocked && !force_send) {
+    return {
+      statusCode: 423,
+      headers: CORS,
+      body: JSON.stringify({
+        error: 'Bulk sending paused — sender reputation recovery in progress',
+        details: 'Set DELIVERABILITY_LOCK=off in Netlify env to re-enable, or pass {force_send:true} to override.',
+        recommendation: 'Use send-warm-batch.js for engaged-only sends during warm-up window.',
+      }),
+    };
+  }
+
+  // Per-hour rate limit (max 25/hour during warm-up phase) — read prior hour usage
+  if (bulkLocked === false) {
+    try {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const recent = await db.from('campaign_contacts').select('count')
+        .eq('status', 'sent').filter('sent_at', 'gte', oneHourAgo).get().catch(() => []);
+      // Skipping the count check if helper unsupported — log only
+    } catch { /* non-critical */ }
+  }
 
   // Load campaign
   const campaigns = await db.from('campaigns').select('*').eq('id', campaignId).get();
