@@ -36,6 +36,8 @@ import Waitlist from "./pages/Waitlist";
 import Dossier from "./pages/Dossier";
 import LuxuryInventory from "./pages/LuxuryInventory";
 import PedigreeIndex from "./pages/PedigreeIndex";
+import Neighborhood from "./pages/Neighborhood";
+import DossierRequestsAdmin from "./pages/admin/DossierRequests";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +54,8 @@ const AppRoutes = () => (
     <Route path="/dossier/:apn" element={<Dossier />} />
     <Route path="/luxury-inventory" element={<LuxuryInventory />} />
     <Route path="/pedigree-index" element={<PedigreeIndex />} />
+    <Route path="/neighborhood/:slug" element={<Neighborhood />} />
+    <Route path="/admin/dossier-requests" element={<DossierRequestsAdmin />} />
     <Route path="/report/:id" element={<ReportView />} />
     <Route path="/professionals" element={<Professionals />} />
     <Route path="/market-heatmaps" element={<MarketHeatMap />} />

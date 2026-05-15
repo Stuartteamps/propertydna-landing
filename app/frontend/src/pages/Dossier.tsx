@@ -131,7 +131,29 @@ export default function Dossier() {
         if (!cancelled) { setError('Dossier not found'); setLoading(false); }
         return;
       }
-      if (!cancelled) setProperty(prop as Property);
+      if (!cancelled) {
+        setProperty(prop as Property);
+        // Set page title + OG tags for SEO/social
+        const title = `${prop.address}, ${prop.city} — PropertyDNA Dossier`;
+        document.title = title;
+        const setMeta = (name: string, content: string, prop = false) => {
+          const attr = prop ? 'property' : 'name';
+          let m = document.querySelector(`meta[${attr}="${name}"]`);
+          if (!m) { m = document.createElement('meta'); m.setAttribute(attr, name); document.head.appendChild(m); }
+          m.setAttribute('content', content);
+        };
+        const desc = `Verified provenance dossier for ${prop.address}, ${prop.city}` +
+          (prop.architect_attribution ? ` — designed by ${prop.architect_attribution}` : '') +
+          (prop.pedigree_neighborhood ? ` · ${prop.pedigree_neighborhood}` : '') + '.';
+        setMeta('description', desc);
+        setMeta('og:title', title, true);
+        setMeta('og:description', desc, true);
+        setMeta('og:type', 'article', true);
+        setMeta('og:url', `https://www.thepropertydna.com/dossier/${prop.apn}`, true);
+        setMeta('twitter:card', 'summary_large_image');
+        setMeta('twitter:title', title);
+        setMeta('twitter:description', desc);
+      }
 
       const [ownersRes, eventsRes, commRes] = await Promise.all([
         supabase.from('notable_owners').select('*').eq('apn', apn).order('ownership_start', { ascending: true }),
@@ -174,8 +196,26 @@ export default function Dossier() {
     </div>;
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Residence",
+    "name": `${property.address}, ${property.city}`,
+    "url": `https://www.thepropertydna.com/dossier/${property.apn}`,
+    "address": { "@type": "PostalAddress", "streetAddress": property.address, "addressLocality": property.city, "addressRegion": property.state },
+    ...(architect ? {
+      "subjectOf": {
+        "@type": "CreativeWork",
+        "creator": { "@type": "Person", "name": architect.name, "jobTitle": "Architect" },
+      }
+    } : {}),
+    ...(owners.length > 0 ? {
+      "owner": owners.map(o => ({ "@type": "Person", "name": o.owner_name, ...(o.owner_role ? { "jobTitle": o.owner_role } : {}) })),
+    } : {}),
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#e5e7eb', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '60px 24px' }}>
 
         {/* Header */}

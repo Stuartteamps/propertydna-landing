@@ -97,8 +97,17 @@ function urlBlock({ loc, priority = '0.5', changefreq = 'monthly', lastmod }) {
   // Neighborhood filter views
   NEIGHBORHOODS.forEach(h => urls.push(urlBlock({
     loc: `/luxury-inventory?neighborhood=${encodeURIComponent(h)}`,
-    priority: '0.9', changefreq: 'weekly', lastmod: today,
+    priority: '0.85', changefreq: 'weekly', lastmod: today,
   })));
+
+  // Neighborhood overview pages (dedicated SEO landing pages)
+  NEIGHBORHOODS.forEach(h => {
+    const slug = h.toLowerCase().replace(/\s+/g, '-');
+    urls.push(urlBlock({
+      loc: `/neighborhood/${slug}`,
+      priority: '0.95', changefreq: 'weekly', lastmod: today,
+    }));
+  });
 
   // A-tier dossiers (highest priority)
   aTier.forEach(p => urls.push(urlBlock({

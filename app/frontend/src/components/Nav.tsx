@@ -14,8 +14,9 @@ const linkStyle: React.CSSProperties = {
 // Map and IntellaGraph AI showcase the data depth. Everything else moves to Footer.
 const navLinks = [
   { label: 'Analyze',         href: '/analyze' },
+  { label: 'Luxury Index',    href: '/pedigree-index' },
+  { label: 'Inventory',       href: '/luxury-inventory' },
   { label: 'Heat Map',        href: '/market-heatmaps' },
-  { label: 'IntellaGraph AI', href: '/intellagraph' },
   { label: 'About',           href: '/about' },
 ];
 
