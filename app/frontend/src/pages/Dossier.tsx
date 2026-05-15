@@ -238,9 +238,10 @@ export default function Dossier() {
               </span>
             )}
             {property.pedigree_neighborhood && (
-              <span style={{ padding: '6px 14px', background: 'transparent', color: '#e5e7eb', border: '1px solid #334155', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
-                {property.pedigree_neighborhood}
-              </span>
+              <Link to={`/neighborhood/${property.pedigree_neighborhood.toLowerCase().replace(/\s+/g, '-')}`}
+                style={{ padding: '6px 14px', background: 'transparent', color: '#e5e7eb', border: '1px solid #334155', borderRadius: 4, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                {property.pedigree_neighborhood} →
+              </Link>
             )}
             {property.luxury_tier && TIER_LABELS[property.luxury_tier] && (
               <span style={{ padding: '6px 14px', background: 'transparent', color: '#fbbf24', border: '1px solid #fbbf24', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
@@ -268,7 +269,10 @@ export default function Dossier() {
             </h2>
             <div style={{ background: '#111827', padding: 28, borderRadius: 6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-                <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 28, margin: 0, color: '#fafafa', fontWeight: 400 }}>{architect.name}</h3>
+                <Link
+                  to={`/architect/${architect.name.toLowerCase().replace(/\./g, '').replace(/\s+/g, '-')}`}
+                  style={{ fontFamily: 'Georgia, serif', fontSize: 28, margin: 0, color: '#fafafa', fontWeight: 400, textDecoration: 'none', borderBottom: '1px dotted #fbbf24' }}
+                >{architect.name}</Link>
                 <span style={{ fontSize: 11, color: '#9ca3af' }}>
                   {architect.birth_year}{architect.death_year ? `–${architect.death_year}` : '–present'}
                 </span>

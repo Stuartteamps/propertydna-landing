@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://propertydna.com/sitemap.xml
+# Block private/admin areas
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /auth-callback
+Disallow: /stripe-test
+
+Sitemap: https://www.thepropertydna.com/sitemap.xml

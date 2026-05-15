@@ -55,7 +55,15 @@ export default function LuxuryInventory() {
   const [neighborhood, setNeighborhood] = useState<string>('');
   const [architectVerified, setArchitectVerified] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
+  const [searchQ, setSearchQ] = useState<string>('');
+  const [debouncedQ, setDebouncedQ] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+
+  // Debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(searchQ.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchQ]);
 
   // Load counts on mount
   useEffect(() => {
@@ -92,6 +100,7 @@ export default function LuxuryInventory() {
       if (tier) query = query.eq('pedigree_tier', tier);
       if (neighborhood) query = query.eq('pedigree_neighborhood', neighborhood);
       if (architectVerified) query = query.eq('architect_verified', true);
+      if (debouncedQ) query = query.ilike('address', `%${debouncedQ}%`);
 
       query = query
         .order('has_provenance_dossier', { ascending: false })
@@ -106,7 +115,10 @@ export default function LuxuryInventory() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [tier, neighborhood, architectVerified, page]);
+  }, [tier, neighborhood, architectVerified, debouncedQ, page]);
+
+  // Reset to first page on search change
+  useEffect(() => { setPage(0); }, [debouncedQ]);
 
   const totalPages = useMemo(() => Math.ceil(totalCount / PAGE_SIZE), [totalCount]);
 
@@ -137,6 +149,21 @@ export default function LuxuryInventory() {
             16,787 architecturally and culturally pedigreed properties across Palm Springs and the Coachella Valley.
             Filter by tier (A → D), named neighborhood, or verified architect attribution. Each card opens its full provenance dossier.
           </p>
+        </div>
+
+        {/* Search bar */}
+        <div style={{ marginBottom: 18 }}>
+          <input
+            type="search"
+            placeholder="Search by address or street name..."
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+            style={{
+              width: '100%', padding: '14px 18px', fontSize: 15,
+              background: '#111827', color: '#fafafa', border: '1px solid #334155',
+              borderRadius: 6, outline: 'none',
+            }}
+          />
         </div>
 
         {/* Filter rows */}

@@ -72,6 +72,7 @@ const BLOG_POSTS = [
   { slug: 'propertydna-lead-to-listing-conversion',    date: '2025-06-19' },
   { slug: 'future-of-real-estate-ai-property-analysis', date: '2025-06-26' },
   { slug: 'why-sellers-choose-propertydna-realtors',   date: '2025-07-03' },
+  { slug: 'luxury-home-provenance-pedigree-classification', date: '2026-05-15' },
 ];
 
 function urlBlock({ loc, priority = '0.5', changefreq = 'monthly', lastmod }) {

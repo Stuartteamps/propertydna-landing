@@ -55,12 +55,14 @@ const SOCIAL = [
 
 const links = [
   { label: 'Analyze',         href: '/analyze' },
-  { label: 'Sample Report',   href: '/sample-report' },
+  { label: 'Luxury Index',    href: '/pedigree-index' },
+  { label: 'Inventory',       href: '/luxury-inventory' },
   { label: 'Heat Maps',       href: '/market-heatmaps' },
   { label: 'IntellaGraph AI', href: '/intellagraph' },
   { label: 'How It Works',    href: '/how-it-works' },
   { label: 'Pricing',         href: '/pricing' },
   { label: 'About',           href: '/about' },
+  { label: 'Press',           href: '/press' },
   { label: 'Contact',         href: '/contact' },
   { label: 'Privacy',         href: '/privacy' },
 ];
