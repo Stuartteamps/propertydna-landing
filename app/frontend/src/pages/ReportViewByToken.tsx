@@ -6,6 +6,7 @@ import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import { computeDNAScore } from '@/lib/dnaScore';
 import { NeighborhoodBreakdown } from '@/components/report/NeighborhoodBreakdown';
+import LuxuryDossierSection from '@/components/LuxuryDossierSection';
 
 // Lazy-load Leaflet — isolates any crash to just the map section
 const ReportMap = lazy(() => import('@/components/report/ReportMap'));
@@ -460,6 +461,11 @@ export default function ReportViewByToken() {
             </Section>
           );
         })()}
+
+        {/* Luxury Provenance Dossier — only renders if has_provenance_dossier=true */}
+        {(report?.apn || prop?.apn || sub?.apn) && (
+          <LuxuryDossierSection apn={((report as any)?.apn || prop?.apn || sub?.apn || '').replace(/[^0-9]/g, '')} />
+        )}
 
         {/* Assessor Neighborhood Comparison — same block vs city */}
         {(report?.apn || prop?.apn || sub?.apn) && (

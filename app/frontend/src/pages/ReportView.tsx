@@ -14,6 +14,7 @@ import { PropertyEventsPanel } from '@/components/valuation/PropertyEventsPanel'
 import { AdjustmentFactorPanel } from '@/components/valuation/AdjustmentFactorPanel';
 import { MlsSourcePanel } from '@/components/report/MlsSourcePanel';
 import { NeighborhoodBreakdown } from '@/components/report/NeighborhoodBreakdown';
+import LuxuryDossierSection from '@/components/LuxuryDossierSection';
 import { planToTier, fetchUserTier, TIER_LABELS, type Tier } from '@/lib/tier';
 import { computeDNAScore } from '@/lib/dnaScore';
 
@@ -413,6 +414,11 @@ export default function ReportView() {
               {demo.neighborhoodTrend} · {demo.mobilityRate}
             </div>
           </Section>
+        )}
+
+        {/* Luxury Provenance Dossier — only renders if has_provenance_dossier=true */}
+        {(report?.apn || prop?.apn || sub?.apn) && (
+          <LuxuryDossierSection apn={(report?.apn || prop?.apn || sub?.apn || '').replace(/[^0-9]/g, '')} />
         )}
 
         {/* Assessor Neighborhood Comparison — same block vs city */}
