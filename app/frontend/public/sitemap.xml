@@ -561,13 +561,6 @@
   </url>
 
   <url>
-    <loc>https://www.thepropertydna.com/dossier/009607422</loc>
-    <lastmod>2026-05-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
     <loc>https://www.thepropertydna.com/dossier/505301005</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>monthly</changefreq>
@@ -611,6 +604,13 @@
 
   <url>
     <loc>https://www.thepropertydna.com/dossier/674210007</loc>
+    <lastmod>2026-05-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://www.thepropertydna.com/dossier/009607422</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
@@ -722,6 +722,20 @@
   </url>
 
   <url>
+    <loc>https://www.thepropertydna.com/dossier/512210032</loc>
+    <lastmod>2026-05-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://www.thepropertydna.com/dossier/674095010</loc>
+    <lastmod>2026-05-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
     <loc>https://www.thepropertydna.com/dossier/512210021</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>monthly</changefreq>
@@ -772,6 +786,13 @@
 
   <url>
     <loc>https://www.thepropertydna.com/dossier/674230014</loc>
+    <lastmod>2026-05-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://www.thepropertydna.com/dossier/502263012</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>

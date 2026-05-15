@@ -82,6 +82,13 @@
   status = 200
   force = true
 
+# RSS feed of verified luxury dossiers — for press/agent subscription
+[[redirects]]
+  from = "/dossier-feed.xml"
+  to = "/.netlify/functions/dossier-feed"
+  status = 200
+  force = true
+
 [[headers]]
   for = "/.well-known/assetlinks.json"
   [headers.values]

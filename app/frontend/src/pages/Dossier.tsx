@@ -382,7 +382,15 @@ export default function Dossier() {
           sourcePage={`dossier/${property.apn}`}
         />
 
-        <div style={{ marginTop: 48, fontSize: 11, color: '#475569', textAlign: 'center' }}>
+        {/* Citation block */}
+        <div style={{ marginTop: 48, padding: 20, background: '#111827', borderRadius: 6, border: '1px solid #1f2937' }}>
+          <div style={{ fontSize: 10, color: '#fbbf24', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>Cite This Dossier</div>
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>
+            PropertyDNA. "{property.address}, {property.city} — Provenance Dossier." Coachella Valley Pedigree Index, APN {property.apn}. {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}. https://www.thepropertydna.com/dossier/{property.apn}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 24, fontSize: 11, color: '#475569', textAlign: 'center' }}>
           PropertyDNA · APN {property.apn}
         </div>
       </div>

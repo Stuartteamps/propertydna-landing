@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
 import PropertyTicker from '@/components/PropertyTicker';
 import FeaturedDossiers from '@/components/FeaturedDossiers';
+import FeaturedNeighborhoods from '@/components/FeaturedNeighborhoods';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -359,6 +360,9 @@ export default function Landing() {
 
       {/* ── FEATURED VERIFIED DOSSIERS ─────────────────────────────── */}
       <FeaturedDossiers />
+
+      {/* ── FEATURED NEIGHBORHOODS ─────────────────────────────────── */}
+      <FeaturedNeighborhoods />
 
       {/* ── CAPABILITY STACK ───────────────────────────────────────── */}
       <section id="platform" className="px-6 md:px-12 py-24 md:py-32" style={{ background: '#0A0908' }}>
