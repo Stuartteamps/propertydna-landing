@@ -17,6 +17,15 @@ type Property = {
   architect_attribution?: string | null;
   architect_verified?: boolean | null;
   has_provenance_dossier?: boolean | null;
+  pedigree_tier?: string | null;
+  pedigree_neighborhood?: string | null;
+};
+
+const PEDIGREE_TIER_INFO: Record<string, { label: string; color: string }> = {
+  A: { label: 'A — Verified Pedigree',                color: '#fbbf24' },
+  B: { label: 'B — Top Neighborhood + MCM Era',        color: '#a78bfa' },
+  C: { label: 'C — Named Neighborhood / MCM Era',      color: '#60a5fa' },
+  D: { label: 'D — Mid-Century Provenance',            color: '#34d399' },
 };
 
 type Architect = {
@@ -111,11 +120,12 @@ export default function Dossier() {
 
       const { data: prop, error: propErr } = await supabase
         .from('property_master')
-        .select('apn,address,city,state,year_built,sqft,lot_sqft,luxury_tier,luxury_value_basis,provenance_score,architectural_significance_score,architect_attribution,architect_verified,has_provenance_dossier,architect_id')
+        .select('apn,address,city,state,year_built,sqft,lot_sqft,luxury_tier,luxury_value_basis,provenance_score,architectural_significance_score,architect_attribution,architect_verified,has_provenance_dossier,architect_id,pedigree_tier,pedigree_neighborhood')
         .eq('apn', apn)
         .maybeSingle();
 
-      if (propErr || !prop) {
+      // Render the page for any property that has either a full dossier OR a pedigree tier.
+      if (propErr || !prop || (!prop.has_provenance_dossier && !prop.pedigree_tier)) {
         if (!cancelled) { setError('Dossier not found'); setLoading(false); }
         return;
       }
@@ -180,13 +190,23 @@ export default function Dossier() {
             {property.sqft ? ` · ${property.sqft.toLocaleString()} sqft` : ''}
           </div>
           <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
-            {property.luxury_tier && (
-              <span style={{ padding: '6px 14px', background: '#fbbf24', color: '#0a0a0a', borderRadius: 4, fontWeight: 600, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase' }}>
-                {TIER_LABELS[property.luxury_tier] || property.luxury_tier}
+            {property.pedigree_tier && PEDIGREE_TIER_INFO[property.pedigree_tier] && (
+              <span style={{ padding: '6px 14px', background: PEDIGREE_TIER_INFO[property.pedigree_tier].color, color: '#0a0a0a', borderRadius: 4, fontWeight: 700, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase' }}>
+                {PEDIGREE_TIER_INFO[property.pedigree_tier].label}
+              </span>
+            )}
+            {property.pedigree_neighborhood && (
+              <span style={{ padding: '6px 14px', background: 'transparent', color: '#e5e7eb', border: '1px solid #334155', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
+                {property.pedigree_neighborhood}
+              </span>
+            )}
+            {property.luxury_tier && TIER_LABELS[property.luxury_tier] && (
+              <span style={{ padding: '6px 14px', background: 'transparent', color: '#fbbf24', border: '1px solid #fbbf24', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
+                {TIER_LABELS[property.luxury_tier]}
               </span>
             )}
             {property.luxury_value_basis && (
-              <span style={{ padding: '6px 14px', background: 'transparent', color: '#fbbf24', border: '1px solid #fbbf24', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
+              <span style={{ padding: '6px 14px', background: 'transparent', color: '#9ca3af', border: '1px solid #1f2937', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
                 {fmtMoney(property.luxury_value_basis)}
               </span>
             )}
