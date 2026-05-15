@@ -41,6 +41,7 @@ import DossierRequestsAdmin from "./pages/admin/DossierRequests";
 import ArchitectProfile from "./pages/ArchitectProfile";
 import ArchitectsIndex from "./pages/ArchitectsIndex";
 import PressKit from "./pages/PressKit";
+import DossierRequest from "./pages/DossierRequest";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const AppRoutes = () => (
     <Route path="/architect/:slug" element={<ArchitectProfile />} />
     <Route path="/architects" element={<ArchitectsIndex />} />
     <Route path="/press" element={<PressKit />} />
+    <Route path="/dossier-request" element={<DossierRequest />} />
     <Route path="/report/:id" element={<ReportView />} />
     <Route path="/professionals" element={<Professionals />} />
     <Route path="/market-heatmaps" element={<MarketHeatMap />} />

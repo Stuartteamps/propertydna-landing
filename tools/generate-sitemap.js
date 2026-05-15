@@ -49,6 +49,7 @@ const CORE_PAGES = [
   { loc: '/luxury-inventory',   priority: '0.95', changefreq: 'daily' },
   { loc: '/pedigree-index',     priority: '0.95', changefreq: 'weekly' },
   { loc: '/press',              priority: '0.7' },
+  { loc: '/dossier-request',    priority: '0.95', changefreq: 'monthly' },
   { loc: '/architects',         priority: '0.9', changefreq: 'weekly' },
   { loc: '/about',              priority: '0.7' },
   { loc: '/pricing',            priority: '0.8' },

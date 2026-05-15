@@ -85,7 +85,12 @@ export default function Neighborhood() {
           {stats && (
             <div style={{ color: '#94a3b8', fontSize: 15, marginTop: 16 }}>
               {stats.total.toLocaleString()} pedigree-classified properties
-              {stats.architects.length > 0 ? ` · architects: ${stats.architects.join(', ')}` : ''}
+              {stats.architects.length > 0 && (
+                <> · architects: {stats.architects.map((a, i) => {
+                  const slug = a.toLowerCase().replace(/\./g, '').replace(/\s+/g, '-');
+                  return <span key={a}>{i > 0 ? ', ' : ''}<Link to={`/architect/${slug}`} style={{ color: '#fbbf24', textDecoration: 'underline', textDecorationStyle: 'dotted' }}>{a}</Link></span>;
+                })}</>
+              )}
             </div>
           )}
         </div>

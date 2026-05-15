@@ -13,6 +13,7 @@ import { isPremiumUser } from '@/lib/isPremiumUser';
 import PropertyTicker from '@/components/PropertyTicker';
 import FeaturedDossiers from '@/components/FeaturedDossiers';
 import FeaturedNeighborhoods from '@/components/FeaturedNeighborhoods';
+import PedigreeProofBar from '@/components/PedigreeProofBar';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -357,6 +358,9 @@ export default function Landing() {
           ))}
         </div>
       </div>
+
+      {/* ── PEDIGREE PROOF BAR ─────────────────────────────────────── */}
+      <PedigreeProofBar />
 
       {/* ── FEATURED VERIFIED DOSSIERS ─────────────────────────────── */}
       <FeaturedDossiers />
