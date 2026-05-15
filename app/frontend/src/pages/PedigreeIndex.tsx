@@ -131,19 +131,22 @@ export default function PedigreeIndex() {
         <section style={{ marginBottom: 56 }}>
           <h2 style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 20, fontWeight: 600 }}>Documented Architects</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-            {architectStats.map(a => (
-              <div key={a.name} style={{ background: '#111827', borderRadius: 6, padding: 22, borderLeft: '3px solid #fbbf24' }}>
-                <div style={{ fontFamily: 'Georgia, serif', fontSize: 19, color: '#fafafa' }}>{a.name}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{a.primary_style}</div>
-                <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#cbd5e1' }}>
-                  <span>{a.verified_commissions} works</span>
-                  <span style={{ color: '#fbbf24' }}>{a.reputation_tier}</span>
-                </div>
-                {a.trade_frequency_years && (
-                  <div style={{ marginTop: 4, fontSize: 11, color: '#64748b' }}>Trades ≈ every {a.trade_frequency_years} yr</div>
-                )}
-              </div>
-            ))}
+            {architectStats.map(a => {
+              const slug = a.name.toLowerCase().replace(/\./g, '').replace(/\s+/g, '-');
+              return (
+                <Link key={a.name} to={`/architect/${slug}`} style={{ background: '#111827', borderRadius: 6, padding: 22, borderLeft: '3px solid #fbbf24', textDecoration: 'none', color: '#e5e7eb' }}>
+                  <div style={{ fontFamily: 'Georgia, serif', fontSize: 19, color: '#fafafa' }}>{a.name}</div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{a.primary_style}</div>
+                  <div style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#cbd5e1' }}>
+                    <span>{a.verified_commissions} works</span>
+                    <span style={{ color: '#fbbf24' }}>{a.reputation_tier}</span>
+                  </div>
+                  {a.trade_frequency_years && (
+                    <div style={{ marginTop: 4, fontSize: 11, color: '#64748b' }}>Trades ≈ every {a.trade_frequency_years} yr</div>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </section>
 

@@ -38,10 +38,17 @@ const NEIGHBORHOODS = [
   'Thunderbird Heights', 'Tamarisk Country Club', 'Mission Hills',
 ];
 
+const ARCHITECT_SLUGS = [
+  'albert-frey', 'john-lautner', 'richard-neutra', 'william-krisel',
+  'donald-wexler', 'e-stewart-williams', 'hugh-kaptur',
+  'william-f-cody', 'howard-lapham', 'walter-s-white', 'charles-dubois',
+];
+
 const CORE_PAGES = [
   { loc: '/',                   priority: '1.0', changefreq: 'weekly' },
   { loc: '/luxury-inventory',   priority: '0.95', changefreq: 'daily' },
   { loc: '/pedigree-index',     priority: '0.95', changefreq: 'weekly' },
+  { loc: '/press',              priority: '0.7' },
   { loc: '/about',              priority: '0.7' },
   { loc: '/pricing',            priority: '0.8' },
   { loc: '/how-it-works',       priority: '0.7' },
@@ -108,6 +115,11 @@ function urlBlock({ loc, priority = '0.5', changefreq = 'monthly', lastmod }) {
       priority: '0.95', changefreq: 'weekly', lastmod: today,
     }));
   });
+
+  // Architect profile pages
+  ARCHITECT_SLUGS.forEach(slug => urls.push(urlBlock({
+    loc: `/architect/${slug}`, priority: '0.9', changefreq: 'monthly', lastmod: today,
+  })));
 
   // A-tier dossiers (highest priority)
   aTier.forEach(p => urls.push(urlBlock({

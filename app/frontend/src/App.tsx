@@ -38,6 +38,8 @@ import LuxuryInventory from "./pages/LuxuryInventory";
 import PedigreeIndex from "./pages/PedigreeIndex";
 import Neighborhood from "./pages/Neighborhood";
 import DossierRequestsAdmin from "./pages/admin/DossierRequests";
+import ArchitectProfile from "./pages/ArchitectProfile";
+import PressKit from "./pages/PressKit";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,8 @@ const AppRoutes = () => (
     <Route path="/pedigree-index" element={<PedigreeIndex />} />
     <Route path="/neighborhood/:slug" element={<Neighborhood />} />
     <Route path="/admin/dossier-requests" element={<DossierRequestsAdmin />} />
+    <Route path="/architect/:slug" element={<ArchitectProfile />} />
+    <Route path="/press" element={<PressKit />} />
     <Route path="/report/:id" element={<ReportView />} />
     <Route path="/professionals" element={<Professionals />} />
     <Route path="/market-heatmaps" element={<MarketHeatMap />} />
