@@ -41,6 +41,7 @@ const NEIGHBORHOODS = [
 const CORE_PAGES = [
   { loc: '/',                   priority: '1.0', changefreq: 'weekly' },
   { loc: '/luxury-inventory',   priority: '0.95', changefreq: 'daily' },
+  { loc: '/pedigree-index',     priority: '0.95', changefreq: 'weekly' },
   { loc: '/about',              priority: '0.7' },
   { loc: '/pricing',            priority: '0.8' },
   { loc: '/how-it-works',       priority: '0.7' },
