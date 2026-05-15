@@ -165,11 +165,16 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">Recently Sold</td></tr>
 <tr><td style="padding:0 40px 40px;font-size:15px;line-height:1.8;">See what actually sold this week across the valley — the most accurate read on where the market stands.<br><br>
 <a href="${soldLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Recent Sales</a></td></tr>
-<tr><td style="padding:40px;background:#f4ede4;text-align:center;">
-<div style="font-family:Georgia,serif;font-size:28px;">Your Property DNA Report — Free</div>
-<p style="font-size:15px;line-height:1.8;color:#2c241d;">{{contact.first_name}}, before you buy or sell, see the real story your property tells. Property DNA shows comps, valuation, permits, flood risk, and a 5&#8209;year trajectory most buyers never get to see.</p>
+<tr><td style="padding:40px 40px 28px;background:#f4ede4;text-align:center;">
+<div style="font-family:Georgia,serif;font-size:28px;margin-bottom:14px;">Your Property DNA Report — Free</div>
+<div style="background:#1f1a15;color:#f4ede4;padding:22px 18px;margin:0 auto 22px;max-width:380px;">
+  <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#9a8671;">Your {{contact.custom_fields.propertydna_city}} Market</div>
+  <div style="font-family:Georgia,serif;font-size:48px;color:#e8b84b;line-height:1;margin:8px 0;">{{contact.custom_fields.propertydna_score}}<span style="font-size:22px;color:#9a8671;"> / 100</span></div>
+  <div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#e8b84b;">{{contact.custom_fields.propertydna_label}} Signal</div>
+</div>
+<p style="font-size:15px;line-height:1.8;color:#2c241d;">{{contact.first_name}}, that&rsquo;s where your area stands right now. Property DNA goes further — your specific home&rsquo;s comps, valuation, permits, flood risk, and a 5&#8209;year trajectory most buyers never get to see.</p>
 <p style="font-size:14px;line-height:1.7;color:#5a4e3f;margin:6px 0 18px;"><strong>No card. 60 seconds. Delivered to your inbox.</strong></p>
-<a href="${SITE}/?ref=newsletter&email={{contact.email}}&firstName={{contact.first_name}}&lastName={{contact.last_name}}" target="_blank" style="background:#1f1a15;color:#fff;padding:14px 26px;text-decoration:none;">Get My Free Report &rarr;</a>
+<a href="${SITE}/?ref=newsletter&email={{contact.email}}&firstName={{contact.first_name}}&lastName={{contact.last_name}}&city={{contact.custom_fields.propertydna_city}}" target="_blank" style="background:#1f1a15;color:#fff;padding:14px 26px;text-decoration:none;">Get My Full Report &rarr;</a>
 </td></tr>
 <tr><td align="center" style="padding:30px;">
 <a href="https://instagram.com/danielstuartps" style="margin:5px;background:#1f1a15;color:#fff;padding:10px 18px;text-decoration:none;">Instagram</a>
