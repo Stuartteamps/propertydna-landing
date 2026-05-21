@@ -6,6 +6,7 @@ import PricingModal from '@/components/PricingModal';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { tapHaptic } from '@/lib/nativeFeatures';
 
 interface Report {
   id: string;
@@ -71,6 +72,7 @@ export default function Dashboard() {
   };
 
   async function handleDeleteAccount() {
+    tapHaptic();
     setDeleteState('deleting');
     setDeleteError('');
     try {
@@ -185,6 +187,32 @@ export default function Dashboard() {
             <button onClick={signOut} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#6B6252', background: 'none', border: '1px solid rgba(255,255,255,0.08)', padding: '11px 16px', cursor: 'pointer' }}>
               Sign Out
             </button>
+            <a
+              href="#delete-account"
+              style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#C94C4C', background: 'none', border: '1px solid rgba(201,76,76,0.35)', padding: '11px 16px', cursor: 'pointer', textDecoration: 'none' }}
+            >
+              Delete Account
+            </a>
+          </div>
+        </div>
+
+        {/* ── Account · Delete (top-level, surfaces what's also at #delete-account below) ── */}
+        <div id="delete-account-top" style={{ marginBottom: 32, padding: '20px 24px', border: '1px solid rgba(201,76,76,0.25)', background: 'rgba(201,76,76,0.04)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#C94C4C', marginBottom: 6 }}>
+                Account · Privacy
+              </div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, maxWidth: 520 }}>
+                Permanently delete your PropertyDNA account and all associated data. Available immediately in-app.
+              </div>
+            </div>
+            <a
+              href="#delete-account"
+              style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#C94C4C', background: 'transparent', border: '1px solid rgba(201,76,76,0.45)', padding: '11px 18px', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' }}
+            >
+              Delete Account →
+            </a>
           </div>
         </div>
 
@@ -285,33 +313,34 @@ export default function Dashboard() {
           )
         )}
 
-        {/* ── Danger Zone: account deletion (Apple Guideline 5.1.1(v)) ── */}
-        <div style={{ marginTop: 60, paddingTop: 32, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#6B6252', marginBottom: 16 }}>
-            Account
+        {/* ── #delete-account · Apple Guideline 5.1.1(v) confirmation flow ── */}
+        <div id="delete-account" style={{ marginTop: 60, paddingTop: 32, borderTop: '1px solid rgba(201,76,76,0.18)' }}>
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: '#C94C4C', marginBottom: 6 }}>
+            Delete Account
+          </div>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 24, fontWeight: 300, color: '#F0EBE0', marginBottom: 6 }}>
+            Permanently erase your account.
+          </div>
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.8, marginBottom: 20, maxWidth: 560 }}>
+            Deletes your sign-in identity, profile, saved reports, and subscription record from PropertyDNA. This cannot be undone — you'll need to start over with a new account.
           </div>
 
           {deleteState === 'idle' && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, maxWidth: 520 }}>
-                Permanently delete your PropertyDNA account, sign-in identity, saved reports, and subscription record. This cannot be undone.
-              </div>
-              <button
-                onClick={() => setDeleteState('confirming')}
-                style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#C94C4C', background: 'transparent', border: '1px solid rgba(201,76,76,0.35)', padding: '11px 18px', cursor: 'pointer' }}
-              >
-                Delete Account
-              </button>
-            </div>
+            <button
+              onClick={() => setDeleteState('confirming')}
+              style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#fff', background: '#C94C4C', border: 'none', padding: '12px 22px', cursor: 'pointer' }}
+            >
+              Delete My Account
+            </button>
           )}
 
           {deleteState === 'confirming' && (
-            <div style={{ border: '1px solid rgba(201,76,76,0.4)', background: 'rgba(201,76,76,0.05)', padding: 20 }}>
+            <div style={{ border: '1px solid rgba(201,76,76,0.4)', background: 'rgba(201,76,76,0.05)', padding: 20, maxWidth: 560 }}>
               <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 300, color: '#F0EBE0', marginBottom: 8 }}>
-                Delete your account?
+                Are you sure?
               </div>
               <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252', lineHeight: 1.7, marginBottom: 18 }}>
-                This will permanently erase <strong style={{ color: '#F0EBE0' }}>{user.email}</strong> from PropertyDNA — sign-in identity, profile, subscription record, and report history. You will need to start over with a new account.
+                This will permanently erase <strong style={{ color: '#F0EBE0' }}>{user.email}</strong> from PropertyDNA.
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button
@@ -337,7 +366,7 @@ export default function Dashboard() {
           )}
 
           {deleteState === 'error' && (
-            <div style={{ border: '1px solid rgba(201,76,76,0.4)', background: 'rgba(201,76,76,0.05)', padding: 16 }}>
+            <div style={{ border: '1px solid rgba(201,76,76,0.4)', background: 'rgba(201,76,76,0.05)', padding: 16, maxWidth: 560 }}>
               <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#C94C4C', marginBottom: 12 }}>
                 {deleteError || 'Failed to delete account. Please try again.'}
               </div>

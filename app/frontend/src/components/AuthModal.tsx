@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
+import { tapHaptic, successHaptic } from '@/lib/nativeFeatures';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -63,6 +64,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
 
   async function handleOAuth(provider: 'google' | 'apple' | 'facebook') {
     clearError();
+    tapHaptic();
     setLoading(provider);
     try {
       if (provider === 'google')   await signInWithGoogle();
@@ -80,10 +82,12 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
   async function handleEmailOTP() {
     if (!email.includes('@')) { setErrorMsg('Enter a valid email address.'); return; }
     clearError();
+    tapHaptic();
     setLoading('email');
     try {
       await signInWithEmail(email);
       setOtpSent(true);
+      successHaptic();
     } catch (err: any) {
       setErrorMsg(err?.message || 'Failed to send sign-in link. Please try again.');
     } finally {

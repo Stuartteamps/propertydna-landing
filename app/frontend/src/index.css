@@ -224,3 +224,10 @@
 .animate-pulse {
   animation: pulseDot 2s ease-in-out infinite;
 }
+
+/* On iOS/Android the fixed NativeBottomNav (56px + home-indicator safe area)
+   sits over the bottom of every page. Push the body up so nothing important
+   gets covered. Class is set in main.tsx when Capacitor.isNativePlatform(). */
+html.pdna-native body {
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+}

@@ -23,6 +23,10 @@ if (Capacitor.isNativePlatform()) {
     }
     return originalFetch(input, init);
   };
+
+  // Marks the document for native-specific styling — currently used to add
+  // bottom padding so the fixed NativeBottomNav doesn't cover page content.
+  document.documentElement.classList.add('pdna-native');
 }
 
 // Load runtime configuration before rendering the app

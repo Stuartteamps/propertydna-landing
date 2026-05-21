@@ -17,6 +17,8 @@ import { NeighborhoodBreakdown } from '@/components/report/NeighborhoodBreakdown
 import LuxuryDossierSection from '@/components/LuxuryDossierSection';
 import { planToTier, fetchUserTier, TIER_LABELS, type Tier } from '@/lib/tier';
 import { computeDNAScore } from '@/lib/dnaScore';
+import { isNative, tapHaptic, shareSheet, successHaptic } from '@/lib/nativeFeatures';
+import { saveReportOffline, listSavedReports, removeSavedReport } from '@/lib/offlineReports';
 
 // Fix Leaflet default icon issue with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -83,6 +85,8 @@ export default function ReportView() {
   const [showTierPrompt, setShowTierPrompt] = useState(false);
   const [tierCheckEmail, setTierCheckEmail] = useState('');
   const [tierChecking, setTierChecking] = useState(false);
+  const [savedOffline, setSavedOffline] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   // First-report Enterprise preview: anyone on the free tier with ≤1 lifetime
   // reports sees every section (heat-map intel, micro-location, full adjustments,
@@ -132,6 +136,51 @@ export default function ReportView() {
     try { sessionStorage.setItem('pdna_email', tierCheckEmail.toLowerCase().trim()); } catch { /* sessionStorage unavailable */ }
     setShowTierPrompt(false);
     setTierChecking(false);
+  };
+
+  // Track whether this report is already cached offline on this device.
+  useEffect(() => {
+    if (!reportId || !isNative()) return;
+    listSavedReports().then(list => {
+      setSavedOffline(list.some(r => r.id === reportId));
+    });
+  }, [reportId]);
+
+  const handleSaveOffline = async () => {
+    if (!reportId || !report) return;
+    await tapHaptic();
+    if (savedOffline) {
+      await removeSavedReport(reportId);
+      setSavedOffline(false);
+      return;
+    }
+    await saveReportOffline({
+      id: reportId,
+      address: report.address || 'PropertyDNA Report',
+      savedAt: Date.now(),
+      reportUrl: `/report/${reportId}`,
+    });
+    setSavedOffline(true);
+    await successHaptic();
+  };
+
+  const handleShare = async () => {
+    if (!report) return;
+    setSharing(true);
+    await tapHaptic();
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const presented = await shareSheet({
+      title: 'PropertyDNA Intelligence Report',
+      text: `${report.address} — PropertyDNA report`,
+      url,
+      dialogTitle: 'Share this property report',
+    });
+    if (!presented && url && typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch { /* clipboard unavailable */ }
+    }
+    setSharing(false);
   };
 
   const dna = report?.property_dna ?? {};
@@ -280,6 +329,33 @@ export default function ReportView() {
       </section>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 48px 80px' }}>
+
+        {/* Report actions — Share + Save Offline. Native gets buttons that hit OS share + offline cache; web shows Share (Web Share API or copy-link). */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 32 }}>
+          <button
+            onClick={handleShare}
+            disabled={sharing}
+            style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '11px 20px', cursor: sharing ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+              <path d="M16 6l-4-4-4 4" />
+              <path d="M12 2v14" />
+            </svg>
+            {sharing ? 'Opening…' : 'Share Report'}
+          </button>
+          {isNative() && (
+            <button
+              onClick={handleSaveOffline}
+              style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: savedOffline ? '#C9A84C' : '#F0EBE0', background: 'transparent', border: `1px solid ${savedOffline ? 'rgba(201,168,76,0.5)' : 'rgba(255,255,255,0.15)'}`, padding: '11px 20px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill={savedOffline ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z" />
+              </svg>
+              {savedOffline ? 'Saved Offline' : 'Save for Offline'}
+            </button>
+          )}
+        </div>
 
         {/* Would We Buy It */}
         {dna.wouldWeBuyIt && (

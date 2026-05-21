@@ -4,6 +4,7 @@ import PricingGate from './PricingGate';
 import AddressAutocomplete from './AddressAutocomplete';
 import { parseIdxUrl } from '@/lib/parseIdxUrl';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
+import { tapHaptic } from '@/lib/nativeFeatures';
 
 type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
 
@@ -150,6 +151,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    tapHaptic();
     if (!form.email.includes('@')) {
       track('form_validation_error', { reason: 'invalid_email' });
       setStatus('error'); setErrorMsg('Please enter a valid email address.'); return;

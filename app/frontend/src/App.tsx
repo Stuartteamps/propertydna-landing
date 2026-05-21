@@ -42,7 +42,9 @@ import ArchitectProfile from "./pages/ArchitectProfile";
 import ArchitectsIndex from "./pages/ArchitectsIndex";
 import PressKit from "./pages/PressKit";
 import DossierRequest from "./pages/DossierRequest";
+import SavedReports from "./pages/SavedReports";
 import NotFound from "./pages/NotFound";
+import NativeBottomNav from "@/components/NativeBottomNav";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +93,7 @@ const AppRoutes = () => (
     <Route path="/blog" element={<Blog />} />
     <Route path="/privacy" element={<Privacy />} />
     <Route path="/waitlist" element={<Waitlist />} />
+    <Route path="/saved-reports" element={<SavedReports />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
@@ -102,6 +105,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />
+          <NativeBottomNav />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

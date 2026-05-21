@@ -131,6 +131,7 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
                   {[
                     { label: 'Dashboard', href: '/dashboard' },
                     { label: 'Manage Plan', action: openPricing },
+                    { label: 'Delete Account', href: '/dashboard#delete-account' },
                   ].map(item => (
                     <div key={item.label}>
                       {item.href ? (
