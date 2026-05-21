@@ -15,6 +15,7 @@
 const https        = require('https');
 const fs           = require('fs');
 const path         = require('path');
+const opsLog       = require('../lib/ops-log');
 
 const QUEUE_FILE   = path.join(__dirname, '../data/post-queue.json');
 const CREDS_FILE   = path.join(__dirname, '../.daily-creds.json');
@@ -194,6 +195,12 @@ async function run() {
   fs.writeFileSync(QUEUE_FILE, JSON.stringify(queue, null, 2));
 
   log(`Posted: ${pending.url}`);
+  await opsLog.write({
+    agent: 'reddit', event_type: 'post_sent', status: 'ok',
+    summary: `Posted to r/${pending.subreddit}: ${pending.title.slice(0, 80)}`,
+    metadata: { subreddit: pending.subreddit, url: pending.url, post_id: pending.id },
+    affected_rows: 1,
+  });
   return { status: 'posted', subreddit: pending.subreddit, title: pending.title, url: pending.url };
 }
 

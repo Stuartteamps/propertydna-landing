@@ -15,6 +15,7 @@
 const https      = require('https');
 const fs         = require('fs');
 const path       = require('path');
+const opsLog     = require('../lib/ops-log');
 
 const CREDS_FILE      = path.join(__dirname, '../.daily-creds.json');
 const TRACKER_FILE    = path.join(__dirname, '../data/buffer-tracker.json');
@@ -227,6 +228,12 @@ async function run() {
 
     const posted = results.filter(r => r.status === 'posted').length;
     log(`Done: ${posted}/${channels.length} channels posted`);
+    await opsLog.write({
+      agent: 'buffer', event_type: 'social_blast', status: posted > 0 ? 'ok' : 'warning',
+      summary: `Posted to ${posted}/${channels.length} channels`,
+      metadata: { results, text: text.slice(0, 120), date: dateLabel },
+      affected_rows: posted,
+    });
     return { status: 'posted', channels: posted, text: text.slice(0, 80) };
 
   } catch (e) {

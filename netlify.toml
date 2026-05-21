@@ -48,6 +48,11 @@
 [functions."drip-sequence"]
   schedule = "0 * * * *"
 
+# Daily ops digest — 01:00 UTC = 6:00 PM PDT, 5:00 PM PST
+# Emails Dan a daily summary of agent activity, new leads, errors.
+[functions."ops-daily-digest"]
+  schedule = "0 1 * * *"
+
 [functions."key-watchdog"]
   schedule = "0 16 * * 1"
 

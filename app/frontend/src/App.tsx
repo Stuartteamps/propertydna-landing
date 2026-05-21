@@ -38,6 +38,7 @@ import LuxuryInventory from "./pages/LuxuryInventory";
 import PedigreeIndex from "./pages/PedigreeIndex";
 import Neighborhood from "./pages/Neighborhood";
 import DossierRequestsAdmin from "./pages/admin/DossierRequests";
+import OpsDashboard from "./pages/admin/OpsDashboard";
 import ArchitectProfile from "./pages/ArchitectProfile";
 import ArchitectsIndex from "./pages/ArchitectsIndex";
 import PressKit from "./pages/PressKit";
@@ -63,6 +64,7 @@ const AppRoutes = () => (
     <Route path="/pedigree-index" element={<PedigreeIndex />} />
     <Route path="/neighborhood/:slug" element={<Neighborhood />} />
     <Route path="/admin/dossier-requests" element={<DossierRequestsAdmin />} />
+    <Route path="/admin/ops" element={<OpsDashboard />} />
     <Route path="/architect/:slug" element={<ArchitectProfile />} />
     <Route path="/architects" element={<ArchitectsIndex />} />
     <Route path="/press" element={<PressKit />} />
