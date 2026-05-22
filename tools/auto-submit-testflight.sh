@@ -37,12 +37,12 @@ if [ ! -d "/Applications/Xcode.app" ]; then
   exit 1
 fi
 
-XCODE_VERSION=$(/Applications/Xcode.app/Contents/MacOS/Xcode --version 2>/dev/null | head -1)
+XCODE_VERSION=$(xcodebuild -version 2>/dev/null | head -1)
 log "Found: $XCODE_VERSION"
 
-# Accept license if needed
-sudo xcodebuild -license accept 2>/dev/null || true
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>/dev/null
+# Accept license if needed (non-interactive — if sudo prompts, skip)
+sudo -n xcodebuild -license accept 2>/dev/null || log "  (skipping sudo license accept — assumed already accepted)"
+sudo -n xcode-select -s /Applications/Xcode.app/Contents/Developer 2>/dev/null || true
 
 # ── 2. Sync latest web build ──────────────────────────────────────────────────
 log "Building web bundle and syncing to iOS..."
@@ -67,11 +67,9 @@ xcodebuild archive \
   -configuration Release \
   -archivePath "$ARCHIVE_PATH" \
   -destination 'generic/platform=iOS' \
-  DEVELOPMENT_TEAM="$TEAM_ID" \
-  CODE_SIGN_STYLE=Automatic \
   -allowProvisioningUpdates \
   -allowProvisioningDeviceRegistration \
-  2>&1 | tail -20 | tee -a "$LOG"
+  2>&1 | tail -30 | tee -a "$LOG"
 
 if [ ! -d "$ARCHIVE_PATH" ]; then
   log "ERROR: Archive failed. Check log at $LOG"
@@ -93,9 +91,14 @@ cat > "$EXPORT_OPTIONS" <<PLIST
     <key>uploadSymbols</key>
     <true/>
     <key>signingStyle</key>
-    <string>automatic</string>
+    <string>manual</string>
     <key>destination</key>
     <string>upload</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.thepropertydna.app</key>
+        <string>5f745471-83f6-4464-a21c-eb22a5440c1d</string>
+    </dict>
 </dict>
 </plist>
 PLIST
