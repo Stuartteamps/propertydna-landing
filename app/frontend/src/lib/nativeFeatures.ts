@@ -65,7 +65,44 @@ export async function getCurrentPosition(): Promise<{ lat: number; lon: number }
   }
   try {
     const { Geolocation } = await import('@capacitor/geolocation');
-    const p = await Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 10000 });
+    const p = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
     return { lat: p.coords.latitude, lon: p.coords.longitude };
   } catch { return null; }
+}
+
+export interface ReverseGeocodeResult {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  display: string;
+  lat: number;
+  lon: number;
+}
+
+// Reverse-geocode lat/lon to a postal address using OpenStreetMap Nominatim
+// (same provider AddressAutocomplete uses for forward geocoding — keeps results
+// consistent and avoids introducing a new API key).
+export async function reverseGeocode(lat: number, lon: number): Promise<ReverseGeocodeResult | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`;
+    const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const a = data.address || {};
+    const street = [a.house_number, a.road].filter(Boolean).join(' ');
+    const city = a.city || a.town || a.village || a.county || '';
+    const state = a.state || '';
+    const zip = a.postcode || '';
+    const display = street ? `${street}, ${city}, ${state} ${zip}`.trim().replace(/,\s*$/, '') : (data.display_name || '');
+    return { street, city, state, zip, display, lat, lon };
+  } catch { return null; }
+}
+
+// One-shot helper: ask for permission, get location, reverse-geocode to address.
+// Returns null on any failure (denied permission, no signal, network error).
+export async function getCurrentAddress(): Promise<ReverseGeocodeResult | null> {
+  const pos = await getCurrentPosition();
+  if (!pos) return null;
+  return reverseGeocode(pos.lat, pos.lon);
 }

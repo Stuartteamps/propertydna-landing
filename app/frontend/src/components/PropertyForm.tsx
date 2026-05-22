@@ -4,7 +4,7 @@ import PricingGate from './PricingGate';
 import AddressAutocomplete from './AddressAutocomplete';
 import { parseIdxUrl } from '@/lib/parseIdxUrl';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
-import { tapHaptic } from '@/lib/nativeFeatures';
+import { tapHaptic, successHaptic, getCurrentAddress, isNative } from '@/lib/nativeFeatures';
 
 type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
 
@@ -132,6 +132,30 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
   const [gateOpen, setGateOpen] = useState(false);
   const [gateLoading, setGateLoading] = useState(false);
   const [quota, setQuota] = useState<{ limit: number | null; used: number; remaining: number | null; tierLabel: string } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState('');
+
+  async function handleUseMyLocation() {
+    setLocateError('');
+    setLocating(true);
+    tapHaptic();
+    track('use_my_location_tapped');
+    const result = await getCurrentAddress();
+    setLocating(false);
+    if (!result || !result.street) {
+      setLocateError("Couldn't read your location. Make sure location access is enabled and try again.");
+      return;
+    }
+    setForm(prev => ({
+      ...prev,
+      address: result.street || result.display,
+      city: result.city || prev.city,
+      state: result.state || prev.state,
+      zip: result.zip || prev.zip,
+    }));
+    successHaptic();
+    track('use_my_location_filled');
+  }
 
   // GA4 event helper
   const track = (name: string, params?: Record<string, unknown>) => {
@@ -294,7 +318,23 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
 
         {/* Address with autocomplete */}
         <div style={fieldStyle}>
-          <label style={labelStyle}>Property Address</label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 4 }}>
+            <label style={{ ...labelStyle, marginBottom: 0 }}>Property Address</label>
+            {isNative() && (
+              <button
+                type="button"
+                onClick={handleUseMyLocation}
+                disabled={locating}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', background: 'transparent', border: '1px solid rgba(201,168,76,0.35)', padding: '6px 10px', cursor: locating ? 'not-allowed' : 'pointer' }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z" />
+                  <circle cx="12" cy="9" r="2.5" />
+                </svg>
+                {locating ? 'Locating…' : 'Use my location'}
+              </button>
+            )}
+          </div>
           <AddressAutocomplete
             value={form.address}
             onChange={v => setForm(prev => ({ ...prev, address: v }))}
@@ -308,6 +348,11 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
             placeholder="100 W Andreas Rd"
             inputStyle={{ ...inputStyle }}
           />
+          {locateError && (
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#C94C4C', marginTop: 6, lineHeight: 1.5 }}>
+              {locateError}
+            </div>
+          )}
         </div>
 
         {/* Unit number — shown always, highlighted when condo selected */}

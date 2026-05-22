@@ -138,13 +138,25 @@ export default function ReportView() {
     setTierChecking(false);
   };
 
-  // Track whether this report is already cached offline on this device.
+  // Track whether this report is already cached offline on this device, and
+  // auto-cache it silently on native so users always have something available
+  // when they go offline in the field — mission-critical for the iOS/Android
+  // app, where a buyer/seller often walks into a showing without signal.
   useEffect(() => {
-    if (!reportId || !isNative()) return;
+    if (!reportId || !isNative() || !report) return;
     listSavedReports().then(list => {
-      setSavedOffline(list.some(r => r.id === reportId));
+      const already = list.some(r => r.id === reportId);
+      setSavedOffline(true);
+      if (!already) {
+        saveReportOffline({
+          id: reportId,
+          address: report.address || 'PropertyDNA Report',
+          savedAt: Date.now(),
+          reportUrl: `/report/${reportId}`,
+        }).catch(() => { /* best-effort cache */ });
+      }
     });
-  }, [reportId]);
+  }, [reportId, report]);
 
   const handleSaveOffline = async () => {
     if (!reportId || !report) return;

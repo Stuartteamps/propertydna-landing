@@ -46,6 +46,7 @@ import DossierRequest from "./pages/DossierRequest";
 import SavedReports from "./pages/SavedReports";
 import NotFound from "./pages/NotFound";
 import NativeBottomNav from "@/components/NativeBottomNav";
+import OfflineBanner from "@/components/OfflineBanner";
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,7 @@ const App = () => (
       <Toaster />
       <BrowserRouter>
         <AuthProvider>
+          <OfflineBanner />
           <AppRoutes />
           <NativeBottomNav />
         </AuthProvider>
