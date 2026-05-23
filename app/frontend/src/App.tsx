@@ -36,6 +36,7 @@ import Waitlist from "./pages/Waitlist";
 import Dossier from "./pages/Dossier";
 import LuxuryInventory from "./pages/LuxuryInventory";
 import PedigreeIndex from "./pages/PedigreeIndex";
+import Dossiers from "./pages/Dossiers";
 import Neighborhood from "./pages/Neighborhood";
 import DossierRequestsAdmin from "./pages/admin/DossierRequests";
 import OpsDashboard from "./pages/admin/OpsDashboard";
@@ -60,6 +61,7 @@ const AppRoutes = () => (
     <Route path="/how-it-works" element={<HowItWorks />} />
     <Route path="/sample-report" element={<SampleReport />} />
     <Route path="/report/view/:token" element={<ReportViewByToken />} />
+    <Route path="/dossiers" element={<Dossiers />} />
     <Route path="/dossier/:apn" element={<Dossier />} />
     <Route path="/luxury-inventory" element={<LuxuryInventory />} />
     <Route path="/pedigree-index" element={<PedigreeIndex />} />
