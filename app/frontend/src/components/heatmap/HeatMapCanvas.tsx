@@ -33,6 +33,15 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
   const deckRef      = useRef<Deck | null>(null);
   const [zoom, setZoom] = useState(4);
 
+  // Refs to keep mapbox event handlers (registered once) in sync with current props/state.
+  // Without these, the handlers capture stale `parcels = []` from first render and
+  // hover/click at parcel zoom (≥12) silently do nothing.
+  const parcelsRef = useRef<HeatParcel[]>(parcels);
+  const onHoverRef = useRef(onHover);
+  const onSelectRef = useRef(onSelect);
+  useEffect(() => { parcelsRef.current = parcels; }, [parcels]);
+  useEffect(() => { onHoverRef.current = onHover; onSelectRef.current = onSelect; }, [onHover, onSelect]);
+
   const buildLayers = useCallback((pts: HeatParcel[], mkts: CityMarket[], z: number) => {
     if (z < 8) {
       // National: city scatter
@@ -147,13 +156,20 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
 
     map.on('click', 'parcels-fill', (e) => {
       const id = e.features?.[0]?.properties?.id;
-      if (id) { const p = parcels.find(x => x.id === id); if (p) onSelect(p); }
+      if (!id) return;
+      const p = parcelsRef.current.find(x => x.id === id);
+      if (p) onSelectRef.current(p);
     });
     map.on('mousemove', 'parcels-fill', (e) => {
       const id = e.features?.[0]?.properties?.id;
-      if (id) { const p = parcels.find(x => x.id === id); if (p) onHover({ parcel: p, x: e.originalEvent.clientX, y: e.originalEvent.clientY }); }
+      if (!id) return;
+      const p = parcelsRef.current.find(x => x.id === id);
+      if (p) onHoverRef.current({ parcel: p, x: e.originalEvent.clientX, y: e.originalEvent.clientY });
     });
-    map.on('mouseleave', 'parcels-fill', () => onHover(null));
+    map.on('mouseleave', 'parcels-fill', () => onHoverRef.current(null));
+    // Pointer cursor over interactive parcel polygons
+    map.on('mouseenter', 'parcels-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'parcels-fill', () => { map.getCanvas().style.cursor = 'crosshair'; });
     map.getCanvas().style.cursor = 'crosshair';
 
     mapRef.current = map;
