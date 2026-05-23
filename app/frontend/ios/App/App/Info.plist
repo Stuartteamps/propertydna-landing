@@ -75,9 +75,9 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>PropertyDNA uses your location to show nearby property data and heat map parcels.</string>
 
-	<!-- Privacy — Camera (for future document scanning / photo upload) -->
+	<!-- Privacy — Camera (Vision OCR address scanning + photo attachment) -->
 	<key>NSCameraUsageDescription</key>
-	<string>PropertyDNA may use the camera to attach property photos to your reports.</string>
+	<string>PropertyDNA uses the camera to scan property addresses with on-device text recognition so you don't have to type them in.</string>
 
 	<!-- Privacy — Photo Library -->
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -122,5 +122,59 @@
 	<!-- Export Compliance: only standard HTTPS, no custom encryption -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+
+	<!-- Home Screen Quick Actions — long-press the app icon to invoke -->
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.thepropertydna.app.analyze</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Analyze Property</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Generate an intelligence report</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeCompose</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.thepropertydna.app.saved</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Saved Reports</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Offline reports on this device</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeBookmark</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.thepropertydna.app.dashboard</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>My Dashboard</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeContact</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.thepropertydna.app.heatmap</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Market Heat Map</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Live regional market intelligence</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeLocation</string>
+		</dict>
+	</array>
+
+	<!-- App Intents (Siri / Shortcuts integration) discovered automatically
+	     at runtime via PropertyDNAShortcuts in PropertyAppIntents.swift -->
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>com.thepropertydna.app.viewReport</string>
+		<string>AnalyzePropertyIntent</string>
+		<string>ViewSavedReportsIntent</string>
+		<string>OpenDashboardIntent</string>
+		<string>ShowMarketHeatmapIntent</string>
+	</array>
 </dict>
 </plist>

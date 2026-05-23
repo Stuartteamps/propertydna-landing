@@ -4,7 +4,7 @@ import PricingGate from './PricingGate';
 import AddressAutocomplete from './AddressAutocomplete';
 import { parseIdxUrl } from '@/lib/parseIdxUrl';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
-import { tapHaptic, successHaptic, getCurrentAddress, isNative } from '@/lib/nativeFeatures';
+import { tapHaptic, successHaptic, getCurrentAddress, isNative, scanAddressFromCamera } from '@/lib/nativeFeatures';
 
 type Role = 'Buyer' | 'Seller' | 'Agent' | 'Investor' | 'Lender';
 
@@ -155,6 +155,24 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
     }));
     successHaptic();
     track('use_my_location_filled');
+  }
+
+  const [scanning, setScanning] = useState(false);
+  async function handleScanAddress() {
+    setLocateError('');
+    setScanning(true);
+    tapHaptic();
+    track('scan_address_tapped');
+    const recognized = await scanAddressFromCamera();
+    setScanning(false);
+    if (!recognized) {
+      // Null is fine for user-cancelled. Only surface an error if the user
+      // is on a platform where scanning *should* have worked but didn't.
+      return;
+    }
+    setForm(prev => ({ ...prev, address: recognized }));
+    successHaptic();
+    track('scan_address_filled');
   }
 
   // GA4 event helper
@@ -321,18 +339,35 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 4 }}>
             <label style={{ ...labelStyle, marginBottom: 0 }}>Property Address</label>
             {isNative() && (
-              <button
-                type="button"
-                onClick={handleUseMyLocation}
-                disabled={locating}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', background: 'transparent', border: '1px solid rgba(201,168,76,0.35)', padding: '6px 10px', cursor: locating ? 'not-allowed' : 'pointer' }}
-              >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z" />
-                  <circle cx="12" cy="9" r="2.5" />
-                </svg>
-                {locating ? 'Locating…' : 'Use my location'}
-              </button>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleScanAddress}
+                  disabled={scanning}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', background: 'transparent', border: '1px solid rgba(201,168,76,0.35)', padding: '6px 10px', cursor: scanning ? 'not-allowed' : 'pointer' }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+                    <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                    <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+                    <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                    <rect x="7" y="9" width="10" height="6" rx="1" />
+                  </svg>
+                  {scanning ? 'Scanning…' : 'Scan'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUseMyLocation}
+                  disabled={locating}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', background: 'transparent', border: '1px solid rgba(201,168,76,0.35)', padding: '6px 10px', cursor: locating ? 'not-allowed' : 'pointer' }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z" />
+                    <circle cx="12" cy="9" r="2.5" />
+                  </svg>
+                  {locating ? 'Locating…' : 'My location'}
+                </button>
+              </div>
             )}
           </div>
           <AddressAutocomplete

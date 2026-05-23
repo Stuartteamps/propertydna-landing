@@ -1,60 +1,79 @@
-# Build 10 — Submission Notes
+# Build 11 — Resubmission Notes (after Build 10 4.2 rejection)
+
+Build 10 was rejected under Guideline 4.2 with Apple's note that "push notifications, Core Location, or sharing do not provide a robust enough experience." Build 11 adds **substantial native iOS code** beyond webview features:
 
 ## What's New in This Version (≤4,000 chars; ASC versionString)
 
-PropertyDNA is now built for the field, not just the desk.
+PropertyDNA is now a fully native iOS app with on-device AI, native MapKit, and Siri integration — built for the field.
 
-NEW
-• Native bottom tab bar — Home, Map, Saved, Account. One tap to your most-used screens.
-• Use My Location — tap the pin on any address field to drop your current coordinates and prefill the form.
-• Offline reports — every report you open is saved to your device automatically. Open them in airplane mode, at a showing with no signal, in the elevator.
-• Save & Share — pin reports to keep them offline forever, or share to Messages, Mail, AirDrop, or any app via the native iOS share sheet.
-• Haptic feedback — subtle taps confirm primary actions (analyze, sign in, save).
-• Offline banner — when you lose signal, a banner lets you jump straight to your saved reports.
+NEW IN BUILD 11
+• Vision OCR Address Scanner — point your camera at a property sign or address; Apple's Vision framework recognizes the text on-device and fills the form for you. No typing.
+• Native MapKit View — tap "Open in Maps" on any report to see the property on a full-screen native Apple Maps view with Standard / Satellite / Hybrid, 3-D buildings, and one-tap Directions.
+• Siri Shortcuts — "Hey Siri, analyze a property with PropertyDNA" or "show my saved reports" — works from the lock screen, AirPods, or CarPlay.
+• Home Screen Quick Actions — long-press the app icon for one-tap Analyze, Saved Reports, Dashboard, or Heat Map.
+• Spotlight Search — your saved reports appear in iOS Spotlight when you pull down on the home screen. Find a property without opening the app.
 
-IMPROVED
-• Account deletion — find it instantly from the user menu or the Account · Privacy card on your dashboard.
-• Native sign-in — Apple, Google, and email magic-link all complete in-app without bouncing to Safari.
+CARRIED OVER
+• Native bottom tab bar with haptic feedback
+• Offline reports saved to your device automatically
+• "Use my location" for one-tap form prefill
+• Native share sheet for any report
+• Offline banner when you lose signal
 
 WHY THIS MATTERS
-PropertyDNA exists to defend you against information asymmetry in the biggest purchase of your life. The native app puts that intelligence in your pocket — at the open house, on the curb, before you sign anything.
+The fight isn't between buyer and home — it's between buyer and information. PropertyDNA puts institutional-grade intelligence in your pocket so you walk into every showing knowing more than the agent across the table.
 
 ## Promotional Text (≤170 chars)
 
-Property intelligence in your pocket. Offline reports, native share sheet, geolocation lookup, and haptic feedback — built for buyers and sellers in the field.
+On-device Vision OCR, native MapKit, Siri shortcuts, offline reports, Spotlight search — PropertyDNA is the native iOS app for buyers and sellers in the field.
 
 ## App Review Notes (private — Apple reviewer only)
 
-This release addresses Guideline 4.2 (Minimum Functionality) by adding native iOS capabilities that are impossible on the web:
+PROPERTYDNA BUILD 11 — RESPONSE TO 4.2 REJECTION OF BUILD 10
 
-1. Native bottom tab bar (Home/Map/Saved/Account) — visible on every screen.
-2. iOS share sheet via @capacitor/share for any report.
-3. Offline report cache via @capacitor/preferences — open any report, then put the device in airplane mode and tap the "Saved" tab. The report is fully readable offline.
-4. Geolocation + reverse-geocode (@capacitor/geolocation + Nominatim) — tap "Use my location" next to the address field to autofill.
-5. Haptic feedback (@capacitor/haptics) on primary CTAs.
-6. Offline banner: disable Wi-Fi and cellular while in the app to see the offline state and the "View saved" CTA.
+Apple's prior note on Build 10 stated that "push notifications, Core Location, or sharing do not provide a robust enough experience." We agree, and Build 11 adds substantial native iOS code — not webview features — to address this directly. Each of the items below is implemented in native Swift in the App target, not in JavaScript:
 
-Native sign-in (carried over from Build 9) — sign in with Apple, Google, or email magic-link without leaving the app. Demo credentials below work; any Apple/Google account should also complete via native sign-in.
+1. VISION OCR ADDRESS SCANNER — On the Analyze form, tap the "Scan" button next to the address field. A full-screen native AVCaptureSession opens with a yellow targeting reticle. Apple's Vision framework (VNRecognizeTextRequest) runs on-device — no network, no third-party SDK — and detects U.S. street addresses in real time. When a match is recognized the camera dismisses and the address fills the form. Source: VisionScannerCoordinator.swift, VisionScannerViewController.swift.
+
+2. NATIVE MAPKIT VIEW — On any report with coordinates, tap "Open in Maps". A full-screen MKMapView opens with Apple's native map tiles, 3-D buildings, segmented Standard/Satellite/Hybrid selector, and a Directions button that hands off to Apple Maps for routing. This replaces the web Leaflet map for a genuinely native experience. Source: NativeMapPresenter.swift.
+
+3. SIRI SHORTCUTS via APP INTENTS — Four AppIntent declarations (Analyze Property, Saved Reports, Dashboard, Heat Map) registered via PropertyDNAShortcuts (iOS 16 AppShortcutsProvider). They appear in the Shortcuts app and Siri suggestions. Test: "Hey Siri, analyze a property with PropertyDNA." Source: PropertyAppIntents.swift.
+
+4. HOME SCREEN QUICK ACTIONS — Four UIApplicationShortcutItems declared in Info.plist (Analyze, Saved, Dashboard, Heat Map). Long-press the app icon to invoke. Source: QuickActionsHandler.swift, AppDelegate.swift.
+
+5. CORE SPOTLIGHT INDEXING — Reports the user views are indexed via CSSearchableIndex with the address as title and DNA score in the description. Pull down on the iOS home screen, type a property address, and the saved report appears in Spotlight results. Tapping the result deep-links into the app. Source: SpotlightIndexer.swift.
 
 DEMO CREDENTIALS
-Apple ID: ar_user235@icloud.com (validated in Build 8 review)
-Email magic-link: any email address — link arrives via Resend.
+Apple ID: ar_user235@icloud.com (worked in Build 8 review)
+Email magic-link: any valid email — link arrives via Resend.
 
-Account deletion (Guideline 5.1.1(v)): two surfaces — Nav user menu → "Delete Account", and a dedicated Account · Privacy card at the top of the Dashboard. Both lead to the same confirm flow, which calls /.netlify/functions/delete-account to remove auth identity, profile, subscriptions, and saved reports.
+HOW TO VERIFY THE NATIVE FEATURES
+- Vision Scanner: Open Analyze → tap "Scan" → point at any address on paper or sign → it autofills.
+- MapKit: Generate any report → scroll to "Sales Activity Map" → tap "Open in Maps".
+- Siri: Hold the side button → "Analyze a property with PropertyDNA" → opens to /analyze.
+- Quick Actions: Long-press the home screen icon.
+- Spotlight: View a report (any) → exit to home screen → pull down → type the address.
 
-## Resolution Center Reply (if Build 9 had open 4.2 ticket — paste in ASC UI)
+The native Swift source files for these features are in the App target alongside AppDelegate.swift. They are not webview wrappers.
+
+Thank you for your time.
+
+## Resolution Center Reply (paste in ASC UI)
 
 Thank you for the previous review.
 
-Build 10 substantially expands the iOS app's native functionality so it is meaningfully different from the web experience. New capabilities you can verify:
+Build 11 adds substantial native iOS code in direct response to the 4.2 feedback. The following features are implemented in native Swift in the App target — not in the web layer:
 
-1. NATIVE BOTTOM TAB BAR — visible on every screen with haptic feedback on tap.
-2. iOS SHARE SHEET — open any report and tap "Share Report" to invoke the system share sheet.
-3. OFFLINE REPORTS — Open a report (it is automatically cached), enable Airplane Mode, tap the "Saved" tab. The report is readable with no network connection. This is impossible on the web.
-4. GEOLOCATION — On the Analyze form, tap "Use my location" to fetch device GPS and reverse-geocode it into the address fields.
-5. HAPTIC FEEDBACK on all primary CTAs.
-6. OFFLINE BANNER — Disable Wi-Fi and cellular; a banner appears at the top of every screen with a one-tap link to saved reports.
+1. VISION OCR ADDRESS SCANNER — Apple Vision framework runs on-device text recognition through AVCaptureSession to scan property addresses from signs or paper. The reviewer can test this by opening the Analyze form and tapping "Scan" next to the address field.
 
-We have also added a top-level "Account · Privacy" card on the dashboard surfacing the account deletion flow (5.1.1(v)) without requiring navigation.
+2. NATIVE MAPKIT VIEW — Replaces the web map with a real MKMapView (Apple Maps tiles, 3-D buildings, satellite/hybrid toggle, native Directions). Tap "Open in Maps" on any report with coordinates.
 
-Thank you for your time. Please let us know if there is anything else we can clarify.
+3. SIRI SHORTCUTS — Four AppIntent declarations registered with AppShortcutsProvider (iOS 16). "Hey Siri, analyze a property with PropertyDNA" opens the app to the analyze form.
+
+4. HOME SCREEN QUICK ACTIONS — Long-press the app icon for one-tap Analyze, Saved Reports, Dashboard, Heat Map.
+
+5. CORE SPOTLIGHT INDEXING — Saved reports appear in iOS Spotlight pull-down search by address.
+
+These are not features that could be implemented as a web page. Vision text recognition runs on the device's Neural Engine; MapKit is Apple's native map renderer; AppIntents requires iOS 16's compile-time intent metadata; UIApplicationShortcutItems is a Home Screen iOS surface; Core Spotlight indexes into the iOS-system database.
+
+Thank you for your time. We appreciate the careful review.

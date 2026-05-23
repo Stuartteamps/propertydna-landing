@@ -17,7 +17,7 @@ import { NeighborhoodBreakdown } from '@/components/report/NeighborhoodBreakdown
 import LuxuryDossierSection from '@/components/LuxuryDossierSection';
 import { planToTier, fetchUserTier, TIER_LABELS, type Tier } from '@/lib/tier';
 import { computeDNAScore } from '@/lib/dnaScore';
-import { isNative, tapHaptic, shareSheet, successHaptic } from '@/lib/nativeFeatures';
+import { isNative, tapHaptic, shareSheet, successHaptic, openNativeMap, indexReportInSpotlight } from '@/lib/nativeFeatures';
 import { saveReportOffline, listSavedReports, removeSavedReport } from '@/lib/offlineReports';
 
 // Fix Leaflet default icon issue with bundlers
@@ -156,7 +156,23 @@ export default function ReportView() {
         }).catch(() => { /* best-effort cache */ });
       }
     });
+
+    // Index the report in iOS Spotlight so it's discoverable from the home
+    // screen pull-down search — pure native, impossible on web.
+    indexReportInSpotlight({
+      id: reportId,
+      address: report.address || 'PropertyDNA Report',
+      dnaScore: typeof dnaScore?.total === 'number' ? dnaScore.total : undefined,
+      rating: dna?.rating,
+      reportUrl: `/report/${reportId}`,
+    });
   }, [reportId, report]);
+
+  const handleOpenNativeMap = () => {
+    if (!hasMap) return;
+    tapHaptic();
+    openNativeMap(subjectLat as number, subjectLon as number, report?.address || 'Subject Property');
+  };
 
   const handleSaveOffline = async () => {
     if (!reportId || !report) return;
@@ -417,8 +433,22 @@ export default function ReportView() {
         {/* Heat Map */}
         {hasMap && (
           <Section title="Sales Activity Map">
-            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', marginBottom: 16 }}>
-              Subject property shown in gold. Comparable sales sized and colored by price — larger/darker = higher value.
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252' }}>
+                Subject property shown in gold. Comparable sales sized and colored by price — larger/darker = higher value.
+              </div>
+              {isNative() && (
+                <button
+                  onClick={handleOpenNativeMap}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '9px 14px', cursor: 'pointer' }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M3 6 9 4l6 2 6-2v14l-6 2-6-2-6 2V6z" />
+                    <path d="M9 4v16M15 6v16" />
+                  </svg>
+                  Open in Maps
+                </button>
+              )}
             </div>
             <div style={{ height: 420, borderRadius: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
               <MapContainer

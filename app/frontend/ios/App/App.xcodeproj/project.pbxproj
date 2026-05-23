@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		4BA8ED7439707C934954A3C9 /* SpotlightIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0E4A7E2D3D2809B5397F1B /* SpotlightIndexer.swift */; };
+		4BEFDC5AF0B5D3E4CCDA5C2D /* PropertyDNABridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EDA2E6E3342FF982B268138 /* PropertyDNABridgeViewController.swift */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -15,11 +17,19 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		6D57DB04D7E800E7729407AC /* VisionScannerCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0595316D5DE1F480CFC763E7 /* VisionScannerCoordinator.swift */; };
 		AABB00000000000000000001 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000002 /* GoogleService-Info.plist */; };
+		D5A2DC680D1DA357F1D7AEB6 /* NativeMapPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D1344CA80E89F2184CCDCCB /* NativeMapPresenter.swift */; };
+		E58B04ACE2651841591B822D /* QuickActionsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFECA8260A7BF726815FBC06 /* QuickActionsHandler.swift */; };
+		F4644A1CD14BD8E14480CEFD /* PropertyAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C40BB0470E76E5936FB5A2 /* PropertyAppIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0595316D5DE1F480CFC763E7 /* VisionScannerCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VisionScannerCoordinator.swift; sourceTree = "<group>"; };
+		09C40BB0470E76E5936FB5A2 /* PropertyAppIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PropertyAppIntents.swift; sourceTree = "<group>"; };
+		2A0E4A7E2D3D2809B5397F1B /* SpotlightIndexer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpotlightIndexer.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		3D1344CA80E89F2184CCDCCB /* NativeMapPresenter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeMapPresenter.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -29,7 +39,9 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		9EDA2E6E3342FF982B268138 /* PropertyDNABridgeViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PropertyDNABridgeViewController.swift; sourceTree = "<group>"; };
 		AABB00000000000000000002 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		DFECA8260A7BF726815FBC06 /* QuickActionsHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickActionsHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +85,12 @@
 				AABB00000000000000000002 /* GoogleService-Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				9EDA2E6E3342FF982B268138 /* PropertyDNABridgeViewController.swift */,
+				0595316D5DE1F480CFC763E7 /* VisionScannerCoordinator.swift */,
+				3D1344CA80E89F2184CCDCCB /* NativeMapPresenter.swift */,
+				2A0E4A7E2D3D2809B5397F1B /* SpotlightIndexer.swift */,
+				09C40BB0470E76E5936FB5A2 /* PropertyAppIntents.swift */,
+				DFECA8260A7BF726815FBC06 /* QuickActionsHandler.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -160,6 +178,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				4BEFDC5AF0B5D3E4CCDA5C2D /* PropertyDNABridgeViewController.swift in Sources */,
+				6D57DB04D7E800E7729407AC /* VisionScannerCoordinator.swift in Sources */,
+				D5A2DC680D1DA357F1D7AEB6 /* NativeMapPresenter.swift in Sources */,
+				4BA8ED7439707C934954A3C9 /* SpotlightIndexer.swift in Sources */,
+				F4644A1CD14BD8E14480CEFD /* PropertyAppIntents.swift in Sources */,
+				E58B04ACE2651841591B822D /* QuickActionsHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,11 +323,11 @@
 			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
-				DEVELOPMENT_TEAM = 8NR9GCA6GQ;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
+				DEVELOPMENT_TEAM = 8NR9GCA6GQ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -313,8 +337,8 @@
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = com.thepropertydna.app;
-				PROVISIONING_PROFILE_SPECIFIER = "5f745471-83f6-4464-a21c-eb22a5440c1d";
 				PRODUCT_NAME = PropertyDNA;
+				PROVISIONING_PROFILE_SPECIFIER = "5f745471-83f6-4464-a21c-eb22a5440c1d";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -325,11 +349,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
-				DEVELOPMENT_TEAM = 8NR9GCA6GQ;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
+				DEVELOPMENT_TEAM = 8NR9GCA6GQ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -338,8 +362,8 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.thepropertydna.app;
-				PROVISIONING_PROFILE_SPECIFIER = "5f745471-83f6-4464-a21c-eb22a5440c1d";
 				PRODUCT_NAME = PropertyDNA;
+				PROVISIONING_PROFILE_SPECIFIER = "5f745471-83f6-4464-a21c-eb22a5440c1d";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;

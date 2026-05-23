@@ -106,3 +106,85 @@ export async function getCurrentAddress(): Promise<ReverseGeocodeResult | null> 
   if (!pos) return null;
   return reverseGeocode(pos.lat, pos.lon);
 }
+
+// ── Native iOS WKScriptMessageHandler bridges ──────────────────────────────
+// These are wired in Swift by PropertyDNABridgeViewController. Each helper
+// posts a message to a handler registered on the WKWebView's user content
+// controller; the native code presents a real UIViewController (Vision OCR
+// camera, MKMapView, etc.) and returns the result via a CustomEvent
+// dispatched on window. The web layer never renders these surfaces — they
+// are native iOS UI, not WebKit DOM.
+
+interface WebkitWindow {
+  webkit?: {
+    messageHandlers?: Record<string, { postMessage: (msg: unknown) => void }>;
+  };
+}
+
+function postNativeMessage(handler: string, payload: unknown): boolean {
+  if (!isNative()) return false;
+  const w = window as unknown as WebkitWindow;
+  const mh = w.webkit?.messageHandlers?.[handler];
+  if (!mh) return false;
+  mh.postMessage(payload);
+  return true;
+}
+
+let scanCallbackCounter = 0;
+const pendingScans = new Map<string, (address: string | null) => void>();
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pdnaScanAddressResult', (e: Event) => {
+    const detail = (e as CustomEvent).detail || {};
+    const cb = pendingScans.get(detail.callbackId);
+    if (cb) {
+      pendingScans.delete(detail.callbackId);
+      cb(detail.address || null);
+    }
+  });
+}
+
+/// Presents the native AVCaptureSession + Vision text-recognition scanner.
+/// On a successful match, resolves with the recognized address string. On
+/// cancel or platform unavailability, resolves with null.
+export function scanAddressFromCamera(): Promise<string | null> {
+  if (!isNative()) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const callbackId = `scan-${Date.now()}-${++scanCallbackCounter}`;
+    pendingScans.set(callbackId, resolve);
+    const ok = postNativeMessage('pdnaScanAddress', { callbackId });
+    if (!ok) {
+      pendingScans.delete(callbackId);
+      resolve(null);
+    }
+    // Safety timeout in case the native side never returns.
+    setTimeout(() => {
+      if (pendingScans.has(callbackId)) {
+        pendingScans.delete(callbackId);
+        resolve(null);
+      }
+    }, 120_000);
+  });
+}
+
+/// Opens a full-screen native MKMapView centered on the given coordinates.
+/// Standard/Satellite/Hybrid toggle + Directions button (launches Apple Maps).
+export function openNativeMap(lat: number, lon: number, label?: string): boolean {
+  return postNativeMessage('pdnaOpenNativeMap', { lat, lon, label });
+}
+
+/// Indexes a report in iOS Spotlight so users can find it from the home
+/// screen pull-down search without opening the app first.
+export function indexReportInSpotlight(report: {
+  id: string;
+  address: string;
+  dnaScore?: number;
+  rating?: string;
+  reportUrl?: string;
+}): boolean {
+  return postNativeMessage('pdnaIndexReport', report);
+}
+
+export function removeReportFromSpotlight(id: string): boolean {
+  return postNativeMessage('pdnaDeindexReport', { id });
+}

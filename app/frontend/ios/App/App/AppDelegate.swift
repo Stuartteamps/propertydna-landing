@@ -11,7 +11,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Initialize Firebase — must be first
         FirebaseApp.configure()
+
+        // If launched via a Quick Action, stash it for the bridge to consume
+        // once the web layer is ready.
+        if let item = launchOptions?[.shortcutItem] as? UIApplicationShortcutItem {
+            _ = QuickActionsHandler.handle(item)
+        }
         return true
+    }
+
+    /// Quick Actions (Home Screen long-press menu) — iOS calls this when the
+    /// user taps one of the items declared in Info.plist's
+    /// UIApplicationShortcutItems. We forward to QuickActionsHandler which
+    /// navigates the bridge view's web layer.
+    func application(_ application: UIApplication,
+                     performActionFor shortcutItem: UIApplicationShortcutItem,
+                     completionHandler: @escaping (Bool) -> Void) {
+        completionHandler(QuickActionsHandler.handle(shortcutItem))
     }
 
     func applicationWillResignActive(_ application: UIApplication) {}
