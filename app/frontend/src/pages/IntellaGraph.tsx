@@ -4,6 +4,7 @@ import Nav from '@/components/Nav';
 import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import PremiumLockOverlay from '@/components/PremiumLockOverlay';
+import IntellaGraphAIPanel from '@/components/IntellaGraphAIPanel';
 import { isPremiumUser } from '@/lib/isPremiumUser';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
@@ -994,6 +995,13 @@ export default function IntellaGraph() {
               SEARCH
             </button>
           </div>
+
+          {/* ── INTELLAGRAPH AI PANEL (collapsible) ── */}
+          <IntellaGraphAIPanel
+            premium={premium}
+            onUpgrade={() => setPricingOpen(true)}
+            presetAddress={selected ? `${selected.city}, ${selected.state}` : ''}
+          />
 
           {/* ── MODE TABS ── */}
           <div data-globe-ui style={{ position: 'absolute', top: 12, right: 'calc(280px + 12px)', zIndex: 150, display: 'flex', gap: 1 }}>
