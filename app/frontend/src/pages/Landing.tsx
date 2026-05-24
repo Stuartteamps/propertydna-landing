@@ -11,9 +11,7 @@ import AddressAutocomplete, { type AddressResult } from '@/components/AddressAut
 import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
 import PropertyTicker from '@/components/PropertyTicker';
-import FeaturedDossiers from '@/components/FeaturedDossiers';
-import FeaturedNeighborhoods from '@/components/FeaturedNeighborhoods';
-import PedigreeProofBar from '@/components/PedigreeProofBar';
+import NationwideCoverage from '@/components/NationwideCoverage';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -359,14 +357,11 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* ── PEDIGREE PROOF BAR ─────────────────────────────────────── */}
-      <PedigreeProofBar />
-
-      {/* ── FEATURED VERIFIED DOSSIERS ─────────────────────────────── */}
-      <FeaturedDossiers />
-
-      {/* ── FEATURED NEIGHBORHOODS ─────────────────────────────────── */}
-      <FeaturedNeighborhoods />
+      {/* ── NATIONWIDE COVERAGE ────────────────────────────────────── */}
+      {/* Multi-state stats (was Coachella-only proof bar + dossiers + */}
+      {/* Palm Springs neighborhoods). All luxury/CV-specific content */}
+      {/* now lives on /dossiers tab to keep landing nationally scoped. */}
+      <NationwideCoverage />
 
       {/* ── CAPABILITY STACK ───────────────────────────────────────── */}
       <section id="platform" className="px-6 md:px-12 py-24 md:py-32" style={{ background: '#0A0908' }}>
