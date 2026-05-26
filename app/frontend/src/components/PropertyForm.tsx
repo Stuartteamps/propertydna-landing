@@ -231,17 +231,20 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
 
       const q = usage.quota;
 
+      // Apple Guideline 3.1.1: on iOS we don't reference quotas, plans, or
+      // subscriptions in any user-facing flow. Every iOS analyze submission
+      // generates a free report — no upper limit visible. This removes any
+      // "limited resource also sold via Stripe" pattern Apple might flag.
+      if (isNative()) {
+        await goToCheckout(form, 'free');
+        return;
+      }
+
       if (usage.isSubscribed) {
         // Subscribed — check monthly quota
         if (q?.exceeded) {
-          // Quota exhausted for this billing cycle → show upgrade gate
           setStatus('idle');
-          if (isNative()) {
-            setErrorMsg("You've used all your reports for this month. New reports refresh on your next billing cycle.");
-            setStatus('error');
-          } else {
-            setGateOpen(true);
-          }
+          setGateOpen(true);
         } else {
           await goToCheckout(form, 'free');
         }
@@ -249,13 +252,6 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
         // First ever report → free
         await goToCheckout(form, 'free');
       } else {
-        // Has used free report → show pricing gate (web) or friendly cap (iOS)
-        if (isNative()) {
-          setStatus('idle');
-          setErrorMsg("You've used your free report on this device. Sign in to your existing account if you have one, or generate additional reports from thepropertydna.com.");
-          setStatus('error');
-          return;
-        }
         setStatus('idle');
         setGateOpen(true);
       }

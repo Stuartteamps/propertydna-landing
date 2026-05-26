@@ -1,3 +1,81 @@
+# Build 14 — Resubmission Notes
+
+Build 13 cleared the *purchase-in-app* interpretation of 3.1.1 but Apple rejected on the *accessing externally-purchased content* interpretation. The iOS app was still exposing tier/plan/subscription concepts in its UI (tier badges, "Free Account" indicators, "Check your plan" prompts) which implied — correctly — that the app interfaces with externally-paid services.
+
+Build 14's response: **make the iOS app entirely tier-blind**. No subscription, plan, tier, or paid concept appears anywhere in the iOS UI. Every user is treated identically. Every analyze submission produces a free report with no quota indication.
+
+## Build 14 changes (3.1.1 — tier-blind architecture)
+
+**Runtime-level enforcement** (`main.tsx`):
+- The `check-usage` Netlify function's response is intercepted client-side on iOS. The response body is rewritten before reaching the React tree:
+  `{ isSubscribed: false, plan: null, tier: 'free', reportCount: 0, quota: null }`
+- This guarantees no downstream code path ever sees subscriber state on iOS, even for users who have an active Stripe subscription on their account.
+
+**UI hidden on iOS:**
+- `Nav.tsx` — tier badge ("Pro" / "Enterprise") next to avatar hidden on iOS.
+- `Dashboard.tsx` — subscription bar (the "Free Account" / "Pro Active" pill) hidden entirely.
+- `ReportView.tsx` — the tier banner with plan label + "Check your plan" inline email prompt hidden on iOS.
+- `PropertyForm.tsx` — every iOS analyze submission goes straight to `goToCheckout(form, 'free')`. No quota check, no overage handling, no error message about used reports.
+- The first-report Enterprise preview banner copy changed on iOS — no longer says "Subsequent reports use your current plan"; instead reads "You're seeing every section we offer."
+
+**Pricing page on iOS** updated copy:
+- Title: "Property intelligence on demand." (was "One free report per device.")
+- Body: just describes what the app does, no scarcity / paid-alternative language.
+
+## Why this addresses Apple's 3.1.1 note
+
+Apple's note: "The app accesses digital content purchased outside the app, such as subscriptions, but that content isn't available to purchase using In-App Purchase."
+
+The iOS app now:
+1. Cannot access externally-purchased subscriptions — every user is tier-blind, regardless of Stripe sub status (main.tsx rewrites check-usage response).
+2. Does not reference "subscriptions", "plans", "tiers", "Pro", or "Enterprise" anywhere in the user-facing UI.
+3. Treats every analyze request identically — no upper limit, no quota, no payment surface.
+
+PropertyDNA iOS is now a free, self-contained property-intelligence tool. The web version retains the full tiered subscription model, but the iOS app has no awareness of or access to that model.
+
+## App Review Notes (private)
+
+PROPERTYDNA BUILD 14 — TIER-BLIND iOS
+
+Apple's prior 3.1.1 note observed that the iOS app accesses externally-purchased subscriptions. Build 14 closes this at the runtime level: the `check-usage` API response is intercepted client-side and rewritten to free-tier values before reaching the React tree. The iOS app cannot see, surface, or honor any externally-purchased subscription.
+
+Specifically:
+- main.tsx patches `window.fetch` so any response from `/check-usage` on native is rewritten to `{ isSubscribed: false, plan: null, tier: 'free', reportCount: 0, quota: null }` before parsing. Even if the user has a paid Stripe subscription, the iOS UI never sees that state.
+- The Nav tier badge ("Pro" / "Enterprise" next to avatar) is hidden on native.
+- The Dashboard's subscription bar ("Free Account" / "Pro Active") is hidden on native.
+- The ReportView tier banner with plan check is hidden on native.
+- The PropertyForm bypasses all quota / payment / overage logic on native; every submission is a free report.
+- The Pricing page renders a generic product-description card on native — no plans, tiers, or pricing.
+
+Reviewer can confirm: signing in with any account (paid or unpaid) produces the same free-tier experience on iOS. There is no path to perceive, access, or interact with externally-purchased content.
+
+We are not currently offering In-App Purchase products in this app. PropertyDNA on iOS is a free property-intelligence tool with no monetization in-app.
+
+DEMO CREDENTIALS
+Apple ID: ar_user235@icloud.com (worked in Build 8 review)
+Email magic-link: any valid email.
+
+## Resolution Center Reply (paste in ASC UI)
+
+Thank you for the review of Build 13.
+
+Build 14 implements a runtime-level fix: the iOS client intercepts the `check-usage` API response and forces every user (paid or unpaid) to appear as tier=free / isSubscribed=false / reportCount=0. This means the iOS app cannot access externally-purchased subscriptions, even for accounts that have an active web subscription.
+
+Every reference to tiers, plans, "Pro", "Enterprise", "Free Account", or subscriptions has been hidden in the iOS UI:
+- Nav tier badge — hidden on iOS
+- Dashboard subscription bar — hidden on iOS
+- ReportView tier banner + plan check prompt — hidden on iOS
+- PropertyForm — no quota checks, no overage handling, no payment surface
+- Pricing page — generic product description, no plans
+
+The iOS app is now a free, self-contained property-intelligence tool. We will add In-App Purchase in a future submission if we decide to monetize on iOS; for now there is no payment of any kind in the app.
+
+Thank you for your time.
+
+---
+
+# Earlier build history
+
 # Build 13 — Resubmission Notes
 
 Build 12 cleared 4.2 but was rejected on 3.1.1 — the reviewer found a path to a subscription purchase that I had missed (the `/pricing` page itself was still reachable via the webview, plus several inline pricing CTAs across the React tree). Build 13 closes every remaining payment surface.

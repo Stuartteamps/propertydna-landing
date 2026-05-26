@@ -80,10 +80,8 @@ export default function Pricing() {
   const [pricingOpen, setPricingOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Apple Guideline 3.1.1 — subscriptions cannot be purchased in the iOS app
-  // by any means other than In-App Purchase. PropertyDNA currently has no
-  // IAP products configured, so on iOS this page renders a free-tier-only
-  // notice instead of plan tiles or subscribe CTAs.
+  // Apple Guideline 3.1.1 — no payment surfaces or paid-tier references
+  // in the iOS app. This page just describes the product.
   if (isNative()) {
     return (
       <div style={{ background: '#0F0E0D', color: '#F4F0E8', minHeight: '100vh' }}>
@@ -93,13 +91,13 @@ export default function Pricing() {
             PropertyDNA
           </div>
           <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(32px,5vw,48px)', fontWeight: 300, color: '#F4F0E8', margin: '0 0 16px', lineHeight: 1.1 }}>
-            One free report per device.
+            Property intelligence on demand.
           </h1>
           <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(244,240,232,0.6)', lineHeight: 1.8, margin: '0 0 32px' }}>
-            The PropertyDNA iOS app gives you one complete property intelligence report — every section, every signal — on the house of your choice. Use it well: walk a showing, screen a listing, or test a neighborhood you're considering. Your saved report stays on your device and is readable offline.
+            Generate a complete property intelligence report on any U.S. address. Live valuation, comparable sales, climate context, ownership history, and a direct verdict on whether to buy. Save reports to your device for offline reading at showings.
           </p>
           <button onClick={() => navigate('/analyze')} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '14px 24px', cursor: 'pointer' }}>
-            Generate Your Free Report →
+            Analyze a Property →
           </button>
         </section>
         <Footer />

@@ -216,7 +216,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Subscription bar */}
+        {/* Subscription bar — hidden on iOS (Apple Guideline 3.1.1: no
+            reference to paid plans in the iOS app). Web users see their
+            tier; iOS users see only their report count below. */}
+        {!isNative() && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 36, padding: '16px 20px', border: `1px solid ${isSubscribed ? 'rgba(201,168,76,0.3)' : 'rgba(255,255,255,0.07)'}`, background: isSubscribed ? 'rgba(201,168,76,0.04)' : 'transparent' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSubscribed ? '#C9A84C' : '#6B6252' }} />
@@ -230,13 +233,14 @@ export default function Dashboard() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            {!isSubscribed && !isNative() && (
+            {!isSubscribed && (
               <button onClick={() => setPricingOpen(true)} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '10px 18px', cursor: 'pointer' }}>
                 Upgrade Pro →
               </button>
             )}
           </div>
         </div>
+        )}
 
         {/* Error */}
         {error && (

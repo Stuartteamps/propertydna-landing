@@ -746,10 +746,13 @@ export default function ReportView() {
           }}>
             <div style={{ flex: 1, minWidth: 240 }}>
               <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 8 }}>
-                First Report · Full Enterprise Preview
+                {isNative() ? 'Complete Report' : 'First Report · Full Enterprise Preview'}
               </div>
               <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.7 }}>
-                You're seeing every section we offer — market trend intelligence, micro-location scoring, full adjustment-factor breakdown, and property event timeline. Subsequent reports use your current plan.
+                {isNative()
+                  ? "You're seeing every section we offer — market trend intelligence, micro-location scoring, full adjustment-factor breakdown, and property event timeline."
+                  : "You're seeing every section we offer — market trend intelligence, micro-location scoring, full adjustment-factor breakdown, and property event timeline. Subsequent reports use your current plan."
+                }
               </div>
             </div>
             {!isNative() && <a
@@ -766,7 +769,9 @@ export default function ReportView() {
           </div>
         )}
 
-        {/* ── TIER BANNER ── */}
+        {/* ── TIER BANNER ── (hidden on iOS — Apple Guideline 3.1.1: no
+            references to paid plans in the iOS app) */}
+        {!isNative() && (
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 28, marginBottom: 32 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -812,6 +817,7 @@ export default function ReportView() {
             </div>
           )}
         </div>
+        )}
 
         {/* ── PRO TIER: Market Intelligence ── */}
         <Section title="Market Intelligence">

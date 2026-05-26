@@ -97,8 +97,9 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
           {user ? (
             /* Signed-in state */
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {/* Tier badge */}
-              {tier !== 'free' && (
+              {/* Tier badge — hidden on iOS (Apple Guideline 3.1.1: no
+                  references to paid plans in the iOS app) */}
+              {tier !== 'free' && !isNative() && (
                 <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.3)', padding: '4px 8px' }}>
                   {tier === 'enterprise' ? 'Enterprise' : 'Pro'}
                 </div>
