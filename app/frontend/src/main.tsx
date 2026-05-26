@@ -27,6 +27,28 @@ if (Capacitor.isNativePlatform()) {
   // Marks the document for native-specific styling — currently used to add
   // bottom padding so the fixed NativeBottomNav doesn't cover page content.
   document.documentElement.classList.add('pdna-native');
+
+  // Apple Guideline 3.1.1 safety net: hard-block window.open() to any
+  // external payment surface on iOS. The relevant React components all
+  // self-guard on isNative(); this catches anything we missed.
+  const isPaymentURL = (u: string) => /\b(stripe\.com|checkout\.stripe|buy\.stripe)\b/i.test(u);
+  const originalOpen = window.open.bind(window);
+  window.open = ((url?: string | URL, ...rest: any[]) => {
+    const s = typeof url === 'string' ? url : url?.toString() || '';
+    if (s && isPaymentURL(s)) return null;
+    return originalOpen(url as any, ...(rest as []));
+  }) as typeof window.open;
+
+  // Hide the /pricing route on cold start — if iOS user lands there via
+  // a deep link or back-stack, send them home. The web /pricing page
+  // also self-guards on isNative(); this is belt-and-suspenders.
+  const pruneIfPricing = () => {
+    if (window.location.pathname === '/pricing') {
+      window.history.replaceState({}, '', '/');
+    }
+  };
+  pruneIfPricing();
+  window.addEventListener('popstate', pruneIfPricing);
 }
 
 // Load runtime configuration before rendering the app

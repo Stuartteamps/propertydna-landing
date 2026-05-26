@@ -4,6 +4,7 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import PricingModal from '@/components/PricingModal';
 import FadeUp from '@/components/FadeUp';
+import { isNative } from '@/lib/nativeFeatures';
 
 const plans = [
   {
@@ -78,6 +79,33 @@ const plans = [
 export default function Pricing() {
   const [pricingOpen, setPricingOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Apple Guideline 3.1.1 — subscriptions cannot be purchased in the iOS app
+  // by any means other than In-App Purchase. PropertyDNA currently has no
+  // IAP products configured, so on iOS this page renders a free-tier-only
+  // notice instead of plan tiles or subscribe CTAs.
+  if (isNative()) {
+    return (
+      <div style={{ background: '#0F0E0D', color: '#F4F0E8', minHeight: '100vh' }}>
+        <Nav />
+        <section style={{ padding: '100px 24px 60px', maxWidth: 640, margin: '0 auto' }}>
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#B89355', marginBottom: 16 }}>
+            PropertyDNA
+          </div>
+          <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(32px,5vw,48px)', fontWeight: 300, color: '#F4F0E8', margin: '0 0 16px', lineHeight: 1.1 }}>
+            One free report per device.
+          </h1>
+          <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(244,240,232,0.6)', lineHeight: 1.8, margin: '0 0 32px' }}>
+            The PropertyDNA iOS app gives you one complete property intelligence report — every section, every signal — on the house of your choice. Use it well: walk a showing, screen a listing, or test a neighborhood you're considering. Your saved report stays on your device and is readable offline.
+          </p>
+          <button onClick={() => navigate('/analyze')} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '14px 24px', cursor: 'pointer' }}>
+            Generate Your Free Report →
+          </button>
+        </section>
+        <Footer />
+      </div>
+    );
+  }
 
   const CALENDLY_URL = 'https://calendly.com/stuartteamps-vls6/30min';
 

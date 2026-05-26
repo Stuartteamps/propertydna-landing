@@ -10,6 +10,7 @@ import TeaserCard from '@/components/TeaserCard';
 import AddressAutocomplete, { type AddressResult } from '@/components/AddressAutocomplete';
 import { useAuth } from '@/lib/auth';
 import { isPremiumUser } from '@/lib/isPremiumUser';
+import { isNative } from '@/lib/nativeFeatures';
 import PropertyTicker from '@/components/PropertyTicker';
 import NationwideCoverage from '@/components/NationwideCoverage';
 
@@ -465,7 +466,7 @@ export default function Landing() {
             >
               Get Your Free Report →
             </button>
-            <button
+            {!isNative() && <button
               type="button"
               onClick={() => navigate('/pricing')}
               style={{
@@ -479,7 +480,7 @@ export default function Landing() {
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(244,240,232,0.7)'; }}
             >
               View Pricing
-            </button>
+            </button>}
           </div>
         </FadeUp>
       </section>

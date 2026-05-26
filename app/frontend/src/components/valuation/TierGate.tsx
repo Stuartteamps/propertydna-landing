@@ -1,5 +1,6 @@
 import React from 'react';
 import { Tier, tierAtLeast } from '@/lib/tier';
+import { isNative } from '@/lib/nativeFeatures';
 
 interface TierGateProps {
   userTier: Tier;
@@ -27,6 +28,11 @@ const UPGRADE_INFO = {
 
 export const TierGate: React.FC<TierGateProps> = ({ userTier, requiredTier, children, onUpgrade }) => {
   if (tierAtLeast(userTier, requiredTier)) return <>{children}</>;
+  // Apple Guideline 3.1.1: no upgrade CTAs in the iOS app. Render the
+  // gated content fully on native — users get the complete experience on
+  // their free first report, and can't reach this code path for additional
+  // reports anyway (PropertyForm blocks them at the quota).
+  if (isNative()) return <>{children}</>;
 
   const info = UPGRADE_INFO[requiredTier];
 

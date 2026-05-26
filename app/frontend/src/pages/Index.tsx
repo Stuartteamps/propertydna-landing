@@ -7,6 +7,7 @@ import PricingModal from '@/components/PricingModal';
 import FadeUp from '@/components/FadeUp';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
 import { isPremiumUser } from '@/lib/isPremiumUser';
+import { isNative } from '@/lib/nativeFeatures';
 
 type ModalTab = 'signin' | 'pricing';
 
@@ -357,7 +358,7 @@ export default function Index() {
                     Upgrade to view full comparable trend charts, price movement, and market velocity.
                   </div>
                 )}
-                {!premium ? (
+                {!premium && !isNative() ? (
                   <button
                     onClick={openPricing}
                     style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#0F0E0D', background: '#B89355', border: 'none', padding: '10px 20px', cursor: 'pointer' }}
@@ -373,7 +374,7 @@ export default function Index() {
               <MarketHeatMapPreview isPremium={premium} onUpgrade={() => openModal('pricing')} />
             </FadeUp>
           </div>
-          <FadeUp delay={0.14}>
+          {!isNative() && <FadeUp delay={0.14}>
             <div className="mt-6 text-center">
               <button
                 type="button"
@@ -383,7 +384,7 @@ export default function Index() {
                 See All Plans →
               </button>
             </div>
-          </FadeUp>
+          </FadeUp>}
         </div>
       </section>
 
@@ -473,8 +474,10 @@ export default function Index() {
         </div>
       </section>
 
-      {/* PRICING */}
-      <section className="bg-espresso px-6 md:px-12 py-24 md:py-32" id="pricing">
+      {/* PRICING — entire section omitted on iOS (Apple Guideline 3.1.1).
+           The iOS app sells nothing in-app; users see only the free-tier
+           experience. Web visitors continue to see plans here. */}
+      {!isNative() && <section className="bg-espresso px-6 md:px-12 py-24 md:py-32" id="pricing">
         <div className="max-w-7xl mx-auto">
           <FadeUp>
             <div className="text-center mb-16">
@@ -589,7 +592,7 @@ export default function Index() {
             </FadeUp>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* CTA BANNER */}
       <section

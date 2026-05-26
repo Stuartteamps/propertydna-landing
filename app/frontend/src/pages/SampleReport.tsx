@@ -6,6 +6,7 @@ import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import PremiumPreviewCard from '@/components/PremiumPreviewCard';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
+import { isNative } from '@/lib/nativeFeatures';
 import { Link } from 'react-router-dom';
 import { isPremiumUser } from '@/lib/isPremiumUser';
 
@@ -269,13 +270,13 @@ export default function SampleReport() {
           >
             Sequence Your Property
           </Link>
-          <Link
+          {!isNative() && <Link
             to="/pricing"
             className="inline-block font-sans text-[11px] font-medium uppercase tracking-[3px] text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-8 py-4"
             style={{ textDecoration: 'none' }}
           >
             View Plans →
-          </Link>
+          </Link>}
         </div>
       </section>
 

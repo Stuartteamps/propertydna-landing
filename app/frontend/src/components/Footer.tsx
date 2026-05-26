@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { isNative } from '@/lib/nativeFeatures';
 
 const SOCIAL = [
   {
@@ -84,7 +85,7 @@ export default function Footer() {
             </div>
           </div>
           <div className="flex flex-wrap gap-x-8 gap-y-3">
-            {links.map(({ label, href }) => (
+            {links.filter(l => !(isNative() && l.href === '/pricing')).map(({ label, href }) => (
               <Link
                 key={href}
                 to={href}

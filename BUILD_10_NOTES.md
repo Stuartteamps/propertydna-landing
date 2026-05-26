@@ -1,3 +1,76 @@
+# Build 13 — Resubmission Notes
+
+Build 12 cleared 4.2 but was rejected on 3.1.1 — the reviewer found a path to a subscription purchase that I had missed (the `/pricing` page itself was still reachable via the webview, plus several inline pricing CTAs across the React tree). Build 13 closes every remaining payment surface.
+
+## Build 13 changes (3.1.1 — exhaustive payment-UI removal)
+
+Every entry point to a paid plan in the React/webview layer is now gated on `isNative()`:
+
+- `/pricing` page → renders a "One free report per device" notice on iOS, with only an "Analyze" CTA. No tiers, no subscribe button.
+- `Index.tsx` pricing section → entire section omitted on iOS (the `<section id="pricing">` with the 4 tiles).
+- `Index.tsx` "Upgrade Access" button on the premium-preview tile → hidden on iOS.
+- `Index.tsx` "See All Plans" scroll-to button → hidden on iOS.
+- `Landing.tsx` "View Pricing" hero button → hidden on iOS.
+- `Footer.tsx` "Pricing" nav link → filtered out on iOS.
+- `ReportView.tsx` "Keep Enterprise" upsell banner → hidden on iOS.
+- `Dashboard.tsx` "Upgrade Pro" button → hidden on iOS.
+- `Analyze.tsx` pricing sidebar tile → hidden on iOS.
+- `TierGate.tsx` → renders gated content fully on iOS (no lock, no CTA — Dan's "draw them in" strategy means the free first report shows every section unblurred).
+- `LockedModule.tsx` → renders the underlying preview fully on iOS, no lock overlay.
+- `PremiumPreviewCard.tsx` → forces `isPremium=true` on iOS so content shows without lock.
+- `PremiumFeatureGrid.tsx` → unlocks every feature on iOS so users see the full value.
+- `PremiumLockOverlay.tsx` → returns null on iOS (underlying content shows fully).
+- `MarketHeatMapPreview.tsx` → upsell box + "View Plans" link hidden on iOS.
+- `SampleReport.tsx` "View Plans" link → hidden on iOS.
+- Plus existing Build 12 guards: PricingModal, PricingGate, AuthModal pricing view, Nav "Manage Plan" / "Get Started", PropertyForm.goToCheckout forces mode='free' on iOS.
+
+**Runtime safety net** (`main.tsx`):
+- `window.open()` on iOS strips any URL matching `/stripe\.com|checkout\.stripe|buy\.stripe/i`.
+- The `/pricing` route is intercepted on cold-start and on popstate; iOS users land on `/` instead.
+
+The result: there is no surface in the iOS app, anywhere, from which a user can purchase a subscription via Stripe or any external payment provider.
+
+**Dan's "draw them in" point** (free-first-report full preview):
+- The `isFirstReportPreview` logic in `ReportView.tsx` is intact — any free user with ≤1 reports sees `effectiveTier='enterprise'`, which renders every premium section (market trend, micro-location, full adjustments, event timeline) unblurred.
+- Components that previously returned null on iOS (`PremiumPreviewCard`, `PremiumFeatureGrid`, `LockedModule`) now render their underlying content fully on iOS — so iOS users see the full value of every premium feature, just without any upgrade prompt.
+
+## Build 12 architectural carry-over (4.2 — accepted by Apple last review)
+
+The root view is a native `UITabBarController` (`NativeRootTabBarController.swift`). Three of four tabs are pure native SwiftUI/UIKit (Home, Map, Account); the Search tab hosts the Capacitor bridge. This passed Apple's 4.2 review on Build 12 and is unchanged.
+
+Carried-over native subsystems: Vision OCR scanner, MKMapView modal, App Intents/Siri, Quick Actions, Core Spotlight indexing.
+
+## App Review Notes (private)
+
+Build 13 addresses the remaining 3.1.1 issue. Every payment surface in the embedded web layer is now gated on the native runtime flag. There is no path within the iOS app — whether via the Search tab webview, deep link, or back-stack — to purchase a subscription by any means other than In-App Purchase.
+
+We are not currently offering In-App Purchase products in this app. PropertyDNA on iOS operates strictly as a free-tier experience: one complete property intelligence report per device, no subscription path, no per-report purchase, no external payment links. Users wanting more reports can use our website on a non-iOS device.
+
+DEMO CREDENTIALS
+Apple ID: ar_user235@icloud.com (worked in Build 8 review)
+Email magic-link: any valid email — link arrives via Resend.
+
+WHAT TO LOOK AT FIRST
+1. Tap the Search tab → Analyze → submit a report (free). On the resulting report page, all premium sections (market trend, micro-location, full adjustments, event timeline) are shown unblurred — this is the "first report enterprise preview" experience.
+2. Try to find a subscription purchase: tap Account → no Pricing link. Search → navigate to /pricing → a "free tier only" notice appears. Footer → no Pricing nav. Long-press app icon → Quick Actions menu has no Pricing item.
+3. Verify the four native tabs (Home / Search / Map / Account) — Home, Map, and Account are SwiftUI/UIKit, not WebKit.
+
+## Resolution Center Reply (paste in ASC UI)
+
+Thank you for the careful review of Build 12.
+
+Build 13 closes the remaining 3.1.1 issue: every subscription-purchase surface in the embedded web layer is now gated on the native runtime flag. There is no path within the iOS app to purchase a subscription. The /pricing page renders a "one free report per device" notice on iOS, with no plan tiles, no subscribe button, and no external payment link. The home page pricing section, footer pricing link, dashboard "Upgrade Pro" button, sidebar pricing tile, and every premium-lock-overlay upsell are all hidden on iOS.
+
+PropertyDNA on iOS now operates strictly as a free-tier experience — one complete report per device, no subscriptions sold in-app by any means. We are not offering In-App Purchase products in this version; we may add StoreKit IAP in a future submission once we've validated the free-tier experience with users.
+
+The native UITabBarController root and three native tabs (Home SwiftUI, Map MKMapView, Account SwiftUI) carry over from Build 12 unchanged. The Search tab continues to host the Capacitor web layer for /analyze and /report content.
+
+Thank you for your time.
+
+---
+
+# Earlier build history
+
 # Build 12 — Resubmission Notes
 
 Build 11 was rejected on two grounds: (3.1.1) the "UPGRADE PRO" button pointed at an external payment surface; (4.2) Apple still considered the app a webview wrapper. Build 12 fixes both at the architectural level:

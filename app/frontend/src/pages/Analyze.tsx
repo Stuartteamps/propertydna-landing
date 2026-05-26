@@ -3,6 +3,7 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import PropertyForm from '@/components/PropertyForm';
 import FadeUp from '@/components/FadeUp';
+import { isNative } from '@/lib/nativeFeatures';
 
 const reportFeatures = [
   ['01', 'Data quality score A+ through C, graded on completeness and source confidence'],
@@ -89,7 +90,7 @@ export default function Analyze() {
                 ))}
               </div>
 
-              <div style={{
+              {!isNative() && <div style={{
                 marginTop: 48,
                 padding: '20px 24px',
                 border: '1px solid rgba(184,147,85,0.15)',
@@ -118,7 +119,7 @@ export default function Analyze() {
                     <span style={{ color: '#F4F0E8' }}>{price}</span>
                   </div>
                 ))}
-              </div>
+              </div>}
             </FadeUp>
 
             {/* Right: the form */}

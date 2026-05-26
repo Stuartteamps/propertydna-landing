@@ -18,10 +18,14 @@ interface PremiumFeatureGridProps {
  * Locked cards show a blurred body + upgrade CTA.
  */
 export default function PremiumFeatureGrid({ features, onUpgrade }: PremiumFeatureGridProps) {
-  // Apple Guideline 3.1.1: no external-upgrade CTAs on iOS. The grid itself
-  // is informational, but the upgrade prompts within it must not appear.
+  // Apple Guideline 3.1.1: no external-upgrade CTAs on iOS. We also
+  // unlock every feature on iOS so users see the full value without any
+  // upsell — Dan's "draw them in" strategy.
   const native = isNative();
-  if (native) onUpgrade = undefined;
+  if (native) {
+    onUpgrade = undefined;
+    features = features.map(f => ({ ...f, locked: false }));
+  }
   return (
     <div style={{
       display: 'grid',

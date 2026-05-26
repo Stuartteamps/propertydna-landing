@@ -27,8 +27,11 @@ export default function PremiumPreviewCard({
   onUpgrade, style,
 }: PremiumPreviewCardProps) {
   const [hovered, setHovered] = useState(false);
-  // Apple Guideline 3.1.1: hide premium tease + external-upgrade CTA on iOS.
-  if (isNative()) return null;
+  // Apple Guideline 3.1.1: no upsells in the iOS app. We still want to
+  // show the underlying preview content (no lock, no upgrade CTA), so
+  // force the premium=true branch on native.
+  const native = isNative();
+  if (native) { isPremium = true; onUpgrade = undefined; }
 
   return (
     <div

@@ -752,7 +752,7 @@ export default function ReportView() {
                 You're seeing every section we offer — market trend intelligence, micro-location scoring, full adjustment-factor breakdown, and property event timeline. Subsequent reports use your current plan.
               </div>
             </div>
-            <a
+            {!isNative() && <a
               href="/pricing"
               style={{
                 fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500,
@@ -762,7 +762,7 @@ export default function ReportView() {
               }}
             >
               Keep Enterprise →
-            </a>
+            </a>}
           </div>
         )}
 

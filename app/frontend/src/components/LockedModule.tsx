@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { isNative } from '@/lib/nativeFeatures';
 
 interface LockedModuleProps {
   title: string;
@@ -9,6 +10,15 @@ interface LockedModuleProps {
 }
 
 export default function LockedModule({ title, tag, description, preview, onUnlock }: LockedModuleProps) {
+  // Apple Guideline 3.1.1: no upsells in the iOS app. The locked module
+  // simply shows the underlying preview content, unlocked.
+  if (isNative()) {
+    return (
+      <div style={{ position: 'relative', border: '1px solid rgba(184,147,85,0.18)', marginBottom: 24, padding: '32px 40px' }}>
+        {preview ?? null}
+      </div>
+    );
+  }
   return (
     <div style={{ position: 'relative', border: '1px solid rgba(184,147,85,0.18)', marginBottom: 24 }}>
       {/* Blurred preview behind overlay */}

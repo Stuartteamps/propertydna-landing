@@ -6,7 +6,7 @@ import PricingModal from '@/components/PricingModal';
 import { setPremiumStatus } from '@/lib/isPremiumUser';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
-import { tapHaptic } from '@/lib/nativeFeatures';
+import { tapHaptic, isNative } from '@/lib/nativeFeatures';
 
 interface Report {
   id: string;
@@ -230,7 +230,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            {!isSubscribed && (
+            {!isSubscribed && !isNative() && (
               <button onClick={() => setPricingOpen(true)} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '10px 18px', cursor: 'pointer' }}>
                 Upgrade Pro →
               </button>

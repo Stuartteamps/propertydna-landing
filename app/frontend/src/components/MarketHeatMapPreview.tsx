@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { isNative } from '@/lib/nativeFeatures';
 
 interface Zone { label: string; heat: number; yoy: number; color: string; }
 interface Props { isPremium?: boolean; onUpgrade?: () => void; }
@@ -87,7 +88,7 @@ export default function MarketHeatMapPreview({ isPremium = false, onUpgrade }: P
         ))}
       </div>
 
-      {!isPremium && (
+      {!isPremium && !isNative() && (
         <div style={{ padding: '0 24px 24px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ border: '1px solid rgba(0,255,136,0.1)', padding: '20px 24px', textAlign: 'center', marginTop: 16 }}>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(0,255,136,0.7)', marginBottom: 8 }}>Premium Market Intelligence</div>
@@ -102,9 +103,9 @@ export default function MarketHeatMapPreview({ isPremium = false, onUpgrade }: P
                   See Full Map →
                 </Link>
               )}
-              <Link to="/pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(244,240,232,0.4)', textDecoration: 'none', padding: '10px 4px' }}>
+              {!isNative() && <Link to="/pricing" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(244,240,232,0.4)', textDecoration: 'none', padding: '10px 4px' }}>
                 View Plans →
-              </Link>
+              </Link>}
             </div>
           </div>
         </div>
