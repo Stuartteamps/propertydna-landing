@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { isNative } from '@/lib/nativeFeatures';
 
 interface PremiumLockOverlayProps {
   headline?: string;
@@ -21,6 +22,9 @@ export default function PremiumLockOverlay({
   onUpgrade,
   compact = false,
 }: PremiumLockOverlayProps) {
+  // Apple Guideline 3.1.1: don't tease external upgrade flows on iOS.
+  // The section is simply hidden in native; on web the upgrade is offered.
+  if (isNative()) return null;
   return (
     <div
       style={{

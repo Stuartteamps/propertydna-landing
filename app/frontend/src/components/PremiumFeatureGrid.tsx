@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { isNative } from '@/lib/nativeFeatures';
 
 interface Feature {
   tag: string;
@@ -17,6 +18,10 @@ interface PremiumFeatureGridProps {
  * Locked cards show a blurred body + upgrade CTA.
  */
 export default function PremiumFeatureGrid({ features, onUpgrade }: PremiumFeatureGridProps) {
+  // Apple Guideline 3.1.1: no external-upgrade CTAs on iOS. The grid itself
+  // is informational, but the upgrade prompts within it must not appear.
+  const native = isNative();
+  if (native) onUpgrade = undefined;
   return (
     <div style={{
       display: 'grid',

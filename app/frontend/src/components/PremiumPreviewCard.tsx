@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PremiumLockOverlay from './PremiumLockOverlay';
+import { isNative } from '@/lib/nativeFeatures';
 
 interface PremiumPreviewCardProps {
   tag: string;
@@ -26,6 +27,8 @@ export default function PremiumPreviewCard({
   onUpgrade, style,
 }: PremiumPreviewCardProps) {
   const [hovered, setHovered] = useState(false);
+  // Apple Guideline 3.1.1: hide premium tease + external-upgrade CTA on iOS.
+  if (isNative()) return null;
 
   return (
     <div

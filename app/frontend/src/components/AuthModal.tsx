@@ -287,9 +287,13 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
               </div>
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <button onClick={() => setView('pricing')} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '12px 24px', cursor: 'pointer' }}>
-                {tier === 'free' ? 'View Plans →' : 'Manage Plan →'}
-              </button>
+              {/* Plans button hidden on iOS — Apple Guideline 3.1.1: no external
+                  payment surfaces. Premium plans are available only on web. */}
+              {typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.() && (
+                <button onClick={() => setView('pricing')} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: '#000', background: '#C9A84C', border: 'none', padding: '12px 24px', cursor: 'pointer' }}>
+                  {tier === 'free' ? 'View Plans →' : 'Manage Plan →'}
+                </button>
+              )}
               <a href="/dashboard" onClick={onClose} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.12)', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>
                 My Dashboard
               </a>
@@ -300,8 +304,8 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
           </div>
         )}
 
-        {/* ── PRICING ── */}
-        {view === 'pricing' && (
+        {/* ── PRICING ── (hidden on iOS — 3.1.1) */}
+        {view === 'pricing' && typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.() && (
           <div style={{ padding: 'clamp(32px,4vw,48px)' }}>
             {isSignedIn ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>

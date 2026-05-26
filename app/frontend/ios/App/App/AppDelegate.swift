@@ -12,6 +12,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Firebase — must be first
         FirebaseApp.configure()
 
+        // Programmatically install the native UITabBarController as the root
+        // view controller. This is the structural fix for Apple Guideline 4.2:
+        // the first thing the system shows is a real iOS tab bar with native
+        // SwiftUI/UIKit screens, not a WKWebView.
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        let root = NativeRootTabBarController()
+        window.rootViewController = root
+        window.makeKeyAndVisible()
+        self.window = window
+
         // If launched via a Quick Action, stash it for the bridge to consume
         // once the web layer is ready.
         if let item = launchOptions?[.shortcutItem] as? UIApplicationShortcutItem {

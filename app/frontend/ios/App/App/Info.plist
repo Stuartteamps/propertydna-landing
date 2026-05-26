@@ -29,11 +29,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 
-	<!-- Storyboards -->
+	<!-- Storyboards — Launch screen kept; Main storyboard removed because
+	     the root view controller is installed programmatically in
+	     AppDelegate (NativeRootTabBarController). -->
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
 
 	<!-- Device capabilities -->
 	<key>UIRequiredDeviceCapabilities</key>

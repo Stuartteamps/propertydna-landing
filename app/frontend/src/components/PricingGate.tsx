@@ -1,4 +1,5 @@
 import React from 'react';
+import { isNative } from '@/lib/nativeFeatures';
 
 interface PricingGateProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface PricingGateProps {
 
 const PricingGate: React.FC<PricingGateProps> = ({ isOpen, onClose, onSelect, loading }) => {
   if (!isOpen) return null;
+  // Apple Guideline 3.1.1 — no external payment surfaces on iOS.
+  if (isNative()) return null;
 
   return (
     <div

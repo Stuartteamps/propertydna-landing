@@ -1,79 +1,99 @@
-# Build 11 — Resubmission Notes (after Build 10 4.2 rejection)
+# Build 12 — Resubmission Notes
 
-Build 10 was rejected under Guideline 4.2 with Apple's note that "push notifications, Core Location, or sharing do not provide a robust enough experience." Build 11 adds **substantial native iOS code** beyond webview features:
+Build 11 was rejected on two grounds: (3.1.1) the "UPGRADE PRO" button pointed at an external payment surface; (4.2) Apple still considered the app a webview wrapper. Build 12 fixes both at the architectural level:
 
-## What's New in This Version (≤4,000 chars; ASC versionString)
+## What's New in This Version
 
-PropertyDNA is now a fully native iOS app with on-device AI, native MapKit, and Siri integration — built for the field.
+PropertyDNA is now a fully native iOS app, root-and-branch:
 
-NEW IN BUILD 11
-• Vision OCR Address Scanner — point your camera at a property sign or address; Apple's Vision framework recognizes the text on-device and fills the form for you. No typing.
-• Native MapKit View — tap "Open in Maps" on any report to see the property on a full-screen native Apple Maps view with Standard / Satellite / Hybrid, 3-D buildings, and one-tap Directions.
-• Siri Shortcuts — "Hey Siri, analyze a property with PropertyDNA" or "show my saved reports" — works from the lock screen, AirPods, or CarPlay.
-• Home Screen Quick Actions — long-press the app icon for one-tap Analyze, Saved Reports, Dashboard, or Heat Map.
-• Spotlight Search — your saved reports appear in iOS Spotlight when you pull down on the home screen. Find a property without opening the app.
-
-CARRIED OVER
-• Native bottom tab bar with haptic feedback
-• Offline reports saved to your device automatically
-• "Use my location" for one-tap form prefill
-• Native share sheet for any report
-• Offline banner when you lose signal
-
-WHY THIS MATTERS
-The fight isn't between buyer and home — it's between buyer and information. PropertyDNA puts institutional-grade intelligence in your pocket so you walk into every showing knowing more than the agent across the table.
+NEW
+• Native UITabBarController as the app root — Home, Search, Map, Account are real iOS tabs, not a web nav bar.
+• Native SwiftUI Home dashboard — quick-action grid, recent saved-reports list, brand surface. Rendered by UIKit/SwiftUI, not WebKit.
+• Native SwiftUI Account screen — settings, preferences, support, danger-zone delete. Real iOS controls.
+• Native Map tab — full-screen MKMapView with Standard/Satellite/Hybrid, "find me", and 3-D buildings.
+• Carried over from prior builds: Vision OCR address scanner, native MapKit "Open in Maps" on reports, Siri shortcuts via App Intents, Home Screen Quick Actions, Core Spotlight indexing.
 
 ## Promotional Text (≤170 chars)
 
-On-device Vision OCR, native MapKit, Siri shortcuts, offline reports, Spotlight search — PropertyDNA is the native iOS app for buyers and sellers in the field.
+Native iOS app: SwiftUI dashboard, MKMapView, on-device Vision OCR scanner, Siri shortcuts, offline reports. Property intelligence for buyers and sellers in the field.
 
 ## App Review Notes (private — Apple reviewer only)
 
-PROPERTYDNA BUILD 11 — RESPONSE TO 4.2 REJECTION OF BUILD 10
+PROPERTYDNA BUILD 12 — RESPONSE TO BUILD 11 REJECTION (3.1.1 + 4.2)
 
-Apple's prior note on Build 10 stated that "push notifications, Core Location, or sharing do not provide a robust enough experience." We agree, and Build 11 adds substantial native iOS code — not webview features — to address this directly. Each of the items below is implemented in native Swift in the App target, not in JavaScript:
+Thank you for the detailed review of Build 11. We've addressed both issues at the source rather than at the margin.
 
-1. VISION OCR ADDRESS SCANNER — On the Analyze form, tap the "Scan" button next to the address field. A full-screen native AVCaptureSession opens with a yellow targeting reticle. Apple's Vision framework (VNRecognizeTextRequest) runs on-device — no network, no third-party SDK — and detects U.S. street addresses in real time. When a match is recognized the camera dismisses and the address fills the form. Source: VisionScannerCoordinator.swift, VisionScannerViewController.swift.
+═══════════════════════════════════════════
+GUIDELINE 3.1.1 — IN-APP PURCHASE
+═══════════════════════════════════════════
 
-2. NATIVE MAPKIT VIEW — On any report with coordinates, tap "Open in Maps". A full-screen MKMapView opens with Apple's native map tiles, 3-D buildings, segmented Standard/Satellite/Hybrid selector, and a Directions button that hands off to Apple Maps for routing. This replaces the web Leaflet map for a genuinely native experience. Source: NativeMapPresenter.swift.
+The "UPGRADE PRO" surface has been removed entirely from the iOS app. PropertyDNA's iOS app now operates as a free-tier-only experience. There is no path within the app to purchase digital subscriptions, and no external payment links are surfaced.
 
-3. SIRI SHORTCUTS via APP INTENTS — Four AppIntent declarations (Analyze Property, Saved Reports, Dashboard, Heat Map) registered via PropertyDNAShortcuts (iOS 16 AppShortcutsProvider). They appear in the Shortcuts app and Siri suggestions. Test: "Hey Siri, analyze a property with PropertyDNA." Source: PropertyAppIntents.swift.
+Specifically:
+• The Pricing modal returns null on iOS (src/components/PricingModal.tsx).
+• The Pricing gate (overage paywall) returns null on iOS (src/components/PricingGate.tsx).
+• The PremiumLockOverlay and PremiumPreviewCard tease components return null on iOS.
+• The "Manage Plan" and "Get Started" buttons in the Nav are hidden on iOS.
+• The "View Plans" CTA in the Auth modal is hidden on iOS; the pricing sub-view is unreachable in native.
+• The PropertyForm's create-checkout call now forces mode='free' on iOS; the per-report and subscription paths cannot be invoked from the native client.
+• The overage flow, which previously opened the PricingGate, now shows an informational message on iOS instead.
 
-4. HOME SCREEN QUICK ACTIONS — Four UIApplicationShortcutItems declared in Info.plist (Analyze, Saved, Dashboard, Heat Map). Long-press the app icon to invoke. Source: QuickActionsHandler.swift, AppDelegate.swift.
+iOS users get one free report per device. After that, they are informed that additional reports are not available in this version of the app — no upgrade prompt, no external link, no paywall. This puts the iOS app fully outside Guideline 3.1.1.
 
-5. CORE SPOTLIGHT INDEXING — Reports the user views are indexed via CSSearchableIndex with the address as title and DNA score in the description. Pull down on the iOS home screen, type a property address, and the saved report appears in Spotlight results. Tapping the result deep-links into the app. Source: SpotlightIndexer.swift.
+═══════════════════════════════════════════
+GUIDELINE 4.2 — MINIMUM FUNCTIONALITY
+═══════════════════════════════════════════
+
+The root of the app is no longer a WKWebView. We replaced PropertyDNABridgeViewController as the app's rootViewController with a real UITabBarController — see AppDelegate.swift didFinishLaunchingWithOptions. The first thing iOS shows the user is now native UI.
+
+The four tabs:
+
+1. HOME (HomeViewController.swift) — UIHostingController wrapping a SwiftUI view. Renders the brand surface, a quick-action LazyVGrid (Analyze / Scan / Saved / Heat Map) using SF Symbols, a recent-saved-reports list (driven by SavedReportsStore.swift which reads @capacitor/preferences data directly from UserDefaults), and an About card. No WebKit involved.
+
+2. SEARCH — wraps PropertyDNABridgeViewController inside SearchTabContainerViewController so the Capacitor web layer can host the Analyze form, report views, blog, and dossier content. This is where dynamic content lives.
+
+3. MAP (MapTabViewController.swift) — native MKMapView with Apple Maps tiles, native pinch-zoom, Standard/Satellite/Hybrid segmented control, native "find me" button using CLLocationManager, 3-D buildings, and points of interest. This is not a WebKit map.
+
+4. ACCOUNT (AccountViewController.swift) — UIHostingController wrapping a SwiftUI view. Renders identity, preferences (haptics toggle, location toggle persisting to NSUserDefaults), settings list, and a danger-zone delete card. No WebKit involved.
+
+The native tab bar is the *first* surface the user touches, every time they open the app. Three out of four tabs are pure native (no WebKit). Only the Search tab hosts the web view, because that's the appropriate surface for dynamic property reports.
+
+CARRIED-OVER NATIVE CAPABILITIES (from Build 11):
+
+• Vision OCR address scanner (AVCaptureSession + VNRecognizeTextRequest, on-device) — VisionScannerCoordinator.swift + VisionScannerViewController.swift.
+• Native MKMapView modal for any report — NativeMapPresenter.swift + NativeMapViewController.swift.
+• Siri shortcuts via App Intents (iOS 16+) — PropertyAppIntents.swift.
+• Home Screen Quick Actions — Info.plist UIApplicationShortcutItems + QuickActionsHandler.swift.
+• Core Spotlight indexing of saved reports — SpotlightIndexer.swift.
 
 DEMO CREDENTIALS
-Apple ID: ar_user235@icloud.com (worked in Build 8 review)
-Email magic-link: any valid email — link arrives via Resend.
+Apple ID: ar_user235@icloud.com
+Email magic-link: any valid address.
 
-HOW TO VERIFY THE NATIVE FEATURES
-- Vision Scanner: Open Analyze → tap "Scan" → point at any address on paper or sign → it autofills.
-- MapKit: Generate any report → scroll to "Sales Activity Map" → tap "Open in Maps".
-- Siri: Hold the side button → "Analyze a property with PropertyDNA" → opens to /analyze.
-- Quick Actions: Long-press the home screen icon.
-- Spotlight: View a report (any) → exit to home screen → pull down → type the address.
+WHAT TO LOOK AT FIRST
 
-The native Swift source files for these features are in the App target alongside AppDelegate.swift. They are not webview wrappers.
+1. Launch the app — observe the native tab bar at the bottom with four iOS tabs.
+2. Tap Home — note that this is a SwiftUI dashboard, not a web page. Quick action tiles use SF Symbols; the layout uses native LazyVGrid.
+3. Tap Map — native MKMapView with native iOS controls.
+4. Tap Account — native SwiftUI list with iOS toggles.
+5. Tap Search → Analyze → "Scan" — full-screen native AVCaptureSession with on-device Vision text recognition.
 
-Thank you for your time.
+The Search tab is the only place a web view is visible, and even there the surrounding shell (status bar, tab bar) is native iOS.
+
+Thank you for your time. We appreciate the careful review.
 
 ## Resolution Center Reply (paste in ASC UI)
 
-Thank you for the previous review.
+Thank you for the review of Build 11.
 
-Build 11 adds substantial native iOS code in direct response to the 4.2 feedback. The following features are implemented in native Swift in the App target — not in the web layer:
+3.1.1 — The "UPGRADE PRO" surface has been removed entirely from the iOS app. There is no path within the iOS app to purchase digital subscriptions, no in-app paywall, and no external payment links. iOS users get one free report per device; thereafter the app shows an informational message with no upgrade CTA. The Pricing modal, PricingGate, PremiumLockOverlay, PremiumPreviewCard, and the Nav's "Get Started" / "Manage Plan" buttons all return null on iOS.
 
-1. VISION OCR ADDRESS SCANNER — Apple Vision framework runs on-device text recognition through AVCaptureSession to scan property addresses from signs or paper. The reviewer can test this by opening the Analyze form and tapping "Scan" next to the address field.
+4.2 — The app's rootViewController is now a real UITabBarController (NativeRootTabBarController.swift), installed programmatically in AppDelegate.didFinishLaunchingWithOptions. Three of the four tabs are pure native iOS:
+• Home — SwiftUI dashboard (HomeViewController.swift)
+• Map — MKMapView (MapTabViewController.swift)
+• Account — SwiftUI settings (AccountViewController.swift)
+The fourth tab (Search) hosts the web view for dynamic report content, but the surrounding shell — status bar, tab bar, navigation — is native iOS. WKWebView is no longer the root of the application.
 
-2. NATIVE MAPKIT VIEW — Replaces the web map with a real MKMapView (Apple Maps tiles, 3-D buildings, satellite/hybrid toggle, native Directions). Tap "Open in Maps" on any report with coordinates.
+These are architectural fixes, not surface-level adjustments. Source files referenced above are in app/frontend/ios/App/App/ alongside AppDelegate.swift.
 
-3. SIRI SHORTCUTS — Four AppIntent declarations registered with AppShortcutsProvider (iOS 16). "Hey Siri, analyze a property with PropertyDNA" opens the app to the analyze form.
-
-4. HOME SCREEN QUICK ACTIONS — Long-press the app icon for one-tap Analyze, Saved Reports, Dashboard, Heat Map.
-
-5. CORE SPOTLIGHT INDEXING — Saved reports appear in iOS Spotlight pull-down search by address.
-
-These are not features that could be implemented as a web page. Vision text recognition runs on the device's Neural Engine; MapKit is Apple's native map renderer; AppIntents requires iOS 16's compile-time intent metadata; UIApplicationShortcutItems is a Home Screen iOS surface; Core Spotlight indexes into the iOS-system database.
-
-Thank you for your time. We appreciate the careful review.
+Thank you for your time.

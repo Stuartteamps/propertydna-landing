@@ -17,16 +17,22 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		63C69B79AF4D4E5AD66C3AA8 /* MapTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8CE1BA8BC7F89609DC96CF /* MapTabViewController.swift */; };
 		6D57DB04D7E800E7729407AC /* VisionScannerCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0595316D5DE1F480CFC763E7 /* VisionScannerCoordinator.swift */; };
+		7C86889B5C3A0953759715A8 /* AccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C8FB17BF8710D01D32264A6 /* AccountViewController.swift */; };
+		973B42387FB950EB6690417C /* NativeRootTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128C3B1BBC96424D52915F1B /* NativeRootTabBarController.swift */; };
 		AABB00000000000000000001 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AABB00000000000000000002 /* GoogleService-Info.plist */; };
+		BE75F5DB7E965863F8ACDBC7 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9341729EFA1DE2B05B48E2A /* HomeViewController.swift */; };
 		D5A2DC680D1DA357F1D7AEB6 /* NativeMapPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D1344CA80E89F2184CCDCCB /* NativeMapPresenter.swift */; };
 		E58B04ACE2651841591B822D /* QuickActionsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFECA8260A7BF726815FBC06 /* QuickActionsHandler.swift */; };
+		F39830885410DBA96FAE787E /* SavedReportsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AAA0D48A64CBF440944B7B /* SavedReportsStore.swift */; };
 		F4644A1CD14BD8E14480CEFD /* PropertyAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C40BB0470E76E5936FB5A2 /* PropertyAppIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0595316D5DE1F480CFC763E7 /* VisionScannerCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VisionScannerCoordinator.swift; sourceTree = "<group>"; };
 		09C40BB0470E76E5936FB5A2 /* PropertyAppIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PropertyAppIntents.swift; sourceTree = "<group>"; };
+		128C3B1BBC96424D52915F1B /* NativeRootTabBarController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeRootTabBarController.swift; sourceTree = "<group>"; };
 		2A0E4A7E2D3D2809B5397F1B /* SpotlightIndexer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpotlightIndexer.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		3D1344CA80E89F2184CCDCCB /* NativeMapPresenter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeMapPresenter.swift; sourceTree = "<group>"; };
@@ -38,9 +44,13 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		5C8FB17BF8710D01D32264A6 /* AccountViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccountViewController.swift; sourceTree = "<group>"; };
+		7E8CE1BA8BC7F89609DC96CF /* MapTabViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MapTabViewController.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		9EDA2E6E3342FF982B268138 /* PropertyDNABridgeViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PropertyDNABridgeViewController.swift; sourceTree = "<group>"; };
 		AABB00000000000000000002 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		D4AAA0D48A64CBF440944B7B /* SavedReportsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SavedReportsStore.swift; sourceTree = "<group>"; };
+		D9341729EFA1DE2B05B48E2A /* HomeViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		DFECA8260A7BF726815FBC06 /* QuickActionsHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickActionsHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -91,6 +101,11 @@
 				2A0E4A7E2D3D2809B5397F1B /* SpotlightIndexer.swift */,
 				09C40BB0470E76E5936FB5A2 /* PropertyAppIntents.swift */,
 				DFECA8260A7BF726815FBC06 /* QuickActionsHandler.swift */,
+				D4AAA0D48A64CBF440944B7B /* SavedReportsStore.swift */,
+				D9341729EFA1DE2B05B48E2A /* HomeViewController.swift */,
+				5C8FB17BF8710D01D32264A6 /* AccountViewController.swift */,
+				7E8CE1BA8BC7F89609DC96CF /* MapTabViewController.swift */,
+				128C3B1BBC96424D52915F1B /* NativeRootTabBarController.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -184,6 +199,11 @@
 				4BA8ED7439707C934954A3C9 /* SpotlightIndexer.swift in Sources */,
 				F4644A1CD14BD8E14480CEFD /* PropertyAppIntents.swift in Sources */,
 				E58B04ACE2651841591B822D /* QuickActionsHandler.swift in Sources */,
+				F39830885410DBA96FAE787E /* SavedReportsStore.swift in Sources */,
+				BE75F5DB7E965863F8ACDBC7 /* HomeViewController.swift in Sources */,
+				7C86889B5C3A0953759715A8 /* AccountViewController.swift in Sources */,
+				63C69B79AF4D4E5AD66C3AA8 /* MapTabViewController.swift in Sources */,
+				973B42387FB950EB6690417C /* NativeRootTabBarController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,7 +346,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = 8NR9GCA6GQ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -352,7 +372,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = 8NR9GCA6GQ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;

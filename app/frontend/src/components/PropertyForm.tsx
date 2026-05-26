@@ -65,6 +65,15 @@ const fieldStyle: React.CSSProperties = {
 };
 
 async function goToCheckout(formData: FormState, mode: 'free' | 'per_report' | 'subscription' | 'enterprise') {
+  // Apple Guideline 3.1.1: never invoke an external payment surface from
+  // within the iOS app. The free path is preserved (mode='free' generates
+  // a report at no charge), but any paid mode falls back to 'free' on
+  // native and lets the backend enforce the quota.
+  let effectiveMode: 'free' | 'per_report' | 'subscription' | 'enterprise' = mode;
+  if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
+    effectiveMode = 'free';
+  }
+
   // Auto-parse IDX URL if provided but MLS number not manually entered
   const { idxUrl } = formData;
   let { mlsNumber } = formData;
@@ -84,7 +93,7 @@ async function goToCheckout(formData: FormState, mode: 'free' | 'per_report' | '
       mlsNumber,
       idxUrl,
       listingSource: idxUrl ? (parseIdxUrl(idxUrl).source || '') : '',
-      mode,
+      mode: effectiveMode,
     }),
   });
   const data = await res.json();
@@ -227,7 +236,12 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
         if (q?.exceeded) {
           // Quota exhausted for this billing cycle → show upgrade gate
           setStatus('idle');
-          setGateOpen(true);
+          if (isNative()) {
+            setErrorMsg("You've used all your reports for this month. New reports refresh on your next billing cycle.");
+            setStatus('error');
+          } else {
+            setGateOpen(true);
+          }
         } else {
           await goToCheckout(form, 'free');
         }
@@ -235,7 +249,13 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ initialAddress = '' }) => {
         // First ever report → free
         await goToCheckout(form, 'free');
       } else {
-        // Has used free report → show pricing gate
+        // Has used free report → show pricing gate (web) or friendly cap (iOS)
+        if (isNative()) {
+          setStatus('idle');
+          setErrorMsg("You've used your free report on this device. Sign in to your existing account if you have one, or generate additional reports from thepropertydna.com.");
+          setStatus('error');
+          return;
+        }
         setStatus('idle');
         setGateOpen(true);
       }

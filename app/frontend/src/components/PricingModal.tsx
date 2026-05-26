@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
+import { isNative } from '@/lib/nativeFeatures';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -48,6 +49,10 @@ const TIERS = [
 ];
 
 export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: PricingModalProps) {
+  // Apple Guideline 3.1.1: the iOS app may not surface external payment
+  // flows for digital subscriptions. Premium plans are sold only via the
+  // web. On iOS this modal is a no-op.
+  if (isNative()) return null;
   const { user } = useAuth();
   const [email, setEmail] = useState(() => {
     try { return prefillEmail || sessionStorage.getItem('pdna_email') || ''; } catch { return prefillEmail; }

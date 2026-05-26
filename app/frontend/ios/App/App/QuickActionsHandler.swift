@@ -39,13 +39,12 @@ enum QuickActionsHandler {
     }
 
     private static func navigate(to path: String) -> Bool {
-        if let bridge = topBridge() {
-            let js = "window.history.pushState({}, '', '\(path)'); window.dispatchEvent(new PopStateEvent('popstate'))"
-            bridge.webView?.evaluateJavaScript(js, completionHandler: nil)
+        if let root = NativeRootTabBarController.shared {
+            root.openWebPath(path)
             return true
         }
-        // Cold start: bridge not ready yet. Park the URL — AppDelegate will
-        // hand it back to us once the bridge view loads.
+        // Cold start: root not ready yet. Park it; viewDidLoad on the root
+        // tab bar reads `consumePending()` on appear.
         pendingURL = URL(string: "https://thepropertydna.com\(path)")
         return true
     }
@@ -54,13 +53,5 @@ enum QuickActionsHandler {
         let u = pendingURL
         pendingURL = nil
         return u
-    }
-
-    private static func topBridge() -> CAPBridgeViewController? {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = scene.windows.first(where: { $0.isKeyWindow }) ?? scene.windows.first else {
-            return nil
-        }
-        return window.rootViewController as? CAPBridgeViewController
     }
 }

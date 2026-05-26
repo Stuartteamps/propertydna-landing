@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import AuthModal from '@/components/AuthModal';
+import { isNative } from '@/lib/nativeFeatures';
 
 const linkStyle: React.CSSProperties = {
   fontFamily: 'Jost, sans-serif', fontSize: '11px', fontWeight: 400,
@@ -127,11 +128,17 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
                     <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#F0EBE0' }}>{displayName}</div>
                     <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, color: '#6B6252' }}>{user.email}</div>
                   </div>
-                  {[
-                    { label: 'Dashboard', href: '/dashboard' },
-                    { label: 'Manage Plan', action: openPricing },
-                    { label: 'Delete Account', href: '/dashboard#delete-account' },
-                  ].map(item => (
+                  {(isNative()
+                    ? [
+                        { label: 'Dashboard', href: '/dashboard' },
+                        { label: 'Delete Account', href: '/dashboard#delete-account' },
+                      ]
+                    : [
+                        { label: 'Dashboard', href: '/dashboard' },
+                        { label: 'Manage Plan', action: openPricing },
+                        { label: 'Delete Account', href: '/dashboard#delete-account' },
+                      ]
+                  ).map(item => (
                     <div key={item.label}>
                       {item.href ? (
                         <Link to={item.href} onClick={() => setMenuOpen(false)} style={{ display: 'block', padding: '10px 16px', fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#F0EBE0', textDecoration: 'none', transition: 'color 0.15s' }}
@@ -161,7 +168,8 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
                 onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
               >Sign In</button>
-              <button
+              {/* Pricing CTA hidden on iOS — Apple Guideline 3.1.1. */}
+              {!isNative() && <button
                 onClick={openPricing}
                 style={{
                   fontFamily: 'Jost, sans-serif', fontSize: '10px', fontWeight: 500,
@@ -174,7 +182,7 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
                 onMouseLeave={e => (e.currentTarget.style.background = '#C9A84C')}
               >
                 Get Started
-              </button>
+              </button>}
             </>
           )}
         </div>
