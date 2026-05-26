@@ -33,10 +33,9 @@ function todayText() {
   const today = new Date().toISOString().slice(0, 10);
   const calendar = JSON.parse(fs.readFileSync(CALENDAR_FILE, 'utf8'));
   const entry = calendar.posts.find(p => p.date === today);
-  if (entry) return { text: entry.text, date: today, image: entry.image, found: true };
-  // Fallback: use the most recent past entry if today has no entry
+  if (entry) return { text: entry.text, date: today, image: entry.image, images: entry.images, found: true };
   const past = calendar.posts.filter(p => p.date <= today).sort((a, b) => b.date.localeCompare(a.date));
-  if (past.length) return { text: past[0].text, date: past[0].date, image: past[0].image, found: false };
+  if (past.length) return { text: past[0].text, date: past[0].date, image: past[0].image, images: past[0].images, found: false };
   return null;
 }
 
@@ -123,10 +122,14 @@ function addUTM(text, service) {
   });
 }
 
-async function postToChannel(token, channelId, service, text, imageUrl) {
-  const hasImage = !!imageUrl;
+async function postToChannel(token, channelId, service, text, imageUrl, images) {
+  // Build the media array — prefer carousel `images` if provided, else single image
+  const mediaImages = Array.isArray(images) && images.length > 0
+    ? images.slice(0, 10).map(url => ({ url }))
+    : imageUrl ? [{ url: imageUrl }] : [];
+  const hasMedia = mediaImages.length > 0;
 
-  if (MEDIA_REQUIRED.includes(service) && !hasImage) {
+  if (MEDIA_REQUIRED.includes(service) && !hasMedia) {
     throw new Error(`SKIP — ${service} requires media (image/video)`);
   }
 
@@ -139,9 +142,9 @@ async function postToChannel(token, channelId, service, text, imageUrl) {
     mode: 'shareNow',
   };
 
-  // Attach image for all supported services (Buffer GraphQL: assets.images[])
-  if (hasImage && MEDIA_SUPPORTED.includes(service)) {
-    input.assets = { images: [{ url: imageUrl }] };
+  if (hasMedia && MEDIA_SUPPORTED.includes(service)) {
+    // Instagram/Facebook/LinkedIn all support carousel via assets.images[]
+    input.assets = { images: mediaImages };
   }
 
   const metadata = buildMetadata(service);
@@ -177,13 +180,14 @@ async function run() {
   const tracker = loadTracker();
 
   // Try calendar first, fall back to rotation
-  let text, dateLabel, image;
+  let text, dateLabel, image, images;
   if (fs.existsSync(CALENDAR_FILE)) {
     const entry = todayText();
     if (entry) {
       text = entry.text;
       dateLabel = entry.date;
       image = entry.image;
+      images = entry.images;  // optional carousel array
       if (!entry.found) log(`No entry for today — using closest past entry (${entry.date})`);
     }
   }
@@ -214,7 +218,7 @@ async function run() {
     const results = [];
     for (const channel of channels) {
       try {
-        const post = await postToChannel(creds.token, channel.id, channel.service, text, image);
+        const post = await postToChannel(creds.token, channel.id, channel.service, text, image, images);
         log(`  ✓ ${channel.service}/${channel.name}: ${post.externalLink || post.id}`);
         results.push({ channel: channel.service, status: 'posted' });
       } catch (e) {
