@@ -216,10 +216,16 @@ def cancel_open_review(version_id: str) -> None:
             tok = make_jwt()
             still_pending = False
             for sid in cancelled_ids:
-                r = api("GET", f"/reviewSubmissions/{sid}", token=tok)
-                st = r["data"]["attributes"].get("state")
-                if st == "CANCELING":
-                    still_pending = True
+                try:
+                    r = api("GET", f"/reviewSubmissions/{sid}", token=tok)
+                    st = r["data"]["attributes"].get("state")
+                    if st == "CANCELING":
+                        still_pending = True
+                except urllib.error.HTTPError as e:
+                    if e.code == 404:
+                        # Submission was deleted after cancel — finalized
+                        continue
+                    raise
             if not still_pending:
                 log("  cancellation finalized")
                 return
