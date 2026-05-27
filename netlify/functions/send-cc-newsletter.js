@@ -138,6 +138,13 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
   const useAiImages      = process.env.OPENAI_API_KEY ? true : false;
   const weatherImageUrl  = useAiImages ? `${supaImageBase}/latest-weather.jpg` : `${SITE}/social/photo/${weatherImageDate}.jpg`;
   const eventImageUrl    = useAiImages ? `${supaImageBase}/latest-events.jpg`  : `${SITE}/social/photo/${eventImageDate}.jpg`;
+  // Luxury listing imagery — replaces stale hardcoded CC asset PNGs (was
+  // f61407b8... and 1288b08d...). Generated weekly by
+  // generate-newsletter-images.js with Architectural Digest / Bloomberg
+  // Wealth style prompts. Fall back to the AD-style events image if the
+  // dedicated listing slots haven't been populated yet.
+  const westValleyImageUrl = useAiImages ? `${supaImageBase}/latest-west-valley.jpg` : `${SITE}/social/photo/${eventImageDate}.jpg`;
+  const eastValleyImageUrl = useAiImages ? `${supaImageBase}/latest-east-valley.jpg` : `${SITE}/social/photo/${eventImageDate}.jpg`;
   // Weekly listing links pulled from newsletter_links table — Dan updates each
   // Wednesday before the Thursday cron. Fall back to our own listing pages.
   const wvLink   = links?.west_valley_new || `${SITE}/listings/west-valley`;
@@ -157,7 +164,8 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9a8671;padding-top:10px;">Luxury Real Estate &bull; Market Insight &bull; Desert Lifestyle</div>
 </td></tr>
 <tr><td style="padding:0 60px 16px;font-size:17px;line-height:1.7;color:#2c241d;">Hi [[FIRSTNAME]],</td></tr>
-<tr><td align="center" style="padding:0 60px 30px;font-size:16px;line-height:1.8;">${marketNarrative}</td></tr>
+<tr><td style="padding:0 60px 6px;font-family:Georgia,serif;font-size:24px;color:#1f1a15;">Coachella Valley Market Snapshot &mdash; ${weekLabel}</td></tr>
+<tr><td style="padding:0 60px 30px;font-size:16px;line-height:1.8;color:#2c241d;">${marketNarrative}</td></tr>
 <tr><td style="padding:0 40px;font-family:Georgia,serif;font-size:26px;">This Week's Weather</td></tr>
 <tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">${weatherText}<br><br>
 <a href="https://weather.com/weather/weekend/l/Palm+Springs+California+92264" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Full Forecast</a></td></tr>
@@ -169,19 +177,24 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">West Valley New Listings</td></tr>
 <tr><td style="padding:0 40px 30px;font-size:15px;line-height:1.8;">Palm Springs and Cathedral City continue to lead activity. Updated homes with strong design and lifestyle appeal are moving quickly.<br><br>
 <a href="${wvLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View West Valley Listings</a></td></tr>
-<tr><td style="padding:0 40px;"><img src="https://files.constantcontact.com/5cd96ebd701/f61407b8-ee7f-459d-b22c-f284bc6999d2.png" width="100%"></td></tr>
+<tr><td style="padding:0 40px;"><img src="${westValleyImageUrl}" width="100%" alt="West Valley luxury homes" style="display:block;"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">East Valley New Listings</td></tr>
 <tr><td style="padding:0 40px 30px;font-size:15px;line-height:1.8;">La Quinta, Palm Desert, and Rancho Mirage continue offering strong value. Buyers are active when homes are priced right.<br><br>
 <a href="${evLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View East Valley Listings</a></td></tr>
-<tr><td style="padding:0 40px;"><img src="https://files.constantcontact.com/5cd96ebd701/1288b08d-b5bc-4d8f-865b-45159e4d6f8d.png" width="100%"></td></tr>
+<tr><td style="padding:0 40px;"><img src="${eastValleyImageUrl}" width="100%" alt="East Valley luxury estates" style="display:block;"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">Recently Sold</td></tr>
-<tr><td style="padding:0 40px 40px;font-size:15px;line-height:1.8;">See what actually sold this week across the valley — the most accurate read on where the market stands.<br><br>
+<tr><td style="padding:0 40px 40px;font-size:15px;line-height:1.8;">See what actually sold this week across the valley &mdash; the most accurate read on where the market stands.<br><br>
 <a href="${soldLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Recent Sales</a></td></tr>
+<tr><td style="padding:36px 40px 8px;border-top:1px solid #e4d8c9;font-family:Georgia,serif;font-size:22px;color:#1f1a15;">Why this newsletter stays in your inbox</td></tr>
+<tr><td style="padding:8px 40px 28px;font-size:15px;line-height:1.8;color:#2c241d;">
+Our weekly snapshot pairs verified MLS activity with provenance intelligence you won&rsquo;t find on Zillow or Redfin &mdash; architect attribution, the quiet sales above $5M, permit history, and the homes celebrities and family offices are actually buying. No drip funnels. No spam. One curated email each Thursday from a desert agent who reads the data before he writes the copy.<br><br>
+<em style="color:#5a4e3f;">If a friend would benefit, forward this. If it&rsquo;s not useful, the unsubscribe link below works in one click.</em>
+</td></tr>
 <tr><td style="padding:40px;background:#f4ede4;text-align:center;">
 <div style="font-family:Georgia,serif;font-size:28px;">Your Property DNA Report &mdash; Free</div>
 <p style="font-size:15px;line-height:1.8;color:#2c241d;">[[FIRSTNAME]], before you buy or sell, see the real story your property tells. Property DNA shows comps, valuation, permits, flood risk, and a 5&#8209;year trajectory most buyers never get to see.</p>
 <p style="font-size:14px;line-height:1.7;color:#5a4e3f;margin:6px 0 18px;"><strong>No card. 60 seconds. Delivered to your inbox.</strong></p>
-<a href="${SITE}/?ref=newsletter&email=[[EMAILADDRESS]]&firstName=[[FIRSTNAME]]&lastName=[[LASTNAME]]" target="_blank" style="background:#1f1a15;color:#fff;padding:14px 26px;text-decoration:none;">Get My Free Report &rarr;</a>
+<a href="${SITE}/?utm_source=cc&utm_medium=newsletter&utm_campaign=weekly_snapshot&email=[[EMAILADDRESS]]&firstName=[[FIRSTNAME]]&lastName=[[LASTNAME]]" target="_blank" style="background:#1f1a15;color:#fff;padding:14px 26px;text-decoration:none;">Get a Free PropertyDNA Report &rarr;</a>
 </td></tr>
 <tr><td align="center" style="padding:30px;">
 <a href="https://instagram.com/danielstuartps" style="margin:5px;background:#1f1a15;color:#fff;padding:10px 18px;text-decoration:none;">Instagram</a>

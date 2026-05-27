@@ -89,6 +89,16 @@ function buildEventsPrompt(weekDate) {
   return `Ultra-realistic editorial photograph for luxury real estate newsletter: ${theme}, Palm Springs setting, magazine-quality, Architectural Digest aesthetic, 16:9 wide, photo-realistic, no text, no logos`;
 }
 
+// West Valley listings imagery — Palm Springs / Cathedral City mid-century modernism
+function buildWestValleyPrompt() {
+  return `Ultra-realistic editorial photograph for luxury real estate newsletter: iconic Palm Springs mid-century modern luxury home exterior, butterfly roof or post-and-beam, expansive glass walls, agave and barrel cactus landscape, blue pool reflecting San Jacinto Mountains in background, golden hour, no people, Architectural Digest cover quality, 16:9 wide, photo-realistic, no text, no logos`;
+}
+
+// East Valley listings imagery — La Quinta / Palm Desert / Rancho Mirage estate aesthetic
+function buildEastValleyPrompt() {
+  return `Ultra-realistic editorial photograph for luxury real estate newsletter: Mediterranean-Spanish revival estate in La Quinta or Rancho Mirage, stone facade, terracotta tile roof, mature date palms framing entry, soft afternoon sun, Santa Rosa mountains in background, manicured grounds, no people, Bloomberg Wealth magazine quality, 16:9 wide, photo-realistic, no text, no logos`;
+}
+
 // ── DALL-E 3 generation ───────────────────────────────────────────────────────
 
 async function generateImage(prompt, openaiKey) {
@@ -149,49 +159,61 @@ exports.handler = async () => {
 
   const today  = new Date().toISOString().slice(0, 10);
   const periods = await getWeatherForecast();
-  const weatherPrompt = buildWeatherPrompt(periods);
-  const eventsPrompt  = buildEventsPrompt(today);
+  const weatherPrompt    = buildWeatherPrompt(periods);
+  const eventsPrompt     = buildEventsPrompt(today);
+  const westValleyPrompt = buildWestValleyPrompt();
+  const eastValleyPrompt = buildEastValleyPrompt();
 
-  console.log('[gen-images] weather prompt:', weatherPrompt);
-  console.log('[gen-images] events prompt:',  eventsPrompt);
+  console.log('[gen-images] weather prompt:',     weatherPrompt);
+  console.log('[gen-images] events prompt:',      eventsPrompt);
+  console.log('[gen-images] west-valley prompt:', westValleyPrompt);
+  console.log('[gen-images] east-valley prompt:', eastValleyPrompt);
 
   try {
-    const [weatherDalleUrl, eventsDalleUrl] = await Promise.all([
-      generateImage(weatherPrompt, openaiKey),
-      generateImage(eventsPrompt,  openaiKey),
+    const [weatherDalleUrl, eventsDalleUrl, westDalleUrl, eastDalleUrl] = await Promise.all([
+      generateImage(weatherPrompt,    openaiKey),
+      generateImage(eventsPrompt,     openaiKey),
+      generateImage(westValleyPrompt, openaiKey),
+      generateImage(eastValleyPrompt, openaiKey),
     ]);
 
-    const [weatherBuf, eventsBuf] = await Promise.all([
+    const [weatherBuf, eventsBuf, westBuf, eastBuf] = await Promise.all([
       getBinary(weatherDalleUrl),
       getBinary(eventsDalleUrl),
+      getBinary(westDalleUrl),
+      getBinary(eastDalleUrl),
     ]);
 
-    // Write to BOTH a dated archive file AND a stable "latest" pointer.
+    // Write BOTH a dated archive file AND a stable "latest" pointer per slot.
     // send-cc-newsletter.js reads from latest-*.jpg so no DB write is needed.
-    const weatherArchive = `${today}-weather.jpg`;
-    const eventsArchive  = `${today}-events.jpg`;
-    const weatherLatest  = `latest-weather.jpg`;
-    const eventsLatest   = `latest-events.jpg`;
-
-    const [wA, eA, wL, eL] = await Promise.all([
-      uploadToSupabase(weatherBuf, weatherArchive),
-      uploadToSupabase(eventsBuf,  eventsArchive),
-      uploadToSupabase(weatherBuf, weatherLatest),
-      uploadToSupabase(eventsBuf,  eventsLatest),
-    ]);
-
-    if ([wA, eA, wL, eL].some(r => r.status >= 300)) {
-      throw new Error(`Supabase upload failed: w=${wA.status} e=${eA.status} wL=${wL.status} eL=${eL.status}`);
+    const stamps = [
+      [`${today}-weather.jpg`,      `latest-weather.jpg`,      weatherBuf],
+      [`${today}-events.jpg`,       `latest-events.jpg`,       eventsBuf],
+      [`${today}-west-valley.jpg`,  `latest-west-valley.jpg`,  westBuf],
+      [`${today}-east-valley.jpg`,  `latest-east-valley.jpg`,  eastBuf],
+    ];
+    const results = await Promise.all(
+      stamps.flatMap(([archive, latest, buf]) => [
+        uploadToSupabase(buf, archive),
+        uploadToSupabase(buf, latest),
+      ])
+    );
+    if (results.some(r => r.status >= 300)) {
+      throw new Error(`Supabase upload failed: statuses=${results.map(r => r.status).join(',')}`);
     }
 
-    const weatherUrl = publicUrl(weatherLatest);
-    const eventsUrl  = publicUrl(eventsLatest);
+    const urls = {
+      weather:      publicUrl('latest-weather.jpg'),
+      events:       publicUrl('latest-events.jpg'),
+      west_valley:  publicUrl('latest-west-valley.jpg'),
+      east_valley:  publicUrl('latest-east-valley.jpg'),
+    };
 
-    db.kpi('newsletter_images_generated', null, { weather: weatherUrl, events: eventsUrl, date: today });
+    db.kpi('newsletter_images_generated', null, { ...urls, date: today });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true, weather: weatherUrl, events: eventsUrl, date: today }),
+      body: JSON.stringify({ ok: true, ...urls, date: today }),
     };
   } catch (err) {
     console.error('[gen-images] FAILED:', err.message);
