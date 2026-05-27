@@ -21,6 +21,16 @@ interface Report {
 type LoadStatus = 'idle' | 'loading' | 'done' | 'error';
 
 export default function Dashboard() {
+  // iOS has no concept of user accounts — redirect to home (Apple Guideline
+  // 3.1.1 + 2.1(a)). Saved reports live in the Home tab via SavedReportsStore.
+  if (isNative()) {
+    if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+      window.history.replaceState({}, '', '/');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+    return null;
+  }
+
   const { user, signOut } = useAuth();
   const [loadStatus, setLoadStatus]   = useState<LoadStatus>('idle');
   const [reports, setReports]         = useState<Report[]>([]);

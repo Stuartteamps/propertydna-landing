@@ -8,11 +8,11 @@ final class AccountViewController: UIHostingController<AccountView> {
 
     init() {
         super.init(rootView: AccountView())
-        title = "Account"
+        title = "Settings"
         tabBarItem = UITabBarItem(
-            title: "Account",
-            image: UIImage(systemName: "person.circle"),
-            selectedImage: UIImage(systemName: "person.circle.fill")
+            title: "Settings",
+            image: UIImage(systemName: "gearshape"),
+            selectedImage: UIImage(systemName: "gearshape.fill")
         )
     }
 
@@ -58,19 +58,14 @@ struct AccountView: View {
                 .font(.system(size: 10, weight: .medium))
                 .tracking(4)
                 .foregroundColor(gold)
-            Text("Account")
+            Text("Settings")
                 .font(.system(size: 32, weight: .light, design: .serif))
                 .foregroundColor(cream)
-            Button(action: { NativeRootTabBarController.shared?.openWebPath("/dashboard") }) {
-                Text("OPEN DASHBOARD →")
-                    .font(.system(size: 10, weight: .semibold))
-                    .tracking(2)
-                    .foregroundColor(.black)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 11)
-                    .background(gold)
-            }
-            .padding(.top, 6)
+            Text("PropertyDNA on iOS is an anonymous tool — no account required, nothing tracked. Reports you generate live on this device.")
+                .font(.system(size: 13))
+                .foregroundColor(muted)
+                .lineSpacing(3)
+                .padding(.top, 6)
         }
     }
 
@@ -149,12 +144,12 @@ struct AccountView: View {
 
     private var legalCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("DANGER ZONE")
+            Text("DATA ON THIS DEVICE")
                 .font(.system(size: 9, weight: .medium))
                 .tracking(3)
                 .foregroundColor(danger)
-            Button(action: { NativeRootTabBarController.shared?.openWebPath("/dashboard#delete-account") }) {
-                Text("DELETE ACCOUNT →")
+            Button(action: clearLocalData) {
+                Text("CLEAR SAVED REPORTS")
                     .font(.system(size: 10, weight: .semibold))
                     .tracking(2)
                     .foregroundColor(danger)
@@ -162,7 +157,7 @@ struct AccountView: View {
                     .padding(.vertical, 11)
                     .overlay(Rectangle().stroke(danger.opacity(0.4)))
             }
-            Text("This will permanently erase your sign-in identity, profile, and report history. Cannot be undone.")
+            Text("This removes all reports saved on this device. PropertyDNA on iOS does not keep any account or server-side history, so there's nothing else to delete.")
                 .font(.system(size: 11))
                 .foregroundColor(muted)
                 .lineSpacing(2)
@@ -170,5 +165,11 @@ struct AccountView: View {
         .padding(16)
         .background(danger.opacity(0.04))
         .overlay(RoundedRectangle(cornerRadius: 0).stroke(danger.opacity(0.18)))
+    }
+
+    private func clearLocalData() {
+        UserDefaults.standard.removeObject(forKey: "CapacitorStorage.pdna_saved_reports_v1")
+        UserDefaults.standard.removeObject(forKey: "CapacitorStorage.pdna_email")
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 }

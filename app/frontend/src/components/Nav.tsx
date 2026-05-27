@@ -163,12 +163,13 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
               )}
             </div>
           ) : (
-            /* Signed-out state */
+            /* Signed-out state — Sign In hidden on iOS (Guideline 2.1(a)
+                broken Apple Sign-In + 3.1.1 no external content access) */
             <>
-              <button onClick={openSignIn} style={linkStyle}
+              {!isNative() && <button onClick={openSignIn} style={linkStyle}
                 onMouseEnter={e => (e.currentTarget.style.color = '#F0EBE0')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#6B6252')}
-              >Sign In</button>
+              >Sign In</button>}
               {/* Pricing CTA hidden on iOS — Apple Guideline 3.1.1. */}
               {!isNative() && <button
                 onClick={openPricing}

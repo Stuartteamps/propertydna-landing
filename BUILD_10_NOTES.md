@@ -1,3 +1,84 @@
+# Build 15 — Resubmission Notes
+
+Build 14 rejected on two grounds:
+- **2.1(a)** — Sign in with Apple produced an error on iPad Air 11-inch (M3), also when attempting to create a new account.
+- **3.1.1** — Apple continues to flag the app for accessing externally-purchased content.
+
+Build 15 addresses both at the architecture level by **removing user accounts entirely from the iOS app**. PropertyDNA on iOS is now a fully anonymous tool. No sign-in, no account, no path to externally-purchased content, no broken Apple Sign-In flow.
+
+## What changed
+
+**Sign-in removed completely on iOS:**
+- `AuthModal.tsx` returns null on `isNative()` — no Sign in with Apple, no Sign in with Google, no email magic link, no plans view. The 2.1(a) iPad Sign In bug cannot occur because the surface doesn't exist.
+- `Nav.tsx` "Sign In" button hidden on iOS.
+- `Dashboard.tsx` redirects to `/` on iOS — `/dashboard` is unreachable.
+- Native `AccountViewController` SwiftUI tab renamed "Settings" (not "Account"). No "Open Dashboard" link. No tier badge. Just preferences + a "Clear saved reports" action that wipes local UserDefaults.
+
+**Anonymous tool architecture:**
+- Reports generated on iOS are saved to local device storage only (via `@capacitor/preferences`, surfaced in the Home tab).
+- The email field on the Analyze form remains — it's for report delivery, not account creation. Apple has not flagged this in any prior review.
+- No "user" concept exists in the iOS UI anywhere. No "your account", no "your reports", no "your plan", no "sign in to see more."
+
+**Carried over from Build 14:**
+- Runtime check-usage interception (forces isSubscribed=false on iOS even if a paid Stripe sub exists for that email)
+- All pricing / tier / plan / subscription UI hidden on iOS
+- Native UITabBarController root with Home / Search / Map / Settings tabs
+
+## Why this addresses both rejections
+
+**3.1.1**: There is no "externally-purchased content" because there is no account-based concept of "external content" in the iOS app. No sign-in, no email-based subscription lookup, no tier inference. The iOS app is now a self-contained anonymous tool.
+
+**2.1(a)**: The broken Apple Sign-In flow on iPad cannot be encountered because no sign-in surface exists in the iOS app. The AuthModal returns null on native; the Nav Sign In button is hidden; the /dashboard route redirects home.
+
+## App Review Notes (private)
+
+PROPERTYDNA BUILD 15 — ANONYMOUS iOS TOOL
+
+Apple's prior 2.1(a) and 3.1.1 notes are addressed by a single architectural decision: the iOS app no longer has user accounts.
+
+- AuthModal.tsx returns null on native — no path to Sign in with Apple, Sign in with Google, or email magic link.
+- Nav Sign In button hidden on native.
+- /dashboard route redirects to / on native.
+- AccountView SwiftUI tab is now "Settings" — no account, no dashboard link, just preferences + local-data controls.
+- All tier / plan / subscription concepts already hidden on iOS in Build 14.
+- The check-usage interception in main.tsx (Build 14) is retained as belt-and-suspenders, but with no sign-in flow it never executes a meaningful path.
+
+iOS user flow: open app → use Analyze form (just type an address) → receive report → save offline. No account, no purchase, no upsell, no path to externally-purchased anything.
+
+We are not currently offering In-App Purchase products. The iOS app is a free, anonymous property-intelligence tool. We may add IAP for subscriptions in a future submission once we've validated the anonymous-tool experience with users.
+
+DEMO CREDENTIALS
+No credentials required — the iOS app has no sign-in. Reviewer can immediately analyze any U.S. address from the Search tab.
+
+WHAT TO LOOK AT FIRST
+1. Open the app — native UITabBarController root with four tabs (Home / Search / Map / Settings).
+2. Search tab → Analyze form → type an address → receive a complete property report (every section visible, no gating).
+3. Home tab → see the report you just generated, saved offline.
+4. Settings tab → preferences toggles + Clear-Saved-Reports button. No sign-in. No Dashboard link.
+5. Long-press app icon → native iOS Quick Actions menu (Analyze / Saved / Heat Map).
+
+There is no UI path anywhere in the app that involves accounts, sign-in, subscriptions, plans, tiers, "Pro", "Enterprise", or external payment.
+
+## Resolution Center Reply (paste in ASC UI)
+
+Thank you for the detailed review of Build 14.
+
+Build 15 closes both issues at the architecture level:
+
+**2.1(a) — Apple Sign-In bug**: The AuthModal (which contained all sign-in flows including Sign in with Apple) now returns null on iOS. The Sign In button in the navigation is hidden on iOS. The /dashboard route redirects to home on iOS. There is no path within the iOS app to encounter the Apple Sign-In flow, so the iPad bug cannot occur.
+
+**3.1.1 — Externally-purchased content access**: With no user account concept in the iOS app, there is no way to access "content purchased outside the app." The iOS app is now a fully anonymous property-intelligence tool. The Settings tab contains only local preferences and a button to clear saved reports from the device — no account, no dashboard, no sign-in.
+
+iOS users open the app, type an address into the Analyze form, and receive a complete property intelligence report. The report is saved to the device for offline reading. That's the entire scope of the app.
+
+We are not currently offering In-App Purchase products. PropertyDNA on iOS is a free, anonymous tool. The web version continues to offer paid subscriptions, but the iOS app has no awareness of or interface with that.
+
+Thank you for your time.
+
+---
+
+# Earlier build history
+
 # Build 14 — Resubmission Notes
 
 Build 13 cleared the *purchase-in-app* interpretation of 3.1.1 but Apple rejected on the *accessing externally-purchased content* interpretation. The iOS app was still exposing tier/plan/subscription concepts in its UI (tier badges, "Free Account" indicators, "Check your plan" prompts) which implied — correctly — that the app interfaces with externally-paid services.
