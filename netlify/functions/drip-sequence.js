@@ -109,13 +109,35 @@ exports.handler = async () => {
   const stats = {};
 
   try {
+    // Load global suppression set once. Page through to handle >1000.
+    const suppressedSet = new Set();
+    let offset = 0;
+    while (true) {
+      const page = await db.from('campaign_unsubscribes')
+        .select('email').limit(1000).offset(offset).get().catch(() => []);
+      if (!Array.isArray(page) || page.length === 0) break;
+      for (const row of page) if (row.email) suppressedSet.add(row.email.toLowerCase());
+      if (page.length < 1000) break;
+      offset += 1000;
+    }
+    stats._suppressed_loaded = suppressedSet.size;
+
     for (const rule of DRIP_RULES) {
       const contacts = await rule.query().catch(() => []);
       if (!Array.isArray(contacts)) continue;
       let sent = 0;
+      let skippedSuppressed = 0;
 
       for (const c of contacts) {
         if (!rule.eligible(c, now)) continue;
+        if (suppressedSet.has((c.email || '').toLowerCase())) {
+          skippedSuppressed++;
+          // Also reconcile their campaign_contacts row so they don't re-appear.
+          await db.from('campaign_contacts').eq('id', c.id)
+            .update({ status: 'unsubscribed', last_event: 'unsubscribed_reconciled' })
+            .catch(() => {});
+          continue;
+        }
         const ok = await sendFollowUp(c, rule.step);
         if (ok) {
           await db.from('campaign_contacts').eq('id', c.id).update({
@@ -129,6 +151,7 @@ exports.handler = async () => {
       }
 
       if (sent > 0) stats[rule.desc] = sent;
+      if (skippedSuppressed > 0) stats[`${rule.desc}_blocked`] = skippedSuppressed;
     }
 
     return { statusCode: 200, body: JSON.stringify({ ok: true, stats, ran_at: new Date(now).toISOString() }) };

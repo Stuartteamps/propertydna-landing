@@ -66,20 +66,26 @@ exports.handler = async (event) => {
 
     if (type === 'email.clicked') {
       const firstClick = !contact.clicked_at;
+      const clickedUrl = (data.click && data.click.link) || '';
+      const isUnsubClick = /campaign-unsubscribe|\/unsubscribe/i.test(clickedUrl);
+
       await db.from('campaign_contacts').eq('id', contact.id).update({
         clicked_at: contact.clicked_at || now,
         opened_at: contact.opened_at || now,
-        last_event: 'clicked',
+        last_event: isUnsubClick ? 'clicked_unsub' : 'clicked',
       }).catch(() => {});
-      if (firstClick) await syncAggregateCounts(contact.campaign_id);
+      if (firstClick && !isUnsubClick) await syncAggregateCounts(contact.campaign_id);
 
-      // Immediate auto-reply for clickers who haven't had step-1 follow-up yet
-      if ((contact.follow_up_step || 0) === 0) {
-        await sendFollowUp(contact, 1);
-        await db.from('campaign_contacts').eq('id', contact.id).update({
-          follow_up_step: 1,
-          follow_up_sent_at: now,
-        }).catch(() => {});
+      // Immediate auto-reply for clickers who haven't had step-1 follow-up yet.
+      // Skip if they clicked the unsub link or are already suppressed.
+      if (!isUnsubClick && contact.status !== 'unsubscribed' && (contact.follow_up_step || 0) === 0) {
+        const ok = await sendFollowUp(contact, 1);
+        if (ok) {
+          await db.from('campaign_contacts').eq('id', contact.id).update({
+            follow_up_step: 1,
+            follow_up_sent_at: now,
+          }).catch(() => {});
+        }
       }
     }
 
@@ -100,6 +106,23 @@ exports.handler = async (event) => {
 
 // ── Shared follow-up sender (also used by drip-sequence.js) ──────────────────
 async function sendFollowUp(contact, step) {
+  // Hard guard: never send to a suppressed recipient.
+  try {
+    const suppressed = await db.from('campaign_unsubscribes')
+      .select('email').eq('email', (contact.email || '').toLowerCase()).limit(1).get();
+    if (Array.isArray(suppressed) && suppressed.length > 0) {
+      console.warn('[sendFollowUp] BLOCKED — suppressed recipient', contact.email, 'step', step);
+      return false;
+    }
+  } catch (e) {
+    console.error('[sendFollowUp] suppression lookup failed — failing closed', e.message);
+    return false;
+  }
+  if (contact.status === 'unsubscribed' || contact.status === 'bounced') {
+    console.warn('[sendFollowUp] BLOCKED — contact status', contact.status, contact.email);
+    return false;
+  }
+
   const https = require('https');
   const SENDER   = process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
   const SITE_URL = 'https://thepropertydna.com';

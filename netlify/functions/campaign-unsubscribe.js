@@ -8,13 +8,23 @@ exports.handler = async (event) => {
 
   const normalized = decodeURIComponent(email).toLowerCase().trim();
 
-  await db.upsert('campaign_unsubscribes', { email: normalized }, 'email').catch(() => {});
-  if (cid) {
+  let upsertErr = null;
+  let updateErr = null;
+  try {
+    await db.upsert('campaign_unsubscribes', { email: normalized }, 'email');
+  } catch (e) { upsertErr = e.message; }
+
+  // Suppress across ALL campaigns the recipient is on, not just the cid in the link.
+  // Otherwise duplicated contacts keep getting drips from other campaigns (GDPR violation).
+  try {
     await db.from('campaign_contacts')
-      .eq('campaign_id', cid)
       .eq('email', normalized)
-      .update({ status: 'unsubscribed' })
-      .catch(() => {});
+      .neq('status', 'unsubscribed')
+      .update({ status: 'unsubscribed', last_event: 'unsubscribed' });
+  } catch (e) { updateErr = e.message; }
+
+  if (upsertErr || updateErr) {
+    console.error('[campaign-unsubscribe]', { email: normalized, cid, upsertErr, updateErr });
   }
 
   return {
