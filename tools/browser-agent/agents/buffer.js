@@ -123,11 +123,13 @@ function addUTM(text, service) {
 }
 
 async function postToChannel(token, channelId, service, text, imageUrl, images) {
-  // Build the media array — prefer carousel `images` if provided, else single image
-  const mediaImages = Array.isArray(images) && images.length > 0
-    ? images.slice(0, 10).map(url => ({ url }))
-    : imageUrl ? [{ url: imageUrl }] : [];
-  const hasMedia = mediaImages.length > 0;
+  // Buffer GraphQL: assets is [AssetInput!]! — list of {image:{url}} | {video:{url}} | {document:{url}}
+  // (introspected schema 2026-05-26; previously docs showed assets.images[] which is no longer valid)
+  const urls = Array.isArray(images) && images.length > 0
+    ? images.slice(0, 10)
+    : imageUrl ? [imageUrl] : [];
+  const mediaAssets = urls.map(url => ({ image: { url } }));
+  const hasMedia = mediaAssets.length > 0;
 
   if (MEDIA_REQUIRED.includes(service) && !hasMedia) {
     throw new Error(`SKIP — ${service} requires media (image/video)`);
@@ -143,8 +145,7 @@ async function postToChannel(token, channelId, service, text, imageUrl, images) 
   };
 
   if (hasMedia && MEDIA_SUPPORTED.includes(service)) {
-    // Instagram/Facebook/LinkedIn all support carousel via assets.images[]
-    input.assets = { images: mediaImages };
+    input.assets = mediaAssets;
   }
 
   const metadata = buildMetadata(service);
