@@ -65,12 +65,15 @@
 [functions."weekly-mls-reminder"]
   schedule = "0 15 * * 3"
 
-# Wed 14:00 UTC = 7 AM PDT — generate 2 AI weather/events images via DALL-E,
-# upload to Supabase Storage, update newsletter_links so Thursday's cron
-# uses fresh imagery each week.
-[functions."generate-newsletter-images"]
-  schedule = "0 14 * * 3"
-  timeout = 60
+# SUPERSEDED 2026-05-28: weekly newsletter imagery is now generated locally by
+# tools/image-gen/gen-newsletter.ts (gpt-image-1) and committed to the repo at
+# /social/newsletter/latest-*.jpg (served from Netlify CDN). This DALL-E ->
+# Supabase Storage cron is disabled because (a) Supabase Storage was 544/522 in
+# the 2026-05-27/28 outage and (b) OPENAI_API_KEY was pulled from Netlify env
+# (AWS Lambda 4KB ceiling). Key now lives only in tools/image-gen/.env locally.
+# [functions."generate-newsletter-images"]
+#   schedule = "0 14 * * 3"
+#   timeout = 60
 
 # Daily 9 AM PT — checks for cc_blast_sent events exactly 7 days old and
 # fires non-opener follow-ups (different angle, same offer). Respects Dan's
