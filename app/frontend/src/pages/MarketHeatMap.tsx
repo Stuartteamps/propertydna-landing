@@ -4,6 +4,7 @@ import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import PremiumLockOverlay from '@/components/PremiumLockOverlay';
 import { useAuth } from '@/lib/auth';
+import { isNative } from '@/lib/nativeFeatures';
 import { supabase } from '@/lib/supabase';
 import HeatMapCanvas from '@/components/heatmap/HeatMapCanvas';
 import FilterPanel from '@/components/heatmap/FilterPanel';
@@ -102,9 +103,11 @@ export default function MarketHeatMap() {
   const [modalTab,     setModalTab]     = useState<ModalTab>('signin');
   const [pricingOpen,  setPricingOpen]  = useState(false);
 
-  const premium = !authLoading && (
+  // On iOS every feature is unlocked and free (Apple Guideline 3.1.1: no paid
+  // tiers, no "Unlock Premium" / "Unlock All Markets" upsell surfaces).
+  const premium = isNative() || (!authLoading && (
     user?.email?.toLowerCase() === OWNER || tier !== 'free'
-  );
+  ));
 
   const [markets,       setMarkets]       = useState<Market[]>(FALLBACK_MARKETS);
   const [properties,    setProperties]    = useState<Property[]>([]);

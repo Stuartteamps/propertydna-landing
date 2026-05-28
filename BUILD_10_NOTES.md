@@ -251,11 +251,17 @@ Native iOS app: SwiftUI dashboard, MKMapView, on-device Vision OCR scanner, Siri
 
 ## App Review Notes (private — Apple reviewer only)
 
-PROPERTYDNA BUILD 16 — RESPONSE TO BUILD 15 REJECTION (2.3.0 ACCURATE METADATA)
+PROPERTYDNA BUILD 17 — RESPONSE TO BUILD 16 REJECTION (3.1.1 + 2.3.3)
 
-Thank you for the review of Build 15. The rejection was caused by the UIRequiredDeviceCapabilities key in Info.plist, which listed "arm64" as a required capability and prevented installation on the review devices (iPhone 17 Pro Max, iPad Air 11-inch M3 / iOS & iPadOS 26.5).
+Thank you for the review of Build 16. We've addressed both items.
 
-Fix in Build 16: the UIRequiredDeviceCapabilities key has been removed entirely. No PropertyDNA feature requires hardware-capability install filtering — camera and location are requested at runtime via their usage-description strings — so the app now installs on all supported devices. No other functional changes were made versus Build 15.
+GUIDELINE 3.1.1 — IN-APP PURCHASE
+The iOS app is entirely free. It contains no subscriptions, no in-app purchases, no prices, and no payment links of any kind. Every feature is unlocked for all users on iOS. In Build 16, a few content screens (the market-intelligence map and the IntellaGraph analysis panel) still rendered "Unlock Premium" / "Unlock All Markets" call-to-action labels even though no purchase was possible. Those labels have been removed on iOS — the underlying content is now simply shown, free, with no upsell, no price, and no reference to paid plans or external purchase. There is no path in the iOS app to access content purchased elsewhere, and no path to purchase anything.
+
+GUIDELINE 2.3.3 — ACCURATE METADATA (SCREENSHOTS)
+The App Store screenshots have been replaced with new captures taken directly from the running app on iPhone 17 Pro Max. They show the native UI in use: the SwiftUI Home dashboard, the native Apple Maps market view, the native Settings screen, and the property-analysis entry screen. No marketing/Safari pages.
+
+(Build 16's prior 2.3.0 arm64 install issue was resolved and is no longer present.)
 
 The notes below document the native architecture carried forward from prior builds.
 

@@ -6,6 +6,7 @@ import PricingModal from '@/components/PricingModal';
 import PremiumLockOverlay from '@/components/PremiumLockOverlay';
 import IntellaGraphAIPanel from '@/components/IntellaGraphAIPanel';
 import { isPremiumUser } from '@/lib/isPremiumUser';
+import { isNative } from '@/lib/nativeFeatures';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
@@ -175,7 +176,9 @@ export default function IntellaGraph() {
 
   useEffect(() => { marketsRef.current = markets; }, [markets]);
   // Use live auth tier — covers direct navigation where sessionStorage isn't populated yet
-  useEffect(() => { setPremium(isPremiumUser() || tier !== 'free'); }, [tier]);
+  // On iOS every feature is unlocked and free (Apple Guideline 3.1.1: the
+  // native app exposes no paid tiers and no "Unlock Premium" upsell surfaces).
+  useEffect(() => { setPremium(isNative() || isPremiumUser() || tier !== 'free'); }, [tier]);
 
   // Load IntellaGraph AI fonts into document head
   useEffect(() => {
