@@ -251,6 +251,16 @@ Native iOS app: SwiftUI dashboard, MKMapView, on-device Vision OCR scanner, Siri
 
 ## App Review Notes (private — Apple reviewer only)
 
+PROPERTYDNA BUILD 16 — RESPONSE TO BUILD 15 REJECTION (2.3.0 ACCURATE METADATA)
+
+Thank you for the review of Build 15. The rejection was caused by the UIRequiredDeviceCapabilities key in Info.plist, which listed "arm64" as a required capability and prevented installation on the review devices (iPhone 17 Pro Max, iPad Air 11-inch M3 / iOS & iPadOS 26.5).
+
+Fix in Build 16: the UIRequiredDeviceCapabilities key has been removed entirely. No PropertyDNA feature requires hardware-capability install filtering — camera and location are requested at runtime via their usage-description strings — so the app now installs on all supported devices. No other functional changes were made versus Build 15.
+
+The notes below document the native architecture carried forward from prior builds.
+
+───────────────────────────────────────────
+
 PROPERTYDNA BUILD 12 — RESPONSE TO BUILD 11 REJECTION (3.1.1 + 4.2)
 
 Thank you for the detailed review of Build 11. We've addressed both issues at the source rather than at the margin.

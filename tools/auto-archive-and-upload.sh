@@ -16,17 +16,19 @@ NOT
 
 cd /Users/danstuart/propertydna-landing/app/frontend
 
-# Archive with manual signing
+# Archive using the App target's own signing config from project.pbxproj.
+# Do NOT pass CODE_SIGN_IDENTITY / PROVISIONING_PROFILE_SPECIFIER on the
+# command line — those become global overrides that xcodebuild tries to apply
+# to every Swift Package dependency (Firebase, GoogleSignIn, Facebook…), which
+# do not support provisioning profiles and abort the archive.
+rm -rf /tmp/PropertyDNA.xcarchive /tmp/PropertyDNA-export
 xcodebuild archive \
   -project ios/App/App.xcodeproj \
   -scheme App \
   -configuration Release \
   -archivePath /tmp/PropertyDNA.xcarchive \
   -destination 'generic/platform=iOS' \
-  DEVELOPMENT_TEAM=8NR9GCA6GQ \
-  CODE_SIGN_STYLE=Manual \
-  CODE_SIGN_IDENTITY="Apple Distribution: Daniel Stuart" \
-  PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
+  -allowProvisioningUpdates \
   >> "$LOG" 2>&1
 
 if [ ! -d /tmp/PropertyDNA.xcarchive ]; then
