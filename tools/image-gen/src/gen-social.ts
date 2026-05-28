@@ -54,6 +54,96 @@ futuristic. Architectural Digest editorial photography, moody twilight. No
 text, no logos, no watermarks, no people. Vertical 9:16 composition with clean
 negative space in the top third for a headline overlay.`,
   },
+  {
+    // 6/01 — Bob Hope's Lautner home (mushroom/dome roof, Indian Canyons)
+    date: "2026-06-01",
+    prompt: `A monumental futuristic 1970s modernist mansion on a Palm Springs mountainside:
+an enormous sculptural curved concrete dome roof with a sweeping organic
+silhouette, vast scale, perched above the city lights at golden hour, desert
+boulders around it. Architectural Digest editorial photography, awe-inspiring.
+No text, no logos, no watermarks, no people. Vertical 9:16 composition with
+clean negative space in the top third for a headline overlay.`,
+  },
+  {
+    // 6/02 — Walt Disney / Smoke Tree Ranch (1940s gated equestrian community)
+    date: "2026-06-02",
+    prompt: `A timeless 1940s desert ranch estate at Smoke Tree Ranch Palm Springs: low-slung
+rustic-elegant ranch architecture with wood and stone, split-rail fencing,
+mature smoke trees and tamarisk, a horse paddock in soft morning light, San
+Jacinto mountains behind. Nostalgic Americana, warm and serene. Editorial
+photography. No text, no logos, no watermarks, no people. Vertical 9:16
+composition with clean negative space in the top third for a headline overlay.`,
+  },
+  {
+    // 6/03 — "ask for the dossier" — classic pristine MCM home
+    date: "2026-06-03",
+    prompt: `A pristine, iconic Palm Springs mid-century modern home at golden hour: clean
+flat rooflines, breeze-block screen wall, a vintage car in the carport, a
+manicured cactus garden, butterfly roof, postcard-perfect desert modernism.
+Architectural Digest editorial photography, crisp and aspirational. No text, no
+logos, no watermarks, no people. Vertical 9:16 composition with clean negative
+space in the top third for a headline overlay.`,
+  },
+  {
+    // 6/04 — Liberace's Casa de Liberace (piano-shaped pool, opulent)
+    date: "2026-06-04",
+    prompt: `An opulent, flamboyant Palm Springs estate at golden hour with a distinctive
+piano-shaped swimming pool, glamorous 1970s Hollywood Regency styling, lush
+landscaping, ornate yet sun-drenched, luxurious and theatrical. Architectural
+Digest editorial photography, rich warm light. No text, no logos, no
+watermarks, no people. Vertical 9:16 composition with clean negative space in
+the top third for a headline overlay.`,
+  },
+  {
+    // 6/05 — data post (16,787 pedigree-classified properties)
+    date: "2026-06-05",
+    prompt: `An elevated golden-hour view over an exclusive Palm Springs luxury neighborhood:
+rows of architectural estates with turquoise pools, palm-lined streets, the
+desert valley and mountains stretching to the horizon, a sense of scale and
+data. Cinematic aerial real-estate photography. No text, no logos, no
+watermarks, no people. Vertical 9:16 composition with clean negative space in
+the top third for a headline overlay.`,
+  },
+  {
+    // 6/06 — John Lautner originals (angular cantilever, distinct from Elrod)
+    date: "2026-06-06",
+    prompt: `A bold John-Lautner-style modernist house cantilevered dramatically over a
+Palm Springs hillside at dusk: sharp angular concrete beams projecting into
+space, floor-to-ceiling glass glowing warm from within, desert and city lights
+below. Architectural Digest editorial photography, dramatic and architectural.
+No text, no logos, no watermarks, no people. Vertical 9:16 composition with
+clean negative space in the top third for a headline overlay.`,
+  },
+  {
+    // 6/07 — Albert Frey (winged-canopy Tramway-Gas-Station-style structure)
+    date: "2026-06-07",
+    prompt: `An iconic minimalist Albert-Frey-style desert modernist structure in Palm
+Springs: a dramatic soaring wing-shaped cantilevered roof, lightweight steel
+and glass, set against bare desert mountains and a clear sky at golden hour,
+clean and futuristic mid-century optimism. Architectural photography. No text,
+no logos, no watermarks, no people. Vertical 9:16 composition with clean
+negative space in the top third for a headline overlay.`,
+  },
+  {
+    // 6/08 — $5M+ buyer checklist (prestige estate)
+    date: "2026-06-08",
+    prompt: `A stately $5M-plus Palm Springs luxury estate at golden hour: refined
+contemporary-desert architecture, grand entry, immaculate landscaping, a long
+reflecting pool, an aura of prestige and provenance, framed by mountains.
+Architectural Digest editorial photography, elegant and authoritative. No text,
+no logos, no watermarks, no people. Vertical 9:16 composition with clean
+negative space in the top third for a headline overlay.`,
+  },
+  {
+    // 6/09 — Movie Colony storied estate (11 owners, Hollywood history)
+    date: "2026-06-09",
+    prompt: `A storied, elegant Movie Colony Palm Springs estate at dusk: a gracious
+1940s-50s Hollywood-era home behind a low white garden wall, mature palms,
+glowing windows, a sense of history and untold stories, warm cinematic
+twilight. Architectural Digest editorial photography, evocative. No text, no
+logos, no watermarks, no people. Vertical 9:16 composition with clean negative
+space in the top third for a headline overlay.`,
+  },
 ];
 
 async function run() {
