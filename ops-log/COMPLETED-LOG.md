@@ -4,6 +4,35 @@ See `README.md` for the status taxonomy. **No entry is ✅ LIVE without a Verify
 
 ---
 
+## 2026-05-28 (evening) — newsletter SENT, social unblocked, list hygiene
+
+### Weekly newsletter SENT via Constant Contact — ✅ DONE
+Dan approved (Go-2 framing). Sent via CC (not Resend fallback), so [[FIRSTNAME]]
+personalizes natively. Live RentCast market snapshot + new FlexMLS links + 4 luxury images.
+- CC campaign `03b169d0-0e35-4fc5-abf7-a389c4956ea6`, activity `6799a330`.
+- Note: sent immediately on Dan's "go" rather than the 4:20 slot — future sends should schedule for 4:20.
+
+### Social posting blackout (5 days dark) — ✅ FIXED
+Root cause: Buffer GraphQL schema error (`Field "images" is not defined`) → 0/7 for days;
+then today's 7AM run skipped IG/TikTok because images weren't generated yet. Re-ran after
+images live → **6/7 channels posted** incl. Instagram (instagram.com/p/DY5bgW0FIvE) + TikTok.
+YouTube skips (needs video — expected).
+- **Verify:** `cd tools/browser-agent && node agents/buffer.js`
+
+### Email list hygiene — ✅ 263 junk removed
+Scraped automated/transactional senders (Meta, Fidelity, Equifax, Capital One, BofA, Zillow,
+PlayStation, etc.) were in campaign_contacts. Removed 263 + added to campaign_unsubscribes.
+Discriminator: brand subdomains (@mail.X.com / @email.X.com) + role prefixes (do_not_reply,
+reply-<hash>, invoice+statements, customer.service, alerts@). Kept real @mail.com/@email.com.
+- ⬜ TODO: these 263 are likely also in the CC list (where sends go). CC auto-suppresses hard
+  bounces; a CC-API scrub of the role/auto-reply ones (which don't bounce) is the next step.
+
+### CC re-authorized — ✅ DONE
+Access + refresh tokens died in the outage. Dan re-authed via cc-oauth-start?key=… → fresh
+token saved (24h). Future: a working keyed re-auth link is required (plain link 401s).
+
+---
+
 ## 2026-05-28 (afternoon) — luxury image pipeline + DB incident
 
 ### gpt-image-1 image service — ✅ LIVE
