@@ -426,7 +426,11 @@ exports.handler = async (event) => {
     const key = process.env.RESEND_API_KEY;
     const unsubMailto = process.env.UNSUB_MAILTO || 'unsubscribe@mail.thepropertydna.com';
     const payload = JSON.stringify({
-      from: `${SENDER_NAME} <${SENDER}>`,
+      // Resend can only send from a verified domain. SENDER (CC_SENDER_EMAIL)
+      // is a gmail address that's valid for the Constant Contact API path but
+      // 403s on Resend ("gmail.com is not verified"). Use the verified Resend
+      // sender for the preview/test path.
+      from: `${SENDER_NAME} <${SENDER_RESEND}>`,
       reply_to: REPLY_TO,
       to: testEmail,
       subject: `[TEST] ${subject}`,
