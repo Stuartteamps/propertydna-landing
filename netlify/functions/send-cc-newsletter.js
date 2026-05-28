@@ -77,15 +77,46 @@ async function getWeather() {
   } catch { return null; }
 }
 
-async function getMarketData() {
-  try {
-    const snaps = await db.from('market_snapshots')
-      .select('geo_key,median_price,avg_price_per_sqft,median_dom,active_listings,absorption_rate,appreciation_rate_yoy')
-      .eq('geo_type', 'city').order('snapshot_date', { ascending: false }).limit(20).get();
-    const seen = {};
-    (snaps || []).forEach(s => { if (!seen[s.geo_key]) seen[s.geo_key] = s; });
-    return Object.values(seen);
-  } catch { return []; }
+// Live Palm Springs (92264) sale-market snapshot from RentCast, computed fresh
+// on every send so the newsletter never ships stale numbers. YoY is derived by
+// comparing this month's median to the same month last year in the history.
+// Returns null on any failure → buildMarketNarrative falls back to evergreen copy.
+function getMarketSnapshot() {
+  return new Promise((resolve) => {
+    const key = process.env.RENTCAST_API_KEY;
+    if (!key) return resolve(null);
+    const req = https.get({
+      hostname: 'api.rentcast.io',
+      path: '/v1/markets?zipCode=92264&dataType=Sale&historyRange=13',
+      headers: { 'X-Api-Key': key, 'Accept': 'application/json' },
+    }, (res) => {
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => {
+        try {
+          const d    = JSON.parse(raw);
+          const sd   = d.saleData || {};
+          const hist = sd.history || {};
+          const now  = new Date();
+          const yKey = `${now.getFullYear() - 1}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+          const prior = hist[yKey] || {};
+          const med      = sd.medianPrice || null;
+          const priorMed = prior.medianPrice || null;
+          const yoy = (med && priorMed) ? ((med - priorMed) / priorMed) * 100 : null;
+          resolve({
+            median_price:    med,
+            median_dom:      sd.medianDaysOnMarket || null,
+            active_listings: sd.totalListings || null,
+            prior_active:    prior.totalListings || null,
+            prior_dom:       prior.medianDaysOnMarket || null,
+            yoy,
+          });
+        } catch { resolve(null); }
+      });
+    });
+    req.on('error', () => resolve(null));
+    req.setTimeout(9000, () => { req.destroy(); resolve(null); });
+  });
 }
 
 function buildWeatherText(periods) {
@@ -99,23 +130,56 @@ function buildWeatherText(periods) {
   return `Highs reaching ${hi} with ${skyTxt}. Overnight lows near ${lo}. ${day?.detailedForecast ? day.detailedForecast.split('.')[0] + '.' : 'A classic desert week ahead.'}`;
 }
 
-function buildMarketNarrative(markets) {
-  if (!markets?.length) return 'The desert market continues to show steady buyer demand. Well-positioned homes are finding buyers quickly while overpriced listings are taking longer to move.';
-  const ps  = markets.find(m => m.geo_key === 'palm-springs');
-  const top = ps || markets[0];
-  const fmt = n => n ? '$' + Math.round(n / 1000) + 'k' : null;
-  const pct = n => n ? (n > 0 ? '+' : '') + n.toFixed(1) + '%' : null;
-  const supplyLine = top?.absorption_rate
-    ? top.absorption_rate < 3 ? `Inventory is tight at ${top.absorption_rate.toFixed(1)} months of supply.`
-    : top.absorption_rate > 6 ? `Supply has loosened to ${top.absorption_rate.toFixed(1)} months — buyers have options.`
-    : `The market is balanced at ${top.absorption_rate.toFixed(1)} months of supply.`
-    : 'Buyer demand remains steady across the valley.';
-  const priceLine = ps?.median_price ? `Palm Springs median is ${fmt(ps.median_price)}${ps?.appreciation_rate_yoy ? ` (${pct(ps.appreciation_rate_yoy)} YOY)` : ''}.` : '';
-  return [supplyLine, priceLine, 'Well-presented homes continue to win. Overpriced listings are sitting longer.'].filter(Boolean).join(' ');
+function buildMarketNarrative(snap) {
+  if (!snap || !snap.median_price) {
+    return 'The desert market continues to show steady buyer demand. Well-positioned homes are finding buyers quickly while overpriced listings are taking longer to move.';
+  }
+  const fmtK  = n => '$' + Math.round(n / 1000) + 'k';
+  const parts = [];
+
+  if (snap.yoy != null) {
+    const dir = snap.yoy >= 0 ? `up ${snap.yoy.toFixed(1)}%` : `down ${Math.abs(snap.yoy).toFixed(1)}%`;
+    parts.push(`The Palm Springs median sale price is ${fmtK(snap.median_price)} — ${dir} from a year ago.`);
+  } else {
+    parts.push(`The Palm Springs median sale price is ${fmtK(snap.median_price)}.`);
+  }
+
+  if (snap.median_dom) {
+    if (snap.prior_dom && snap.prior_dom !== snap.median_dom) {
+      const faster = snap.median_dom < snap.prior_dom;
+      parts.push(faster
+        ? `Homes are selling faster — ${snap.median_dom} days on market versus ${snap.prior_dom} a year ago.`
+        : `Homes are taking longer to sell — ${snap.median_dom} days on market versus ${snap.prior_dom} a year ago.`);
+    } else {
+      parts.push(`Median time on market is ${snap.median_dom} days.`);
+    }
+  }
+
+  if (snap.active_listings) {
+    if (snap.prior_active && snap.prior_active !== snap.active_listings) {
+      const tighter = snap.active_listings < snap.prior_active;
+      parts.push(`Inventory has ${tighter ? 'tightened' : 'loosened'} to ${snap.active_listings} active listings, ${tighter ? 'down from' : 'up from'} ${snap.prior_active} last spring.`);
+    } else {
+      parts.push(`${snap.active_listings} homes are active right now.`);
+    }
+  }
+
+  parts.push('Well-presented, correctly-priced homes are still winning. Overpriced listings sit.');
+  return parts.join(' ');
 }
 
 function getWeekLabel() {
   return `Week of ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+}
+
+// CC processes [[FIRSTNAME]] / [[LASTNAME]] / [[EMAILADDRESS]] natively. Resend
+// does NOT, so on any Resend path (preview + full-list fallback) we substitute
+// the tags ourselves to avoid shipping a literal "Hi [[FIRSTNAME]],".
+function fillMergeTags(html, { first, last, email } = {}) {
+  return html
+    .replace(/\[\[FIRSTNAME\]\]/g, (first && first.trim()) || 'there')
+    .replace(/\[\[LASTNAME\]\]/g, (last && last.trim()) || '')
+    .replace(/\[\[EMAILADDRESS\]\]/g, email || '');
 }
 
 function buildHtml(weatherText, marketNarrative, weekLabel, links) {
@@ -221,15 +285,18 @@ async function sendViaResend(subject, html, weatherText, marketNarrative, weekLa
 
   while (offset < (campaign.total_contacts || 9999)) {
     const batch = await db.from('campaign_contacts')
-      .select('id,email,first_name').eq('campaign_id', campaign.id)
+      .select('id,email,first_name,last_name').eq('campaign_id', campaign.id)
       .order('created_at', { ascending: true }).range(offset, offset + BATCH - 1).get().catch(() => null);
     if (!Array.isArray(batch) || !batch.length) break;
 
     for (const c of batch) {
       if (unsubSet.has((c.email || '').toLowerCase())) continue;
-      const perEmailHtml = html.replace(
-        `/.netlify/functions/campaign-unsubscribe?email=[[EMAILADDRESS]]`,
-        `${unsubUrl}?email=${Buffer.from(c.email).toString('base64')}`
+      const perEmailHtml = fillMergeTags(
+        html.replace(
+          `/.netlify/functions/campaign-unsubscribe?email=[[EMAILADDRESS]]`,
+          `${unsubUrl}?email=${Buffer.from(c.email).toString('base64')}`
+        ),
+        { first: c.first_name, last: c.last_name, email: c.email }
       );
       const oneClickUnsub = `${unsubUrl.replace('[[EMAILADDRESS]]', encodeURIComponent(c.email))}`;
       const payload = JSON.stringify({
@@ -344,14 +411,14 @@ exports.handler = async (event) => {
     } catch { return null; }
   };
 
-  const [weatherPeriods, markets, links] = await Promise.all([
+  const [weatherPeriods, marketSnap, links] = await Promise.all([
     withTimeout(getWeather(), isTest ? 6000 : 12000, null),
-    withTimeout(getMarketData(), isTest ? 6000 : 12000, []),
+    withTimeout(getMarketSnapshot(), isTest ? 7000 : 12000, null),
     withTimeout(loadLinks(), isTest ? 4000 : 8000, null),
   ]);
-  console.log('[send-cc-newsletter] links:', links ? 'loaded' : 'using fallback');
+  console.log('[send-cc-newsletter] links:', links ? 'loaded' : 'using fallback', '| market:', marketSnap?.median_price ? 'live' : 'fallback');
   const weatherText    = buildWeatherText(weatherPeriods);
-  const marketNarrative = buildMarketNarrative(markets);
+  const marketNarrative = buildMarketNarrative(marketSnap);
   const weekLabel      = getWeekLabel();
   const subject        = `The Stuart Team Weekly - ${weekLabel}`;
   const html           = buildHtml(weatherText, marketNarrative, weekLabel, links);
@@ -419,9 +486,9 @@ exports.handler = async (event) => {
   if (isTest) {
     console.log('[send-cc-newsletter] TEST MODE — sending only to', testEmail);
     const oneClickUnsub = `${SITE}/.netlify/functions/unsubscribe?e=${Buffer.from(testEmail).toString('base64')}`;
-    const perEmailHtml  = html.replace(
-      '/.netlify/functions/campaign-unsubscribe?email=[[EMAILADDRESS]]',
-      oneClickUnsub
+    const perEmailHtml  = fillMergeTags(
+      html.replace('/.netlify/functions/campaign-unsubscribe?email=[[EMAILADDRESS]]', oneClickUnsub),
+      { first: 'there', email: testEmail }
     );
     const key = process.env.RESEND_API_KEY;
     const unsubMailto = process.env.UNSUB_MAILTO || 'unsubscribe@mail.thepropertydna.com';
