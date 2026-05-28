@@ -126,25 +126,17 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
   //   {{contact.x}}     → DOES NOT WORK (renders literal)
   //   Custom field syntax still unknown — defer score block to next iteration.
   const unsubUrl = `${SITE}/.netlify/functions/campaign-unsubscribe?email=[[EMAILADDRESS]]`;
-  // Image URLs — prefer AI-generated weekly images at the stable "latest"
-  // path in Supabase Storage (overwritten each Wednesday by
-  // generate-newsletter-images.js). Fall back to the pre-generated daily
-  // photos at /social/photo/YYYY-MM-DD.jpg when the Wednesday gen hasn't
-  // populated them yet (or when OPENAI_API_KEY isn't configured).
-  const today           = new Date();
-  const weatherImageDate = new Date(today.getTime() + 2 * 86400000).toISOString().slice(0, 10);
-  const eventImageDate   = today.toISOString().slice(0, 10);
-  const supaImageBase    = `${process.env.SUPABASE_URL || 'https://neccpdfhmfnvyjgyrysy.supabase.co'}/storage/v1/object/public/newsletter-images`;
-  const useAiImages      = process.env.OPENAI_API_KEY ? true : false;
-  const weatherImageUrl  = useAiImages ? `${supaImageBase}/latest-weather.jpg` : `${SITE}/social/photo/${weatherImageDate}.jpg`;
-  const eventImageUrl    = useAiImages ? `${supaImageBase}/latest-events.jpg`  : `${SITE}/social/photo/${eventImageDate}.jpg`;
-  // Luxury listing imagery — replaces stale hardcoded CC asset PNGs (was
-  // f61407b8... and 1288b08d...). Generated weekly by
-  // generate-newsletter-images.js with Architectural Digest / Bloomberg
-  // Wealth style prompts. Fall back to the AD-style events image if the
-  // dedicated listing slots haven't been populated yet.
-  const westValleyImageUrl = useAiImages ? `${supaImageBase}/latest-west-valley.jpg` : `${SITE}/social/photo/${eventImageDate}.jpg`;
-  const eastValleyImageUrl = useAiImages ? `${supaImageBase}/latest-east-valley.jpg` : `${SITE}/social/photo/${eventImageDate}.jpg`;
+  // Luxury newsletter imagery — gpt-image-1 (Architectural Digest / Condé Nast
+  // style), content-matched to each section's copy. Committed to the repo and
+  // served from Netlify's CDN at /social/newsletter/latest-*.jpg, regenerated
+  // weekly by tools/image-gen/gen-newsletter.ts. Hosting on the CDN — NOT
+  // Supabase Storage — keeps imagery up even during a DB/storage incident
+  // (Supabase Storage was returning 544/522 during the 2026-05-27/28 outage).
+  const cdnImageBase       = `${SITE}/social/newsletter`;
+  const weatherImageUrl    = `${cdnImageBase}/latest-weather.jpg`;
+  const eventImageUrl      = `${cdnImageBase}/latest-events.jpg`;
+  const westValleyImageUrl = `${cdnImageBase}/latest-west-valley.jpg`;
+  const eastValleyImageUrl = `${cdnImageBase}/latest-east-valley.jpg`;
   // Weekly listing links pulled from newsletter_links table — Dan updates each
   // Wednesday before the Thursday cron. Fall back to our own listing pages.
   const wvLink   = links?.west_valley_new || `${SITE}/listings/west-valley`;

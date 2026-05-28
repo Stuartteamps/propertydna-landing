@@ -1,0 +1,21 @@
+{
+  "name": "propertydna-image-gen",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Luxury real estate / social image generation via OpenAI gpt-image-1",
+  "scripts": {
+    "test": "tsx src/test.ts",
+    "newsletter": "tsx src/gen-newsletter.ts",
+    "social": "tsx src/gen-social.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "openai": "^4.77.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
