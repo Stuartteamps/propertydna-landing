@@ -35,11 +35,9 @@
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 
-	<!-- Device capabilities -->
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>arm64</string>
-	</array>
+	<!-- Device capabilities — intentionally omitted. Declaring arm64 as a
+	     required capability triggered App Review rejection 2.3.0 (build 15);
+	     no app feature needs hardware-capability install filtering. -->
 
 	<!-- Orientation: portrait + landscape for iPad, portrait-first for iPhone -->
 	<key>UISupportedInterfaceOrientations</key>
