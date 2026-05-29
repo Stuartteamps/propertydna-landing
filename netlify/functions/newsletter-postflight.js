@@ -17,8 +17,8 @@ exports.handler = async () => {
   let events = [];
   try {
     events = await db.from('kpi_events')
-      .select('event,payload,created_at')
-      .in('event', ['cc_newsletter_sent', 'newsletter_sent', 'cc_newsletter_test'])
+      .select('event_type,metadata,created_at')
+      .in('event_type', ['cc_newsletter_sent', 'newsletter_sent', 'cc_newsletter_test'])
       .gte('created_at', sinceIso)
       .order('created_at', { ascending: false })
       .limit(20)
@@ -34,8 +34,8 @@ exports.handler = async () => {
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 
-  const ccSent     = events.find(e => e.event === 'cc_newsletter_sent');
-  const resendSent = events.find(e => e.event === 'newsletter_sent');
+  const ccSent     = events.find(e => e.event_type === 'cc_newsletter_sent');
+  const resendSent = events.find(e => e.event_type === 'newsletter_sent');
   const winner     = ccSent || resendSent;
 
   // CASE 1: nothing fired
@@ -61,12 +61,12 @@ exports.handler = async () => {
                 Run preflight again or re-auth CC before next Thursday.`,
       context: { winner, allEvents: events.slice(0, 3) },
     });
-    db.kpi('newsletter_postflight', null, { status: 'warn', reason: 'resend_fallback', payload: winner.payload });
+    db.kpi('newsletter_postflight', null, { status: 'warn', reason: 'resend_fallback', payload: winner.metadata });
     return { statusCode: 200, body: JSON.stringify({ status: 'warn', via: 'resend' }) };
   }
 
   // CASE 3: CC path worked (silent success)
-  db.kpi('newsletter_postflight', null, { status: 'healthy', via: 'constant_contact', payload: winner.payload });
+  db.kpi('newsletter_postflight', null, { status: 'healthy', via: 'constant_contact', payload: winner.metadata });
   console.log('[newsletter-postflight] healthy — sent via CC');
-  return { statusCode: 200, body: JSON.stringify({ status: 'healthy', via: 'constant_contact', payload: winner.payload }) };
+  return { statusCode: 200, body: JSON.stringify({ status: 'healthy', via: 'constant_contact', payload: winner.metadata }) };
 };
