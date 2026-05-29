@@ -147,8 +147,9 @@ const KEYWORD_FLOWS = {
   },
   VERIFIED: {
     tag: "lead_celebrity",
-    msg1: "here's the wild part — we verified 53 of them but had to refute or downgrade dozens more. people just make stuff up because it sounds good.",
-    msg2: "full verified list (with sources for every claim): https://www.thepropertydna.com/pedigree-index?utm_source=ig&utm_medium=dm&utm_campaign=verified\n\nif you're looking at a property right now that \"celebrity X lived there\" — send me the address. I can usually tell you in 24 hours if the claim holds.",
+    msg1: "sent! we've VERIFIED 17 celebrity-owned Palm Springs estates through primary sources — Sinatra's Twin Palms (the piano-shaped pool), Elvis's Honeymoon Hideaway, Bob Hope's Lautner dome, Liberace's Casa de Liberace, the Kaufmann/Neutra house, and more.\n\nthat's just the A-list — we've pedigree-classified 16,788 Coachella Valley properties total.",
+    msg2: "see the full documented index here 👉 https://thepropertydna.com/pedigree-index?utm_source=ig&utm_medium=dm&utm_campaign=verified\n\ncreate a free PropertyDNA account and you can run a full report — comps, permits, valuation, provenance — on ANY home you're considering.\n\nwhich estate do you want the full dossier on? I'll pull it for you.",
+    button: { caption: "See the full index", url: "https://thepropertydna.com/pedigree-index?utm_source=ig&utm_medium=dm&utm_campaign=verified" },
   },
   SINATRA: {
     tag: "lead_sinatra",
@@ -221,6 +222,10 @@ function matchKeyword(text) {
 
 // Build the v2 dynamic-block response for a keyword trigger
 function keywordResponse(keyword, flow) {
+  // msg2 may carry an optional CTA button (e.g. VERIFIED flow)
+  const msg2Block = flow.button
+    ? { type: "text", text: flow.msg2, buttons: [{ type: "url", caption: flow.button.caption, url: flow.button.url }] }
+    : { type: "text", text: flow.msg2 };
   return {
     statusCode: 200,
     headers: CORS,
@@ -229,7 +234,7 @@ function keywordResponse(keyword, flow) {
       content: {
         messages: [
           { type: "text", text: flow.msg1 },
-          { type: "text", text: flow.msg2 },
+          msg2Block,
         ],
         actions: [
           { action: "add_tag", tag_name: flow.tag },
