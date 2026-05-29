@@ -215,6 +215,11 @@ export default function Pricing() {
                     }}>
                       {plan.period}
                     </div>
+                    {plan.tier === 'Pro' && (
+                      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#74C69D', marginTop: 6 }}>
+                        or $479/year — 2 months free
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 40, flex: 1 }}>

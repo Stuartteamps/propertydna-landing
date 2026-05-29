@@ -59,6 +59,7 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
   });
   const [loading, setLoading] = useState<Mode | null>(null);
   const [error, setError] = useState('');
+  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
 
   // Auto-fill from signed-in user
   useEffect(() => {
@@ -140,9 +141,27 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
           </div>
         )}
 
+        {/* Billing period toggle */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+          <div style={{ display: 'inline-flex', border: '1px solid rgba(255,255,255,0.12)' }}>
+            {(['monthly', 'annual'] as const).map(b => (
+              <button key={b} onClick={() => setBilling(b)}
+                style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', padding: '9px 18px', cursor: 'pointer', border: 'none',
+                  background: billing === b ? '#C9A84C' : 'transparent', color: billing === b ? '#000' : '#6B6252' }}>
+                {b === 'monthly' ? 'Monthly' : 'Annual · 2 mo free'}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Tier grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-          {TIERS.map(tier => (
+          {TIERS.map(baseTier => {
+            const annual = billing === 'annual' && baseTier.mode === 'pro';
+            const tier = annual
+              ? { ...baseTier, stripeMode: 'subscription_annual', price: 479, period: '/yr', cta: 'Start Pro · Annual' }
+              : baseTier;
+            return (
             <div
               key={tier.mode}
               style={{ border: tier.highlight ? '2px solid #C9A84C' : '1px solid rgba(255,255,255,0.1)', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 10, background: tier.highlight ? 'linear-gradient(160deg, rgba(184,147,85,0.08), transparent)' : '#0A0908', position: 'relative' }}
@@ -158,6 +177,11 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
                 <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 44, fontWeight: 300, color: '#F0EBE0', lineHeight: 1 }}>{tier.price}</span>
                 <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', marginLeft: 2 }}>{tier.period}</span>
               </div>
+              {annual && (
+                <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 1, color: '#74C69D' }}>
+                  $479/yr — save $109 vs monthly
+                </div>
+              )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
                 {tier.features.map(f => (
                   <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -176,7 +200,8 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
                 {loading === tier.mode ? 'Redirecting to Stripe…' : tier.cta}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', textAlign: 'center', marginTop: 20 }}>

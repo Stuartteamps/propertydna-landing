@@ -285,6 +285,11 @@ exports.handler = async (event) => {
       sessionMode = "subscription";
       successPath = "/report-pending?session_id={CHECKOUT_SESSION_ID}&sub=1";
       db.kpi("sub_initiated", normalizedEmail, { plan: "monthly" });
+    } else if (mode === "subscription_annual") {
+      priceId = process.env.STRIPE_PRICE_SUBSCRIPTION_ANNUAL;
+      sessionMode = "subscription";
+      successPath = "/report-pending?session_id={CHECKOUT_SESSION_ID}&sub=1&plan=annual";
+      db.kpi("sub_initiated", normalizedEmail, { plan: "annual" });
     } else if (mode === "enterprise") {
       priceId = process.env.STRIPE_PRICE_ENTERPRISE;
       sessionMode = "subscription";
