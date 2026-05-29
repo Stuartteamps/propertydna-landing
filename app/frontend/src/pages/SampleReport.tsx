@@ -15,7 +15,7 @@ export default function SampleReport() {
   const [modalOpen, setModalOpen] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [modalTab, setModalTab] = useState<'signin'|'pricing'>('signin');
-  const premium = isPremiumUser() || isNative();
+  const premium = isPremiumUser();
   const openModal = (tab: 'signin'|'pricing' = 'pricing') => { setModalTab(tab); setModalOpen(true); };
   return (
     <div className="bg-espresso text-canvas min-h-screen">

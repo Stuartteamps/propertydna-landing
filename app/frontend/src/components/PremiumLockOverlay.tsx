@@ -22,9 +22,7 @@ export default function PremiumLockOverlay({
   onUpgrade,
   compact = false,
 }: PremiumLockOverlayProps) {
-  // Apple Guideline 3.1.1: don't tease external upgrade flows on iOS.
-  // The section is simply hidden in native; on web the upgrade is offered.
-  if (isNative()) return null;
+  // iOS now offers Pro via In-App Purchase — overlay renders on every platform.
   return (
     <div
       style={{

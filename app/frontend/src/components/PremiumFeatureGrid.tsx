@@ -19,13 +19,7 @@ interface PremiumFeatureGridProps {
  */
 export default function PremiumFeatureGrid({ features, onUpgrade }: PremiumFeatureGridProps) {
   // Apple Guideline 3.1.1: no external-upgrade CTAs on iOS. We also
-  // unlock every feature on iOS so users see the full value without any
-  // upsell — Dan's "draw them in" strategy.
-  const native = isNative();
-  if (native) {
-    onUpgrade = undefined;
-    features = features.map(f => ({ ...f, locked: false }));
-  }
+  // iOS now offers Pro via In-App Purchase, so upsells render normally on every platform.
   return (
     <div style={{
       display: 'grid',

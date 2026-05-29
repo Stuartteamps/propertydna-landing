@@ -26,30 +26,9 @@ if (Capacitor.isNativePlatform()) {
       input = new Request(API_BASE + u.pathname + u.search, input);
     }
 
-    // Apple Guideline 3.1.1: on iOS the app may not access content
-    // purchased externally without offering In-App Purchase. We have no
-    // IAP products configured, so we force every iOS user to appear as a
-    // brand-new free-tier visitor. The check-usage endpoint's response is
-    // rewritten on the client so subscribed status never reaches the UI.
-    if (url && /\/check-usage\b/.test(url)) {
-      return originalFetch(input, init).then(resp => {
-        if (!resp.ok) return resp;
-        return resp.clone().json().then((data: any) => {
-          const patched = {
-            ...data,
-            isSubscribed: false,
-            plan: null,
-            tier: 'free',
-            reportCount: 0,
-            quota: null,
-          };
-          return new Response(JSON.stringify(patched), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          });
-        }).catch(() => resp);
-      });
-    }
+    // Build 19+: iOS now offers In-App Purchase, so real Pro status (from
+    // either Apple IAP or — per 3.1.3(b) — a web Stripe subscription on the
+    // same account) is allowed to flow through. No interception.
     return originalFetch(input, init);
   };
 
@@ -57,9 +36,9 @@ if (Capacitor.isNativePlatform()) {
   // bottom padding so the fixed NativeBottomNav doesn't cover page content.
   document.documentElement.classList.add('pdna-native');
 
-  // Apple Guideline 3.1.1 safety net: hard-block window.open() to any
-  // external payment surface on iOS. The relevant React components all
-  // self-guard on isNative(); this catches anything we missed.
+  // Apple 3.1.1 safety net: still block external Stripe-payment URLs on iOS
+  // (Apple requires the IAP path on iOS for digital subscriptions; web
+  // checkout would re-introduce a non-IAP path).
   const isPaymentURL = (u: string) => /\b(stripe\.com|checkout\.stripe|buy\.stripe)\b/i.test(u);
   const originalOpen = window.open.bind(window);
   window.open = ((url?: string | URL, ...rest: any[]) => {
@@ -68,16 +47,25 @@ if (Capacitor.isNativePlatform()) {
     return originalOpen(url as any, ...(rest as []));
   }) as typeof window.open;
 
-  // Hide the /pricing route on cold start — if iOS user lands there via
-  // a deep link or back-stack, send them home. The web /pricing page
-  // also self-guards on isNative(); this is belt-and-suspenders.
-  const pruneIfPricing = () => {
-    if (window.location.pathname === '/pricing') {
-      window.history.replaceState({}, '', '/');
-    }
+  // Reflect Apple IAP results into the storage keys isPremiumUser reads. Use
+  // localStorage on iOS so the entitlement persists across app launches
+  // (sessionStorage clears when the app process exits). Server-side
+  // reconciliation via verify-apple-receipt is async.
+  const markPremium = (plan: string) => {
+    try {
+      localStorage.setItem('pdna_subscribed', 'true');
+      localStorage.setItem('pdna_plan', plan);
+      sessionStorage.setItem('pdna_subscribed', 'true');
+      sessionStorage.setItem('pdna_plan', plan);
+    } catch { /* storage unavailable */ }
   };
-  pruneIfPricing();
-  window.addEventListener('popstate', pruneIfPricing);
+  window.addEventListener('pdna:purchase-success', (e: any) => {
+    const productId: string = e?.detail?.productId || '';
+    markPremium(productId.includes('yearly') ? 'yearly' : 'monthly');
+  });
+  window.addEventListener('pdna:purchase-restored', (e: any) => {
+    if (e?.detail?.active) markPremium('restored');
+  });
 }
 
 // Load runtime configuration before rendering the app

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1DBAC8AD66712238347FB1B8 /* PurchaseBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2D0B3DED664C506C74494D4 /* PurchaseBridge.swift */; };
+		27462EA9BF5BE62A4307CFF8 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D47AB6B03F0E48055554D9 /* StoreKitManager.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		4BA8ED7439707C934954A3C9 /* SpotlightIndexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0E4A7E2D3D2809B5397F1B /* SpotlightIndexer.swift */; };
 		4BEFDC5AF0B5D3E4CCDA5C2D /* PropertyDNABridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EDA2E6E3342FF982B268138 /* PropertyDNABridgeViewController.swift */; };
@@ -46,12 +48,14 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		5C8FB17BF8710D01D32264A6 /* AccountViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccountViewController.swift; sourceTree = "<group>"; };
 		7E8CE1BA8BC7F89609DC96CF /* MapTabViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MapTabViewController.swift; sourceTree = "<group>"; };
+		83D47AB6B03F0E48055554D9 /* StoreKitManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		9EDA2E6E3342FF982B268138 /* PropertyDNABridgeViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PropertyDNABridgeViewController.swift; sourceTree = "<group>"; };
 		AABB00000000000000000002 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		D4AAA0D48A64CBF440944B7B /* SavedReportsStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SavedReportsStore.swift; sourceTree = "<group>"; };
 		D9341729EFA1DE2B05B48E2A /* HomeViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		DFECA8260A7BF726815FBC06 /* QuickActionsHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickActionsHandler.swift; sourceTree = "<group>"; };
+		F2D0B3DED664C506C74494D4 /* PurchaseBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PurchaseBridge.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +110,8 @@
 				5C8FB17BF8710D01D32264A6 /* AccountViewController.swift */,
 				7E8CE1BA8BC7F89609DC96CF /* MapTabViewController.swift */,
 				128C3B1BBC96424D52915F1B /* NativeRootTabBarController.swift */,
+				83D47AB6B03F0E48055554D9 /* StoreKitManager.swift */,
+				F2D0B3DED664C506C74494D4 /* PurchaseBridge.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -204,6 +210,8 @@
 				7C86889B5C3A0953759715A8 /* AccountViewController.swift in Sources */,
 				63C69B79AF4D4E5AD66C3AA8 /* MapTabViewController.swift in Sources */,
 				973B42387FB950EB6690417C /* NativeRootTabBarController.swift in Sources */,
+				27462EA9BF5BE62A4307CFF8 /* StoreKitManager.swift in Sources */,
+				1DBAC8AD66712238347FB1B8 /* PurchaseBridge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -346,7 +354,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = 8NR9GCA6GQ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -372,7 +380,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = 8NR9GCA6GQ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;

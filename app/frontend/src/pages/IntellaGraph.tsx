@@ -176,9 +176,8 @@ export default function IntellaGraph() {
 
   useEffect(() => { marketsRef.current = markets; }, [markets]);
   // Use live auth tier — covers direct navigation where sessionStorage isn't populated yet
-  // On iOS every feature is unlocked and free (Apple Guideline 3.1.1: the
-  // native app exposes no paid tiers and no "Unlock Premium" upsell surfaces).
-  useEffect(() => { setPremium(isNative() || isPremiumUser() || tier !== 'free'); }, [tier]);
+  // iOS now offers Pro via In-App Purchase; real entitlement gates content.
+  useEffect(() => { setPremium(isPremiumUser() || tier !== 'free'); }, [tier]);
 
   // Load IntellaGraph AI fonts into document head
   useEffect(() => {

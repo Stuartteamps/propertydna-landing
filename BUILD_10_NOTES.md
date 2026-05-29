@@ -251,6 +251,30 @@ Native iOS app: SwiftUI dashboard, MKMapView, on-device Vision OCR scanner, Siri
 
 ## App Review Notes (private — Apple reviewer only)
 
+PROPERTYDNA BUILD 19 — RESPONSE TO BUILD 18 REJECTION (3.1.1) — IN-APP PURCHASE WIRED
+
+GUIDELINE 3.1.1 — IN-APP PURCHASE
+PropertyDNA Pro is now available for purchase inside the iOS app via StoreKit 2 In-App Purchase, fully aligned with 3.1.3(b) for our multi-platform service.
+
+Two auto-renewable subscriptions in the "PropertyDNA Pro" group:
+• com.thepropertydna.app.pro.monthly — $49.99/month
+• com.thepropertydna.app.pro.yearly  — $479.99/year
+
+How to test the purchase flow:
+1. Open the app on the Search tab (or any screen with a Pro upsell — e.g. the IntellaGraph "Unlock Premium" button, or the Market Heat Map "Unlock All Markets" button).
+2. The pricing modal opens with two options for the Pro plan and a Monthly/Annual toggle.
+3. Tap "Start Pro" — the StoreKit purchase sheet appears, signed in to the sandbox account.
+4. Complete the purchase. The modal closes and Pro features unlock (IntellaGraph AI panel responses, full Market Heat Map, premium report sections).
+5. The Restore Purchases button is at the bottom of the same pricing modal. The Terms of Service and Privacy Policy links are immediately below it. Auto-renewal disclosure copy is shown above them.
+
+Per Apple Guideline 3.1.3(b), a customer who subscribed on our website (thepropertydna.com) at the same price can also access Pro features in the iOS app when signed in — because In-App Purchase is now an equally available path on iOS.
+
+(Build 18's prior 4.0 Sign-in-with-Apple item was resolved; the button now has a clear white border on the dark background. Earlier 2.3.0 / 3.1.1 / 2.3.3 items also remain resolved.)
+
+The notes below document the native architecture carried forward from prior builds.
+
+───────────────────────────────────────────
+
 PROPERTYDNA BUILD 18 — RESPONSE TO BUILD 17 REJECTION (4.0 + 2.1)
 
 GUIDELINE 4 — SIGN IN WITH APPLE BUTTON

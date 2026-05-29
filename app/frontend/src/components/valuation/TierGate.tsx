@@ -28,11 +28,7 @@ const UPGRADE_INFO = {
 
 export const TierGate: React.FC<TierGateProps> = ({ userTier, requiredTier, children, onUpgrade }) => {
   if (tierAtLeast(userTier, requiredTier)) return <>{children}</>;
-  // Apple Guideline 3.1.1: no upgrade CTAs in the iOS app. Render the
-  // gated content fully on native — users get the complete experience on
-  // their free first report, and can't reach this code path for additional
-  // reports anyway (PropertyForm blocks them at the quota).
-  if (isNative()) return <>{children}</>;
+  // iOS now offers Pro via In-App Purchase — gate the content on every platform.
 
   const info = UPGRADE_INFO[requiredTier];
 

@@ -48,11 +48,14 @@ const TIERS = [
   },
 ];
 
+// Apple IAP product IDs (must match the App Store Connect "PropertyDNA Pro" group).
+const IAP_PRODUCT_ID = {
+  monthly: 'com.thepropertydna.app.pro.monthly',
+  yearly:  'com.thepropertydna.app.pro.yearly',
+} as const;
+
 export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: PricingModalProps) {
-  // Apple Guideline 3.1.1: the iOS app may not surface external payment
-  // flows for digital subscriptions. Premium plans are sold only via the
-  // web. On iOS this modal is a no-op.
-  if (isNative()) return null;
+  const native = isNative();
   const { user } = useAuth();
   const [email, setEmail] = useState(() => {
     try { return prefillEmail || sessionStorage.getItem('pdna_email') || ''; } catch { return prefillEmail; }
@@ -66,9 +69,52 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
     if (user?.email && !email) setEmail(user.email);
   }, [user?.email]);
 
+  // IAP result events (iOS) — close on success, surface errors, clear loading
+  useEffect(() => {
+    if (!native) return;
+    const onSuccess = () => { setLoading(null); onClose(); };
+    const onCancelled = () => setLoading(null);
+    const onError = (ev: any) => {
+      const msg = ev?.detail?.error || 'Purchase failed. Please try again.';
+      setError(String(msg).slice(0, 200));
+      setLoading(null);
+    };
+    const onRestored = (ev: any) => {
+      setLoading(null);
+      if (ev?.detail?.active) onClose();
+      else setError('No active purchase found on this Apple ID.');
+    };
+    window.addEventListener('pdna:purchase-success', onSuccess);
+    window.addEventListener('pdna:purchase-cancelled', onCancelled);
+    window.addEventListener('pdna:purchase-error', onError);
+    window.addEventListener('pdna:purchase-restored', onRestored);
+    return () => {
+      window.removeEventListener('pdna:purchase-success', onSuccess);
+      window.removeEventListener('pdna:purchase-cancelled', onCancelled);
+      window.removeEventListener('pdna:purchase-error', onError);
+      window.removeEventListener('pdna:purchase-restored', onRestored);
+    };
+  }, [native, onClose]);
+
   if (!isOpen) return null;
 
   const handleSelect = async (tier: typeof TIERS[0]) => {
+    // Native iOS → In-App Purchase (StoreKit). Enterprise has no IAP product —
+    // hidden from the tier grid on iOS, so handleSelect only sees Pro there.
+    if (native && tier.mode === 'pro') {
+      const productId = billing === 'annual' ? IAP_PRODUCT_ID.yearly : IAP_PRODUCT_ID.monthly;
+      const wk: any = (window as any).webkit?.messageHandlers?.pdnaPurchase;
+      if (!wk?.postMessage) {
+        setError('In-App Purchase is unavailable on this device.');
+        return;
+      }
+      setError('');
+      setLoading(tier.mode);
+      wk.postMessage({ productId });
+      return; // wait for pdna:purchase-* event handlers above
+    }
+
+    // Web → Stripe Checkout
     const e = (user?.email || email).trim().toLowerCase();
     if (!e || !e.includes('@')) { setError('Enter a valid email to continue.'); return; }
     setError('');
@@ -91,6 +137,17 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
       setError('Network error — please try again.');
       setLoading(null);
     }
+  };
+
+  const handleRestore = () => {
+    const wk: any = (window as any).webkit?.messageHandlers?.pdnaRestorePurchases;
+    if (!wk?.postMessage) {
+      setError('Restore is unavailable on this device.');
+      return;
+    }
+    setError('');
+    setLoading('pro');
+    wk.postMessage({});
   };
 
   return (
@@ -156,7 +213,7 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
 
         {/* Tier grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-          {TIERS.map(baseTier => {
+          {(native ? TIERS.filter(t => t.mode === 'pro') : TIERS).map(baseTier => {
             const annual = billing === 'annual' && baseTier.mode === 'pro';
             const tier = annual
               ? { ...baseTier, stripeMode: 'subscription_annual', price: 479, period: '/yr', cta: 'Start Pro · Annual' }
@@ -204,9 +261,28 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
           })}
         </div>
 
-        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', textAlign: 'center', marginTop: 20 }}>
-          Secure checkout via Stripe · Cancel anytime · No hidden fees
-        </div>
+        {native ? (
+          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+            <button
+              onClick={handleRestore}
+              disabled={loading !== null}
+              style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', background: 'transparent', border: '1px solid rgba(201,168,76,0.4)', padding: '10px 18px', cursor: loading ? 'not-allowed' : 'pointer' }}>
+              Restore Purchases
+            </button>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', textAlign: 'center', lineHeight: 1.6, maxWidth: 560 }}>
+              Auto-renewable subscription billed to your Apple ID. Renews automatically unless canceled at least 24 hours before the end of the current period. Manage or cancel in iOS Settings → Apple ID → Subscriptions.
+            </div>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252' }}>
+              <a href="https://thepropertydna.com/terms" target="_blank" rel="noreferrer" style={{ color: '#C9A84C', textDecoration: 'none' }}>Terms of Service</a>
+              {' · '}
+              <a href="https://thepropertydna.com/privacy" target="_blank" rel="noreferrer" style={{ color: '#C9A84C', textDecoration: 'none' }}>Privacy Policy</a>
+            </div>
+          </div>
+        ) : (
+          <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', textAlign: 'center', marginTop: 20 }}>
+            Secure checkout via Stripe · Cancel anytime · No hidden fees
+          </div>
+        )}
       </div>
     </div>
   );

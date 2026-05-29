@@ -103,11 +103,10 @@ export default function MarketHeatMap() {
   const [modalTab,     setModalTab]     = useState<ModalTab>('signin');
   const [pricingOpen,  setPricingOpen]  = useState(false);
 
-  // On iOS every feature is unlocked and free (Apple Guideline 3.1.1: no paid
-  // tiers, no "Unlock Premium" / "Unlock All Markets" upsell surfaces).
-  const premium = isNative() || (!authLoading && (
+  // iOS now offers Pro via In-App Purchase; real entitlement gates content.
+  const premium = !authLoading && (
     user?.email?.toLowerCase() === OWNER || tier !== 'free'
-  ));
+  );
 
   const [markets,       setMarkets]       = useState<Market[]>(FALLBACK_MARKETS);
   const [properties,    setProperties]    = useState<Property[]>([]);
