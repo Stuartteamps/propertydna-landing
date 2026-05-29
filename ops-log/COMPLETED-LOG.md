@@ -4,6 +4,28 @@ See `README.md` for the status taxonomy. **No entry is ✅ LIVE without a Verify
 
 ---
 
+## 2026-05-29 — gate, pivot, and an important miss
+
+### Email gate on /pedigree-index — ✅ LIVE
+Soft gate: tier counts (50/1,322/5,134/10,282), architect cards, and 3 teaser dossiers visible to all. Rest unlocks after email. localStorage remembers it. capture-pedigree-lead function persists to campaign_contacts.metadata, honors suppression list.
+- **Verify:** load /pedigree-index in a fresh browser → see gate; submit email → unlocks + saved to DB.
+
+### Social CTA pivot to link-in-bio — ✅ LIVE (5/30 → 6/9)
+Diagnosed: @danielstuartps is a **personal IG account**, so Meta's Instagram Messaging API is blocked — no third-party tool (ManyChat, n8n, custom webhook) can ever auto-DM. All 11 upcoming CTAs swapped from "Comment KEYWORD → DM" to "Comment KEYWORD below — and the dossier is in my bio." Preserves comment-boost; routes conversion through the bio link.
+- ⬜ Dan to convert IG → Creator (60-sec free unlock) when ready; ManyChat webhook activates the moment he does.
+- ⬜ Dan to update IG bio link to thepropertydna.com/pedigree-index by ~8 PM tonight.
+
+### Scott Foster — ✅ removed everywhere
+2 dupes deleted from campaign_contacts; already in campaign_unsubscribes since 2026-05-20; not in CC list. Won't get next week's newsletter.
+
+### 🔴 CRITICAL FIND — campaign_unsubscribes never syncs to Constant Contact
+3,305 unsubscribed emails in our DB, but the CC contact list doesn't know. So someone who unsubscribes via our website still gets CC newsletters until CC's own list management catches them. Real CAN-SPAM exposure. Tracked as task #14.
+
+### Newsletter postflight monitor — ✅ FIXED
+The Friday postflight cron was 400-ing every week (column-name mismatch: queried `kpi_events.event/payload`, real columns are `event_type/metadata`). Fixed + deployed; next Friday it'll actually run.
+
+---
+
 ## 2026-05-28 (late) — DM conversion play, pedigree-index, nationwide gap
 
 ### "VERIFIED" DM reply + conversion play — ✅ DELIVERED (manual), 🔴 automate next
