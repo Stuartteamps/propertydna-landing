@@ -116,6 +116,53 @@ Otherwise add a Send Message block:
 
 ---
 
+## VERIFIED keyword auto-DM flow (comment trigger — DO THIS FIRST)
+
+This is a separate, simpler flow from the full qualifier above. When someone comments "VERIFIED" on a post (or DMs it), ManyChat instantly sends the celebrity-index teaser. No qualifier steps. One External Request, instant reply.
+
+### Build steps (in app.manychat.com — 5 min)
+
+**Part A: Comment trigger (catches Instagram post comments)**
+
+1. Automation → New Automation → name it "Keyword Reply: VERIFIED"
+2. Trigger → "Comment on post" → keyword: `VERIFIED` (match: contains, case-insensitive)
+   - Toggle "Auto-reply to comment" OFF (you want a DM, not a comment reply)
+   - Toggle "Send DM to commenter" ON
+3. Add action → External Request:
+   - Method: `POST`
+   - URL: `https://thepropertydna.com/.netlify/functions/manychat-webhook`
+   - Headers:
+     - `Content-Type: application/json`
+     - `x-manychat-token: f0eb57c3a9b6d4bc1770426a5823f8d97e1a23ac0a65a39e`
+   - Body (JSON):
+     ```json
+     { "message_text": "VERIFIED", "platform": "ig", "subscriber_id": "{{subscriber_id}}" }
+     ```
+   - Toggle **"Use response as messages"** ON
+4. Add action → Add Tag: `lead_celebrity`
+5. Publish
+
+**Part B: DM trigger (catches DMs containing "VERIFIED")**
+
+1. Automation → New Automation → name it "DM Reply: VERIFIED"
+2. Trigger → "User sends message" → keyword: `VERIFIED` (contains)
+3. Same External Request as above (identical body)
+4. Toggle **"Use response as messages"** ON
+5. Publish
+
+**Part C: Repeat for DOSSIER, SINATRA, FREY, BOND, HOPE, LAUTNER, LIBERACE (optional)**
+
+The webhook handles all 13 keywords. For each: duplicate the flow, change the body keyword value and the tag name. Or use one "Default Reply" with `"message_text": "{{last_input_text}}"` and the webhook routes everything — but that fires on ALL DMs.
+
+**Webhook token:** `f0eb57c3a9b6d4bc1770426a5823f8d97e1a23ac0a65a39e`
+
+What the webhook returns (smoke-tested 2026-05-28):
+- Message 1: celebrity teaser copy (Sinatra, Elvis, Hope, Liberace, Kaufmann)
+- Message 2: pedigree-index link + free account hook + engagement question, with a "See the full index" button → `https://thepropertydna.com/pedigree-index`
+- Actions: adds tags `lead_celebrity` + `lead_carousel_comment`, sets `lead_funnel = carousel_dm`
+
+---
+
 ## Test the webhook locally before turning on the ManyChat flow
 
 ```bash
