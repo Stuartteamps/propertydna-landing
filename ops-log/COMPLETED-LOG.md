@@ -10,7 +10,8 @@ See `README.md` for the status taxonomy. **No entry is ✅ LIVE without a Verify
 Emailed Dan a paste-ready DM reply: tease marquee verified estates → gate full list behind
 PropertyDNA signup (thepropertydna.com/pedigree-index) → "run a report on any home" CTA →
 engagement question. Honest numbers only (17 verified, 16,788 classified — NOT the post's "53").
-- ⬜ **ManyChat auto-DM** (task #11): make "VERIFIED" comment/DM auto-send this. Webhook live; flow TBD.
+- **ManyChat auto-DM** (task #11): webhook ✅ LIVE + verified (smoke test HTTP 200 returns the 17-celebrity teaser + "See the full index" button + lead_celebrity tag, deploy 6a190dda). ⚠️ DORMANT until Dan does the 5-min ManyChat UI: build 2 automations (trigger = Comment on post w/ keyword VERIFIED → DM commenter; and User sends message w/ keyword VERIFIED), each an External Request POST to /.netlify/functions/manychat-webhook with header `x-manychat-token`, body `{"message_text":"VERIFIED","platform":"ig","subscriber_id":"{{subscriber_id}}"}`, "Use response as messages" ON. Full guide: automation-workflows/manychat-dm-qualifier.md
+  - **Verify webhook:** `curl -s -X POST https://thepropertydna.com/.netlify/functions/manychat-webhook -H "x-manychat-token: <token>" -d '{"message_text":"VERIFIED","platform":"ig"}'` → v2 block with pedigree-index button.
 
 ### /pedigree-index "0 properties" — ✅ RESOLVED (was the DB outage, not a bug)
 Verified live via headless load: page shows 16,788 CV properties + A/B/C/D tiers + neighborhoods.
