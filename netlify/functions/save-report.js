@@ -885,6 +885,18 @@ exports.handler = async (event) => {
     if (!existingRow && normalizedEmail && fullAddr) {
       existingRow = firstRow(await db.from("property_reports").select("id,view_token").eq("email", normalizedEmail).eq("full_address", fullAddr).eq("status", "pending").order("created_at", { ascending: false }).limit(1).get().catch(() => []));
     }
+    // Final safety net: n8n's Normalize Intake can reformat the address so the
+    // full_address match misses. Match the single most-recent pending row for
+    // this email (n8n calls back within ~30s of queue-report). Only when exactly
+    // one fresh pending exists, to avoid mis-attaching concurrent submissions.
+    if (!existingRow && normalizedEmail) {
+      const recents = await db.from("property_reports").select("id,view_token,created_at").eq("email", normalizedEmail).eq("status", "pending").order("created_at", { ascending: false }).limit(4).get().catch(() => []);
+      if (Array.isArray(recents)) {
+        const cutoff = Date.now() - 20 * 60 * 1000;
+        const fresh = recents.filter(r => { const t = Date.parse(r.created_at); return isNaN(t) || t >= cutoff; });
+        if (fresh.length === 1) existingRow = fresh[0];
+      }
+    }
 
     if (existingRow) {
       reportId = existingRow.id;
