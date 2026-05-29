@@ -35,19 +35,20 @@ const capabilities = [
 ];
 
 const OAuthBtn = ({
-  onClick, bg, hoverBg, color = '#fff', children,
+  onClick, bg, hoverBg, color = '#fff', border, children,
 }: {
   onClick: () => void;
   bg: string;
   hoverBg: string;
   color?: string;
+  border?: string;
   children: React.ReactNode;
 }) => (
   <button
     onClick={onClick}
     style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-      padding: '13px 20px', border: '1px solid rgba(255,255,255,0.1)',
+      padding: '13px 20px', border: border || '1px solid rgba(255,255,255,0.1)',
       background: bg, cursor: 'pointer',
       fontFamily: 'Jost, sans-serif', fontSize: 13, fontWeight: 500,
       color, letterSpacing: '0.3px', transition: 'background 0.15s',
@@ -310,7 +311,7 @@ export default function Landing() {
                   Continue with Google
                 </OAuthBtn>
 
-                <OAuthBtn onClick={signInWithApple} bg="#000" hoverBg="#1a1a1a">
+                <OAuthBtn onClick={signInWithApple} bg="#000" hoverBg="#1a1a1a" border="1px solid #fff">
                   <svg width="16" height="16" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg" fill="#fff">
                     <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.8 135.4-317.9 268.9-317.9 72.5 0 132.9 47.9 178.3 47.9 43.2 0 111.1-50.9 190.8-50.9 30.2 0 108.2 2.6 163.4 103.3zM551.1 124.4c31.9-38.7 54.3-92.3 54.3-145.9 0-7.9-.6-15.9-1.9-22.5-51.6 2-112.8 34.5-150.2 78.5-28.9 33.8-56.2 87.4-56.2 141.6 0 8.6 1.3 17.1 1.9 19.9 3.2.6 8.5 1.3 13.8 1.3 46.2 0 103.2-30.8 138.3-72.9z"/>
                   </svg>

@@ -195,7 +195,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
               <button
                 onClick={() => handleOAuth('apple')}
                 disabled={providerLoading !== null}
-                style={{ ...btnBase, background: providerLoading === 'apple' ? '#1a1a1a' : '#000', color: '#fff', opacity: providerLoading !== null && providerLoading !== 'apple' ? 0.5 : 1 }}
+                style={{ ...btnBase, background: providerLoading === 'apple' ? '#1a1a1a' : '#000', color: '#fff', border: '1px solid #fff', opacity: providerLoading !== null && providerLoading !== 'apple' ? 0.5 : 1 }}
                 onMouseEnter={e => { if (!providerLoading) e.currentTarget.style.background = '#1a1a1a'; }}
                 onMouseLeave={e => { if (!providerLoading) e.currentTarget.style.background = '#000'; }}
               >
