@@ -724,6 +724,9 @@ exports.handler = async (event) => {
     reportUrl, reportPdfUrl,
     stripeSessionId, status = "completed",
     generationError = null, n8nRequestId = null,
+    // queue-report pre-creates a pending row and forwards these via n8n so we
+    // can UPDATE that row (and keep its view_token) instead of inserting a dupe.
+    viewToken: incomingViewToken = null, reportId: incomingReportId = null,
     features = {},  // DNA feature flags from n8n
     // Valuation accuracy inputs — n8n should pass these from RentCast property data
     lastSalePrice = null,   // number, e.g. 2300000
@@ -738,7 +741,7 @@ exports.handler = async (event) => {
   if (!email) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "email required" }) };
 
   const normalizedEmail = email.toLowerCase().trim();
-  const viewToken = crypto.randomUUID();
+  let viewToken = crypto.randomUUID();
 
   // n8n sometimes double-encodes the report object as a JSON string — parse it here
   let reportData = body.reportData || body.reportObject || null;
@@ -859,30 +862,44 @@ exports.handler = async (event) => {
     let reportId = null;
     let updated = false;
 
-    if (stripeSessionId) {
-      const existing = await db.from("property_reports")
-        .select("id")
-        .eq("stripe_session_id", stripeSessionId)
-        .eq("status", "pending")
-        .limit(1)
-        .get()
-        .catch(() => []);
+    // Locate the pending row queue-report pre-created for this request. Match in
+    // order of reliability: row id → view_token (both forwarded by n8n) →
+    // stripe session (paid path) → most recent pending for this email+address.
+    // We UPDATE it in place and KEEP its view_token, because that token is the
+    // link already emailed to the user. (Previously, with no stripeSessionId on
+    // the free path, this always fell through to INSERT — stranding the original
+    // row as "pending" forever while a duplicate completed row was created.)
+    const fullAddr = [address, city, state, zip].filter(Boolean).join(", ");
+    const firstRow = (r) => (Array.isArray(r) && r.length > 0 ? r[0] : null);
+    let existingRow = null;
 
-      if (Array.isArray(existing) && existing.length > 0) {
-        reportId = existing[0].id;
-        await db.from("property_reports")
-          .eq("stripe_session_id", stripeSessionId)
-          .update({
-            report_url: reportUrl || null,
-            report_pdf_url: reportPdfUrl || null,
-            report_data: enrichedReportData || null,
-            view_token: viewToken,
-            status,
-            generation_error: generationError,
-            n8n_request_id: n8nRequestId,
-          });
-        updated = true;
-      }
+    if (incomingReportId) {
+      existingRow = firstRow(await db.from("property_reports").select("id,view_token").eq("id", incomingReportId).limit(1).get().catch(() => []));
+    }
+    if (!existingRow && incomingViewToken) {
+      existingRow = firstRow(await db.from("property_reports").select("id,view_token").eq("view_token", incomingViewToken).limit(1).get().catch(() => []));
+    }
+    if (!existingRow && stripeSessionId) {
+      existingRow = firstRow(await db.from("property_reports").select("id,view_token").eq("stripe_session_id", stripeSessionId).eq("status", "pending").limit(1).get().catch(() => []));
+    }
+    if (!existingRow && normalizedEmail && fullAddr) {
+      existingRow = firstRow(await db.from("property_reports").select("id,view_token").eq("email", normalizedEmail).eq("full_address", fullAddr).eq("status", "pending").order("created_at", { ascending: false }).limit(1).get().catch(() => []));
+    }
+
+    if (existingRow) {
+      reportId = existingRow.id;
+      if (existingRow.view_token) viewToken = existingRow.view_token; // preserve emailed link
+      await db.from("property_reports")
+        .eq("id", existingRow.id)
+        .update({
+          report_url: reportUrl || null,
+          report_pdf_url: reportPdfUrl || null,
+          report_data: enrichedReportData || null,
+          status,
+          generation_error: generationError,
+          n8n_request_id: n8nRequestId,
+        });
+      updated = true;
     }
 
     if (!updated) {
