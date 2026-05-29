@@ -6,6 +6,7 @@ import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
 import PremiumPreviewCard from '@/components/PremiumPreviewCard';
 import MarketHeatMapPreview from '@/components/MarketHeatMapPreview';
+import InvestmentAnalysis from '@/components/InvestmentAnalysis';
 import { isNative } from '@/lib/nativeFeatures';
 import { Link } from 'react-router-dom';
 import { isPremiumUser } from '@/lib/isPremiumUser';
@@ -115,6 +116,15 @@ export default function SampleReport() {
                   <div className="font-serif text-3xl font-light text-canvas">$1,040,000</div>
                 </div>
               </div>
+
+              {/* Investment analysis — real ROI showcase */}
+              <InvestmentAnalysis
+                propertyType="Single Family"
+                marketValue={995000}
+                arvFromComps={975000}
+                sqft={2450}
+                monthlyRentEstimate={4600}
+              />
 
               {/* Narratives */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">

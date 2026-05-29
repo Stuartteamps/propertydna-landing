@@ -7,6 +7,8 @@ import PricingModal from '@/components/PricingModal';
 import { computeDNAScore } from '@/lib/dnaScore';
 import { NeighborhoodBreakdown } from '@/components/report/NeighborhoodBreakdown';
 import LuxuryDossierSection from '@/components/LuxuryDossierSection';
+import InvestmentAnalysis from '@/components/InvestmentAnalysis';
+import { arvFromComps as compArv } from '@/lib/investmentAnalysis';
 
 // Lazy-load Leaflet — isolates any crash to just the map section
 const ReportMap = lazy(() => import('@/components/report/ReportMap'));
@@ -390,6 +392,24 @@ export default function ReportViewByToken() {
             </div>
           </Section>
         )}
+
+        {/* Investment Analysis — real ROI for any property type */}
+        {(() => {
+          const num = (v: any) => { const n = Number(String(v ?? '').replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };
+          const sqftNum = num(prop.sqft);
+          const arvPrimary = num(dnaAdj?.adjMid) || num(val.marketValue);
+          const rentEst = num(enr?.marketData?.hud?.fmrThreeBed) || num(enr?.marketData?.census?.medianGrossRent) || undefined;
+          if (!arvPrimary) return null;
+          return (
+            <InvestmentAnalysis
+              propertyType={prop.propertyType}
+              marketValue={arvPrimary}
+              arvFromComps={compArv(comps, sqftNum)}
+              sqft={sqftNum}
+              monthlyRentEstimate={rentEst}
+            />
+          );
+        })()}
 
         {hasMap && (
           <Section title="Sales Activity Map">
