@@ -251,6 +251,21 @@ Native iOS app: SwiftUI dashboard, MKMapView, on-device Vision OCR scanner, Siri
 
 ## App Review Notes (private — Apple reviewer only)
 
+PROPERTYDNA BUILD 18 — RESPONSE TO BUILD 17 REJECTION (4.0 + 2.1)
+
+GUIDELINE 4 — SIGN IN WITH APPLE BUTTON
+The Sign in with Apple button has been restyled so it is clearly a button: it now has a solid 1px white border around the standard black button, making its shape unambiguous against the app's dark background. This was applied to every Sign in with Apple surface in the app.
+
+GUIDELINE 2.1 — SUBSCRIPTION CLARIFICATION (information requested)
+"PropertyDNA Pro" is a subscription sold on our website (thepropertydna.com) for web/desktop users. It includes unlimited property-intelligence reports plus market-intelligence features (comparable trend charts, market-velocity index, saved-property dashboard, priority PDF delivery). Pricing: $49.99/month or $479.99/year.
+The iOS app is entirely FREE and does not include, reference, advertise, or unlock this subscription. There are no in-app purchases, no prices, no paywalls, and no links to purchase. Every feature in the iOS app is available to all users at no charge, and web-purchased content is not accessed in the iOS app. We intend to offer the subscription via In-App Purchase in a future update; until then the iOS app stays free with no paid content.
+
+(Build 17's prior 3.1.1 and 2.3.3 items were resolved and are not present.)
+
+The notes below document the native architecture carried forward from prior builds.
+
+───────────────────────────────────────────
+
 PROPERTYDNA BUILD 17 — RESPONSE TO BUILD 16 REJECTION (3.1.1 + 2.3.3)
 
 Thank you for the review of Build 16. We've addressed both items.
