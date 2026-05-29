@@ -4,6 +4,26 @@ See `README.md` for the status taxonomy. **No entry is ✅ LIVE without a Verify
 
 ---
 
+## 2026-05-28 (late) — DM conversion play, pedigree-index, nationwide gap
+
+### "VERIFIED" DM reply + conversion play — ✅ DELIVERED (manual), 🔴 automate next
+Emailed Dan a paste-ready DM reply: tease marquee verified estates → gate full list behind
+PropertyDNA signup (thepropertydna.com/pedigree-index) → "run a report on any home" CTA →
+engagement question. Honest numbers only (17 verified, 16,788 classified — NOT the post's "53").
+- ⬜ **ManyChat auto-DM** (task #11): make "VERIFIED" comment/DM auto-send this. Webhook live; flow TBD.
+
+### /pedigree-index "0 properties" — ✅ RESOLVED (was the DB outage, not a bug)
+Verified live via headless load: page shows 16,788 CV properties + A/B/C/D tiers + neighborhoods.
+The emptiness Dan saw was during the 522 DB outage; recovered after the compute upgrade.
+- **Verify:** load https://thepropertydna.com/pedigree-index → shows tier counts + dossier cards.
+
+### Nationwide luxury coverage — ⬜ TODO (real gap, task #12)
+Pedigree/dossier data is Coachella-Valley-only (Palm Springs/Rancho Mirage/Cathedral City).
+Malibu, Miami, Palm Beach, Paradise Valley, Phoenix have NO pedigree data → the index is CV-only.
+Dan wants the VERIFIED link to work for any luxury market. Requires classifying those markets.
+
+---
+
 ## 2026-05-28 (evening) — newsletter SENT, social unblocked, list hygiene
 
 ### Weekly newsletter SENT via Constant Contact — ✅ DONE
