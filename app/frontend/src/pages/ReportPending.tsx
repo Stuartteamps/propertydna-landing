@@ -19,6 +19,7 @@ async function fireReport(data: Record<string, string>, sessionId?: string) {
       state:           data.state || '',
       zip:             data.zip || '',
       notes:           data.notes || '',
+      propertyType:    data.propertyType || '',
       stripeSessionId: sessionId || 'bypass',
     }),
   }).then(r => r.json()).catch(() => ({}));

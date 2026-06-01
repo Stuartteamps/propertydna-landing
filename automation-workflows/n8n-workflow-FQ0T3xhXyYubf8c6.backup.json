@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-01T19:20:32.645Z",
+  "updatedAt": "2026-05-09T17:28:22.958Z",
   "createdAt": "2026-04-21T17:17:03.036Z",
   "id": "FQ0T3xhXyYubf8c6",
   "name": "Property DNA Workflow",
@@ -197,7 +197,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify((function(){ var pt=(($('Webhook').item.json.body.propertyType)||($('Property Lookup').item.json[0]&&$('Property Lookup').item.json[0].propertyType)||'Residential').toString().toLowerCase(); var isC=/commercial|office|retail|industrial|warehouse|mixed/.test(pt); var isM=/multi|duplex|triplex|fourplex|apartment|2-4/.test(pt); var isL=/land|lot|vacant/.test(pt); var role=isC?'commercial real-estate analyst (cap rate, NOI, tenant credit, zoning compliance)':isM?'multi-family investment analyst (unit mix, gross rent, NOI, cap rate, cash-on-cash)':isL?'land-development analyst (entitlements, zoning, highest-and-best-use, raw-land comps)':'luxury residential real-estate analyst'; var focus=isC?'Frame investmentAngle around CAP RATE, NOI, GRM, and tenant credit. PropertyDNA does not yet ingest commercial lease rolls \u2014 call out the data limit explicitly in dataQualityNote.':isM?'Frame investmentAngle around NOI, cap rate, cash-on-cash, and the 1% rule. Default to estimated rents if rent-roll data is absent.':isL?'There are no income or comp models for raw land \u2014 anchor analysis to entitlement risk, zoning, and recent raw-land sales. State limits in dataQualityNote.':''; return { model:'claude-opus-4-5', max_tokens:1800, messages:[{ role:'user', content:['You are a '+role+'. Use ONLY the verified data below.','PROPERTY TYPE: '+pt+(focus?(' \u2014 '+focus):''),'RULES: Never invent facts. Do NOT state the property is for sale unless listing data confirms it.','wouldWeBuyItReason: 2-3 sentences citing score, comps, flood risk, income. 50-70 words.','Return ONLY valid JSON: executiveSummary, sellerAngle, buyerAngle, investmentAngle, dataQualityNote, wouldWeBuyIt (Yes/Maybe/Needs Review), wouldWeBuyItReason. Max 80 words each.','PROPERTY: '+JSON.stringify($json.normalized.subject),'VITALS: '+JSON.stringify($json.normalized.property),'VALUATION: '+JSON.stringify($json.normalized.valuation),'COMPS: '+JSON.stringify(($json.normalized.comps||[]).slice(0,3)),'FLOOD: '+JSON.stringify($json.normalized.flood),'DEMOGRAPHICS: '+JSON.stringify($json.normalized.demographics),'SCORE: '+$json.score+' RATING: '+$json.rating].join(' ') }] };})()) }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-opus-4-5', max_tokens: 1800, messages: [{ role: 'user', content: [ 'You are a luxury real estate analyst. Use ONLY the verified data below.', 'RULES: Never invent facts. Do NOT state the property is for sale unless listing data confirms it.', 'wouldWeBuyItReason: 2-3 sentences citing score, comps, flood risk, income. 50-70 words.', 'Return ONLY valid JSON: executiveSummary, sellerAngle, buyerAngle, investmentAngle, dataQualityNote, wouldWeBuyIt (Yes/Maybe/Needs Review), wouldWeBuyItReason. Max 80 words each.', 'PROPERTY: ' + JSON.stringify($json.normalized.subject), 'VITALS: ' + JSON.stringify($json.normalized.property), 'VALUATION: ' + JSON.stringify($json.normalized.valuation), 'COMPS: ' + JSON.stringify(($json.normalized.comps || []).slice(0,3)), 'FLOOD: ' + JSON.stringify($json.normalized.flood), 'DEMOGRAPHICS: ' + JSON.stringify($json.normalized.demographics), 'SCORE: ' + $json.score + ' RATING: ' + $json.rating ].join(' ') }] }) }}",
         "options": {
           "response": {
             "response": {
@@ -610,18 +610,6 @@
             {
               "name": "recentRenoYear",
               "value": "={{ $('Webhook').item.json.body.recentRenoYear || null }}"
-            },
-            {
-              "name": "viewToken",
-              "value": "={{ $('Webhook').item.json.body.viewToken }}"
-            },
-            {
-              "name": "reportId",
-              "value": "={{ $('Webhook').item.json.body.reportId }}"
-            },
-            {
-              "name": "propertyType",
-              "value": "={{ $('Webhook').item.json.body.propertyType || ($('Property Lookup').item.json[0] && $('Property Lookup').item.json[0].propertyType) || '' }}"
             }
           ]
         },
@@ -949,15 +937,34 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "cc9af1e1-7aad-489b-b3a2-0f8bbee6ff65",
-  "activeVersionId": "cc9af1e1-7aad-489b-b3a2-0f8bbee6ff65",
-  "versionCounter": 95,
+  "versionId": "579b6286-6549-431e-94c1-54888b5c7a63",
+  "activeVersionId": "579b6286-6549-431e-94c1-54888b5c7a63",
+  "versionCounter": 94,
   "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-21T17:17:03.039Z",
+      "createdAt": "2026-04-21T17:17:03.039Z",
+      "role": "workflow:owner",
+      "workflowId": "FQ0T3xhXyYubf8c6",
+      "projectId": "gPZXrT0gergJPc5e",
+      "project": {
+        "updatedAt": "2026-03-19T15:25:59.785Z",
+        "createdAt": "2026-03-19T15:25:53.504Z",
+        "id": "gPZXrT0gergJPc5e",
+        "name": "JAy Dilla <stuartteamps@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e92ee365-a94e-4cb7-8e62-a44e0dbb4aa5"
+      }
+    }
+  ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-06-01T19:20:32.647Z",
-    "createdAt": "2026-06-01T19:20:32.647Z",
-    "versionId": "cc9af1e1-7aad-489b-b3a2-0f8bbee6ff65",
+    "updatedAt": "2026-05-09T17:28:22.959Z",
+    "createdAt": "2026-05-09T17:28:22.959Z",
+    "versionId": "579b6286-6549-431e-94c1-54888b5c7a63",
     "workflowId": "FQ0T3xhXyYubf8c6",
     "nodes": [
       {
@@ -1150,7 +1157,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify((function(){ var pt=(($('Webhook').item.json.body.propertyType)||($('Property Lookup').item.json[0]&&$('Property Lookup').item.json[0].propertyType)||'Residential').toString().toLowerCase(); var isC=/commercial|office|retail|industrial|warehouse|mixed/.test(pt); var isM=/multi|duplex|triplex|fourplex|apartment|2-4/.test(pt); var isL=/land|lot|vacant/.test(pt); var role=isC?'commercial real-estate analyst (cap rate, NOI, tenant credit, zoning compliance)':isM?'multi-family investment analyst (unit mix, gross rent, NOI, cap rate, cash-on-cash)':isL?'land-development analyst (entitlements, zoning, highest-and-best-use, raw-land comps)':'luxury residential real-estate analyst'; var focus=isC?'Frame investmentAngle around CAP RATE, NOI, GRM, and tenant credit. PropertyDNA does not yet ingest commercial lease rolls \u2014 call out the data limit explicitly in dataQualityNote.':isM?'Frame investmentAngle around NOI, cap rate, cash-on-cash, and the 1% rule. Default to estimated rents if rent-roll data is absent.':isL?'There are no income or comp models for raw land \u2014 anchor analysis to entitlement risk, zoning, and recent raw-land sales. State limits in dataQualityNote.':''; return { model:'claude-opus-4-5', max_tokens:1800, messages:[{ role:'user', content:['You are a '+role+'. Use ONLY the verified data below.','PROPERTY TYPE: '+pt+(focus?(' \u2014 '+focus):''),'RULES: Never invent facts. Do NOT state the property is for sale unless listing data confirms it.','wouldWeBuyItReason: 2-3 sentences citing score, comps, flood risk, income. 50-70 words.','Return ONLY valid JSON: executiveSummary, sellerAngle, buyerAngle, investmentAngle, dataQualityNote, wouldWeBuyIt (Yes/Maybe/Needs Review), wouldWeBuyItReason. Max 80 words each.','PROPERTY: '+JSON.stringify($json.normalized.subject),'VITALS: '+JSON.stringify($json.normalized.property),'VALUATION: '+JSON.stringify($json.normalized.valuation),'COMPS: '+JSON.stringify(($json.normalized.comps||[]).slice(0,3)),'FLOOD: '+JSON.stringify($json.normalized.flood),'DEMOGRAPHICS: '+JSON.stringify($json.normalized.demographics),'SCORE: '+$json.score+' RATING: '+$json.rating].join(' ') }] };})()) }}",
+          "jsonBody": "={{ JSON.stringify({ model: 'claude-opus-4-5', max_tokens: 1800, messages: [{ role: 'user', content: [ 'You are a luxury real estate analyst. Use ONLY the verified data below.', 'RULES: Never invent facts. Do NOT state the property is for sale unless listing data confirms it.', 'wouldWeBuyItReason: 2-3 sentences citing score, comps, flood risk, income. 50-70 words.', 'Return ONLY valid JSON: executiveSummary, sellerAngle, buyerAngle, investmentAngle, dataQualityNote, wouldWeBuyIt (Yes/Maybe/Needs Review), wouldWeBuyItReason. Max 80 words each.', 'PROPERTY: ' + JSON.stringify($json.normalized.subject), 'VITALS: ' + JSON.stringify($json.normalized.property), 'VALUATION: ' + JSON.stringify($json.normalized.valuation), 'COMPS: ' + JSON.stringify(($json.normalized.comps || []).slice(0,3)), 'FLOOD: ' + JSON.stringify($json.normalized.flood), 'DEMOGRAPHICS: ' + JSON.stringify($json.normalized.demographics), 'SCORE: ' + $json.score + ' RATING: ' + $json.rating ].join(' ') }] }) }}",
           "options": {
             "response": {
               "response": {
@@ -1563,18 +1570,6 @@
               {
                 "name": "recentRenoYear",
                 "value": "={{ $('Webhook').item.json.body.recentRenoYear || null }}"
-              },
-              {
-                "name": "viewToken",
-                "value": "={{ $('Webhook').item.json.body.viewToken }}"
-              },
-              {
-                "name": "reportId",
-                "value": "={{ $('Webhook').item.json.body.reportId }}"
-              },
-              {
-                "name": "propertyType",
-                "value": "={{ $('Webhook').item.json.body.propertyType || ($('Property Lookup').item.json[0] && $('Property Lookup').item.json[0].propertyType) || '' }}"
               }
             ]
           },
@@ -1896,6 +1891,24 @@
     "authors": "JAy Dilla",
     "name": null,
     "description": null,
-    "autosaved": false
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-05-09T17:28:23.195Z",
+        "id": 158,
+        "workflowId": "FQ0T3xhXyYubf8c6",
+        "versionId": "579b6286-6549-431e-94c1-54888b5c7a63",
+        "event": "activated",
+        "userId": "e92ee365-a94e-4cb7-8e62-a44e0dbb4aa5"
+      },
+      {
+        "createdAt": "2026-05-09T17:28:23.081Z",
+        "id": 157,
+        "workflowId": "FQ0T3xhXyYubf8c6",
+        "versionId": "579b6286-6549-431e-94c1-54888b5c7a63",
+        "event": "deactivated",
+        "userId": "e92ee365-a94e-4cb7-8e62-a44e0dbb4aa5"
+      }
+    ]
   }
 }

@@ -164,7 +164,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Invalid JSON" }) };
   }
 
-  const { email, fullName, address, city, state, zip, role, phone, notes, stripeSessionId } = body;
+  const { email, fullName, address, city, state, zip, role, phone, notes, propertyType, stripeSessionId } = body;
 
   if (!email || !email.includes("@")) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Valid email required" }) };
@@ -244,6 +244,7 @@ exports.handler = async (event) => {
     state:           state   || "",
     zip:             zip     || "",
     notes:           notes   || "",
+    propertyType:    propertyType || "",
     stripeSessionId: stripeSessionId || "bypass",
     paid:            true,
     viewToken,
