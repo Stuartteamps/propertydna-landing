@@ -251,6 +251,36 @@ Native iOS app: SwiftUI dashboard, MKMapView, on-device Vision OCR scanner, Siri
 
 ## App Review Notes (private — Apple reviewer only)
 
+PROPERTYDNA BUILD 20 — RESPONSE TO BUILD 19 REJECTION (2.1(b) + 3.1.2(c))
+
+GUIDELINE 3.1.2(c) — AUTO-RENEWABLE SUBSCRIPTION DISCLOSURES
+The pricing modal now explicitly displays, in the purchase flow itself:
+• Title — "PropertyDNA Pro — Auto-Renewable Subscription"
+• Length — "1-month subscription" or "1-year subscription" (toggled by the Monthly/Annual selector)
+• Price — "$49.99 / month" or "$479.99 / year (≈$40.00 / month equivalent)"
+• Functional link to Terms of Use (EULA) — Apple Standard EULA: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+• Functional link to Privacy Policy — https://thepropertydna.com/privacy
+• Functional link to Service Terms — https://thepropertydna.com/terms
+• Full auto-renewal disclosure: "Payment is charged to your Apple ID at confirmation of purchase. The subscription auto-renews at the same price unless canceled at least 24 hours before the end of the current period. Renewals can be turned off and the subscription managed in your iOS Settings → Apple ID → Subscriptions."
+• Restore Purchases button.
+
+The App Description in App Store Connect has also been updated with an explicit "Subscription & Legal" block containing the same EULA, Privacy, and Service Terms links plus the same price/length disclosures.
+
+GUIDELINE 2.1(b) — IAP SANDBOX ERROR
+Build 19's sandbox purchase error was caused by the Paid Apps Agreement not yet being in effect on the account. The Account Holder has now accepted the Paid Apps Agreement in App Store Connect → Business, so sandbox purchases of com.thepropertydna.app.pro.monthly and com.thepropertydna.app.pro.yearly resolve correctly with this build. Both IAP products have also been submitted for review and are submitted in the same submission as this binary.
+
+HOW TO TEST
+1. Open the app — tap Search (the web tab), or any "Unlock Premium" / "Upgrade" affordance on the Pro features within the report view.
+2. The pricing modal opens with the Monthly/Annual toggle. Tap "Start Pro" — the native StoreKit sheet appears.
+3. Sandbox purchase resolves; the modal closes and Pro features unlock (IntellaGraph AI panel, full Market Heat Map, premium report sections).
+4. Restore Purchases is the next button below Start Pro; tapping it calls StoreKit's restore flow.
+
+(Build 19's 4.0 Sign-in-with-Apple item, Build 18's 3.1.1 IAP item, Build 17's 3.1.1 / 2.3.3 items, and Build 16's 2.3.0 / arm64 item are all resolved and not present.)
+
+The notes below document the native architecture carried forward from prior builds.
+
+───────────────────────────────────────────
+
 PROPERTYDNA BUILD 19 — RESPONSE TO BUILD 18 REJECTION (3.1.1) — IN-APP PURCHASE WIRED
 
 GUIDELINE 3.1.1 — IN-APP PURCHASE

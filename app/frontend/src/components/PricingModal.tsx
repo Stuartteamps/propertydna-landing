@@ -262,7 +262,16 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
         </div>
 
         {native ? (
-          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
+            {/* Apple Guideline 3.1.2(c): explicit subscription title, length, price */}
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#F0EBE0', textAlign: 'center', lineHeight: 1.6, maxWidth: 560 }}>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>PropertyDNA Pro — Auto-Renewable Subscription</div>
+              <div style={{ color: '#6B6252' }}>
+                {billing === 'annual'
+                  ? '1-year subscription · $479.99 / year (≈$40.00 / month equivalent)'
+                  : '1-month subscription · $49.99 / month'}
+              </div>
+            </div>
             <button
               onClick={handleRestore}
               disabled={loading !== null}
@@ -270,12 +279,14 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
               Restore Purchases
             </button>
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', textAlign: 'center', lineHeight: 1.6, maxWidth: 560 }}>
-              Auto-renewable subscription billed to your Apple ID. Renews automatically unless canceled at least 24 hours before the end of the current period. Manage or cancel in iOS Settings → Apple ID → Subscriptions.
+              Payment is charged to your Apple ID at confirmation of purchase. The subscription auto-renews at the same price unless canceled at least 24 hours before the end of the current period. Renewals can be turned off and the subscription managed in your iOS Settings → Apple ID → Subscriptions.
             </div>
-            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252' }}>
-              <a href="https://thepropertydna.com/terms" target="_blank" rel="noreferrer" style={{ color: '#C9A84C', textDecoration: 'none' }}>Terms of Service</a>
-              {' · '}
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noreferrer" style={{ color: '#C9A84C', textDecoration: 'none' }}>Terms of Use (EULA)</a>
+              <span>·</span>
               <a href="https://thepropertydna.com/privacy" target="_blank" rel="noreferrer" style={{ color: '#C9A84C', textDecoration: 'none' }}>Privacy Policy</a>
+              <span>·</span>
+              <a href="https://thepropertydna.com/terms" target="_blank" rel="noreferrer" style={{ color: '#C9A84C', textDecoration: 'none' }}>Service Terms</a>
             </div>
           </div>
         ) : (
