@@ -8,7 +8,9 @@ const N8N = import.meta.env.VITE_N8N_BASE_URL || 'https://dillabean.app.n8n.clou
 
 export const FUNNELS = {
   PROPERTY_DNA:       import.meta.env.VITE_PROPERTY_DNA_WEBHOOK_URL       || `${N8N}/homefax/report`,
-  OPEN_HOUSE:         import.meta.env.VITE_OPEN_HOUSE_WEBHOOK_URL         || `${N8N}/stuart-team/open-house`,
+  // Open House bypasses n8n — capture-open-house-lead.js handles instant SMS+email,
+  // off-market matching, owner notification, and queues the 8-touch cadence.
+  OPEN_HOUSE:         import.meta.env.VITE_OPEN_HOUSE_WEBHOOK_URL         || '/.netlify/functions/capture-open-house-lead',
   SELLER_VALUATION:   import.meta.env.VITE_SELLER_VALUATION_WEBHOOK_URL   || `${N8N}/stuart-team/seller-valuation`,
   BUYER_KEYS:         import.meta.env.VITE_BUYER_KEYS_WEBHOOK_URL         || `${N8N}/stuart-team/buyer-access`,
   OFF_MARKET:         import.meta.env.VITE_OFF_MARKET_WEBHOOK_URL         || `${N8N}/stuart-team/off-market`,

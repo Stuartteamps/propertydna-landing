@@ -86,6 +86,13 @@
 [functions."submitter-drip"]
   schedule = "0 17 * * *"
 
+# Hourly — Tom Ferry 8-touch cadence for open-house leads (QR/web sign-ins).
+# Step 0 fires instantly via capture-open-house-lead.js. Cron handles 1..7:
+# T+1d SMS · T+2d email (off-market matches) · T+4d SMS · T+7d/14d/21d email · T+30d loop-close.
+[functions."open-house-followup"]
+  schedule = "0 * * * *"
+  timeout = 60
+
 # Apple Universal Links — must NOT be SPA-redirected, must have correct Content-Type
 [[redirects]]
   from = "/.well-known/apple-app-site-association"
