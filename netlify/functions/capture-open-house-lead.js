@@ -360,7 +360,8 @@ exports.handler = async (event) => {
     body: JSON.stringify({
       success: true,
       leadId,
-      matches: matches.length,
+      matchCount: matches.length,
+      matches,                                      // full array — rendered on the welcome page
       sms: guestSmsResult.sent === true,
       email: guestEmailResult.status < 300,
     }),

@@ -49,7 +49,7 @@ export interface LeadPayload {
 }
 
 export type SubmitResult =
-  | { success: true; message: string }
+  | { success: true; message: string; data?: any }
   | { success: false; error: string };
 
 // ── UTM / QR helpers ─────────────────────────────────────────────────────────
@@ -112,7 +112,11 @@ export async function submitLead(
       return { success: false, error: msg };
     }
 
-    return { success: true, message: 'Submission received.' };
+    // Try to parse JSON response; some webhooks return non-JSON (n8n) so be tolerant.
+    let data: any = undefined;
+    try { data = await res.clone().json(); } catch { /* non-JSON response */ }
+
+    return { success: true, message: 'Submission received.', data };
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Network error';
     console.error(`[submitLead] ${funnelType} network error:`, msg);

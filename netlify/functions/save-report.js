@@ -148,7 +148,9 @@ const DNA_ADJUSTMENTS = {
   waterfront:               { pct_low: 8,  pct_mid: 12, pct_high: 20 },
   lakefront:                { pct_low: 6,  pct_mid: 10, pct_high: 18 },
   golf_course:              { pct_low: 3,  pct_mid: 5,  pct_high: 9  },
+  fairway_frontage:         { pct_low: 6,  pct_mid: 10, pct_high: 18 },
   mountain_view:            { pct_low: 2,  pct_mid: 4,  pct_high: 7  },
+  panoramic_mountain_views: { pct_low: 4,  pct_mid: 7,  pct_high: 12 },
   premium_community:        { pct_low: 3,  pct_mid: 6,  pct_high: 10 },
   fully_remodeled:          { pct_low: 5,  pct_mid: 8,  pct_high: 14 },
   updated:                  { pct_low: 2,  pct_mid: 4,  pct_high: 7  },
@@ -158,14 +160,24 @@ const DNA_ADJUSTMENTS = {
   corner_lot:               { pct_low: -2, pct_mid: 0,  pct_high: 2  },
   oversized_lot:            { pct_low: 2,  pct_mid: 5,  pct_high: 10 },
   gated_community:          { pct_low: 2,  pct_mid: 4,  pct_high: 7  },
+  gated_24hr_guard:         { pct_low: 6,  pct_mid: 10, pct_high: 15 },
   short_term_rental_friendly: { pct_low: 3, pct_mid: 6, pct_high: 12 },
+
+  // ── Luxury / pedigree premiums (added for Thunderbird-tier valuations) ────
+  historic_architect:       { pct_low: 8,  pct_mid: 15, pct_high: 25 }, // Cody, Neutra, Wexler, Krisel, Frey, Lautner
+  celebrity_pedigree:       { pct_low: 5,  pct_mid: 10, pct_high: 18 },
+  historic_enclave:         { pct_low: 5,  pct_mid: 10, pct_high: 18 }, // Thunderbird, Vista Las Palmas, Las Palmas, Bel Air
+  architectural_digest_featured: { pct_low: 3, pct_mid: 6, pct_high: 10 },
+  mcm_authentic:            { pct_low: 4,  pct_mid: 8,  pct_high: 14 }, // documented MCM authenticity
 };
 
 const FEATURE_LABELS = {
   waterfront: "Waterfront",
   lakefront: "Lakefront",
   golf_course: "Golf Course Adjacent",
+  fairway_frontage: "On the Fairway",
   mountain_view: "Mountain View",
+  panoramic_mountain_views: "Panoramic Mountain Views",
   premium_community: "Premium Community",
   fully_remodeled: "Fully Remodeled",
   updated: "Updated (Partial)",
@@ -175,7 +187,13 @@ const FEATURE_LABELS = {
   corner_lot: "Corner Lot",
   oversized_lot: "Oversized Lot",
   gated_community: "Gated Community",
+  gated_24hr_guard: "24-Hour Guarded Gate",
   short_term_rental_friendly: "STR Friendly Zone",
+  historic_architect: "Notable Architect Pedigree",
+  celebrity_pedigree: "Celebrity Provenance",
+  historic_enclave: "Historic Luxury Enclave",
+  architectural_digest_featured: "Featured in Architectural Digest",
+  mcm_authentic: "Authentic Mid-Century Modern",
 };
 
 // ── Smart base value: anchors AVM to last sale + time appreciation ────────────
@@ -351,6 +369,45 @@ function autoDetectFeatures(reportData) {
   if (/\b(golf course|fairway|country club)\b/.test(listingText))           features.golf_course = true;
   if (/\b(mountain view|mountain views|panoramic view)\b/.test(listingText)) features.mountain_view = true;
 
+  // ── Luxury / pedigree premium auto-detection ──────────────────────────────
+  // 24-hour guarded gate (stronger than plain "gated")
+  if (/\b(24[- ]?hour\s+(guard|security)|guard[- ]?gate|guarded\s+gate|staffed\s+gate|24\/7\s+(guard|security))\b/.test(listingText)) {
+    features.gated_24hr_guard = true;
+  }
+
+  // Panoramic mountain views (strictly stronger than plain "mountain view")
+  if (/\b(panoramic\s+(mountain|valley|desert)|three\s+(mountain|peak)|3[- ]?(mountain|peak)|sweeping\s+(mountain|valley))\b/.test(listingText)) {
+    features.panoramic_mountain_views = true;
+  }
+
+  // On-the-fairway (stronger than plain golf-adjacent)
+  if (/\b(on\s+the\s+(\d+(st|nd|rd|th)\s+)?fairway|fairway\s+frontage|fronting\s+the\s+(\d+(st|nd|rd|th)\s+)?fairway|\d+(st|nd|rd|th)\s+(fairway|hole|green))\b/.test(listingText)) {
+    features.fairway_frontage = true;
+  }
+
+  // Notable architect — desert-canon MCM + LA luxury names
+  const architectPattern = /\b(william\s+cody|richard\s+neutra|donald\s+wexler|william\s+krisel|albert\s+frey|john\s+lautner|e\.?\s*stewart\s+williams|hugh\s+kaptur|richard\s+harrison|herbert\s+burns|paul\s+r\.?\s*williams|wallace\s+neff|cliff\s+may|john\s+yeon|a\.?\s*quincy\s+jones|paul\s+williams|rudolph\s+schindler|raphael\s+soriano|gerald\s+colcord)\b/i;
+  if (architectPattern.test(listingText)) features.historic_architect = true;
+
+  // Celebrity provenance
+  if (/\b(celebrity[- ]owned|celebrity[- ]owner|originally\s+(owned|built)\s+for\s+[A-Z]|once\s+owned\s+by|former\s+(home|residence)\s+of\s+[A-Z])\b/.test(listingText)) {
+    features.celebrity_pedigree = true;
+  }
+
+  // Historic luxury enclaves (Coachella Valley + LA/Bel Air canon)
+  const enclavePattern = /\b(thunderbird\s+(country\s+club|estates|heights)|vista\s+las\s+palmas|old\s+las\s+palmas|las\s+palmas\s+estates|movie\s+colony|bel\s+air\s+estates|holmby\s+hills|trousdale\s+estates|the\s+vintage\s+club|the\s+reserve|hidden\s+hills|the\s+bridges|the\s+madison\s+club|the\s+quarry|toscana\s+country\s+club|bighorn\s+golf\s+club|stone\s+eagle\s+golf\s+club|sun\s+valley\s+(idaho))\b/i;
+  if (enclavePattern.test(listingText)) features.historic_enclave = true;
+
+  // Architectural Digest features
+  if (/\b(architectural\s+digest|featured\s+in\s+ad\b|ad\s+pro|ad100)\b/i.test(listingText)) {
+    features.architectural_digest_featured = true;
+  }
+
+  // Authentic MCM
+  if (/\b(mid[- ]?century\s+(modern|icon|landmark|architectural|treasure)|authentic\s+(mid[- ]?century|mcm)|walls?\s+of\s+glass|signature\s+(mid[- ]?century|cody|neutra|wexler))\b/.test(listingText)) {
+    features.mcm_authentic = true;
+  }
+
   return { features, aduSqft, poolAddOnCost };
 }
 
@@ -361,6 +418,7 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
   lastSaleDate = null,
   marketPriceYoY = null,
   comps = null,
+  luxuryTier = false,         // when true, extend sale-anchor window to 84 months
 } = {}) {
   if (!avmMid) return { smartLow: avmLow, smartMid: avmMid, smartHigh: avmHigh, baseAdjustment: null };
 
@@ -374,8 +432,11 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
 
   if (lastSalePrice && lastSaleDate) {
     const months = monthsBetween(lastSaleDate);
-    // Only anchor if sale was within the last 3.5 years
-    if (months !== null && months < 42) {
+    // Standard: 42 months. Luxury (>$1.5M): extend to 84 months because comp-set
+    // is sparse enough that even a 5-7 year old same-property sale anchors better
+    // than the AVM. Older sales get lower weight (see saleWeight curve below).
+    const ageCap = luxuryTier ? 84 : 42;
+    if (months !== null && months < ageCap) {
       const yearsFrac = months / 12;
       const appreciated = Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac));
       const gap = (avmMid - appreciated) / appreciated; // negative means AVM is below
@@ -385,7 +446,10 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
       if (months < 12)      saleWeight = 0.85;
       else if (months < 24) saleWeight = 0.80;
       else if (months < 36) saleWeight = 0.70;
-      else                  saleWeight = 0.60;
+      else if (months < 42) saleWeight = 0.60;
+      else if (months < 60) saleWeight = 0.50;   // luxury 42-60mo
+      else if (months < 84) saleWeight = 0.40;   // luxury 60-84mo
+      else                  saleWeight = 0.60;   // (unreachable; ageCap blocks)
       const avmWeight = 1 - saleWeight;
 
       if (gap < -0.10) {
@@ -454,7 +518,7 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   comps = null,         // comps array for closest-comp anchor
 } = {}) {
   // Phase 1 — correct the AVM base using recent sale anchor + closest-comp anchor
-  const base = computeSmartBase(rawLow, rawMid, rawHigh, { lastSalePrice, lastSaleDate, marketPriceYoY, comps });
+  const base = computeSmartBase(rawLow, rawMid, rawHigh, { lastSalePrice, lastSaleDate, marketPriceYoY, comps, luxuryTier });
   const { smartLow, smartMid, smartHigh, baseAdjustment } = base;
 
   // Phase 2 — percentage adjustments from DNA feature flags
@@ -475,19 +539,31 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     });
   }
 
-  // Luxury market premium: AVM confidence degrades above $1.5M due to sparse comps
+  // Luxury market premium: AVM confidence degrades above $1.5M due to sparse comps.
+  // Scales with smart-base mid because the comp-set thins out dramatically with price
+  // (RentCast's training set has ~10x more $700K-$1.5M sales than $3M+ sales).
   if (luxuryTier) {
-    const LUXURY_PCT = { pct_low: 2, pct_mid: 4, pct_high: 8 };
+    let LUXURY_PCT;
+    if (smartMid >= 5_000_000) {
+      LUXURY_PCT = { pct_low: 8,  pct_mid: 12, pct_high: 20, label: "Trophy Market Premium ($5M+)" };
+    } else if (smartMid >= 3_000_000) {
+      LUXURY_PCT = { pct_low: 5,  pct_mid: 8,  pct_high: 15, label: "High-Luxury Premium ($3-5M)" };
+    } else {
+      LUXURY_PCT = { pct_low: 2,  pct_mid: 4,  pct_high: 8,  label: "Luxury Market Premium" };
+    }
     totalLow  += LUXURY_PCT.pct_low;
     totalMid  += LUXURY_PCT.pct_mid;
     totalHigh += LUXURY_PCT.pct_high;
-    drivers.push({ key: "luxury_sparse_comps", label: "Luxury Market Premium", pct: LUXURY_PCT.pct_mid });
+    drivers.push({ key: "luxury_sparse_comps", label: LUXURY_PCT.label, pct: LUXURY_PCT.pct_mid });
   }
 
-  // Cap total % adjustment at +/-40%
-  totalLow  = Math.max(-40, Math.min(40, totalLow));
-  totalMid  = Math.max(-40, Math.min(40, totalMid));
-  totalHigh = Math.max(-40, Math.min(40, totalHigh));
+  // Cap total % adjustment. Standard: ±40%. Trophy luxury ($3M+) lifts to ±60%
+  // because RentCast AVM underweights enclave/architect/celebrity premiums and
+  // the stacked feature uplift can legitimately compound to that range.
+  const adjustmentCap = smartMid >= 3_000_000 ? 60 : 40;
+  totalLow  = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalLow));
+  totalMid  = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalMid));
+  totalHigh = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalHigh));
 
   const applyPct = (base, pct) => (base ? Math.round(base * (1 + pct / 100)) : null);
 
