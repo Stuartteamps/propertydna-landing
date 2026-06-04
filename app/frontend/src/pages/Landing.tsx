@@ -187,6 +187,32 @@ export default function Landing() {
           </p>
         </FadeUp>
 
+        {/* iOS-only prominent IAP CTA — Apple needs a visible paywall entry point */}
+        {isNative() && (
+          <FadeUp delay={0.10}>
+            <button
+              type="button"
+              onClick={() => setPricingOpen(true)}
+              style={{
+                fontFamily: 'Jost, sans-serif', fontSize: 13, fontWeight: 600,
+                letterSpacing: '2px', textTransform: 'uppercase',
+                color: '#0A0908', background: '#C9A84C', border: 'none',
+                padding: '16px 28px', cursor: 'pointer',
+                marginBottom: 28,
+                boxShadow: '0 4px 24px rgba(201,168,76,0.25)',
+              }}
+            >
+              Subscribe to PropertyDNA Pro · $49.99 / mo →
+            </button>
+            <div style={{
+              fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(244,240,232,0.5)',
+              marginBottom: 36, letterSpacing: '0.5px',
+            }}>
+              Or $479.99 / year · Restore Purchases inside
+            </div>
+          </FadeUp>
+        )}
+
         {/* ── Signed-in state ── */}
         {user ? (
           <FadeUp delay={0.12}>

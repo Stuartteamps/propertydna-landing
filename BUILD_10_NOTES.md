@@ -251,6 +251,23 @@ Native iOS app: SwiftUI dashboard, MKMapView, on-device Vision OCR scanner, Siri
 
 ## App Review Notes (private — Apple reviewer only)
 
+PROPERTYDNA BUILD 21 — RESPONSE TO BUILD 20 REJECTION (2.1(b) — IAP location)
+
+WHERE TO FIND THE IN-APP PURCHASES (3 steps):
+1. Launch the app — the native Home tab appears with a tab bar at the bottom.
+2. Tap the **Search** tab (the magnifying-glass icon in the bottom tab bar). The web layer loads showing the "Property DNA" wordmark.
+3. Directly below the wordmark — just under the tagline — there is a large **gold button** labeled exactly:
+       "Subscribe to PropertyDNA Pro · $49.99 / mo →"
+   Tap that button. The native StoreKit pricing modal opens with a Monthly/Annual toggle and both products: com.thepropertydna.app.pro.monthly ($49.99) and com.thepropertydna.app.pro.yearly ($479.99). The **Restore Purchases** button is at the bottom of the same modal. Tapping "Start Pro" triggers the StoreKit sandbox sheet.
+
+Both subscriptions are configured with USA pricing across all 175 territories (equalized from the USA $49.99 / $479.99 base), App Review screenshots are uploaded, en-US localization is set, and the Paid Apps Agreement is in effect (signed; banking and tax forms accepted; processing).
+
+(All prior build items — Build 20 EULA/3.1.2(c), Build 19 IAP wiring, Build 18 4.0, Build 17 3.1.1, Build 16 2.3.0 — are resolved and not present.)
+
+The notes below document the native architecture carried forward from prior builds.
+
+───────────────────────────────────────────
+
 PROPERTYDNA BUILD 20 — RESPONSE TO BUILD 19 REJECTION (2.1(b) + 3.1.2(c))
 
 GUIDELINE 3.1.2(c) — AUTO-RENEWABLE SUBSCRIPTION DISCLOSURES
