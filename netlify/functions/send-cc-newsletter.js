@@ -137,34 +137,34 @@ function buildMarketNarrative(snap) {
   const fmtK  = n => '$' + Math.round(n / 1000) + 'k';
   const parts = [];
 
-  if (snap.yoy != null) {
-    const dir = snap.yoy >= 0 ? `up ${snap.yoy.toFixed(1)}%` : `down ${Math.abs(snap.yoy).toFixed(1)}%`;
-    parts.push(`The Palm Springs median sale price is ${fmtK(snap.median_price)} — ${dir} from a year ago.`);
+  // Lead with momentum (pace of sale + inventory) — the seller-relevant signal.
+  const momentum = [];
+  if (snap.median_dom && snap.prior_dom && snap.median_dom < snap.prior_dom) {
+    momentum.push(`homes are selling faster — ${snap.median_dom} days on market versus ${snap.prior_dom} a year ago`);
+  } else if (snap.median_dom && snap.prior_dom && snap.median_dom > snap.prior_dom) {
+    momentum.push(`homes are averaging ${snap.median_dom} days on market`);
+  } else if (snap.median_dom) {
+    momentum.push(`homes are averaging ${snap.median_dom} days on market`);
+  }
+  if (snap.active_listings && snap.prior_active && snap.active_listings < snap.prior_active) {
+    momentum.push(`inventory has tightened to ${snap.active_listings} active listings, down from ${snap.prior_active} last spring`);
+  } else if (snap.active_listings && snap.prior_active && snap.active_listings > snap.prior_active) {
+    momentum.push(`inventory has grown to ${snap.active_listings} active listings, giving buyers more to choose from`);
+  } else if (snap.active_listings) {
+    momentum.push(`${snap.active_listings} homes are active right now`);
+  }
+  if (momentum.length) parts.push(`Palm Springs ${momentum.join(', and ')}.`);
+
+  // Price as context — framed as opportunity, not headline.
+  if (snap.yoy != null && snap.yoy <= -1) {
+    parts.push(`The median sale price has eased to ${fmtK(snap.median_price)}, about ${Math.round(Math.abs(snap.yoy))}% below last year — a genuine window for buyers, even as well-positioned sellers keep moving quickly.`);
+  } else if (snap.yoy != null && snap.yoy >= 1) {
+    parts.push(`The median sale price is ${fmtK(snap.median_price)}, up about ${Math.round(snap.yoy)}% from a year ago.`);
   } else {
-    parts.push(`The Palm Springs median sale price is ${fmtK(snap.median_price)}.`);
+    parts.push(`The median sale price is holding near ${fmtK(snap.median_price)}.`);
   }
 
-  if (snap.median_dom) {
-    if (snap.prior_dom && snap.prior_dom !== snap.median_dom) {
-      const faster = snap.median_dom < snap.prior_dom;
-      parts.push(faster
-        ? `Homes are selling faster — ${snap.median_dom} days on market versus ${snap.prior_dom} a year ago.`
-        : `Homes are taking longer to sell — ${snap.median_dom} days on market versus ${snap.prior_dom} a year ago.`);
-    } else {
-      parts.push(`Median time on market is ${snap.median_dom} days.`);
-    }
-  }
-
-  if (snap.active_listings) {
-    if (snap.prior_active && snap.prior_active !== snap.active_listings) {
-      const tighter = snap.active_listings < snap.prior_active;
-      parts.push(`Inventory has ${tighter ? 'tightened' : 'loosened'} to ${snap.active_listings} active listings, ${tighter ? 'down from' : 'up from'} ${snap.prior_active} last spring.`);
-    } else {
-      parts.push(`${snap.active_listings} homes are active right now.`);
-    }
-  }
-
-  parts.push('Well-presented, correctly-priced homes are still winning. Overpriced listings sit.');
+  parts.push('Well-presented, correctly-priced homes are winning. Overpriced listings sit.');
   return parts.join(' ');
 }
 
@@ -227,7 +227,7 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <a href="https://weather.com/weather/weekend/l/Palm+Springs+California+92264" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Full Forecast</a></td></tr>
 <tr><td style="padding:0 40px 20px;"><img src="${weatherImageUrl}" width="100%" alt="Coachella Valley desert this week" style="display:block;"></td></tr>
 <tr><td style="padding:0 40px;font-family:Georgia,serif;font-size:26px;">Things To Do This Week</td></tr>
-<tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">Post-festival calm has settled across the valley — golden-hour patios, weekly farmers markets, and gallery openings before summer heat takes over.<br><br>
+<tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">Pool season is officially here — resort pools light up at sunset, the weekly farmers market continues at Palm Canyon, and outdoor evenings shift to twilight. The valley settles into summer mode.<br><br>
 <a href="https://visitpalmsprings.com/events/this-weekend/" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">Explore This Week's Events</a></td></tr>
 <tr><td style="padding:0 40px;"><img src="${eventImageUrl}" width="100%" alt="Coachella Valley this week" style="display:block;"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">West Valley New Listings</td></tr>

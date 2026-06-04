@@ -12,25 +12,27 @@ const OUT = path.resolve(__dirname, "../../../app/frontend/public/social/newslet
 // image reinforces the section text instead of being generic stock.
 const JOBS: { filename: string; prompt: string }[] = [
   {
-    // matches buildWeatherText(): late-May highs upper-90s/100s, clear skies, strong desert sun
+    // Week of 2026-06-04 — early June: first real heat of summer, triple-digit days
     filename: "latest-weather.jpg",
-    prompt: `Coachella Valley desert on a hot, brilliantly sunny late-May afternoon.
-Cloudless deep-blue sky, intense golden sun, tall palm trees, the Santa Rosa
-mountains shimmering in heat haze, pristine and dry. Editorial travel
-photography in the style of Palm Springs Life magazine. Photorealistic,
-warm tones. No text, no logos, no watermarks, no people. Horizontal 3:2
-composition with clean negative space in the upper third for a headline overlay.`,
+    prompt: `Coachella Valley desert in the first true heat of summer — a fierce
+afternoon sun blazing in a deep cobalt sky, the first wisps of monsoon clouds
+gathering over the Santa Rosa mountains, visible heat shimmer rising off the
+desert floor, tall palm trees, stark and dry. Editorial travel photography in
+the style of Palm Springs Life magazine. Photorealistic, scorching tones.
+No text, no logos, no watermarks, no people. Horizontal 3:2 composition with
+clean negative space in the upper third for a headline overlay.`,
   },
   {
-    // matches "Things To Do This Week": post-festival calm, golden-hour patios, farmers markets, galleries
+    // Week of 2026-06-04 — pool season opens: twilight resort pool, summer-evening valley lifestyle
     filename: "latest-events.jpg",
-    prompt: `Palm Springs lifestyle at golden hour after festival season: an inviting
-upscale outdoor restaurant patio with warm string lights, mid-century modern
-furniture, desert plants, and a relaxed early-evening glow. Distant palm trees
-and mountains. Editorial lifestyle photography in the style of Condé Nast
-Traveler. Photorealistic, warm and aspirational. No text, no logos, no
-watermarks, no recognizable faces. Horizontal 3:2 composition with negative
-space for a headline overlay.`,
+    prompt: `Palm Springs at twilight as pool season opens — a glamorous mid-century
+modern resort pool with warm string lights overhead, classic curved diving
+platform, palms silhouetted against a violet and orange sunset sky, a few
+lounge chairs, the underwater pool lights just coming on, aspirational and
+serene. Editorial lifestyle photography in the style of Condé Nast Traveler.
+Photorealistic, warm cinematic tones. No text, no logos, no watermarks, no
+recognizable faces. Horizontal 3:2 composition with negative space in the
+upper third for a headline overlay.`,
   },
   {
     // matches "West Valley New Listings": Palm Springs + Cathedral City, updated design homes
@@ -55,8 +57,14 @@ composition with negative space for a headline overlay.`,
 ];
 
 async function run() {
-  console.log(`Generating ${JOBS.length} newsletter images -> ${OUT}`);
-  for (const job of JOBS) {
+  // Optional CLI args: filenames (or unique substrings) of the jobs to run.
+  // e.g. `tsx src/gen-newsletter.ts weather events` regenerates only those two.
+  const filters = process.argv.slice(2);
+  const jobs = filters.length
+    ? JOBS.filter((j) => filters.some((f) => j.filename.includes(f)))
+    : JOBS;
+  console.log(`Generating ${jobs.length} newsletter image(s) -> ${OUT}`);
+  for (const job of jobs) {
     const t0 = Date.now();
     const r = await createSocialImage({
       prompt: job.prompt,
