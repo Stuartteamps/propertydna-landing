@@ -36,6 +36,7 @@ import Waitlist from "./pages/Waitlist";
 import Dossier from "./pages/Dossier";
 import LuxuryInventory from "./pages/LuxuryInventory";
 import PedigreeIndex from "./pages/PedigreeIndex";
+import OpenHouse697Farrell from "./pages/OpenHouse697Farrell";
 import Dossiers from "./pages/Dossiers";
 import Neighborhood from "./pages/Neighborhood";
 import DossierRequestsAdmin from "./pages/admin/DossierRequests";
@@ -65,6 +66,7 @@ const AppRoutes = () => (
     <Route path="/dossier/:apn" element={<Dossier />} />
     <Route path="/luxury-inventory" element={<LuxuryInventory />} />
     <Route path="/pedigree-index" element={<PedigreeIndex />} />
+    <Route path="/open-house/697-n-farrell" element={<OpenHouse697Farrell />} />
     <Route path="/neighborhood/:slug" element={<Neighborhood />} />
     <Route path="/admin/dossier-requests" element={<DossierRequestsAdmin />} />
     <Route path="/admin/ops" element={<OpsDashboard />} />
