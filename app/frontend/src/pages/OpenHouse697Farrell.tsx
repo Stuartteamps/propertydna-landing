@@ -100,13 +100,16 @@ export default function OpenHouse697Farrell() {
           </div>
         </section>
 
-        {/* Gallery */}
+        {/* Gallery — clean property shot only */}
         <section style={{ padding: '24px' }}>
-          <div style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', fontWeight: 600, marginBottom: 14 }}>The Property</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 }}>
-            <img src={`${BASE}/back.jpg`}        alt="Backyard, pool, casita" style={{ width: '100%', display: 'block', borderRadius: 6, objectFit: 'cover', aspectRatio: '4 / 3' }} />
-            <img src={`${BASE}/landscape-2.jpg`} alt="Property scene" style={{ width: '100%', display: 'block', borderRadius: 6, objectFit: 'cover', aspectRatio: '4 / 3' }} />
-            <img src={`${BASE}/square-10.jpg`}   alt="Detail shots" style={{ width: '100%', display: 'block', borderRadius: 6, objectFit: 'cover', aspectRatio: '4 / 3' }} />
+          <div style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', fontWeight: 600, marginBottom: 14 }}>The Backyard</div>
+          <img
+            src={`${BASE}/back.jpg`}
+            alt="Backyard with pool, fire pit, patio, and detached casita"
+            style={{ width: '100%', display: 'block', borderRadius: 6, objectFit: 'cover', maxHeight: 520 }}
+          />
+          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 10, textAlign: 'center', fontStyle: 'italic' }}>
+            Gunite pool, fire pit, patio dining, and detached casita beyond — full backyard resort.
           </div>
         </section>
 
@@ -136,26 +139,54 @@ export default function OpenHouse697Farrell() {
           </div>
         </section>
 
-        {/* CTA / Contact */}
-        <section style={{ padding: '32px 24px 28px', background: 'linear-gradient(135deg, #1f2937 0%, #0f172a 100%)', textAlign: 'center', borderTop: '1px solid #1f2937', borderBottom: '1px solid #1f2937' }}>
-          <div style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', fontWeight: 600 }}>Schedule a Showing</div>
-          <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 24, margin: '12px 0 18px', color: '#fafafa', fontWeight: 400 }}>
-            Dan Stuart · Coldwell Banker
+        {/* CTA — co-listing agents */}
+        <section style={{ padding: '32px 24px 36px', background: 'linear-gradient(135deg, #1f2937 0%, #0f172a 100%)', borderTop: '1px solid #1f2937', borderBottom: '1px solid #1f2937' }}>
+          <div style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', fontWeight: 600, textAlign: 'center', marginBottom: 6 }}>Co-Listed By</div>
+          <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 22, margin: '0 0 24px', color: '#fafafa', fontWeight: 400, textAlign: 'center' }}>
+            Schedule a private showing
           </h3>
-          <a href="tel:6196770900" style={{ display: 'inline-block', padding: '14px 28px', background: '#fbbf24', color: '#0a0a0a', textDecoration: 'none', borderRadius: 4, fontWeight: 700, fontSize: 14, letterSpacing: 1, textTransform: 'uppercase', marginRight: 8, marginBottom: 8 }}>
-            Call 619-677-0900
-          </a>
-          <a href="mailto:stuartteamps@gmail.com?subject=697%20N%20Farrell%20%E2%80%94%20showing%20request" style={{ display: 'inline-block', padding: '14px 28px', background: 'transparent', color: '#fbbf24', textDecoration: 'none', borderRadius: 4, fontWeight: 700, fontSize: 14, letterSpacing: 1, textTransform: 'uppercase', border: '1px solid #fbbf24', marginBottom: 8 }}>
-            Email Dan
-          </a>
-          <div style={{ marginTop: 22, color: '#94a3b8', fontSize: 13 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+            {/* Dan */}
+            <div style={{ background: '#0a0a0a', borderRadius: 8, padding: 22, border: '1px solid #1f2937', textAlign: 'center' }}>
+              <img
+                src={`${BASE}/agent-dan.jpg`}
+                alt="Dan Stuart"
+                style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top', border: '2px solid #fbbf24', display: 'block', margin: '0 auto 14px' }}
+              />
+              <div style={{ fontFamily: 'Georgia, serif', fontSize: 19, color: '#fafafa' }}>Dan Stuart</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', letterSpacing: 2, textTransform: 'uppercase', marginTop: 4 }}>Coldwell Banker</div>
+              <div style={{ marginTop: 16, fontSize: 14, color: '#cbd5e1', lineHeight: 1.8 }}>
+                <a href="tel:6196770900" style={{ color: '#fbbf24', textDecoration: 'none', display: 'block' }}>C&nbsp;&nbsp;619.677.0900</a>
+                <a href="mailto:stuartteamps@gmail.com?subject=697%20N%20Farrell%20%E2%80%94%20showing%20request" style={{ color: '#cbd5e1', textDecoration: 'none', display: 'block', fontSize: 13 }}>stuartteamps@gmail.com</a>
+                <div style={{ color: '#64748b', fontSize: 11, marginTop: 6 }}>DRE# 02043742</div>
+              </div>
+            </div>
+            {/* Christopher */}
+            <div style={{ background: '#0a0a0a', borderRadius: 8, padding: 22, border: '1px solid #1f2937', textAlign: 'center' }}>
+              <img
+                src={`${BASE}/agent-christopher.png`}
+                alt="Christopher Kreiling"
+                style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top', border: '2px solid #fbbf24', display: 'block', margin: '0 auto 14px' }}
+              />
+              <div style={{ fontFamily: 'Georgia, serif', fontSize: 19, color: '#fafafa' }}>Christopher Kreiling</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', letterSpacing: 2, textTransform: 'uppercase', marginTop: 4 }}>Compass</div>
+              <div style={{ marginTop: 16, fontSize: 14, color: '#cbd5e1', lineHeight: 1.8 }}>
+                <a href="tel:3236521891" style={{ color: '#fbbf24', textDecoration: 'none', display: 'block' }}>C&nbsp;&nbsp;323.652.1891</a>
+                <a href="tel:7603235000" style={{ color: '#94a3b8', textDecoration: 'none', display: 'block', fontSize: 13 }}>O&nbsp;&nbsp;760.323.5000</a>
+                <a href="mailto:christopher.kreiling@gmail.com?subject=697%20N%20Farrell%20%E2%80%94%20showing%20request" style={{ color: '#cbd5e1', textDecoration: 'none', display: 'block', fontSize: 13 }}>christopher.kreiling@gmail.com</a>
+                <div style={{ color: '#64748b', fontSize: 11, marginTop: 6 }}>DRE# 02223591</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: 26, color: '#94a3b8', fontSize: 13, textAlign: 'center' }}>
             Want the full DNA report on 697 Farrell or any home? Free at <a href="https://thepropertydna.com/?utm_source=open_house&utm_campaign=697_farrell" style={{ color: '#fbbf24' }}>thepropertydna.com</a>.
           </div>
         </section>
 
         {/* Footer */}
         <div style={{ padding: '18px 24px 36px', textAlign: 'center', color: '#64748b', fontSize: 11, lineHeight: 1.7 }}>
-          Dan Stuart · DRE #02043742 · Coldwell Banker Residential Brokerage<br />
+          Dan Stuart · Coldwell Banker · DRE #02043742<br />
+          Christopher Kreiling · Compass · DRE #02223591<br />
           Information deemed reliable but not guaranteed. © 2026 MLS & FBS.
         </div>
       </div>
