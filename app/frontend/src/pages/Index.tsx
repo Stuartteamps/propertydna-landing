@@ -19,7 +19,7 @@ const scrollTo = (id: string) => {
 const partners = ['Meridian Capital', 'Thornfield AM', 'Ashbury REIT', 'Folio Group', 'Citadel Lending'];
 
 const metrics = [
-  ['14.3M PROPERTIES INDEXED'],
+  ['3.58M PROPERTIES INDEXED'],
   ['ACCURACY RATE 97.6%'],
   ['AVG VALUATION SPEED 1.8S'],
   ['RISK SIGNALS TRACKED 312'],
@@ -45,7 +45,7 @@ const capabilities = [
 
 const steps = [
   ['01', 'INPUT', 'Address or Portfolio', 'Submit a single address, a CSV, or connect via API. PropertyDNA accepts any scale of input.'],
-  ['02', 'SEQUENCE', 'Deep Data Ingestion', 'Our engine cross-references 47 live data sources and 14.3M historical property records in under 2 seconds.'],
+  ['02', 'SEQUENCE', 'Deep Data Ingestion', 'Our engine cross-references 47 live data sources and 3.58M historical property records in under 2 seconds.'],
   ['03', 'DECODE', 'DNA Profile Generated', 'A complete property genome emerges: valuation, risk profile, yield potential, comparative position, and trajectory.'],
   ['04', 'DEPLOY', 'Act With Confidence', 'Make acquisition, disposal, or lending decisions backed by the most complete property intelligence available.'],
 ];

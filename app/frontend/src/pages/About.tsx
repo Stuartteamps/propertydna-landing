@@ -23,7 +23,7 @@ const timeline = [
   ['2022', 'Origin', 'Daniel Stuart starts pulling property data manually for investment decisions. The gap between what agents present and what the data actually shows is too wide to ignore.'],
   ['2023', 'Engine Built', 'First version of the PropertyDNA engine built. 12 data sources cross-referenced into a single report. Delivery time: 45 minutes.'],
   ['2024', 'Automation', 'n8n workflow automation reduces delivery to under 3 minutes. AI narrative layer added. First institutional clients onboarded.'],
-  ['2025', 'Platform Launch', 'PropertyDNA launches as a subscription platform. 47 data sources, 14.3M properties indexed, and a live heat map layer.'],
+  ['2025', 'Platform Launch', 'PropertyDNA launches as a subscription platform. 47 data sources, 3.58M properties indexed, and a live heat map layer.'],
 ];
 
 export default function About() {
@@ -71,7 +71,7 @@ export default function About() {
             <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70 mb-6">
               Traditional valuation tools flatten this complexity into a single number and hope for
               the best. We don't. Our platform sequences every attribute that matters, cross-checks
-              against 14.3M historical records, and returns a report that any professional can
+              against 3.58M historical records, and returns a report that any professional can
               defend in front of a committee.
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70">
@@ -106,7 +106,7 @@ export default function About() {
             <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-12">By the Numbers</div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
               {[
-                ['14.3M', 'Properties profiled'],
+                ['3.58M', 'Properties profiled'],
                 ['47',    'Live data sources'],
                 ['97.6%', 'Valuation accuracy'],
                 ['< 3 min', 'Report delivery'],

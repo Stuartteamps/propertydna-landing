@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 
@@ -21,42 +21,6 @@ export default function PedigreeIndex() {
   const [architectStats, setArchitectStats] = useState<any[]>([]);
   const [topDossiers, setTopDossiers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Soft email gate — visitors see scale + architects + 3 teaser dossiers; the
-  // rest unlocks once they leave an email (or if they've unlocked before, via
-  // localStorage). Returns users skip the gate.
-  const [unlocked, setUnlocked] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('pedigree_unlocked');
-  });
-  const [emailInput, setEmailInput] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [gateError, setGateError]   = useState<string | null>(null);
-
-  async function handleUnlock(e: FormEvent) {
-    e.preventDefault();
-    const email = emailInput.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setGateError('Please enter a valid email.');
-      return;
-    }
-    setSubmitting(true);
-    setGateError(null);
-    try {
-      const r = await fetch('/.netlify/functions/capture-pedigree-lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      if (!r.ok) throw new Error('capture failed');
-      localStorage.setItem('pedigree_unlocked', email);
-      setUnlocked(true);
-    } catch {
-      setGateError('Something went wrong. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   useEffect(() => {
     (async () => {
@@ -195,7 +159,7 @@ export default function PedigreeIndex() {
         <section style={{ marginBottom: 56 }}>
           <h2 style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 20, fontWeight: 600 }}>Top Verified Dossiers</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
-            {(unlocked ? topDossiers : topDossiers.slice(0, 3)).map(d => (
+            {topDossiers.map(d => (
               <Link key={d.apn} to={`/dossier/${d.apn}`} style={{
                 background: '#111827', borderRadius: 6, padding: 20,
                 borderLeft: `3px solid ${TIER_COLOR[d.pedigree_tier] || '#475569'}`,
@@ -213,63 +177,13 @@ export default function PedigreeIndex() {
             ))}
           </div>
 
-          {!unlocked && topDossiers.length > 3 && (
-            <div style={{
-              marginTop: 24,
-              padding: '36px 28px',
-              background: 'linear-gradient(135deg, #1f2937 0%, #0f172a 100%)',
-              borderRadius: 8,
-              textAlign: 'center',
-              border: '1px solid #fbbf24',
-            }}>
-              <div style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 14, fontWeight: 600 }}>
-                Unlock the Full Documented Index
-              </div>
-              <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 24, margin: '0 0 12px', color: '#fafafa', fontWeight: 400, lineHeight: 1.3 }}>
-                See every verified dossier — 17 celebrity-owned estates, 50 architectural A-tier — and the full inventory of 16,788 classified properties.
-              </h3>
-              <p style={{ color: '#94a3b8', fontSize: 14, maxWidth: 520, margin: '0 auto 22px', lineHeight: 1.6 }}>
-                Primary-source verification on every claim. Drop your email — one weekly market snapshot, one-click unsubscribe in every email.
-              </p>
-              <form onSubmit={handleUnlock} style={{ display: 'flex', gap: 8, maxWidth: 440, margin: '0 auto', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <input
-                  type="email"
-                  required
-                  placeholder="you@example.com"
-                  value={emailInput}
-                  onChange={e => setEmailInput(e.target.value)}
-                  disabled={submitting}
-                  style={{
-                    flex: 1, minWidth: 240, padding: '13px 14px', borderRadius: 4,
-                    border: '1px solid #475569', background: '#0a0a0a', color: '#fafafa',
-                    fontSize: 14, outline: 'none',
-                  }}
-                />
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  style={{
-                    padding: '13px 24px', background: '#fbbf24', color: '#0a0a0a',
-                    border: 'none', borderRadius: 4, fontWeight: 700, fontSize: 13,
-                    letterSpacing: 1, textTransform: 'uppercase',
-                    cursor: submitting ? 'wait' : 'pointer',
-                  }}
-                >
-                  {submitting ? 'Unlocking…' : 'Unlock'}
-                </button>
-              </form>
-              {gateError && (
-                <div style={{ color: '#fca5a5', fontSize: 13, marginTop: 12 }}>{gateError}</div>
-              )}
-            </div>
-          )}
         </section>
 
         {/* CTA */}
         <div style={{ padding: 32, background: 'linear-gradient(135deg, #1f2937 0%, #0f172a 100%)', borderRadius: 6, textAlign: 'center', border: '1px solid #334155' }}>
           <div style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 14 }}>Browse the Index</div>
           <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 26, margin: '0 0 18px', color: '#fafafa', fontWeight: 400 }}>
-            Search 16,787 pedigree-classified properties.
+            Search 16,788 pedigree-classified properties.
           </h3>
           <Link to="/luxury-inventory" style={{ display: 'inline-block', padding: '14px 32px', background: '#fbbf24', color: '#0a0a0a', textDecoration: 'none', borderRadius: 4, fontWeight: 600, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>
             Open Inventory

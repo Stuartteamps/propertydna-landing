@@ -12,7 +12,7 @@ type ModalTab = 'signin' | 'pricing';
 
 const steps = [
   ['01', 'INPUT', 'Submit an Address', 'Enter a single property address, upload a CSV of your portfolio, or integrate via our REST API. PropertyDNA accepts any scale of input — one unit or one thousand.'],
-  ['02', 'SEQUENCE', 'Deep Data Ingestion', 'Our engine cross-references 47 live data sources and 14.3M historical property records in under 2 seconds. Land registry, planning portals, flood maps, energy ratings, census data — all spliced together into a single timeline.'],
+  ['02', 'SEQUENCE', 'Deep Data Ingestion', 'Our engine cross-references 47 live data sources and 3.58M historical property records in under 2 seconds. Land registry, planning portals, flood maps, energy ratings, census data — all spliced together into a single timeline.'],
   ['03', 'DECODE', 'Genome Generated', 'A complete property genome emerges: valuation with confidence bands, risk strand analysis, yield potential, comparative position, and trajectory modelling across 5, 10, and 25 year windows.'],
   ['04', 'DEPLOY', 'Act With Confidence', 'You receive a fully formatted intelligence report in your inbox — ready to forward to a committee, a client, or your underwriting team. Make acquisition, disposal, or lending decisions backed by the most complete property intelligence available.'],
 ];
@@ -20,7 +20,7 @@ const steps = [
 const dataGroups = [
   {
     group: 'Property & Valuation',
-    sources: ['RentCast AVM', 'RentCast Property API', 'Historical transaction records', 'Comparable sales database (14.3M records)'],
+    sources: ['RentCast AVM', 'RentCast Property API', 'Historical transaction records', 'Comparable sales database (3.58M records)'],
   },
   {
     group: 'Risk & Environment',

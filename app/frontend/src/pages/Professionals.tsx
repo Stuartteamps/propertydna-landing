@@ -139,7 +139,7 @@ export default function Professionals() {
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
             ['< 3 min', 'Report delivery'],
-            ['14.3M', 'Properties indexed'],
+            ['3.58M', 'Properties indexed'],
             ['47', 'Live data sources'],
             ['97.6%', 'Valuation accuracy'],
           ].map(([num, label]) => (

@@ -146,7 +146,7 @@ export default function LuxuryInventory() {
             Luxury & Pedigree Inventory
           </h1>
           <p style={{ color: '#94a3b8', fontSize: 16, marginTop: 12, maxWidth: 720 }}>
-            16,787 architecturally and culturally pedigreed properties across Palm Springs and the Coachella Valley.
+            16,788 architecturally and culturally pedigreed properties across Palm Springs and the Coachella Valley.
             Filter by tier (A → D), named neighborhood, or verified architect attribution. Each card opens its full provenance dossier.
           </p>
         </div>

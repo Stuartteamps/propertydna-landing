@@ -18,7 +18,7 @@ import FeaturedDossiers from '@/components/FeaturedDossiers';
 type ModalView = 'signin' | 'pricing';
 
 const metrics = [
-  ['14.3M PROPERTIES INDEXED'],
+  ['3.58M PROPERTIES INDEXED'],
   ['ACCURACY RATE 97.6%'],
   ['AVG VALUATION SPEED 1.8S'],
   ['RISK SIGNALS TRACKED 312'],

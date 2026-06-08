@@ -10,7 +10,7 @@ export default function PressKit() {
       if (!m) { m = document.createElement('meta'); m.setAttribute(a, n); document.head.appendChild(m); }
       m.setAttribute('content', c);
     };
-    setMeta('description', 'PropertyDNA press kit — luxury home provenance intelligence for the Coachella Valley. Verified celebrity ownership, architect attribution, and pedigree classification across 16,787 properties.');
+    setMeta('description', 'PropertyDNA press kit — luxury home provenance intelligence for the Coachella Valley. Verified celebrity ownership, architect attribution, and pedigree classification across 16,788 properties.');
     setMeta('og:title', 'PropertyDNA Press Kit', true);
   }, []);
 
@@ -35,7 +35,7 @@ export default function PressKit() {
 
         <Section title="By the Numbers">
           <Stats items={[
-            { n: '16,787', label: 'pedigree-classified Coachella Valley properties' },
+            { n: '16,788', label: 'pedigree-classified Coachella Valley properties' },
             { n: '27',     label: 'verified A-tier dossiers (architect + celebrity primary sources)' },
             { n: '1,282',  label: 'B-tier (top neighborhood + mid-century era)' },
             { n: '11',     label: 'documented Palm Springs MCM architects' },

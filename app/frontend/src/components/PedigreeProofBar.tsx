@@ -12,7 +12,7 @@ export default function PedigreeProofBar() {
         supabase.from('architects').select('id', { count: 'exact', head: true }),
       ]);
       setStats({
-        classified: c.count || 16787,
+        classified: c.count || 16788,
         dossiers: d.count || 53,
         architects: a.count || 11,
         neighborhoods: 13,

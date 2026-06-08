@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function PressRelease() {
-  const [stats, setStats] = useState({ classified: 16787, dossiers: 53, neighborhoods: 13, architects: 11 });
+  const [stats, setStats] = useState({ classified: 16788, dossiers: 53, neighborhoods: 13, architects: 11 });
 
   useEffect(() => {
     document.title = 'For Immediate Release — PropertyDNA Launches Coachella Valley Pedigree Index';
@@ -14,7 +14,7 @@ export default function PressRelease() {
         supabase.from('architects').select('id', { count: 'exact', head: true }),
       ]);
       setStats({
-        classified: c.count || 16787,
+        classified: c.count || 16788,
         dossiers: d.count || 53,
         neighborhoods: 13,
         architects: a.count || 11,

@@ -1007,7 +1007,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: 'luxury-home-provenance-pedigree-classification',
-    title: 'How We Pedigree-Classified 16,787 Coachella Valley Properties',
+    title: 'How We Pedigree-Classified 16,788 Coachella Valley Properties',
     metaDescription: 'PropertyDNA built an A/B/C/D pedigree classification for every property in Palm Springs, Rancho Mirage, and the Coachella Valley. Here is the methodology — architect attribution, celebrity provenance, named neighborhoods, and primary source verification.',
     date: '2026-05-15',
     readTime: 9,
@@ -1015,7 +1015,7 @@ export const blogPosts: BlogPost[] = [
     excerpt: 'A Patek Philippe ships with verified provenance papers. A $50 million architectural estate often does not. We built the missing data layer for the top of luxury real estate — pedigree-classifying every property in the Coachella Valley.',
     sections: [
       { type: 'p', text: 'A Patek Philippe Nautilus 1518 ships with verified provenance papers — original Cosc certificate, service records, auction history. A 1962 Ferrari 250 GTO ships with matching-numbers documentation back to its first owner. But a $50 million architecturally-significant home? Buyers typically receive a title chain, some recent listing photos, and vague claims about who once owned it.' },
-      { type: 'p', text: 'That documentation gap is what PropertyDNA exists to close. Over the last year we built a pedigree classification system for every property in the Coachella Valley — 16,787 homes systematically classified by architectural and cultural pedigree, with verified celebrity provenance and architect attribution for the top tier.' },
+      { type: 'p', text: 'That documentation gap is what PropertyDNA exists to close. Over the last year we built a pedigree classification system for every property in the Coachella Valley — 16,788 homes systematically classified by architectural and cultural pedigree, with verified celebrity provenance and architect attribution for the top tier.' },
       { type: 'h2', text: 'The Four-Tier Pedigree System' },
       { type: 'p', text: 'Properties are classified into four pedigree tiers based on a hierarchy of architectural and cultural significance.' },
       { type: 'h3', text: 'A-Tier — Verified Dossier (52 properties)' },
