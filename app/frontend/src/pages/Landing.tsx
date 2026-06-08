@@ -13,6 +13,7 @@ import { isPremiumUser } from '@/lib/isPremiumUser';
 import { isNative } from '@/lib/nativeFeatures';
 import PropertyTicker from '@/components/PropertyTicker';
 import NationwideCoverage from '@/components/NationwideCoverage';
+import FeaturedDossiers from '@/components/FeaturedDossiers';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -458,6 +459,11 @@ export default function Landing() {
           </FadeUp>
         </div>
       </section>
+
+      {/* ── VERIFIED PROVENANCE DOSSIERS ────────────────────────────── */}
+      <FadeUp>
+        <FeaturedDossiers />
+      </FadeUp>
 
       {/* ── BOTTOM CTA ─────────────────────────────────────────────── */}
       <section
