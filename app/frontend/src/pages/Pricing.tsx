@@ -40,38 +40,39 @@ const plans = [
     action: 'analyze' as const,
   },
   {
-    tier: 'Pro',
-    label: 'Unlimited',
-    price: '$49',
+    tier: 'Realtor Pro',
+    label: 'For Agents & Brokers',
+    price: '$149',
     period: '/ month',
     highlight: true,
     features: [
       'Unlimited property reports',
-      'Everything in Per Report',
+      'Client-ready PDF + share links',
       'Comparable trend charts',
-      'Market velocity index',
+      'Listing intelligence + valuation deltas',
       'Saved property dashboard',
-      'Priority PDF delivery',
+      'Buyer / seller talking points',
       'Cancel anytime',
     ],
-    cta: 'Start Pro',
+    cta: 'Start Realtor Pro',
     action: 'subscribe' as const,
   },
   {
-    tier: 'Enterprise',
-    label: 'Institutional',
-    price: '$149',
+    tier: 'Investor',
+    label: 'For Funds & Operators',
+    price: '$299',
     period: '/ month',
     highlight: false,
     features: [
-      'Everything in Pro',
+      'Everything in Realtor Pro',
       'Portfolio genome mapping',
-      'Temporal drift modelling',
-      'Bulk report API access',
-      'White-label export',
-      'Dedicated account manager',
+      'Bulk address lookup (CSV)',
+      'API access for ROI / cap-rate workflows',
+      'Multi-market heat maps',
+      'Off-market signal alerts',
+      'Priority support',
     ],
-    cta: 'Schedule a Call →',
+    cta: 'Start Investor',
     action: 'subscribe' as const,
   },
 ];
@@ -105,11 +106,8 @@ export default function Pricing() {
     );
   }
 
-  const CALENDLY_URL = 'https://calendly.com/stuartteamps-vls6/30min';
-
-  const handleCta = (action: 'analyze' | 'subscribe', tier?: string) => {
+  const handleCta = (action: 'analyze' | 'subscribe') => {
     if (action === 'analyze') navigate('/analyze');
-    else if (tier === 'Enterprise') window.open(CALENDLY_URL, '_blank', 'noopener');
     else setPricingOpen(true);
   };
 
@@ -141,15 +139,15 @@ export default function Pricing() {
                 fontWeight: 300, letterSpacing: '-1px', lineHeight: 1.05,
                 color: '#F4F0E8', marginBottom: 20,
               }}>
-                Start free.{' '}
-                <em style={{ fontStyle: 'italic', color: '#B89355' }}>Upgrade when ready.</em>
+                Free for buyers.{' '}
+                <em style={{ fontStyle: 'italic', color: '#B89355' }}>Built for pros.</em>
               </h1>
               <p style={{
                 fontFamily: 'Jost, sans-serif', fontSize: 15, fontWeight: 300,
                 lineHeight: 1.85, color: 'rgba(244,240,232,0.5)',
-                maxWidth: 520, margin: '0 auto',
+                maxWidth: 560, margin: '0 auto',
               }}>
-                Every account gets one free report. No credit card required to start.
+                Every homebuyer gets a free report — no credit card. Real estate professionals get the unlimited data edge their clients are quietly paying for.
               </p>
             </div>
           </FadeUp>
@@ -215,11 +213,6 @@ export default function Pricing() {
                     }}>
                       {plan.period}
                     </div>
-                    {plan.tier === 'Pro' && (
-                      <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#74C69D', marginTop: 6 }}>
-                        or $479/year — 2 months free
-                      </div>
-                    )}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 40, flex: 1 }}>
@@ -242,7 +235,7 @@ export default function Pricing() {
 
                   <button
                     type="button"
-                    onClick={() => handleCta(plan.action, plan.tier)}
+                    onClick={() => handleCta(plan.action)}
                     style={{
                       fontFamily: 'Jost, sans-serif', fontSize: 10,
                       fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase',
@@ -276,7 +269,7 @@ export default function Pricing() {
               borderTop: '1px solid rgba(255,255,255,0.07)',
             }}>
               {[
-                ['Can I cancel anytime?', 'Yes. Pro and Enterprise plans are billed monthly with no contracts. Cancel from your dashboard at any time.'],
+                ['Can I cancel anytime?', 'Yes. Realtor Pro and Investor plans are billed monthly with no contracts. Cancel from your dashboard at any time.'],
                 ['Is the first report really free?', 'Yes — one full report, no credit card required. Just sign in and submit any address.'],
                 ['What data sources do you use?', 'RentCast AVM, FEMA hazard data, census demographics, market comps, and 40+ enrichment signals.'],
                 ['Do you cover all US markets?', 'Yes — we cover 2,800+ US markets nationwide. Submit any residential or commercial address and our engine will sequence it.'],

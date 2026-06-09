@@ -182,10 +182,11 @@ export default function Landing() {
             fontSize: 'clamp(12px, 1.3vw, 14px)',
             fontWeight: 300, letterSpacing: '1.5px',
             color: 'rgba(244,240,232,0.4)',
-            maxWidth: 380, lineHeight: 1.9, marginBottom: 44,
+            maxWidth: 420, lineHeight: 1.9, marginBottom: 44,
           }}>
-            The complete genetic profile of any property — valuation,
-            risk, and market intelligence in under 3 minutes.
+            The data your agent doesn't want you to see — valuation, risk,
+            and market intelligence on the biggest purchase of your life.
+            Free for buyers. Built for pros.
           </p>
         </FadeUp>
 

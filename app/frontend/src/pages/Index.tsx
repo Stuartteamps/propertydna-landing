@@ -336,8 +336,8 @@ export default function Index() {
                 <em className="italic text-gold">basic valuation.</em>
               </h2>
               <p className="font-sans text-[15px] font-light leading-[1.85] text-canvas/55 max-w-2xl mt-6">
-                Pro subscribers unlock live market movement, comparable trend charts, micro-market
-                heat maps, opportunity scoring, and saved property intelligence.
+                Realtor Pro and Investor accounts unlock live market movement, comparable trend
+                charts, micro-market heat maps, opportunity scoring, and saved property intelligence.
               </p>
             </div>
           </FadeUp>
@@ -346,7 +346,7 @@ export default function Index() {
               <div
                 style={{ position: 'relative', border: '1px solid rgba(255,255,255,0.07)', background: '#0A0908', padding: '28px' }}
               >
-                <div className="font-sans text-[9px] tracking-[3px] text-gold uppercase mb-3">Pro · Comparable Sales Trends</div>
+                <div className="font-sans text-[9px] tracking-[3px] text-gold uppercase mb-3">Realtor Pro · Comparable Sales Trends</div>
                 <div className="font-serif text-xl font-light text-canvas mb-4">Neighborhood Sales Velocity</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 3, alignItems: 'flex-end', height: 60, marginBottom: 12 }}>
                   {[65,70,62,78,80,75,82,88,79,84,90,87].map((h, i) => (
@@ -541,52 +541,52 @@ export default function Index() {
               </div>
             </FadeUp>
 
-            {/* SUBSCRIPTION */}
+            {/* REALTOR PRO */}
             <FadeUp delay={0.1}>
               <div className="relative border-2 border-gold p-8 h-full flex flex-col"
                 style={{ background: 'linear-gradient(160deg, rgba(184,147,85,0.08), transparent)' }}>
                 <div className="absolute -top-3 left-8 font-sans text-[9px] tracking-[3px] text-espresso bg-gold uppercase px-3 py-1.5">
                   Most Popular
                 </div>
-                <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-6">Unlimited</div>
-                <div className="font-serif text-2xl font-light text-canvas mb-1">Monthly Plan</div>
-                <div className="flex items-baseline mb-2">
-                  <sup className="font-serif text-lg text-canvas/60 mr-1">$</sup>
-                  <span className="font-serif text-5xl font-light text-canvas leading-none">49</span>
-                  <span className="font-sans text-sm text-canvas/50 ml-1">/mo</span>
-                </div>
-                <div className="text-[13px] text-canvas/50 mb-8">unlimited reports</div>
-                <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/75 flex-1">
-                  {['Unlimited property reports', 'Full genetic valuation engine', 'Risk strand analysis', 'Dashboard + report history', 'Priority email + PDF delivery', 'Cancel anytime'].map((f) => (
-                    <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
-                  ))}
-                </ul>
-                <button type="button" onClick={openPricing}
-                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-6 py-3.5">
-                  Subscribe $49/mo
-                </button>
-              </div>
-            </FadeUp>
-
-            {/* ENTERPRISE */}
-            <FadeUp delay={0.15}>
-              <div className="border border-white/10 p-8 h-full flex flex-col">
-                <div className="font-sans text-[10px] tracking-[3px] text-canvas/45 uppercase mb-6">Enterprise</div>
-                <div className="font-serif text-2xl font-light text-canvas mb-1">Institutional</div>
+                <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-6">Realtor Pro</div>
+                <div className="font-serif text-2xl font-light text-canvas mb-1">For Agents & Brokers</div>
                 <div className="flex items-baseline mb-2">
                   <sup className="font-serif text-lg text-canvas/60 mr-1">$</sup>
                   <span className="font-serif text-5xl font-light text-canvas leading-none">149</span>
                   <span className="font-sans text-sm text-canvas/50 ml-1">/mo</span>
                 </div>
-                <div className="text-[13px] text-canvas/50 mb-8">per month, billed monthly</div>
-                <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/70 flex-1">
-                  {['Everything in Monthly', 'Portfolio genome mapping', 'Temporal drift modelling', 'Dedicated data team', 'Unlimited API access', 'SLA + white-label options'].map((f) => (
+                <div className="text-[13px] text-canvas/50 mb-8">unlimited client reports</div>
+                <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/75 flex-1">
+                  {['Unlimited property reports', 'Client-ready PDF + share links', 'Comparable trend charts', 'Listing intelligence + valuation deltas', 'Saved property dashboard', 'Buyer / seller talking points', 'Cancel anytime'].map((f) => (
                     <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
                   ))}
                 </ul>
-                <button type="button" onClick={() => openModal('pricing')}
+                <button type="button" onClick={openPricing}
+                  className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-espresso bg-gold hover:bg-[#cfa366] transition-colors px-6 py-3.5">
+                  Start Realtor Pro
+                </button>
+              </div>
+            </FadeUp>
+
+            {/* INVESTOR */}
+            <FadeUp delay={0.15}>
+              <div className="border border-white/10 p-8 h-full flex flex-col">
+                <div className="font-sans text-[10px] tracking-[3px] text-canvas/45 uppercase mb-6">Investor</div>
+                <div className="font-serif text-2xl font-light text-canvas mb-1">For Funds & Operators</div>
+                <div className="flex items-baseline mb-2">
+                  <sup className="font-serif text-lg text-canvas/60 mr-1">$</sup>
+                  <span className="font-serif text-5xl font-light text-canvas leading-none">299</span>
+                  <span className="font-sans text-sm text-canvas/50 ml-1">/mo</span>
+                </div>
+                <div className="text-[13px] text-canvas/50 mb-8">per month, billed monthly</div>
+                <ul className="flex flex-col gap-3 mb-10 text-[13px] font-light text-canvas/70 flex-1">
+                  {['Everything in Realtor Pro', 'Portfolio genome mapping', 'Bulk address lookup (CSV)', 'API access for ROI / cap-rate workflows', 'Multi-market heat maps', 'Off-market signal alerts', 'Priority support'].map((f) => (
+                    <li key={f} className="flex items-start gap-2"><span className="text-gold mt-1">—</span><span>{f}</span></li>
+                  ))}
+                </ul>
+                <button type="button" onClick={openPricing}
                   className="font-sans text-[10px] font-medium tracking-[3px] uppercase text-canvas border border-canvas/25 hover:border-gold hover:text-gold transition-colors px-6 py-3.5 !bg-transparent hover:!bg-transparent">
-                  Talk to Sales
+                  Start Investor
                 </button>
               </div>
             </FadeUp>
@@ -673,12 +673,12 @@ export default function Index() {
                 Submit a Property
               </div>
               <div className="text-[13px] leading-relaxed font-light" style={{ color: '#6B6252' }}>
-                First report free. $4.99/report after that, or $49/month unlimited.
+                First report free. $4.99/report after that — or unlimited via Realtor Pro for working professionals.
               </div>
             </div>
             <PropertyForm />
             <div className="mt-6 text-center text-[11px] tracking-[1px]" style={{ color: 'rgba(107,98,82,0.7)' }}>
-              First report free · $4.99/report · $49/month unlimited
+              First report free · $4.99/report · Realtor Pro $149/mo unlimited
             </div>
           </div>
         </div>
