@@ -55,7 +55,10 @@ const IAP_PRODUCT_ID = {
 } as const;
 
 export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: PricingModalProps) {
-  const native = isNative();
+  // Apple Guideline 3.1.1: the iOS app exposes no subscription or paid tier
+  // surfaces. PricingModal is a no-op on native.
+  if (isNative()) return null;
+  const native = false;
   const { user } = useAuth();
   const [email, setEmail] = useState(() => {
     try { return prefillEmail || sessionStorage.getItem('pdna_email') || ''; } catch { return prefillEmail; }

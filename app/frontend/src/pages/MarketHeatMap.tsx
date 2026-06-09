@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import AuthModal from '@/components/AuthModal';
 import PricingModal from '@/components/PricingModal';
@@ -103,15 +104,55 @@ export default function MarketHeatMap() {
   const [modalTab,     setModalTab]     = useState<ModalTab>('signin');
   const [pricingOpen,  setPricingOpen]  = useState(false);
 
-  // iOS now offers Pro via In-App Purchase; real entitlement gates content.
-  const premium = !authLoading && (
+  // iOS app is fully free — every feature unlocked for every user (Apple 3.1.1:
+  // no subscription gates, no upsell, no "Pro" surfaces in the native app).
+  const premium = isNative() || (!authLoading && (
     user?.email?.toLowerCase() === OWNER || tier !== 'free'
-  );
+  ));
 
+  const navigate = useNavigate();
   const [markets,       setMarkets]       = useState<Market[]>(FALLBACK_MARKETS);
   const [properties,    setProperties]    = useState<Property[]>([]);
   const [liveCount,     setLiveCount]     = useState(0);
   const [selected,      setSelected]      = useState<HeatParcel | null>(null);
+
+  // Resolve a heatmap parcel to a real APN in property_master, then navigate
+  // to the ticker page. Falls back to /analyze for unindexed addresses.
+  const openTicker = useCallback(async (p: HeatParcel) => {
+    if (!p) return;
+    const street = (p.street || p.address || '').split(',')[0].trim();
+    const city   = (p.city || '').trim();
+    const zip    = (p.zip || '').trim();
+    let apn: string | null = null;
+    try {
+      if (street && city) {
+        const { data } = await supabase
+          .from('property_master')
+          .select('apn')
+          .ilike('address', `${street.toUpperCase()}%`)
+          .eq('city', city.toUpperCase())
+          .limit(1)
+          .maybeSingle();
+        if (data?.apn) apn = data.apn;
+      }
+      if (!apn && street && zip) {
+        const { data } = await supabase
+          .from('property_master')
+          .select('apn')
+          .ilike('address', `${street.toUpperCase()}%`)
+          .eq('zip', zip)
+          .limit(1)
+          .maybeSingle();
+        if (data?.apn) apn = data.apn;
+      }
+    } catch { /* fall through to /analyze */ }
+    if (apn) {
+      navigate(`/ticker/${apn}`);
+    } else {
+      const q = new URLSearchParams({ address: street, city, zip }).toString();
+      navigate(`/analyze?${q}`);
+    }
+  }, [navigate]);
   const [drawerParcel,  setDrawerParcel]  = useState<HeatParcel | null>(null);
   const [hover,         setHover]         = useState<HeatHoverState | null>(null);
   const [weights,       setWeights]       = useState<HeatFilterWeights>(DEFAULT_HEAT_WEIGHTS);
@@ -526,10 +567,10 @@ export default function MarketHeatMap() {
                     {/* CTA */}
                     <div style={{ padding: '14px' }}>
                       <button
-                        onClick={() => setDrawerParcel(selected)}
+                        onClick={() => selected && openTicker(selected)}
                         style={{ width: '100%', fontFamily: MONO, fontSize: 11, letterSpacing: 2, color: '#000', background: G, border: 'none', padding: '14px 0', cursor: 'pointer', boxShadow: `0 0 20px rgba(0,255,136,0.2)` }}
                       >
-                        Generate Full DNA Report
+                        Open Property Ticker →
                       </button>
                     </div>
                   </>
@@ -808,10 +849,10 @@ export default function MarketHeatMap() {
               {/* CTA */}
               <div style={{ padding: '14px' }}>
                 <button
-                  onClick={() => setDrawerParcel(selected)}
+                  onClick={() => selected && openTicker(selected)}
                   style={{ width: '100%', fontFamily: MONO, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: G, border: 'none', padding: '12px 0', cursor: 'pointer', boxShadow: `0 0 20px rgba(0,255,136,0.15)` }}
                 >
-                  Generate Full DNA Report
+                  Open Property Ticker →
                 </button>
                 <div style={{ fontFamily: MONO, fontSize: 8, color: T_M, textAlign: 'center', marginTop: 6 }}>
                   Powered by PropertyDNA AI

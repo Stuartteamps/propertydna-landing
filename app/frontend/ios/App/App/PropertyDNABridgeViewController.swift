@@ -41,12 +41,9 @@ final class PropertyDNABridgeViewController: CAPBridgeViewController {
         // 4. Donate App Intent shortcuts so Siri learns the user's flow
         AppShortcutManager.donateOnLaunch()
 
-        // 5. StoreKit2 IAP — observe transactions + expose purchase bridge to
-        //    the web layer (window.webkit.messageHandlers.pdnaPurchase / pdnaRestorePurchases).
-        StoreKitManager.shared.startObserving()
-        let purchase = PurchaseBridge.shared
-        purchase.webView = webView
-        controller.add(purchase, name: "pdnaPurchase")
-        controller.add(purchase, name: "pdnaRestorePurchases")
+        // StoreKit2 IAP intentionally NOT wired: the iOS app is fully free with
+        // no subscription or in-app purchase. StoreKitManager.swift and
+        // PurchaseBridge.swift remain in the project as dormant scaffolding;
+        // re-enable here when a non-subscription IAP is ready to ship.
     }
 }

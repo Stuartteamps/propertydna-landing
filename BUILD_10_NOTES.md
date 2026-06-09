@@ -251,6 +251,40 @@ Native iOS app: SwiftUI dashboard, MKMapView, on-device Vision OCR scanner, Siri
 
 ## App Review Notes (private — Apple reviewer only)
 
+PROPERTYDNA BUILD 22 — PIVOT TO FREE iOS (RESOLVES ALL OUTSTANDING ITEMS)
+
+We have pivoted the iOS app to a 100% free model. Every feature is available to every user at no charge. There are no in-app purchases, no subscriptions, no paid tiers, no "Pro" or "Upgrade" surfaces, no payment links, and no references to paid content anywhere in the app or in the App Store metadata.
+
+WHAT CHANGED IN BUILD 22 VERSUS BUILD 21:
+• The In-App Purchase products (com.thepropertydna.app.pro.monthly, .yearly) are no longer offered to users. The native StoreKit bridge (PurchaseBridge) is unregistered in PropertyDNABridgeViewController, so the JavaScript layer has no path to invoke purchases. The Swift scaffolding remains in the project as dormant files but is not wired to any native handler.
+• The pricing modal returns null on iOS — it cannot be opened from any code path in the native app.
+• Every "Subscribe", "Upgrade", "Pro", and "Unlock Premium" call-to-action is hidden on iOS via the isNative() guard. Content pages (IntellaGraph, Market Heat Map, Sample Report, Report View) treat every iOS user as having full access — no locks, no upsells, no gated sections.
+• The check-usage Netlify function is intercepted on iOS so the response is rewritten to isSubscribed=false / tier=free / quota=null for every user, regardless of any web Stripe subscription on the same email. A web subscriber signing into iOS sees the same free experience as everyone else.
+• The App Store Description has been updated to remove every subscription/price reference. There is no "SUBSCRIPTION & LEGAL" block, no monthly/yearly pricing, no EULA link required.
+• The previous In-App Purchase products in App Store Connect remain configured but are not referenced by the binary; if Apple prefers them removed from the account we can do that as a follow-up.
+
+GUIDELINE 3.1.1 — IN-APP PURCHASE
+There are no in-app purchases, no subscriptions, no paid content, and no references to purchased content in the iOS app. Apple's 3.1.1 does not apply because the iOS app has no paid digital tier whatsoever.
+
+GUIDELINE 2.1(b) — APP COMPLETENESS
+There are no In-App Purchase products referenced by the binary, so there is no IAP review submission to attach. The app is functionally complete as a free property-intelligence tool.
+
+GUIDELINE 3.1.2(c) — AUTO-RENEWABLE SUBSCRIPTIONS
+There are no auto-renewable subscriptions in the iOS app, so the in-app and metadata disclosure requirements do not apply.
+
+OUR WEB BUSINESS (thepropertydna.com)
+We continue to offer paid Pro plans for real-estate professionals on the website (web Stripe checkout). These plans are NOT referenced inside the iOS app and are not accessible from it — the iOS app is positioned as a free consumer tool, and pro/realtor/investor plans are sold on the web for desktop users. Per Apple Guideline 3.1.3(b), a customer who happens to have a web Stripe subscription receives the same free experience on iOS as every other user: their subscription does not unlock anything in the iOS app and is never referenced.
+
+HOW TO TEST
+1. Launch the app — the native Home tab loads with the bottom tab bar.
+2. Tap the Search tab — the web layer shows the property-analysis interface with no subscription or pricing references.
+3. Tap Settings — the native Settings screen reads "PropertyDNA on iOS is an anonymous tool — no account required, nothing tracked. Reports you generate live on this device."
+4. Navigate any feature — IntellaGraph, Market Heat Map, Sample Report — every section is unlocked and free.
+
+The notes below document the native architecture carried forward from prior builds.
+
+───────────────────────────────────────────
+
 PROPERTYDNA BUILD 21 — RESPONSE TO BUILD 20 REJECTION (2.1(b) — IAP location)
 
 WHERE TO FIND THE IN-APP PURCHASES (3 steps):

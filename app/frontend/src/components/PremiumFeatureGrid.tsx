@@ -18,8 +18,12 @@ interface PremiumFeatureGridProps {
  * Locked cards show a blurred body + upgrade CTA.
  */
 export default function PremiumFeatureGrid({ features, onUpgrade }: PremiumFeatureGridProps) {
-  // Apple Guideline 3.1.1: no external-upgrade CTAs on iOS. We also
-  // iOS now offers Pro via In-App Purchase, so upsells render normally on every platform.
+  // Apple Guideline 3.1.1: no upgrade CTAs in the iOS app. Show every feature
+  // unlocked on native and remove the upgrade hook.
+  if (isNative()) {
+    onUpgrade = undefined;
+    features = features.map(f => ({ ...f, locked: false }));
+  }
   return (
     <div style={{
       display: 'grid',

@@ -3,11 +3,10 @@ const OWNER_EMAILS = ['stuartteamps@gmail.com'];
 export function isPremiumUser(): boolean {
   try {
     const email      = sessionStorage.getItem('pdna_email') || '';
-    // Fall back to localStorage so iOS Apple-IAP entitlements survive app launches.
-    const subscribed = sessionStorage.getItem('pdna_subscribed') || localStorage.getItem('pdna_subscribed');
-    const plan       = sessionStorage.getItem('pdna_plan')       || localStorage.getItem('pdna_plan');
+    const subscribed = sessionStorage.getItem('pdna_subscribed');
+    const plan       = sessionStorage.getItem('pdna_plan');
     if (OWNER_EMAILS.includes(email.toLowerCase())) return true;
-    return subscribed === 'true' || plan === 'monthly' || plan === 'yearly' || plan === 'enterprise' || plan === 'restored' || (plan ?? '').includes('pro');
+    return subscribed === 'true' || plan === 'monthly' || plan === 'enterprise';
   } catch {
     return false;
   }

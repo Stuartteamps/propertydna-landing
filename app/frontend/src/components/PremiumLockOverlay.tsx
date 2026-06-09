@@ -22,7 +22,8 @@ export default function PremiumLockOverlay({
   onUpgrade,
   compact = false,
 }: PremiumLockOverlayProps) {
-  // iOS now offers Pro via In-App Purchase — overlay renders on every platform.
+  // Apple Guideline 3.1.1: no upgrade overlays in the iOS app — content is free.
+  if (isNative()) return null;
   return (
     <div
       style={{

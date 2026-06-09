@@ -28,7 +28,9 @@ const UPGRADE_INFO = {
 
 export const TierGate: React.FC<TierGateProps> = ({ userTier, requiredTier, children, onUpgrade }) => {
   if (tierAtLeast(userTier, requiredTier)) return <>{children}</>;
-  // iOS now offers Pro via In-App Purchase — gate the content on every platform.
+  // Apple Guideline 3.1.1: render the gated content fully on iOS — every
+  // feature is free for every user in the native app.
+  if (isNative()) return <>{children}</>;
 
   const info = UPGRADE_INFO[requiredTier];
 

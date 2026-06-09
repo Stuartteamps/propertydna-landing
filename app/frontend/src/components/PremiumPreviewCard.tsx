@@ -27,7 +27,9 @@ export default function PremiumPreviewCard({
   onUpgrade, style,
 }: PremiumPreviewCardProps) {
   const [hovered, setHovered] = useState(false);
-  // iOS now offers Pro via In-App Purchase, so the upsell renders normally.
+  // Apple 3.1.1: no upsells in the iOS app. Show the underlying preview content
+  // (no lock, no upgrade CTA) by forcing the premium=true branch on native.
+  if (isNative()) { isPremium = true; onUpgrade = undefined; }
 
   return (
     <div
