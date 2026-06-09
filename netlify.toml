@@ -86,6 +86,13 @@
 [functions."submitter-drip"]
   schedule = "0 17 * * *"
 
+# Wed 13:00 UTC = 6 AM PDT — sync website-side unsubscribes into the CC list.
+# Closes the CAN-SPAM gap where someone who unsubs via our site still gets the
+# CC newsletter. Bulk operation up to 5K emails per call.
+[functions."sync-unsubscribes-to-cc"]
+  schedule = "0 13 * * 3"
+  timeout = 60
+
 # Hourly — Tom Ferry 8-touch cadence for open-house leads (QR/web sign-ins).
 # Step 0 fires instantly via capture-open-house-lead.js. Cron handles 1..7:
 # T+1d SMS · T+2d email (off-market matches) · T+4d SMS · T+7d/14d/21d email · T+30d loop-close.
