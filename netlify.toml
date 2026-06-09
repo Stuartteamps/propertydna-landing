@@ -113,6 +113,14 @@
   status = 200
   force = true
 
+# Dynamic sitemap — always reflects the current DB state (dossiers, architects,
+# neighborhoods, blog, tickers) so search + AI crawlers see the full index.
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/.netlify/functions/sitemap"
+  status = 200
+  force = true
+
 # RSS feed of verified luxury dossiers — for press/agent subscription
 [[redirects]]
   from = "/dossier-feed.xml"

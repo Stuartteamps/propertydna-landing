@@ -15,6 +15,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Nav from '@/components/Nav';
+import FAQ from '@/components/FAQ';
 import { supabase } from '@/lib/supabase';
 
 const GOLD = '#C9A84C';
@@ -206,6 +207,38 @@ export default function Dossiers() {
             </div>
           </div>
         </section>
+
+        {/* ── FAQ (Schema.org FAQPage) ─────────────────────────────── */}
+        <FAQ
+          eyebrow="The Dossier Method"
+          title="What goes into a PropertyDNA dossier"
+          items={[
+            {
+              q: 'What is a PropertyDNA dossier?',
+              a: 'A dossier is a primary-source-verified record of a property\'s architectural lineage, celebrity provenance, ownership history, permit history, and cultural significance. It is what an appraiser would build if appraisers documented homes the way auction houses document watches and cars.',
+            },
+            {
+              q: 'How do you verify celebrity ownership?',
+              a: 'We cross-reference county deed records, period press features, preservation society archives (Palm Springs Modernism Committee, Lautner Foundation, Liberace Foundation), and Architectural Digest / Palm Springs Life back issues. Every owner record is flagged verified, partial, or unverified — and the source archives are cited on the page.',
+            },
+            {
+              q: 'What is the difference between A, B, C, and D pedigree tiers?',
+              a: 'A — verified celebrity owner AND verified named architect, primary-source-cited. B — verified architect attribution OR named-architect-era home in a top neighborhood. C — named-neighborhood mid-century-modern era home. D — mid-century provenance with neighborhood signal. The full methodology is in our blog.',
+            },
+            {
+              q: 'How many dossiers exist today?',
+              a: '53 verified dossiers across 11 documented architects (John Lautner, Albert Frey, Richard Neutra, William Krisel, Donald Wexler, E. Stewart Williams, Hugh Kaptur, William F. Cody, Howard Lapham, Walter S. White, Charles DuBois). We add 3-5 verified dossiers per month and accept paid commissions for custom research.',
+            },
+            {
+              q: 'Can I request a custom dossier on my home?',
+              a: 'Yes. Custom dossier research begins at the architect attribution level and includes archive-grade verification. Typical turnaround is 14-21 days. The page for a documented home tends to add 8-15% to resale value because it converts agent storytelling into citable, defensible facts.',
+            },
+            {
+              q: 'Does a dossier affect property value?',
+              a: 'Empirically, yes — the trade frequency of John Lautner originals is once every 4.7 years, and Albert Frey originals trade once every 5.2 years, both at meaningful premiums to unattributed peers. Dossiered properties also resolve faster when an estate executor or trust trustee needs documented value. We do not appraise, but we make the appraiser\'s job possible.',
+            },
+          ]}
+        />
 
         {/* ── FINAL CTA ────────────────────────────────────────────── */}
         <section style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(56px,9vw,96px) clamp(20px,5vw,64px)', textAlign: 'center' }}>

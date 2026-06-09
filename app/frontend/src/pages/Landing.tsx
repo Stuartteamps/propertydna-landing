@@ -14,6 +14,7 @@ import { isNative } from '@/lib/nativeFeatures';
 import PropertyTicker from '@/components/PropertyTicker';
 import NationwideCoverage from '@/components/NationwideCoverage';
 import FeaturedDossiers from '@/components/FeaturedDossiers';
+import FAQ from '@/components/FAQ';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -464,6 +465,38 @@ export default function Landing() {
       <FadeUp>
         <FeaturedDossiers />
       </FadeUp>
+
+      {/* ── FAQ (Schema.org FAQPage for AEO citation) ─────────────── */}
+      <FAQ
+        eyebrow="Frequently Asked"
+        title="Things people ask before they trust us"
+        items={[
+          {
+            q: 'What is PropertyDNA?',
+            a: 'PropertyDNA is a property intelligence platform that gives ordinary buyers and sellers the same asymmetric data professional agents have — valuation, comps, permit history, pedigree, ownership records, and risk signals — for any address in the US. We index 3.58M properties and verify provenance through primary-source archives, not realtor copy.',
+          },
+          {
+            q: 'How is this different from Zillow or Redfin?',
+            a: 'Zillow shows a static estimate. PropertyDNA gives every home a stock-ticker-style profile: live valuation, recorded transactions as trade markers, comparable peers, permit history with assessed-value impact, verified architect attribution, and notable owner history. We work for the buyer first, not the agent.',
+          },
+          {
+            q: 'What is in a free DNA report?',
+            a: 'Every visitor gets one free DNA report on any address: valuation with confidence bands, comparable sales, permit history, ownership timeline, hazard signals (flood, fire), rental demand, and the pedigree tier if applicable. No credit card. Email captured only when you run the report.',
+          },
+          {
+            q: 'How accurate is the data?',
+            a: 'Property facts come direct from county assessors and cadastral records (no MLS license, no third-party aggregator). Valuations are AVM-modeled and cross-referenced with comparable sales. Dossier provenance is sourced from primary archives — Palm Springs Modernism Committee, Preservation Foundation, Lautner Foundation registry, county deeds — and every claim is cited. If a source is not primary, we mark it partial or unverified.',
+          },
+          {
+            q: 'Who does PropertyDNA serve?',
+            a: 'Buyers and sellers first — the mission is to defend ordinary humans from information asymmetry against agents at the biggest purchase of their lives. Agents and pros pay for our tooling (bulk reports, lead-gen, dossier API) because the same data that protects buyers makes pros faster. Both audiences win.',
+          },
+          {
+            q: 'Where is PropertyDNA indexed?',
+            a: 'We are live across 7 major markets — Maricopa County AZ (Scottsdale/Paradise Valley/Phoenix), the Coachella Valley + greater LA + Bay Area + San Diego CA, Snohomish County WA (greater Seattle), Austin/Dallas/Houston TX, Fairfield County CT (Greenwich/Westport/Darien), Miami-Dade + statewide cadastral FL, and growing monthly. 3.58M properties indexed today.',
+          },
+        ]}
+      />
 
       {/* ── BOTTOM CTA ─────────────────────────────────────────────── */}
       <section

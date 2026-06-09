@@ -176,8 +176,43 @@ export default function PropertyTicker() {
   const tierColor = property.pedigree_tier ? TIER_BG[property.pedigree_tier] : 'linear-gradient(135deg, #475569 0%, #334155 100%)';
   const slug = `${property.address?.toLowerCase().replace(/\s+/g, '-')}`;
 
+  // Schema.org Residence — AEO + SEO: tells AI engines and Google what this page is.
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type':    property.has_provenance_dossier ? 'SingleFamilyResidence' : 'Residence',
+    name:       property.address,
+    identifier: { '@type': 'PropertyValue', propertyID: 'APN', value: property.apn },
+    address: {
+      '@type':           'PostalAddress',
+      streetAddress:     property.address,
+      addressLocality:   property.city,
+      addressRegion:     property.state,
+      postalCode:        property.zip,
+      addressCountry:    'US',
+    },
+    ...(property.beds       ? { numberOfRooms:   property.beds } : {}),
+    ...(property.sqft       ? { floorSize:       { '@type': 'QuantitativeValue', value: property.sqft, unitCode: 'FTK' } } : {}),
+    ...(property.year_built ? { yearBuilt:       property.year_built } : {}),
+    ...(headlineValue       ? { estimatedValue:  { '@type': 'PropertyValue', name: 'PropertyDNA estimated value', value: headlineValue, unitCode: 'USD' } } : {}),
+    ...(property.architect_attribution ? {
+      architect: {
+        '@type': 'Person',
+        name:    property.architect_attribution,
+        ...(property.architect_verified ? { description: 'Verified architect attribution per primary-source archives' } : {}),
+      },
+    } : {}),
+    ...(owners.length > 0 ? {
+      mentions: owners.map(o => ({
+        '@type':       'Person',
+        name:          o.owner_name,
+        ...(o.owner_role ? { jobTitle: o.owner_role } : {}),
+      })),
+    } : {}),
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#e5e7eb', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 80px' }}>
 
         {/* Ticker symbol header (like a stock card) */}

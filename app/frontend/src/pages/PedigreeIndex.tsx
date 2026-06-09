@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import FAQ from '@/components/FAQ';
 
 type Stat = { label: string; count: number; color?: string };
 
@@ -190,6 +191,34 @@ export default function PedigreeIndex() {
           </Link>
         </div>
       </div>
+
+      {/* FAQ — AEO-targeted answers for "Palm Springs architect", "MCM provenance" */}
+      <FAQ
+        eyebrow="The Pedigree Method"
+        title="How the index works"
+        items={[
+          {
+            q: 'How did you pedigree-classify 16,788 Coachella Valley properties?',
+            a: 'We pulled every parcel from the Riverside County Assessor CREST API and Coachella Valley municipal datasets, joined to RentCast and our own property history, then layered three signals: named-neighborhood membership (Movie Colony, Old Las Palmas, Indian Canyons, etc.), MCM-era year built (1947-1979 for the core mid-century window), and architect attribution from primary-source archives. The composite produces the A/B/C/D pedigree tier and a 0-100 provenance score.',
+          },
+          {
+            q: 'What does the provenance score actually measure?',
+            a: 'Provenance score (0-100) is a composite of: documentation completeness (how much of the architect, ownership, and permit chain we can cite from primary sources), source quality (preservation society > newspaper archive > realtor copy), cultural rank (Kaufmann Desert House = 99, a documented Krisel tract home in a named neighborhood = 75), and rarity. Scores update as new sources are verified.',
+          },
+          {
+            q: 'Which architects are documented?',
+            a: 'Eleven, with the heaviest coverage on the Palm Springs canon: John Lautner (8 verified PS commissions), Albert Frey (47), Richard Neutra (12), William Krisel (extensive tract attribution), E. Stewart Williams (Sinatra Twin Palms among others), Donald Wexler, Hugh Kaptur, William F. Cody, Howard Lapham, Walter S. White, Charles DuBois. Each architect has a profile page with their full PS portfolio and primary-source registry.',
+          },
+          {
+            q: 'Is this index just Palm Springs?',
+            a: 'The pedigree index is currently Coachella Valley — 16,788 properties across Palm Springs, Rancho Mirage, Cathedral City, Palm Desert, La Quinta, and surrounding cities. PropertyDNA itself indexes 3.58M properties nationwide. Expansion of the pedigree layer to Malibu, Paradise Valley, Palm Beach, Miami-Dade luxury, and Greenwich is on the roadmap.',
+          },
+          {
+            q: 'Why does pedigree matter for value?',
+            a: 'Pedigreed homes trade at documented premiums to unattributed peers (8-15% on architect-verified, more on celebrity-owned). Pedigree also accelerates resale — when an estate trust needs documented value, when an appraiser needs comp justification, or when a listing agent needs to defend price. PropertyDNA exists to make that documentation citable.',
+          },
+        ]}
+      />
     </div>
   );
 }
