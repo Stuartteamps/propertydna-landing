@@ -59,23 +59,31 @@ export default function About() {
               className="font-serif font-light text-canvas leading-[1.05] mb-10"
               style={{ fontSize: 'clamp(40px, 6vw, 80px)', letterSpacing: '-1.5px' }}
             >
-              We believe data
+              We exist to defend
               <br />
-              should tell the <em className="italic text-gold">whole truth.</em>
+              the <em className="italic text-gold">homebuyer.</em>
             </h1>
             <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70 mb-6">
-              PropertyDNA was founded on a simple principle: every property carries a genetic
-              fingerprint — a combination of structural, environmental, and market signals that,
-              when decoded, reveals its true character and value.
+              For sixty years residential real estate has been defined by a single structural
+              imbalance: the agent on the other side of the transaction has the data, and the
+              buyer does not. They know the comparable velocity. The permit history. The seller's
+              motivation. You — the person putting up the largest check of your life — get a
+              glossy PDF and a smile.
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70 mb-6">
-              Traditional valuation tools flatten this complexity into a single number and hope for
-              the best. We don't. Our platform sequences every attribute that matters, cross-checks
-              against 3.58M historical records, and returns a report that any professional can
-              defend in front of a committee.
+              PropertyDNA was built to end that imbalance. We sequence every attribute that
+              matters — valuation, permit history, comparable trajectory, FEMA flood, CalFire
+              wildfire, USGS seismic, county tax record — and we name our sources. Every metric
+              is mathematically derivable. No black boxes.
+            </p>
+            <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70 mb-6">
+              The iOS app is 100% free for every American buyer, with every feature unlocked.
+              Real estate professionals pay for power tools on the web. The agents and the funds
+              fund the consumer mission. We refuse to monetize the people we are trying to protect.
             </p>
             <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70">
-              Built for investors, lenders, and analysts who refuse to guess.
+              We are not a real estate company. We are a buyer-protection company that happens to
+              know real estate.
             </p>
           </FadeUp>
         </div>
