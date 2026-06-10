@@ -8,7 +8,7 @@
 
 > The iOS app is live — free for every buyer, every feature unlocked.
 >
-> Download: https://apps.apple.com/app/id6768064079
+> Download: https://apps.apple.com/app/id6768064079?ct=manychat&mt=8
 >
 > Reply VERIFIED if you want our verified luxury dossier list (Greenwich, Palm Springs, Miami).
 >
@@ -24,7 +24,7 @@
 >
 > 1.67M parcels indexed in Coachella Valley, Riverside, San Diego, Miami-Dade, Broward, Greenwich, New Canaan, Westport, Darien, Westchester NY.
 >
-> Get it: https://apps.apple.com/app/id6768064079
+> Get it: https://apps.apple.com/app/id6768064079?ct=manychat&mt=8
 
 ---
 
@@ -55,7 +55,7 @@ Send window: Launch Day +24h
 
 > The iOS app is live. The data your agent does not want you to see — free in your pocket.
 >
-> Download: https://apps.apple.com/app/id6768064079
+> Download: https://apps.apple.com/app/id6768064079?ct=manychat&mt=8
 >
 > Reply DEFEND if you want the launch press release sent to your inbox.
 

@@ -1,6 +1,6 @@
 # PropertyDNA iOS Launch — Social Copy Library
 
-App Store: https://apps.apple.com/app/id6768064079
+App Store: https://apps.apple.com/app/id6768064079?ct=launch_social&mt=8
 Web: https://thepropertydna.com
 Launch hub: https://thepropertydna.com/launch
 Press release: https://thepropertydna.com/press/ios-launch
@@ -16,7 +16,7 @@ PropertyDNA is live on the App Store today.
 
 Valuation. Risk. Permit history. 5-year trajectory. Every metric mathematically derivable from a named source. No subscription. No upsells. No tracking.
 
-→ https://apps.apple.com/app/id6768064079
+→ https://apps.apple.com/app/id6768064079?ct=launch_social&mt=8
 
 ### Post 2 — The Stat Hit
 1.67M parcels.
@@ -27,7 +27,7 @@ Today.
 
 The institutional terminal you could never afford is now in your pocket.
 
-→ https://apps.apple.com/app/id6768064079
+→ https://apps.apple.com/app/id6768064079?ct=launch_social&mt=8
 
 ### Post 3 — The Mission Frame
 Real estate agents are paid as a % of the deal closing.
@@ -46,7 +46,7 @@ We exist to end that.
 
 PropertyDNA is now free on iOS — every American, every feature, no subscription.
 
-→ https://apps.apple.com/app/id6768064079
+→ https://apps.apple.com/app/id6768064079?ct=launch_social&mt=8
 
 ---
 
@@ -65,7 +65,7 @@ Every metric is traceable to a named public source: RentCast MLS, US Census ACS,
 
 The iOS app is 100% free with every feature unlocked. No in-app purchases, no subscriptions, no upsells, no advertising. Real estate professionals pay for power tools on the web — that funds the consumer mission.
 
-Download free on iOS: https://apps.apple.com/app/id6768064079
+Download free on iOS: https://apps.apple.com/app/id6768064079?ct=launch_social&mt=8
 
 ---
 
@@ -100,7 +100,7 @@ PropertyDNA is now free on the Apple App Store — full institutional-grade prop
 
 No subscription. No upsells. No tracking. Every feature unlocked.
 
-Get the app: https://apps.apple.com/app/id6768064079
+Get the app: https://apps.apple.com/app/id6768064079?ct=launch_social&mt=8
 Learn the story: https://thepropertydna.com/launch
 
 ---
@@ -127,7 +127,7 @@ Every report includes:
 
 The iOS app is 100% free. No in-app purchases, no subscription, no upsells, no ads, no tracking. We monetize by selling power tools to real estate pros on the web — that subsidizes the free consumer mission.
 
-App Store: https://apps.apple.com/app/id6768064079
+App Store: https://apps.apple.com/app/id6768064079?ct=launch_social&mt=8
 
 Happy to answer any questions about how we built it, what data sources we use, why the iOS app is free, and what you should be checking before signing an offer.
 

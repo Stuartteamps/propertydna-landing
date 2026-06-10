@@ -1,8 +1,16 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { isNative } from '@/lib/nativeFeatures';
 
 const DISMISS_KEY = 'pdna_app_banner_dismissed_v1';
-const APP_STORE_URL = 'https://apps.apple.com/app/id6768064079';
+const APP_STORE_URL = 'https://apps.apple.com/app/id6768064079?ct=web_banner';
+
+// Routes where the banner would be intrusive (in-app workflows, report viewing,
+// admin tools). Banner suppressed on these.
+const SUPPRESSED_PREFIXES = [
+  '/report', '/dashboard', '/admin', '/outreach',
+  '/auth/', '/saved-reports', '/analyze',
+];
 
 function detectPlatform(): 'ios' | 'android' | 'other' {
   if (typeof navigator === 'undefined') return 'other';
@@ -16,6 +24,7 @@ function detectPlatform(): 'ios' | 'android' | 'other' {
 // This component covers everyone else: Chrome on iOS, Android, and desktop —
 // a dismissable sticky bar that pushes the App Store install.
 export default function AppStoreBanner() {
+  const location = useLocation();
   const [visible, setVisible] = useState(false);
   const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other');
 
@@ -28,7 +37,8 @@ export default function AppStoreBanner() {
     if (!dismissed) setVisible(true);
   }, []);
 
-  if (!visible || isNative()) return null;
+  const suppressed = SUPPRESSED_PREFIXES.some(p => location.pathname.startsWith(p));
+  if (!visible || isNative() || suppressed) return null;
 
   const dismiss = () => {
     try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* localStorage unavailable */ }

@@ -17,6 +17,7 @@ const navLinks = [
   { label: 'Analyze',  href: '/analyze' },
   { label: 'Dossiers', href: '/dossiers' },
   { label: 'Heat Map', href: '/market-heatmaps' },
+  { label: 'iOS App',  href: '/launch' },
   { label: 'About',    href: '/about' },
 ];
 

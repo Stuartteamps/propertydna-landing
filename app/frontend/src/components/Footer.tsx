@@ -55,6 +55,7 @@ const SOCIAL = [
 ];
 
 const links = [
+  { label: 'iOS App',         href: '/launch' },
   { label: 'Analyze',         href: '/analyze' },
   { label: 'Luxury Index',    href: '/pedigree-index' },
   { label: 'Inventory',       href: '/luxury-inventory' },
@@ -64,6 +65,7 @@ const links = [
   { label: 'Pricing',         href: '/pricing' },
   { label: 'About',           href: '/about' },
   { label: 'Press',           href: '/press' },
+  { label: 'Launch Story',    href: '/press/ios-launch' },
   { label: 'Contact',         href: '/contact' },
   { label: 'Privacy',         href: '/privacy' },
 ];
