@@ -58,6 +58,18 @@ type Owner = {
   notable_events?: any[] | null;
 };
 
+type Peer = {
+  apn: string;
+  address?: string | null;
+  city?: string | null;
+  pedigree_tier?: string | null;
+  provenance_score?: number | null;
+  architect_attribution?: string | null;
+  tax_assessed_value?: number | null;
+  rentcast_value?: number | null;
+  sqft?: number | null;
+};
+
 const TIER_BG: Record<string, string> = {
   A: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
   B: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
@@ -111,6 +123,7 @@ export default function PropertyTicker() {
   const [property, setProperty] = useState<Property | null>(null);
   const [history, setHistory]   = useState<HistEvent[]>([]);
   const [owners, setOwners]     = useState<Owner[]>([]);
+  const [peers, setPeers]       = useState<Peer[]>([]);
   const [loading, setLoading]   = useState(true);
   const [missing, setMissing]   = useState(false);
 
@@ -129,6 +142,45 @@ export default function PropertyTicker() {
       setHistory((h.data || []) as HistEvent[]);
       setOwners((o.data || []) as Owner[]);
       setLoading(false);
+
+      // "Same Industry" peers — like related stocks. Strategy:
+      // 1. If has a named pedigree neighborhood, peers = same hood, top by score.
+      // 2. Else if has a pedigree tier, peers = same city + same tier.
+      // 3. Else, peers = same city + similar sqft (±25%).
+      (async () => {
+        const prop = p.data as Property;
+        let peersQ;
+        if (prop.pedigree_neighborhood) {
+          peersQ = supabase.from('property_master')
+            .select('apn,address,city,pedigree_tier,provenance_score,architect_attribution,tax_assessed_value,rentcast_value,sqft')
+            .eq('pedigree_neighborhood', prop.pedigree_neighborhood)
+            .neq('apn', prop.apn)
+            .order('provenance_score', { ascending: false, nullsFirst: false })
+            .limit(6);
+        } else if (prop.pedigree_tier) {
+          peersQ = supabase.from('property_master')
+            .select('apn,address,city,pedigree_tier,provenance_score,architect_attribution,tax_assessed_value,rentcast_value,sqft')
+            .eq('pedigree_tier', prop.pedigree_tier)
+            .eq('city', prop.city || '')
+            .neq('apn', prop.apn)
+            .order('provenance_score', { ascending: false, nullsFirst: false })
+            .limit(6);
+        } else if (prop.sqft && prop.city) {
+          const lo = Math.floor(prop.sqft * 0.75);
+          const hi = Math.ceil(prop.sqft * 1.25);
+          peersQ = supabase.from('property_master')
+            .select('apn,address,city,pedigree_tier,provenance_score,architect_attribution,tax_assessed_value,rentcast_value,sqft')
+            .eq('city', prop.city)
+            .gte('sqft', lo)
+            .lte('sqft', hi)
+            .neq('apn', prop.apn)
+            .limit(6);
+        }
+        if (peersQ) {
+          const { data } = await peersQ;
+          setPeers((data || []) as Peer[]);
+        }
+      })();
 
       // SEO/AEO: meta + JSON-LD
       const addr = p.data.address ? `${p.data.address}, ${p.data.city || ''}` : `APN ${apn}`;
@@ -334,6 +386,58 @@ export default function PropertyTicker() {
               ))}
             </div>
             {history.length > 10 && <div style={{ fontSize: 12, color: '#64748b', marginTop: 8 }}>{history.length - 10} more events on file (full timeline in the DNA report)</div>}
+          </section>
+        )}
+
+        {/* "Same Industry" peer comps — Yahoo-Finance-for-real-estate flow */}
+        {peers.length > 0 && (
+          <section style={{ marginBottom: 36 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14, gap: 12, flexWrap: 'wrap' }}>
+              <h2 style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700, margin: 0 }}>
+                Same Industry — Peer Comps
+              </h2>
+              <span style={{ fontSize: 11, color: '#64748b', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                {property.pedigree_neighborhood ? `Neighborhood: ${property.pedigree_neighborhood}` : property.pedigree_tier ? `Tier ${property.pedigree_tier} · ${property.city}` : `Similar size · ${property.city}`}
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
+              {peers.map(pp => {
+                const val = pp.rentcast_value ?? pp.tax_assessed_value ?? null;
+                const tier = pp.pedigree_tier || '';
+                const tierAccent = tier === 'A' ? '#fbbf24' : tier === 'B' ? '#a78bfa' : tier === 'C' ? '#60a5fa' : tier === 'D' ? '#34d399' : '#475569';
+                return (
+                  <Link key={pp.apn} to={`/ticker/${pp.apn}`} style={{
+                    display: 'block', background: '#111827', padding: 16, borderRadius: 6,
+                    textDecoration: 'none', color: '#e5e7eb', borderLeft: `3px solid ${tierAccent}`,
+                    transition: 'transform 0.15s, background 0.15s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#1a2332'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#111827'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color: tierAccent, textTransform: 'uppercase' }}>
+                        {tier ? `Tier ${tier}` : 'Peer'}{pp.provenance_score != null ? ` · ${pp.provenance_score}/100` : ''}
+                      </span>
+                      {val != null && (
+                        <span style={{ fontSize: 13, color: '#fbbf24', fontWeight: 600 }}>{fmtMoney(val)}</span>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: 'Georgia, serif', fontSize: 15, color: '#fafafa', lineHeight: 1.3 }}>
+                      {pp.address || `APN ${pp.apn}`}
+                    </div>
+                    {pp.architect_attribution && (
+                      <div style={{ fontSize: 11, color: '#fbbf24', fontStyle: 'italic', marginTop: 6 }}>{pp.architect_attribution}</div>
+                    )}
+                    {pp.sqft && (
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{pp.sqft.toLocaleString()} sqft</div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 10 }}>
+              Click any peer to open its ticker. Comps update as the underlying data refreshes.
+            </div>
           </section>
         )}
 
