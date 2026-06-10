@@ -50,6 +50,9 @@ import SavedReports from "./pages/SavedReports";
 import NotFound from "./pages/NotFound";
 import NativeBottomNav from "@/components/NativeBottomNav";
 import OfflineBanner from "@/components/OfflineBanner";
+import AppStoreBanner from "@/components/AppStoreBanner";
+import Launch from "./pages/Launch";
+import IOSLaunchPress from "./pages/IOSLaunchPress";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +106,10 @@ const AppRoutes = () => (
     <Route path="/privacy" element={<Privacy />} />
     <Route path="/waitlist" element={<Waitlist />} />
     <Route path="/saved-reports" element={<SavedReports />} />
+    <Route path="/launch" element={<Launch />} />
+    <Route path="/ios" element={<Launch />} />
+    <Route path="/app" element={<Launch />} />
+    <Route path="/press/ios-launch" element={<IOSLaunchPress />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
@@ -116,6 +123,7 @@ const App = () => (
           <OfflineBanner />
           <AppRoutes />
           <NativeBottomNav />
+          <AppStoreBanner />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

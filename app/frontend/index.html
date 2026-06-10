@@ -8,6 +8,11 @@
     <meta name="description" content="PropertyDNA delivers institutional-grade property intelligence — valuations, risk profiles, permit history, and neighborhood analytics for every home." />
     <meta name="author" content="PropertyDNA" />
 
+    <!-- Apple Smart App Banner — Safari iOS shows native "Get the App" banner -->
+    <meta name="apple-itunes-app" content="app-id=6768064079, app-argument=https://thepropertydna.com" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="PropertyDNA" />
+
     <!-- Google Analytics — bot + email-scanner suppression -->
     <script>
       (function() {
@@ -53,32 +58,100 @@
     <meta name="twitter:description" content="Institutional-grade property intelligence. Valuations, risk profiles, permit history, and neighborhood analytics for every home." />
     <meta name="twitter:image" content="https://thepropertydna.com/og-image.png" />
 
-    <!-- Google / Search structured data -->
+    <!-- AEO / Search structured data — feeds Google AI Overviews, Perplexity, ChatGPT, Claude -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "PropertyDNA",
-      "url": "https://thepropertydna.com",
-      "description": "Institutional-grade property intelligence platform. AI-powered valuations, risk profiles, permit history, market trends, and neighborhood analytics.",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": [
-        { "@type": "Offer", "name": "Single Report", "price": "4.99", "priceCurrency": "USD" },
-        { "@type": "Offer", "name": "Pro Monthly", "price": "49.00", "priceCurrency": "USD", "billingIncrement": "Month" }
-      ],
-      "provider": {
-        "@type": "Organization",
-        "name": "PropertyDNA",
-        "url": "https://thepropertydna.com",
-        "sameAs": [
-          "https://www.instagram.com/thepropertydna",
-          "https://www.facebook.com/thepropertydna",
-          "https://www.linkedin.com/company/thepropertydna",
-          "https://www.youtube.com/@thepropertydna",
-          "https://x.com/thepropertydna"
-        ]
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://thepropertydna.com/#org",
+          "name": "PropertyDNA",
+          "url": "https://thepropertydna.com",
+          "logo": "https://thepropertydna.com/og-image.png",
+          "description": "PropertyDNA exists to defend homebuyers and homeowners from the information asymmetry that real estate agents have weaponized for decades. We give every American Bloomberg-grade intelligence on the single largest purchase of their lives — for free.",
+          "foundingDate": "2026-04-01",
+          "sameAs": [
+            "https://www.instagram.com/thepropertydna",
+            "https://www.facebook.com/thepropertydna",
+            "https://www.linkedin.com/company/thepropertydna",
+            "https://www.youtube.com/@thepropertydna",
+            "https://x.com/thepropertydna"
+          ]
+        },
+        {
+          "@type": "MobileApplication",
+          "name": "PropertyDNA",
+          "applicationCategory": "Real Estate",
+          "operatingSystem": "iOS 17",
+          "url": "https://apps.apple.com/app/id6768064079",
+          "downloadUrl": "https://apps.apple.com/app/id6768064079",
+          "softwareVersion": "1.0",
+          "description": "Free iOS app delivering institutional-grade property intelligence — valuations, risk profiles, permit history, flood and wildfire exposure, school ratings, and 5-year value trajectories on 1.67 million+ indexed parcels.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0.00",
+            "priceCurrency": "USD"
+          },
+          "publisher": { "@id": "https://thepropertydna.com/#org" }
+        },
+        {
+          "@type": "WebSite",
+          "url": "https://thepropertydna.com",
+          "name": "PropertyDNA",
+          "publisher": { "@id": "https://thepropertydna.com/#org" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://thepropertydna.com/analyze?address={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is PropertyDNA free for homebuyers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. The PropertyDNA iOS app is 100% free for homebuyers and homeowners. Every feature — valuation, risk analysis, permit history, comparable sales, neighborhood scoring — is unlocked at no charge. There are no in-app purchases, no subscriptions, and no upsells in the iOS app."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How is PropertyDNA different from Zestimate or Realtor.com?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Zestimate and Realtor.com show price estimates only. PropertyDNA delivers institutional-grade intelligence — permit history, FEMA flood zones, CalFire wildfire severity zones, USGS seismic exposure, school ratings, comparable sales velocity, and a confidence-scored 5-year value trajectory. Every metric is mathematically derivable from a named public data source."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Why is PropertyDNA called 'defending homebuyers from predatory agents'?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Real estate agents are paid as a percentage of transaction value, which structurally biases them toward closing the deal — not toward protecting the buyer's interests. PropertyDNA hands the buyer the same institutional-grade data their agent has access to, eliminating the information asymmetry that lets predatory practices flourish."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What data sources does PropertyDNA use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "RentCast MLS for live listings and valuation, US Census ACS for demographics, FEMA NFHL for flood zones, CalFire FHSZ for wildfire severity, USGS for seismic hazard, county Assessor CREST APIs for permit and renovation history, and the National Weather Service for climate exposure. Every metric is named and traceable."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What markets does PropertyDNA cover?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "1.67 million+ parcels across the entire Coachella Valley (Palm Springs, Palm Desert, La Quinta, Indio, Rancho Mirage, Cathedral City, Desert Hot Springs, Indian Wells, Coachella), Riverside and San Diego counties, Miami-Dade and Broward counties in Florida, the Connecticut tri-state luxury corridor (Greenwich, New Canaan, Westport, Darien), and Westchester County in New York."
+              }
+            }
+          ]
+        }
+      ]
     }
     </script>
 
