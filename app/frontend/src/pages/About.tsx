@@ -81,9 +81,20 @@ export default function About() {
               Real estate professionals pay for power tools on the web. The agents and the funds
               fund the consumer mission. We refuse to monetize the people we are trying to protect.
             </p>
-            <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70">
+            <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70 mb-6">
               We are not a real estate company. We are a buyer-protection company that happens to
               know real estate.
+            </p>
+            <p className="font-sans text-[16px] font-light leading-[1.9] text-canvas/70">
+              <strong className="text-canvas">A note on how this was built.</strong> PropertyDNA was
+              architected, written, and shipped to the App Store by Daniel Stuart in partnership
+              with <em className="text-gold">IntellaGraph AI</em> — a Claude-powered autonomous
+              engineering partner that wrote production code, ran the data indexers across 3.58M
+              parcels, handled the App Store submission cycle, and authored the AEO-optimized
+              content layer. Hundreds of thousands of lines of shipped code. One human founder.
+              One AI partner working alongside him. The mission is the same either way: hand the
+              buyer the data the agent has, and refuse to monetize the person we're trying to
+              protect.
             </p>
           </FadeUp>
         </div>
