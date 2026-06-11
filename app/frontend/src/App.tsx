@@ -54,6 +54,7 @@ import AppStoreBanner from "@/components/AppStoreBanner";
 import Launch from "./pages/Launch";
 import IOSLaunchPress from "./pages/IOSLaunchPress";
 import CityLanding from "./pages/CityLanding";
+import Battlefield from "./pages/Battlefield";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,8 @@ const AppRoutes = () => (
     <Route path="/app" element={<Launch />} />
     <Route path="/press/ios-launch" element={<IOSLaunchPress />} />
     <Route path="/coverage/:slug" element={<CityLanding />} />
+    <Route path="/battlefield" element={<Battlefield />} />
+    <Route path="/predatory" element={<Battlefield />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
