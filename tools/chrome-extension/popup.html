@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PropertyDNA</title>
+  <style>
+    body {
+      margin: 0; padding: 24px;
+      width: 320px;
+      background: #0A0908;
+      color: #F4F0E8;
+      font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .brand-mark { width: 22px; height: 22px; border: 1px solid #C9A84C; display: flex; align-items: center; justify-content: center; }
+    .brand-name { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #C9A84C; font-weight: 500; }
+    h1 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 300; line-height: 1.15; margin: 0 0 8px; color: #F4F0E8; }
+    .tagline { color: rgba(244,240,232,0.55); margin-bottom: 18px; font-size: 12px; }
+    .row { display: flex; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; }
+    .row svg { flex-shrink: 0; }
+    .cta {
+      display: block; margin-top: 18px;
+      padding: 12px 18px; text-align: center;
+      background: #C9A84C; color: #0F0E0D; text-decoration: none;
+      font-size: 10px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase;
+    }
+    .cta:hover { background: #cfa366; }
+    .cta-secondary { background: transparent; color: #C9A84C; border: 1px solid rgba(201,168,76,0.4); margin-top: 8px; }
+    .cta-secondary:hover { background: rgba(201,168,76,0.08); }
+    .input { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #F4F0E8; font-family: 'Jost', sans-serif; font-size: 13px; box-sizing: border-box; margin-bottom: 8px; }
+    .input:focus { outline: none; border-color: rgba(201,168,76,0.5); }
+    .footer { margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 10px; color: rgba(244,240,232,0.4); letter-spacing: 1px; text-align: center; }
+    .footer a { color: #C9A84C; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="brand">
+    <span class="brand-mark">
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+        <rect x="1" y="1" width="12" height="12" stroke="#C9A84C"/>
+        <line x1="7" y1="1" x2="7" y2="13" stroke="#C9A84C" stroke-width="0.75"/>
+        <line x1="1" y1="7" x2="13" y2="7" stroke="#C9A84C" stroke-width="0.75"/>
+      </svg>
+    </span>
+    <span class="brand-name">PropertyDNA</span>
+  </div>
+
+  <h1>The data your agent doesn't want you to see.</h1>
+  <div class="tagline">Browse Zillow or Redfin — DNA score appears automatically.</div>
+
+  <form id="search-form">
+    <input id="search-input" class="input" placeholder="Or scan any address now…" autocomplete="off" />
+    <a id="search-cta" class="cta" href="#">Run free DNA report →</a>
+  </form>
+
+  <a class="cta cta-secondary" href="https://thepropertydna.com/watch" target="_blank">Open my watch list →</a>
+
+  <div class="row">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00cc77" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    <span>3.58M parcels indexed</span>
+  </div>
+  <div class="row">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00cc77" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    <span>Free forever — no account required</span>
+  </div>
+  <div class="row">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00cc77" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    <span>No tracking · No upsells</span>
+  </div>
+
+  <div class="footer">
+    <a href="https://thepropertydna.com" target="_blank">thepropertydna.com</a> · save the humans
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

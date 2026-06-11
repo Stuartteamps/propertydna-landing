@@ -24,6 +24,7 @@ import Contact from "./pages/Contact";
 import ReportPending from "./pages/ReportPending";
 import StripeTest from "./pages/StripeTest";
 import Dashboard from "./pages/Dashboard";
+import WatchList from "./pages/WatchList";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 import CampaignManager from "./pages/admin/CampaignManager";
@@ -96,6 +97,8 @@ const AppRoutes = () => (
     <Route path="/report-pending" element={<ReportPending />} />
     <Route path="/stripe-test"    element={<StripeTest />} />
     <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/watch" element={<WatchList />} />
+    <Route path="/watchlist" element={<WatchList />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
     <Route path="/listings/:region" element={<Listings />} />
