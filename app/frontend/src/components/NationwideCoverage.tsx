@@ -45,11 +45,14 @@ export default function NationwideCoverage() {
             supabase.from('property_master')
               .select('apn', { count: 'exact', head: true })
               .eq('state', m.state)
-              .then(r => ({ ...m, count: r.count ?? m.fallback }))
+              // Important: use fallback when count is 0, null, OR undefined.
+              // RLS issues can return count=0 silently; never let 0 overwrite a
+              // known fallback (we have 3.58M parcels in the DB; 0 is always wrong).
+              .then(r => ({ ...m, count: r.count && r.count > 0 ? r.count : m.fallback }))
           )
         );
         setData(results);
-        setTotal(results.reduce((s, r) => s + (r.count ?? r.fallback), 0));
+        setTotal(results.reduce((s, r) => s + (r.count && r.count > 0 ? r.count : r.fallback), 0));
         setLoaded(true);
       } catch {
         setLoaded(true);

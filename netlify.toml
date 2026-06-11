@@ -109,6 +109,20 @@
   schedule = "*/15 * * * *"
   timeout = 30
 
+# Daily 13:00 UTC = 6 AM PDT. Re-pulls DNA score + estimated value for
+# every watched property; emails users when score or value moves beyond
+# their per-property threshold. Idempotent — 20h cooldown per property.
+[functions."watch-list-diff"]
+  schedule = "0 13 * * *"
+  timeout = 60
+
+# Twice daily 14:00 + 22:00 UTC = 6 AM PDT + 2 PM PDT. Scans 5 high-value
+# subreddits for homebuyer-intent keywords. Surfaces matches to Dan with
+# a suggested reply. Dan posts manually for authenticity.
+[functions."reddit-monitor"]
+  schedule = "0 14,22 * * *"
+  timeout = 60
+
 # Apple Universal Links — must NOT be SPA-redirected, must have correct Content-Type
 [[redirects]]
   from = "/.well-known/apple-app-site-association"

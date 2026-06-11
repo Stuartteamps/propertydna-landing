@@ -78,10 +78,12 @@ export default function LuxuryInventory() {
         )
       );
       setTierCounts({
-        A: tA.count ?? TIER_SEED.A,
-        B: tB.count ?? TIER_SEED.B,
-        C: tC.count ?? TIER_SEED.C,
-        D: tD.count ?? TIER_SEED.D,
+        // Fall back to seed when count is 0, null, or undefined — RLS / cold-cache
+        // edge cases can silently return 0 even though the data exists.
+        A: tA.count && tA.count > 0 ? tA.count : TIER_SEED.A,
+        B: tB.count && tB.count > 0 ? tB.count : TIER_SEED.B,
+        C: tC.count && tC.count > 0 ? tC.count : TIER_SEED.C,
+        D: tD.count && tD.count > 0 ? tD.count : TIER_SEED.D,
       });
       setCountsLoaded(true);
 

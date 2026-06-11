@@ -37,10 +37,11 @@ export default function PedigreeIndex() {
         supabase.from('property_master').select('apn', { count: 'exact', head: true }).eq('pedigree_tier', t)
       ));
       setTierStats([
-        { label: 'A — Verified Dossier',        count: tierResults[0].count ?? 50,    color: TIER_COLOR.A },
-        { label: 'B — Top Hood + MCM Era',       count: tierResults[1].count ?? 1322,  color: TIER_COLOR.B },
-        { label: 'C — Named / MCM-Era',           count: tierResults[2].count ?? 5134,  color: TIER_COLOR.C },
-        { label: 'D — Mid-Century Provenance',    count: tierResults[3].count ?? 10282, color: TIER_COLOR.D },
+        // Never let count=0 overwrite a known fallback (silent RLS / cold-cache failure).
+        { label: 'A — Verified Dossier',        count: tierResults[0].count && tierResults[0].count > 0 ? tierResults[0].count : 50,    color: TIER_COLOR.A },
+        { label: 'B — Top Hood + MCM Era',       count: tierResults[1].count && tierResults[1].count > 0 ? tierResults[1].count : 1322,  color: TIER_COLOR.B },
+        { label: 'C — Named / MCM-Era',           count: tierResults[2].count && tierResults[2].count > 0 ? tierResults[2].count : 5134,  color: TIER_COLOR.C },
+        { label: 'D — Mid-Century Provenance',    count: tierResults[3].count && tierResults[3].count > 0 ? tierResults[3].count : 10282, color: TIER_COLOR.D },
       ]);
 
       const hoodResults = await Promise.all(NEIGHBORHOODS.map(h =>

@@ -62,9 +62,10 @@ export default function Dossiers() {
       ]);
 
       setStats({
-        verifiedDossiers: dossierCount.count ?? 92,
-        architects:       archCount.count    ?? 38,
-        totalIndexed:     totalCount.count   ?? 16788,
+        // Never let count=0 overwrite a known fallback.
+        verifiedDossiers: dossierCount.count && dossierCount.count > 0 ? dossierCount.count : 92,
+        architects:       archCount.count    && archCount.count    > 0 ? archCount.count    : 38,
+        totalIndexed:     totalCount.count   && totalCount.count   > 0 ? totalCount.count   : 16788,
         topNeighborhoods: 13,
       });
       setFeatured((top.data as Dossier[]) || []);
