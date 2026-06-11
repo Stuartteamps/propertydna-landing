@@ -43,11 +43,15 @@ function fmtMoney(n?: number | null) {
   return `$${n}`;
 }
 
+// Known CV tier counts used as placeholders until Supabase responds
+const TIER_SEED: Record<string, number> = { A: 50, B: 1322, C: 5134, D: 10282 };
+
 export default function LuxuryInventory() {
   const [rows, setRows] = useState<InventoryRow[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [neighborhoodCounts, setNeighborhoodCounts] = useState<Record<string, number>>({});
-  const [tierCounts, setTierCounts] = useState<Record<string, number>>({});
+  const [tierCounts, setTierCounts] = useState<Record<string, number>>(TIER_SEED);
+  const [countsLoaded, setCountsLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -73,7 +77,13 @@ export default function LuxuryInventory() {
           supabase.from('property_master').select('apn', { count: 'exact', head: true }).eq('pedigree_tier', t)
         )
       );
-      setTierCounts({ A: tA.count || 0, B: tB.count || 0, C: tC.count || 0, D: tD.count || 0 });
+      setTierCounts({
+        A: tA.count ?? TIER_SEED.A,
+        B: tB.count ?? TIER_SEED.B,
+        C: tC.count ?? TIER_SEED.C,
+        D: tD.count ?? TIER_SEED.D,
+      });
+      setCountsLoaded(true);
 
       const hoodResults = await Promise.all(
         NEIGHBORHOODS.map(h =>

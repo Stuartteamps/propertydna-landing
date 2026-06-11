@@ -35,7 +35,7 @@ const MARKETS: Market[] = [
 export default function NationwideCoverage() {
   const [data, setData] = useState<Market[]>(MARKETS);
   const [total, setTotal] = useState<number>(MARKETS.reduce((s, m) => s + m.fallback, 0));
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(true); // show fallback numbers immediately; update on resolve
 
   useEffect(() => {
     (async () => {
