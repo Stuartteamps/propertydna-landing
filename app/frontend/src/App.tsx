@@ -26,6 +26,8 @@ import StripeTest from "./pages/StripeTest";
 import Dashboard from "./pages/Dashboard";
 import WatchList from "./pages/WatchList";
 import Methodology from "./pages/Methodology";
+import BuyerProtection from "./pages/BuyerProtection";
+import AdminSocialOauth from "./pages/admin/SocialOauth";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 import CampaignManager from "./pages/admin/CampaignManager";
@@ -102,6 +104,10 @@ const AppRoutes = () => (
     <Route path="/watchlist" element={<WatchList />} />
     <Route path="/methodology" element={<Methodology />} />
     <Route path="/how" element={<Methodology />} />
+    <Route path="/buyer-protection" element={<BuyerProtection />} />
+    <Route path="/letter" element={<BuyerProtection />} />
+    <Route path="/admin/oauth" element={<AdminSocialOauth />} />
+    <Route path="/admin/social" element={<AdminSocialOauth />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
     <Route path="/listings/:region" element={<Listings />} />
