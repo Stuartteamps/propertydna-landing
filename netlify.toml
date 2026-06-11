@@ -100,6 +100,15 @@
   schedule = "0 * * * *"
   timeout = 60
 
+# Every 15 min — YouTube engagement automation. Scans new comments on the
+# PropertyDNA channel, classifies intent (scan request / app question /
+# agent grievance / general question), auto-replies with the right CTA,
+# forwards scan requests to Dan's inbox. Skips gracefully if no YouTube
+# OAuth token is wired yet.
+[functions."youtube-engagement"]
+  schedule = "*/15 * * * *"
+  timeout = 30
+
 # Apple Universal Links — must NOT be SPA-redirected, must have correct Content-Type
 [[redirects]]
   from = "/.well-known/apple-app-site-association"
