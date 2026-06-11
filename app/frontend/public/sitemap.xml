@@ -2227,4 +2227,18 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- City coverage landing pages (programmatic SEO) — 2026-06-09 -->
+  <url><loc>https://www.thepropertydna.com/coverage/palm-springs-ca</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/palm-desert-ca</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/la-quinta-ca</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/indio-ca</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/rancho-mirage-ca</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/greenwich-ct</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/new-canaan-ct</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/westport-ct</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/darien-ct</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/miami-fl</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/fort-lauderdale-fl</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.thepropertydna.com/coverage/westchester-ny</loc><lastmod>2026-06-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+
 </urlset>
