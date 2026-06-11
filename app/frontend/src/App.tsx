@@ -28,6 +28,10 @@ import WatchList from "./pages/WatchList";
 import Methodology from "./pages/Methodology";
 import BuyerProtection from "./pages/BuyerProtection";
 import AdminSocialOauth from "./pages/admin/SocialOauth";
+import ShareStory from "./pages/ShareStory";
+import Accuracy from "./pages/Accuracy";
+import PressKit2 from "./pages/PressKit2";
+import Partners from "./pages/Partners";
 import AuthCallback from "./pages/AuthCallback";
 import AuthError from "./pages/AuthError";
 import CampaignManager from "./pages/admin/CampaignManager";
@@ -108,6 +112,12 @@ const AppRoutes = () => (
     <Route path="/letter" element={<BuyerProtection />} />
     <Route path="/admin/oauth" element={<AdminSocialOauth />} />
     <Route path="/admin/social" element={<AdminSocialOauth />} />
+    <Route path="/share-your-story" element={<ShareStory />} />
+    <Route path="/share-story" element={<ShareStory />} />
+    <Route path="/accuracy" element={<Accuracy />} />
+    <Route path="/press-kit" element={<PressKit2 />} />
+    <Route path="/press" element={<PressKit2 />} />
+    <Route path="/partners" element={<Partners />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
     <Route path="/listings/:region" element={<Listings />} />

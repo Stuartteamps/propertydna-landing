@@ -1,0 +1,49 @@
+# Smithery MCP server config
+# Reference: https://smithery.ai/docs/registry/yaml
+#
+# Smithery is the largest MCP server directory. Once this YAML is committed
+# and the repo URL is submitted at https://smithery.ai/new, the server gets
+# a one-click install page that points users to Claude Desktop / Cursor /
+# Cline configuration.
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      PROPERTYDNA_API_BASE:
+        type: string
+        description: "Override the PropertyDNA API base URL (default: https://thepropertydna.com). Useful for testing against staging."
+        default: "https://thepropertydna.com"
+    required: []
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', '@propertydna/mcp-server'],
+      env: {
+        PROPERTYDNA_API_BASE: config.PROPERTYDNA_API_BASE || 'https://thepropertydna.com'
+      }
+    })
+
+metadata:
+  name: "PropertyDNA"
+  description: "Run DNA reports, find comps, check flood zones, query luxury provenance dossiers from inside your AI. 3.58M-parcel sovereign index across AZ/CA/NV/WA/TX/CT/FL/NY. Free, no account."
+  iconUrl: "https://thepropertydna.com/favicon.png"
+  homepage: "https://thepropertydna.com"
+  repository: "https://github.com/Stuartteamps/propertydna-landing"
+  license: "MIT"
+  author: "PropertyDNA"
+  categories:
+    - "real-estate"
+    - "data"
+    - "valuation"
+    - "risk-intelligence"
+  tags:
+    - "property-intelligence"
+    - "dna-score"
+    - "flood-zone"
+    - "comps"
+    - "luxury"
+    - "off-market"
+    - "anthropic"
+    - "claude"
