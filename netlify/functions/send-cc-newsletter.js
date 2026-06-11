@@ -215,6 +215,13 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <tr><td style="padding:18px 34px;border-bottom:1px solid #e4d8c9;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8d7b67;">
 <table width="100%"><tr><td>The Stuart Team</td><td align="right">${weekLabel}</td></tr></table>
 </td></tr>
+<tr><td style="background:#1f1a15;padding:34px 40px 28px;text-align:center;">
+<div style="display:inline-block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c9a86a;border:1px solid #c9a86a;padding:5px 11px;margin-bottom:18px;">Launched Today &bull; App Store</div>
+<div style="font-family:Georgia,serif;font-size:30px;line-height:1.25;color:#fcfaf7;">The iOS app is live. Free for every buyer. Forever.</div>
+<div style="font-size:15px;line-height:1.6;color:#e4d8c9;padding:14px 0 22px;max-width:480px;margin:0 auto;">1.67M parcels indexed. Every feature unlocked. Download free on iOS.</div>
+<a href="https://apps.apple.com/app/id6768064079?ct=newsletter_launch&amp;mt=8" target="_blank" style="background:#c9a86a;color:#1f1a15;padding:14px 28px;text-decoration:none;font-size:15px;font-weight:bold;letter-spacing:1px;">Download Free on iOS &rarr;</a>
+<div style="padding-top:14px;font-size:12px;color:#9a8671;"><a href="${SITE}/launch" target="_blank" style="color:#c9a86a;text-decoration:underline;">Read the launch story</a></div>
+</td></tr>
 <tr><td><img src="${heroImageUrl}" width="100%" alt="Coachella Valley this week" style="display:block;"></td></tr>
 <tr><td align="center" style="padding:40px 40px 24px;">
 <div style="font-family:Georgia,serif;font-size:38px;">Summer Has Arrived in the Valley</div>
@@ -246,15 +253,15 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <tr><td style="padding:48px 40px 12px;border-top:1px solid #e4d8c9;font-family:Georgia,serif;font-size:28px;color:#1f1a15;text-align:center;">The PropertyDNA App Is Live</td></tr>
 <tr><td style="padding:0 40px 8px;text-align:center;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#9a8671;">The data on YOUR side of the table</td></tr>
 <tr><td style="padding:18px 40px 8px;font-size:16px;line-height:1.8;color:#2c241d;">
-[[FIRSTNAME]], a home is the biggest purchase most humans ever make &mdash; and right now the entire industry is built so that the agent on the <em>other</em> side of the table knows more than you do. Comps cherry-picked to justify the price. Permits never pulled. Flood and fire exposure quietly omitted. We built PropertyDNA to flip that.<br><br>
+[[FIRSTNAME]], comps cherry-picked to justify the price. Permits never pulled. Flood and fire exposure quietly omitted. We built PropertyDNA to flip that.<br><br>
 Now in your pocket: pull a full DNA report on any address in seconds. Real comps. Permit history. Valuation. Risk. The same intel a $1M family-office buyer pays for &mdash; free, on iOS, no agent gatekeeping it.
 </td></tr>
 <tr><td align="center" style="padding:14px 40px 28px;">
-<a href="https://apps.apple.com/us/app/propertydna/id6745688826" target="_blank" style="background:#1f1a15;color:#fff;padding:16px 32px;text-decoration:none;font-size:16px;">Download PropertyDNA on iOS &rarr;</a>
+<a href="https://apps.apple.com/app/id6768064079?ct=newsletter_launch_body&mt=8" target="_blank" style="background:#1f1a15;color:#fff;padding:16px 32px;text-decoration:none;font-size:16px;">Download PropertyDNA on iOS &rarr;</a>
 </td></tr>
 <tr><td style="padding:24px 40px 8px;background:#1f1a15;color:#f4ede4;font-family:Georgia,serif;font-size:22px;">Join the movement &mdash; defend the next buyer</td></tr>
 <tr><td style="padding:8px 40px 28px;background:#1f1a15;color:#e4d8c9;font-size:15px;line-height:1.8;">
-This newsletter exists for one reason: to end the information asymmetry that lets predatory agents win at the buyer's expense. Every week, 7 people unsubscribe. We need 70 to lean in. Here is how you help:
+This newsletter exists for one reason: to end the information asymmetry that lets predatory agents win at the buyer's expense.
 <ol style="padding-left:22px;margin:14px 0 4px;color:#e4d8c9;">
   <li style="margin-bottom:10px;"><strong style="color:#fff;">Download the app</strong> &mdash; so you have the data before you sign a buyer-rep agreement.</li>
   <li style="margin-bottom:10px;"><strong style="color:#fff;">Run a free DNA report</strong> on the address you're watching &mdash; see what your agent isn't telling you.</li>
