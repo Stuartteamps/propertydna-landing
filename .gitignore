@@ -45,3 +45,7 @@ tools/**/*.json
 *.keystore
 android/app/release/
 **/local.properties
+
+# npm tokens — never commit
+.npmrc
+**/.npmrc
