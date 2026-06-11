@@ -197,6 +197,7 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
   // Supabase Storage — keeps imagery up even during a DB/storage incident
   // (Supabase Storage was returning 544/522 during the 2026-05-27/28 outage).
   const cdnImageBase       = `${SITE}/social/newsletter`;
+  const heroImageUrl       = `${cdnImageBase}/latest-hero.jpg`;
   const weatherImageUrl    = `${cdnImageBase}/latest-weather.jpg`;
   const eventImageUrl      = `${cdnImageBase}/latest-events.jpg`;
   const westValleyImageUrl = `${cdnImageBase}/latest-west-valley.jpg`;
@@ -214,12 +215,13 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <tr><td style="padding:18px 34px;border-bottom:1px solid #e4d8c9;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8d7b67;">
 <table width="100%"><tr><td>The Stuart Team</td><td align="right">${weekLabel}</td></tr></table>
 </td></tr>
-<tr><td><img src="https://files.constantcontact.com/5cd96ebd701/1071b613-147b-4079-89fa-195924b75343.png" width="100%" style="display:block;"></td></tr>
+<tr><td><img src="${heroImageUrl}" width="100%" alt="Coachella Valley this week" style="display:block;"></td></tr>
 <tr><td align="center" style="padding:40px 40px 24px;">
-<div style="font-family:Georgia,serif;font-size:38px;">The Stuart Team Weekly</div>
+<div style="font-family:Georgia,serif;font-size:38px;">Summer Has Arrived in the Valley</div>
 <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9a8671;padding-top:10px;">Luxury Real Estate &bull; Market Insight &bull; Desert Lifestyle</div>
 </td></tr>
 <tr><td style="padding:0 60px 16px;font-size:17px;line-height:1.7;color:#2c241d;">Hi [[FIRSTNAME]],</td></tr>
+<tr><td style="padding:0 60px 24px;font-size:16px;line-height:1.8;color:#2c241d;">Mid-June in the desert means the off-season buying window is officially open. Inventory is fuller, sellers are more flexible, and the data shows it &mdash; below, this week's MLS activity, the actual market read, and one new thing you can do <em>today</em> to never get out-negotiated by an agent again.</td></tr>
 <tr><td style="padding:0 60px 6px;font-family:Georgia,serif;font-size:24px;color:#1f1a15;">Coachella Valley Market Snapshot &mdash; ${weekLabel}</td></tr>
 <tr><td style="padding:0 60px 30px;font-size:16px;line-height:1.8;color:#2c241d;">${marketNarrative}</td></tr>
 <tr><td style="padding:0 40px;font-family:Georgia,serif;font-size:26px;">This Week's Weather</td></tr>
@@ -227,7 +229,7 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <a href="https://weather.com/weather/weekend/l/Palm+Springs+California+92264" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Full Forecast</a></td></tr>
 <tr><td style="padding:0 40px 20px;"><img src="${weatherImageUrl}" width="100%" alt="Coachella Valley desert this week" style="display:block;"></td></tr>
 <tr><td style="padding:0 40px;font-family:Georgia,serif;font-size:26px;">Things To Do This Week</td></tr>
-<tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">Pool season is officially here — resort pools light up at sunset, the weekly farmers market continues at Palm Canyon, and outdoor evenings shift to twilight. The valley settles into summer mode.<br><br>
+<tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">Mid-June and the valley has fully exhaled into summer. The VillageFest street fair takes over downtown Palm Canyon Thursday nights, the College of the Desert Street Fair runs Saturday mornings, and resort pool decks &mdash; Parker, Saguaro, Kimpton Rowan &mdash; turn into the de-facto Friday evening scene. Sunrise hikes at the Indian Canyons before the heat is the local move.<br><br>
 <a href="https://visitpalmsprings.com/events/this-weekend/" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">Explore This Week's Events</a></td></tr>
 <tr><td style="padding:0 40px;"><img src="${eventImageUrl}" width="100%" alt="Coachella Valley this week" style="display:block;"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">West Valley New Listings</td></tr>
@@ -241,6 +243,24 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">Recently Sold</td></tr>
 <tr><td style="padding:0 40px 40px;font-size:15px;line-height:1.8;">See what actually sold this week across the valley &mdash; the most accurate read on where the market stands.<br><br>
 <a href="${soldLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Recent Sales</a></td></tr>
+<tr><td style="padding:48px 40px 12px;border-top:1px solid #e4d8c9;font-family:Georgia,serif;font-size:28px;color:#1f1a15;text-align:center;">The PropertyDNA App Is Live</td></tr>
+<tr><td style="padding:0 40px 8px;text-align:center;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#9a8671;">The data on YOUR side of the table</td></tr>
+<tr><td style="padding:18px 40px 8px;font-size:16px;line-height:1.8;color:#2c241d;">
+[[FIRSTNAME]], a home is the biggest purchase most humans ever make &mdash; and right now the entire industry is built so that the agent on the <em>other</em> side of the table knows more than you do. Comps cherry-picked to justify the price. Permits never pulled. Flood and fire exposure quietly omitted. We built PropertyDNA to flip that.<br><br>
+Now in your pocket: pull a full DNA report on any address in seconds. Real comps. Permit history. Valuation. Risk. The same intel a $1M family-office buyer pays for &mdash; free, on iOS, no agent gatekeeping it.
+</td></tr>
+<tr><td align="center" style="padding:14px 40px 28px;">
+<a href="https://apps.apple.com/us/app/propertydna/id6745688826" target="_blank" style="background:#1f1a15;color:#fff;padding:16px 32px;text-decoration:none;font-size:16px;">Download PropertyDNA on iOS &rarr;</a>
+</td></tr>
+<tr><td style="padding:24px 40px 8px;background:#1f1a15;color:#f4ede4;font-family:Georgia,serif;font-size:22px;">Join the movement &mdash; defend the next buyer</td></tr>
+<tr><td style="padding:8px 40px 28px;background:#1f1a15;color:#e4d8c9;font-size:15px;line-height:1.8;">
+This newsletter exists for one reason: to end the information asymmetry that lets predatory agents win at the buyer's expense. Every week, 7 people unsubscribe. We need 70 to lean in. Here is how you help:
+<ol style="padding-left:22px;margin:14px 0 4px;color:#e4d8c9;">
+  <li style="margin-bottom:10px;"><strong style="color:#fff;">Download the app</strong> &mdash; so you have the data before you sign a buyer-rep agreement.</li>
+  <li style="margin-bottom:10px;"><strong style="color:#fff;">Run a free DNA report</strong> on the address you're watching &mdash; see what your agent isn't telling you.</li>
+  <li style="margin-bottom:0;"><strong style="color:#fff;">Forward this email to one person</strong> who's buying or selling in the next year. That's how the movement scales. One human at a time.</li>
+</ol>
+</td></tr>
 <tr><td style="padding:36px 40px 8px;border-top:1px solid #e4d8c9;font-family:Georgia,serif;font-size:22px;color:#1f1a15;">Why this newsletter stays in your inbox</td></tr>
 <tr><td style="padding:8px 40px 28px;font-size:15px;line-height:1.8;color:#2c241d;">
 Our weekly snapshot pairs verified MLS activity with provenance intelligence you won&rsquo;t find on Zillow or Redfin &mdash; architect attribution, the quiet sales above $5M, permit history, and the homes celebrities and family offices are actually buying. No drip funnels. No spam. One curated email each Thursday from a desert agent who reads the data before he writes the copy.<br><br>
