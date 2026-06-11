@@ -15,6 +15,7 @@ import PropertyTicker from '@/components/PropertyTicker';
 import NationwideCoverage from '@/components/NationwideCoverage';
 import FeaturedDossiers from '@/components/FeaturedDossiers';
 import FAQ from '@/components/FAQ';
+import PainPointGrid from '@/components/PainPointGrid';
 
 type ModalView = 'signin' | 'pricing';
 
@@ -175,19 +176,30 @@ export default function Landing() {
           </div>
         </FadeUp>
 
-        {/* Tagline */}
+        {/* Tagline — pain point + solution framing */}
         <FadeUp delay={0.08}>
-          <p style={{
-            fontFamily: 'Jost, sans-serif',
-            fontSize: 'clamp(12px, 1.3vw, 14px)',
-            fontWeight: 300, letterSpacing: '1.5px',
-            color: 'rgba(244,240,232,0.4)',
-            maxWidth: 420, lineHeight: 1.9, marginBottom: 44,
-          }}>
-            The data your agent doesn't want you to see — valuation, risk,
-            and market intelligence on the biggest purchase of your life.
-            Free for buyers. Built for pros.
-          </p>
+          <div style={{ maxWidth: 560, marginBottom: 36 }}>
+            <p style={{
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
+              fontSize: 'clamp(20px, 2.4vw, 30px)',
+              fontWeight: 300, lineHeight: 1.35,
+              color: '#F4F0E8',
+              marginBottom: 14,
+              letterSpacing: '-0.3px',
+            }}>
+              The agent works for the commission.<br />
+              <em style={{ color: '#C9A84C', fontStyle: 'italic' }}>We work for you.</em>
+            </p>
+            <p style={{
+              fontFamily: 'Jost, sans-serif',
+              fontSize: 'clamp(12px, 1.3vw, 14px)',
+              fontWeight: 300, letterSpacing: '0.5px',
+              color: 'rgba(244,240,232,0.55)',
+              lineHeight: 1.85,
+            }}>
+              Every flood zone, every unfinaled permit, every comp they cherry-picked — surfaced before you sign. Free for buyers, forever.
+            </p>
+          </div>
         </FadeUp>
 
         {/* ── Signed-in state ── */}
@@ -347,6 +359,34 @@ export default function Landing() {
       {/* ── LIVE PROPERTY TICKER ───────────────────────────────────── */}
       <PropertyTicker />
 
+      {/* ── MARKET HEAT MAP — promoted to top, ungated ─────────────── */}
+      {/* Robinhood-style: heat map IS the magnet. No paywall, no upgrade */}
+      {/* modal — free for the humans, monetize via enterprise/data API. */}
+      <section style={{ background: '#0A0908', padding: 'clamp(48px,6vw,96px) clamp(24px,5vw,48px)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <FadeUp>
+            <div style={{ marginBottom: 'clamp(28px,4vw,48px)', maxWidth: 720 }}>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: '4px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 14 }}>
+                Live market intelligence · free
+              </div>
+              <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(28px,4vw,52px)', fontWeight: 300, lineHeight: 1.05, color: '#F4F0E8', letterSpacing: '-0.6px', marginBottom: 16 }}>
+                Every market.<br />
+                <em style={{ color: '#C9A84C', fontStyle: 'italic' }}>Live, always free.</em>
+              </h2>
+              <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300, lineHeight: 1.85, color: 'rgba(244,240,232,0.6)', maxWidth: 580 }}>
+                Heat = price movement. Tap a market to drill into the data. Same signal the institutional buyers have, free for every human.
+              </p>
+            </div>
+          </FadeUp>
+          <FadeUp delay={0.06}>
+            <MarketHeatMapPreview isPremium={true} />
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ── PAIN POINTS, SOLVED — Robinhood-style widget row ───────── */}
+      <PainPointGrid />
+
       {/* ── METRICS MARQUEE ────────────────────────────────────────── */}
       <div style={{
         borderTop: '1px solid rgba(255,255,255,0.08)',
@@ -409,29 +449,53 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── MARKET HEAT MAP PREVIEW ────────────────────────────────── */}
+      {/* ── PROFESSIONAL TIER — for agents, investors, enterprise ──── */}
+      {/* Heat map promoted to top of page; this section now pitches  */}
+      {/* the Pro / Investor / Enterprise tiers — where we actually    */}
+      {/* make money, while consumers stay free.                       */}
       <section className="bg-espresso px-6 md:px-12 py-24 md:py-32">
         <div className="max-w-7xl mx-auto">
           <FadeUp>
-            <div className="mb-16">
+            <div className="mb-12 text-center max-w-3xl mx-auto">
               <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-5">
-                Premium Intelligence
+                For professionals
               </div>
               <h2
-                className="font-serif font-light text-canvas leading-[1.05] max-w-3xl"
+                className="font-serif font-light text-canvas leading-[1.05] mb-6"
                 style={{ fontSize: 'clamp(32px, 4vw, 56px)', letterSpacing: '-0.8px' }}
               >
-                Go beyond the<br />
-                <em className="italic text-gold">basic valuation.</em>
+                Free for the humans.<br />
+                <em className="italic text-gold">Pay only if you sell houses for a living.</em>
               </h2>
-              <p className="font-sans text-[15px] font-light leading-[1.85] text-canvas/55 max-w-2xl mt-6">
-                Pro subscribers unlock live market movement, comparable trend charts, micro-market
-                heat maps, opportunity scoring, and saved property intelligence.
+              <p className="font-sans text-[15px] font-light leading-[1.85] text-canvas/55 max-w-2xl mx-auto">
+                Realtor Pro, Investor, and Enterprise tiers unlock branded reports, off-market drips, portfolio tracking, and bulk-data API access. Built so the people who profit from housing data fund the tool for everyone else.
               </p>
             </div>
           </FadeUp>
           <FadeUp delay={0.06}>
-            <MarketHeatMapPreview isPremium={premium} onUpgrade={() => openModal('pricing')} />
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+              <button
+                onClick={() => openModal('pricing')}
+                style={{
+                  fontFamily: 'Jost, sans-serif', fontSize: 11, fontWeight: 500,
+                  letterSpacing: '3px', textTransform: 'uppercase', color: '#0F0E0D',
+                  background: '#C9A84C', border: 'none', padding: '16px 32px', cursor: 'pointer',
+                }}
+              >
+                See Pro plans →
+              </button>
+              <a
+                href="mailto:enterprise@thepropertydna.com?subject=Enterprise%20data%20access"
+                style={{
+                  fontFamily: 'Jost, sans-serif', fontSize: 11, fontWeight: 500,
+                  letterSpacing: '3px', textTransform: 'uppercase', color: '#F4F0E8',
+                  border: '1px solid rgba(244,240,232,0.25)', padding: '16px 32px',
+                  textDecoration: 'none',
+                }}
+              >
+                Enterprise · API access
+              </a>
+            </div>
           </FadeUp>
         </div>
       </section>

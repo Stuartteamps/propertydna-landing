@@ -109,10 +109,36 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
         >×</button>
 
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 10 }}>
-          For Real Estate Professionals
+          Free for the humans. Pay only if you sell houses for a living.
         </div>
-        <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(22px,3vw,34px)', fontWeight: 300, color: '#F0EBE0', marginBottom: 28, lineHeight: 1.1 }}>
-          The asymmetric data edge<br /><em style={{ color: '#C9A84C' }}>your clients deserve.</em>
+        <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(22px,3vw,34px)', fontWeight: 300, color: '#F0EBE0', marginBottom: 16, lineHeight: 1.1 }}>
+          One tier for buyers.<br /><em style={{ color: '#C9A84C' }}>Three for professionals.</em>
+        </div>
+        <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, fontWeight: 300, color: 'rgba(240,235,224,0.55)', lineHeight: 1.75, marginBottom: 28 }}>
+          The consumer iOS app + every report on this site stays free. Realtor Pro, Investor, and Enterprise tiers fund the tool so we can keep it free for the homebuyers and homesellers actually being targeted.
+        </p>
+
+        {/* FREE CONSUMER TIER — top of modal, always visible */}
+        <div style={{ border: '1px solid rgba(0,255,136,0.3)', background: 'linear-gradient(160deg, rgba(0,255,136,0.05), transparent)', padding: '18px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#00cc77', marginBottom: 6 }}>
+              Consumer · Free forever
+            </div>
+            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 300, color: '#F0EBE0', marginBottom: 4, lineHeight: 1.2 }}>
+              Every feature. Every report. $0.
+            </div>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: 'rgba(240,235,224,0.55)', lineHeight: 1.6 }}>
+              Unlimited search · Full DNA reports · Heat map · Watch list · Off-market matches · iOS + web. No credit card.
+            </div>
+          </div>
+          <a
+            href="https://apps.apple.com/app/id6745688826"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#0F0E0D', background: '#00cc77', padding: '12px 22px', textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >
+            Download iOS →
+          </a>
         </div>
 
         {/* Email — hidden if already signed in */}
@@ -180,6 +206,27 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
               </button>
             </div>
           ))}
+        </div>
+
+        {/* ENTERPRISE CTA — the monetization arm */}
+        <div style={{ marginTop: 24, padding: '20px 22px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: '#F0EBE0', marginBottom: 6 }}>
+              Enterprise · Talk to us
+            </div>
+            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18, fontWeight: 300, color: '#F0EBE0', marginBottom: 4 }}>
+              Bulk data, API, white-label
+            </div>
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: 'rgba(240,235,224,0.5)', lineHeight: 1.6 }}>
+              Lenders, insurers, iBuyers, hedge funds, prop-tech. 3.58M parcels, REST + bulk. Custom pricing.
+            </div>
+          </div>
+          <a
+            href="mailto:enterprise@thepropertydna.com?subject=Enterprise%20data%20access"
+            style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.25)', padding: '12px 22px', textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >
+            Contact sales →
+          </a>
         </div>
 
         <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#6B6252', textAlign: 'center', marginTop: 20 }}>
