@@ -109,7 +109,7 @@ async function modeQA({ address, question }) {
   if (!property) {
     return {
       ok: true,
-      answer: `I couldn't find "${address}" in the indexed dataset (1.67M+ properties across CA, FL, and other states). Try the full street address with city, e.g. "1207 Palmas Rdg, Palm Springs, CA". This usually means the property is outside the indexed counties.`,
+      answer: `I couldn't find "${address}" in the indexed dataset (3.58M+ properties across AZ, CA, NV, WA, TX, CT, FL, NY). Try the full street address with city, e.g. "1207 Palmas Rdg, Palm Springs, CA". This usually means the property is outside the indexed counties.`,
       property: null,
     };
   }
@@ -224,7 +224,7 @@ async function modeQuery({ question }) {
       text: `You are IntellaGraph AI's portfolio query agent. Given a natural-language real estate question, decide whether to call the query_properties tool and what filters to use.
 
 Available tables (use the most specific one):
-- property_master: 1.67M+ residential properties (CA Coachella Valley, FL statewide, expanding). Fields: ${QUERY_SCHEMAS.property_master.fields.join(', ')}.
+- property_master: 3.58M+ residential properties (AZ Maricopa, CA Coachella Valley + LA + SF + SD, NV Clark, WA Snohomish, TX Austin/DFW/Houston, CT Fairfield, FL statewide, NY Manhattan + Westchester). Fields: ${QUERY_SCHEMAS.property_master.fields.join(', ')}.
 - v_skip_trace_priority: 8-tier outreach priority view for owner contact campaigns. Tiers 1-2 are luxury absentee. Fields: ${QUERY_SCHEMAS.v_skip_trace_priority.fields.join(', ')}.
 
 Translation rules:

@@ -18,7 +18,7 @@ const PILLARS = [
   ['01', 'Free for buyers, forever', 'Every feature, every report, every metric — unlocked on iOS at no charge. No subscriptions, no upsells, no paywall. This is the consumer Bloomberg terminal for housing, and we made it free because the people who need it most can never afford institutional data.'],
   ['02', 'Built to defeat information asymmetry', 'Your agent is paid as a percentage of the transaction. That structurally biases them toward closing the deal — not toward protecting you. PropertyDNA hands you the same data they have, before they have it.'],
   ['03', 'Every metric is traceable', 'Not a Zestimate. Not an AVM black box. Every score is mathematically derivable from RentCast MLS, FEMA NFHL, CalFire FHSZ, USGS seismic, county Assessor permit history, and the National Weather Service. We name our sources.'],
-  ['04', '1.67 million parcels indexed', 'Coachella Valley, Riverside, San Diego, Miami-Dade, Broward, Greenwich, Westchester. Every parcel pre-loaded with risk, valuation, and permit history. More markets shipping monthly.'],
+  ['04', '3.58 million parcels indexed', 'AZ Maricopa, CA Coachella Valley + LA + Bay Area + San Diego, NV, WA Snohomish, TX Austin/Dallas/Houston, CT Fairfield, FL Miami-Dade, NY Manhattan + Westchester. Every parcel pre-loaded with risk, valuation, and permit history. More markets shipping monthly.'],
 ];
 
 const FAQ = [
@@ -78,7 +78,7 @@ export default function Launch() {
             }}>
               PropertyDNA is the first free consumer Bloomberg terminal for housing.
               Valuation, risk, permit history, climate exposure, and a confidence-scored
-              verdict on every property in our 1.67M-parcel index.{' '}
+              verdict on every property in our 3.58M-parcel index.{' '}
               <strong style={{ color: '#F4F0E8' }}>Free on iOS. Forever.</strong>
             </p>
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -250,7 +250,7 @@ export default function Launch() {
                 fontWeight: 300, letterSpacing: '-1px', lineHeight: 1.05,
                 color: '#F4F0E8', margin: 0,
               }}>
-                1.67 million parcels.{' '}
+                3.58 million parcels.{' '}
                 <em style={{ color: '#C9A84C' }}>Ready on launch.</em>
               </h2>
             </div>
