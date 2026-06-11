@@ -413,3 +413,136 @@ export const cityLandingPages: CityLandingPage[] = [
 export function getCityLandingPage(slug: string) {
   return cityLandingPages.find(p => p.slug === slug);
 }
+
+// ── Long-tail "city + topic" landing pages ─────────────────────────────────
+// Each generates a /coverage/<city-state>/<topic> URL that ranks for very
+// specific searches like "miami beach FEMA flood zones" or "tampa hurricane
+// insurance map" — high intent, very low competition.
+
+export interface CityTopicPage {
+  citySlug: string;
+  topicSlug: string;
+  topicLabel: string;
+  metaTitle: string;
+  metaDescription: string;
+  intro: string;
+  sections: { heading: string; body: string }[];
+}
+
+const FLOOD_TOPIC = {
+  topicSlug: 'fema-flood-zones',
+  topicLabel: 'FEMA Flood Zones',
+};
+
+const INSURANCE_TOPIC = {
+  topicSlug: 'insurance-crisis',
+  topicLabel: 'Hurricane Insurance',
+};
+
+const PERMIT_TOPIC = {
+  topicSlug: 'permit-history',
+  topicLabel: 'Permit History',
+};
+
+export const cityTopicPages: CityTopicPage[] = [
+  // Miami flood
+  {
+    citySlug: 'miami-fl', topicSlug: FLOOD_TOPIC.topicSlug, topicLabel: FLOOD_TOPIC.topicLabel,
+    metaTitle: 'Miami FEMA Flood Zones by Address | Free Property Report',
+    metaDescription: 'Pull the FEMA flood zone designation for any Miami-Dade address. AE, A, V, X zones explained, base flood elevation surfaced, free in the PropertyDNA iOS app.',
+    intro: 'Every Miami-Dade parcel has a FEMA flood zone designation that materially changes the insurance cost, the lender requirement, and the resale trajectory. PropertyDNA pulls it for free on every report.',
+    sections: [
+      { heading: 'How FEMA flood zones are assigned in Miami', body: 'FEMA NFHL maps are joined to every Miami-Dade parcel via address geocode. Zone X is low-risk. Zone AE/A is the standard Special Flood Hazard Area requiring federal flood insurance under any mortgage. Zone V designates coastal high-hazard.' },
+      { heading: 'Which Miami neighborhoods carry the highest flood exposure', body: 'Barrier islands (Miami Beach, Fisher Island, Key Biscayne, Bal Harbour) carry the highest SFHA percentages. Downtown Brickell + Edgewater have mixed exposure. Coral Gables + Coconut Grove are mostly Zone X with pockets near the Bay.' },
+      { heading: 'What changes when a parcel is in SFHA', body: 'Lender-mandated flood insurance ($1,800-$8,000/yr typical), reduced private-carrier availability, mandatory disclosure to future buyers, and increasingly tight underwriting standards on resale.' },
+    ],
+  },
+  // Tampa flood
+  {
+    citySlug: 'tampa-fl', topicSlug: FLOOD_TOPIC.topicSlug, topicLabel: FLOOD_TOPIC.topicLabel,
+    metaTitle: 'Tampa Bay FEMA Flood Zones — Pre-Helene + Post-Milton',
+    metaDescription: 'Pull pre-storm and post-storm FEMA flood designation for any Tampa Bay address. Helene + Milton revisions integrated. Free in the PropertyDNA iOS app.',
+    intro: 'Hurricane Helene (September 2024) and Hurricane Milton (October 2024) caused FEMA to revise flood-zone designations across Hillsborough County. PropertyDNA shows the pre-storm and post-storm designation side-by-side for every parcel.',
+    sections: [
+      { heading: 'Why Helene and Milton changed Tampa flood maps', body: 'Both storms produced inundation in areas not previously designated SFHA. FEMA used the post-storm evidence to issue revised NFHL maps that expanded AE designations across multiple Hillsborough and Pinellas sub-areas.' },
+      { heading: 'What this means for current Tampa buyers', body: 'A Tampa Bay parcel that was Zone X in 2024 may now be Zone AE in 2026. The buyer pays the post-revision insurance premium, not the seller\'s legacy rate. PropertyDNA flags this gap explicitly.' },
+      { heading: 'Citizens Insurance vs private carrier availability', body: 'In post-revised AE areas, private carrier availability has tightened. Citizens Property Insurance becomes the default. PropertyDNA shows carrier availability so buyers know what they\'re walking into before submitting an offer.' },
+    ],
+  },
+  // Naples flood
+  {
+    citySlug: 'naples-fl', topicSlug: FLOOD_TOPIC.topicSlug, topicLabel: FLOOD_TOPIC.topicLabel,
+    metaTitle: 'Naples FEMA Flood Zones — Pre-Ian + Post-Ian',
+    metaDescription: 'Pull pre-Ian and post-Ian FEMA flood designation for any Collier County address. Free in the PropertyDNA iOS app.',
+    intro: 'Hurricane Ian (September 2022) caused FEMA to revise Collier County flood-zone maps significantly. PropertyDNA shows the pre-Ian and post-Ian designations side-by-side at the parcel level.',
+    sections: [
+      { heading: 'What changed in Naples after Ian', body: 'FEMA expanded SFHA designations across Olde Naples, Port Royal, parts of Pelican Bay, and Gordon River frontage. Many parcels that were Zone X before Ian are now Zone AE.' },
+      { heading: 'How carriers responded', body: 'Several private carriers withdrew from post-revised AE areas. Citizens Insurance grew rapidly in Collier County. Insurance-cost trajectory on affected parcels has risen 200-400% in three years.' },
+      { heading: 'What to verify before submitting an offer', body: 'Always ask for a written binding insurance quote on the specific parcel before closing. The seller\'s legacy premium is no guide to what the new owner will pay.' },
+    ],
+  },
+  // Tampa insurance
+  {
+    citySlug: 'tampa-fl', topicSlug: INSURANCE_TOPIC.topicSlug, topicLabel: INSURANCE_TOPIC.topicLabel,
+    metaTitle: 'Tampa Hurricane Insurance Crisis — Citizens vs Private',
+    metaDescription: 'Hurricane insurance availability and cost trajectory for every Tampa Bay address. Citizens vs private carrier flag. Free PropertyDNA report.',
+    intro: 'Tampa Bay\'s homeowner insurance market is the most volatile in the United States in 2026. PropertyDNA flags Citizens-only markets and shows insurance-cost trajectory at the parcel level.',
+    sections: [
+      { heading: 'Why Tampa private carriers withdrew', body: 'Helene + Milton + reinsurance market repricing forced multiple private carriers to non-renew Tampa policies. Citizens Property Insurance became the carrier of last resort for a growing percentage of Tampa parcels.' },
+      { heading: 'How to verify carrier availability before offering', body: 'Get binding quotes from three private carriers BEFORE submitting an offer. If two refuse, you are in a Citizens-only market — price the premium delta into your monthly carrying cost.' },
+      { heading: 'Wind-mitigation discounts that survive the crisis', body: 'Properties with documented hurricane-code retrofit features (impact glazing, hurricane shutters, tie-downs, post-2002 build) carry 30-60% premium discounts that hold even in Citizens. PropertyDNA pulls retrofit status from county permit records.' },
+    ],
+  },
+  // Naples insurance
+  {
+    citySlug: 'naples-fl', topicSlug: INSURANCE_TOPIC.topicSlug, topicLabel: INSURANCE_TOPIC.topicLabel,
+    metaTitle: 'Naples Hurricane Insurance — Citizens vs Private by Parcel',
+    metaDescription: 'Hurricane insurance availability for every Naples address. Citizens vs private carrier flag, post-Ian impact. Free PropertyDNA report.',
+    intro: 'Hurricane Ian rewrote the Naples insurance market. PropertyDNA shows carrier availability and premium trajectory at the parcel level.',
+    sections: [
+      { heading: 'Naples post-Ian carrier withdrawal', body: 'Multiple private carriers stopped writing new policies in post-revised AE areas. Citizens Property Insurance share rose dramatically across Collier County in the 12 months after Ian.' },
+      { heading: 'Premium delta from pre-Ian to 2026', body: 'For barrier-island and Gordon River parcels, the median private-market premium has tripled. PropertyDNA flags the trajectory so buyers can underwrite the actual cost.' },
+      { heading: 'What hurricane mitigation actually buys you', body: 'Documented hurricane-code retrofit (post-2002 build, impact glazing, shutters, tie-downs) lowers Citizens premium by 30-60%. Without documentation, no discount applies.' },
+    ],
+  },
+  // Palm Springs permits
+  {
+    citySlug: 'palm-springs-ca', topicSlug: PERMIT_TOPIC.topicSlug, topicLabel: PERMIT_TOPIC.topicLabel,
+    metaTitle: 'Palm Springs Permit History by Address — Free Report',
+    metaDescription: 'Pull the full Riverside County permit record for any Palm Springs parcel. Unpermitted renovation flag. Free in the PropertyDNA iOS app.',
+    intro: 'Palm Springs\' mid-century stock has been renovated repeatedly over decades. PropertyDNA pulls the full Riverside County Assessor permit record for every parcel so buyers can verify what was permitted and what was not.',
+    sections: [
+      { heading: 'Why permit verification matters in Palm Springs', body: 'Mid-century properties often carry unpermitted additions, converted garages, casita conversions, and pool additions. The county permit record is the source of truth — anything not in the record is unpermitted work.' },
+      { heading: 'What unpermitted renovation costs you after closing', body: 'Code enforcement can require retroactive permitting or demolition at the new owner\'s cost. Insurance carriers may exclude damage to or caused by unpermitted improvements. Resale value reflects the gap.' },
+      { heading: 'How PropertyDNA surfaces the gap', body: 'Every Palm Springs report cross-references listing-advertised improvements against the permit record. If the listing says "renovated kitchen" and no kitchen permit exists in the last 20 years, the report flags it.' },
+    ],
+  },
+  // Greenwich permits
+  {
+    citySlug: 'greenwich-ct', topicSlug: PERMIT_TOPIC.topicSlug, topicLabel: PERMIT_TOPIC.topicLabel,
+    metaTitle: 'Greenwich CT Permit History by Address — Free Report',
+    metaDescription: 'Pull the full Greenwich Building Department permit record for any address. Unpermitted renovation flag. Free PropertyDNA report.',
+    intro: 'Greenwich estates often carry decades of renovation history. PropertyDNA pulls the full town permit record for every parcel so buyers can verify provenance and condition.',
+    sections: [
+      { heading: 'Why permit verification matters in Greenwich', body: 'Large estates with multiple renovation cycles are common. Backcountry properties carry land-use restrictions that permit records reveal. PropertyDNA surfaces this on every report.' },
+      { heading: 'What to verify against the permit record', body: 'Every advertised renovation — kitchen, bathroom, basement, pool house, ADU — should have a corresponding permit. If not, the work is unpermitted and the liability transfers to the new owner.' },
+      { heading: 'Conservation easement disclosure', body: 'Many Greenwich backcountry parcels carry conservation easements that limit development. PropertyDNA flags these on every Greenwich report.' },
+    ],
+  },
+  // Miami permits
+  {
+    citySlug: 'miami-fl', topicSlug: PERMIT_TOPIC.topicSlug, topicLabel: PERMIT_TOPIC.topicLabel,
+    metaTitle: 'Miami Permit History + Hurricane Code Retrofit by Address',
+    metaDescription: 'Pull the full Miami-Dade Building Department permit record for any address. Hurricane code retrofit flag. Free PropertyDNA report.',
+    intro: 'Post-Andrew Florida adopted enhanced hurricane-code standards in 2002. PropertyDNA pulls the full Miami-Dade permit record to surface what retrofit work has been documented for every parcel.',
+    sections: [
+      { heading: 'Why hurricane-code status changes your insurance', body: 'A post-2002 code-compliant roof + impact glazing + shutters = 30-60% premium discount. Without documentation, no discount applies. PropertyDNA pulls the permit record so buyers can verify what discounts they can actually claim.' },
+      { heading: 'Unpermitted renovation in Miami', body: 'Miami-Dade is one of the most active code-enforcement jurisdictions in Florida. Unpermitted additions trigger lien-and-fine processes that survive the closing.' },
+      { heading: 'What to demand from the seller', body: 'Always request a written Seller\'s Statement of Permits with permit numbers for every advertised improvement. Anything without a permit number should be treated as unpermitted in your underwriting.' },
+    ],
+  },
+];
+
+export function getCityTopicPage(citySlug: string, topicSlug: string) {
+  return cityTopicPages.find(p => p.citySlug === citySlug && p.topicSlug === topicSlug);
+}

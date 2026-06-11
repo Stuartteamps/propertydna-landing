@@ -1,8 +1,115 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
-import { getBlogPost, getRelatedPosts, BlogSection } from '@/data/blogPosts';
+import { getBlogPost, getRelatedPosts, BlogSection, BlogPost as BlogPostType } from '@/data/blogPosts';
+// BlogPostType used by useBlogSeo signature
+
+function ensureMeta(attr: 'name' | 'property', value: string, content: string) {
+  let tag = document.head.querySelector(`meta[${attr}="${value}"]`) as HTMLMetaElement | null;
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attr, value);
+    document.head.appendChild(tag);
+  }
+  tag.content = content;
+}
+
+function injectJsonLd(id: string, payload: object) {
+  let tag = document.head.querySelector(`script[data-jsonld="${id}"]`) as HTMLScriptElement | null;
+  if (!tag) {
+    tag = document.createElement('script');
+    tag.type = 'application/ld+json';
+    tag.dataset.jsonld = id;
+    document.head.appendChild(tag);
+  }
+  tag.textContent = JSON.stringify(payload);
+  return tag;
+}
+
+function useBlogSeo(post: BlogPostType | undefined) {
+  useEffect(() => {
+    if (!post || !post.slug) return;
+    const url = `https://www.thepropertydna.com/blog/${post.slug}`;
+    document.title = `${post.title} | PropertyDNA`;
+    ensureMeta('name', 'description', post.metaDescription);
+    ensureMeta('property', 'og:title', post.title);
+    ensureMeta('property', 'og:description', post.metaDescription);
+    ensureMeta('property', 'og:type', 'article');
+    ensureMeta('property', 'og:url', url);
+    ensureMeta('property', 'og:image', 'https://thepropertydna.com/og-image.png');
+    ensureMeta('name', 'twitter:card', 'summary_large_image');
+    ensureMeta('name', 'twitter:title', post.title);
+    ensureMeta('name', 'twitter:description', post.metaDescription);
+    ensureMeta('property', 'article:published_time', post.date);
+    ensureMeta('property', 'article:section', post.category);
+
+    // Article schema for rich results (Google Discover, AI Overviews)
+    const articleTag = injectJsonLd('blog-article', {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: post.title,
+      description: post.metaDescription,
+      datePublished: post.date,
+      dateModified: post.date,
+      author: { '@type': 'Organization', name: 'PropertyDNA', url: 'https://thepropertydna.com' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'PropertyDNA',
+        logo: { '@type': 'ImageObject', url: 'https://thepropertydna.com/og-image.png' },
+      },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      image: 'https://thepropertydna.com/og-image.png',
+      articleSection: post.category,
+      wordCount: post.sections.reduce((n, s) => n + (s.text?.split(/\s+/).length || 0), 0),
+    });
+
+    // Breadcrumb schema
+    const crumbTag = injectJsonLd('blog-breadcrumb', {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'PropertyDNA', item: 'https://thepropertydna.com' },
+        { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://thepropertydna.com/blog' },
+        { '@type': 'ListItem', position: 3, name: post.title, item: url },
+      ],
+    });
+
+    // FAQ schema from any 'faq' sections (AEO surfacing for AI Overviews + Perplexity)
+    const faqSections = post.sections.filter(s => s.type === 'faq' && s.faqs);
+    const allFaqs = faqSections.flatMap(s => s.faqs || []);
+    let faqTag: HTMLScriptElement | null = null;
+    if (allFaqs.length > 0) {
+      faqTag = injectJsonLd('blog-faq', {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: allFaqs.map(f => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      });
+    }
+
+    // Speakable schema for voice assistants (Alexa, Google Assistant news brief)
+    const speakableTag = injectJsonLd('blog-speakable', {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      url,
+      speakable: {
+        '@type': 'SpeakableSpecification',
+        cssSelector: ['h1', 'h2', '.article-excerpt'],
+      },
+    });
+
+    return () => {
+      articleTag?.remove();
+      crumbTag?.remove();
+      faqTag?.remove();
+      speakableTag?.remove();
+    };
+  }, [post?.slug, post?.title, post?.metaDescription, post?.date, post?.category]);
+}
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -165,6 +272,7 @@ const renderSection = (section: BlogSection, i: number) => {
 const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getBlogPost(slug) : undefined;
+  useBlogSeo(post);
 
   if (!post) return <Navigate to="/blog" replace />;
 
