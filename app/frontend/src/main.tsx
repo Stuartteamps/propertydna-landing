@@ -105,5 +105,21 @@ async function initializeApp() {
   createRoot(document.getElementById('root')!).render(<App />);
 }
 
+// Register service worker for PWA install eligibility on Android Chrome.
+// iOS Capacitor native app skips this — it serves bundled assets directly.
+if (
+  typeof window !== 'undefined'
+  && 'serviceWorker' in navigator
+  && !Capacitor.isNativePlatform()
+  && window.location.protocol === 'https:'
+) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // SW registration failure is non-blocking — site still works without it,
+      // only PWA install ceremony degrades.
+    });
+  });
+}
+
 // Initialize the app
 initializeApp();

@@ -59,6 +59,7 @@ import NotFound from "./pages/NotFound";
 import NativeBottomNav from "@/components/NativeBottomNav";
 import OfflineBanner from "@/components/OfflineBanner";
 import AppStoreBanner from "@/components/AppStoreBanner";
+import AndroidInstallPrompt from "@/components/AndroidInstallPrompt";
 import Launch from "./pages/Launch";
 import IOSLaunchPress from "./pages/IOSLaunchPress";
 import CityLanding from "./pages/CityLanding";
@@ -153,6 +154,7 @@ const App = () => (
           <AppRoutes />
           <NativeBottomNav />
           <AppStoreBanner />
+          <AndroidInstallPrompt />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

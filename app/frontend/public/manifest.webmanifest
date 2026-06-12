@@ -1,0 +1,68 @@
+{
+  "name": "PropertyDNA — Property Intelligence",
+  "short_name": "PropertyDNA",
+  "description": "Free property intelligence for U.S. homebuyers — valuation, FEMA flood zones, permit history, comparable trajectory, and a confidence-scored verdict on every property. Defend the buyer.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F0E0D",
+  "theme_color": "#0F0E0D",
+  "id": "com.thepropertydna.app",
+  "categories": ["finance", "business", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "PropertyDNA — institutional property intelligence, free"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Run a free report",
+      "short_name": "Analyze",
+      "description": "Submit any U.S. address and get a free intelligence report",
+      "url": "/analyze",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Market heat map",
+      "short_name": "Heat Map",
+      "description": "Bloomberg-style market visualization",
+      "url": "/market-heatmaps",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/id6768064079",
+      "id": "6768064079"
+    }
+  ]
+}
