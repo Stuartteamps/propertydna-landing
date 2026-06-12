@@ -65,6 +65,7 @@ import IOSLaunchPress from "./pages/IOSLaunchPress";
 import CityLanding from "./pages/CityLanding";
 import CityTopicLanding from "./pages/CityTopicLanding";
 import Battlefield from "./pages/Battlefield";
+import TickerStock from "./pages/TickerStock";
 
 const queryClient = new QueryClient();
 
@@ -140,6 +141,7 @@ const AppRoutes = () => (
     <Route path="/coverage/:slug" element={<CityLanding />} />
     <Route path="/battlefield" element={<Battlefield />} />
     <Route path="/predatory" element={<Battlefield />} />
+    <Route path="/stock/:symbol" element={<TickerStock />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

@@ -1,0 +1,188 @@
+{
+  "_meta": {
+    "purpose": "20 high-reach influencers across real estate, personal finance, housing policy, and tech. Personalized pitch per target. Send via DM or partnership form (not email — these don't open cold email).",
+    "strategy": "Lead with VALUE FIRST, never ask for promotion. Offer them: free Pro accounts for their team, custom data pulls for their content, early API access. The promotion follows organically when the product impresses them."
+  },
+  "celebrity_influencer_targets": [
+    {
+      "rank": 1,
+      "name": "Graham Stephan",
+      "platform": "YouTube · 4.7M",
+      "niche": "Personal finance + real estate investing",
+      "best_dm": "Twitter @GrahamStephan",
+      "personalized_pitch": "Graham — I built PropertyDNA after watching too many first-time buyers get steered wrong by their agents (your 'real estate horror stories' video was the breaking point). Free iOS app + web reports + the first MCP server for property intelligence. I want to give you and your team free Pro accounts forever — no strings, no co-branded content required. If you ever want to run reports live on screen as part of a video, we'll set up a custom data flow. dan@thepropertydna.com.",
+      "value_offered": "Free Pro account for him + his team. Custom data overlay for any video he wants to make."
+    },
+    {
+      "rank": 2,
+      "name": "Meet Kevin",
+      "platform": "YouTube · 1.9M",
+      "niche": "Real estate + macro economics + politics",
+      "best_dm": "Twitter @realmeetkevin",
+      "personalized_pitch": "Kevin — long-time watcher. Your recent coverage of the Florida insurance crisis was the most lucid on YouTube. We track carrier-tier and post-Helene/Milton FEMA revisions per zip code — happy to send you the live dataset for any episode you're working on. Free, no strings. The full PropertyDNA platform is free for consumers; I'd love to set up your team with Pro accounts (unlimited reports, branded PDFs). dan@thepropertydna.com.",
+      "value_offered": "Florida carrier-tier dataset. Pro accounts for his team."
+    },
+    {
+      "rank": 3,
+      "name": "BiggerPockets (Brandon Turner + David Greene)",
+      "platform": "YouTube + Podcast · 2M combined",
+      "niche": "Real estate investing",
+      "best_dm": "biggerpockets.com/podcast/contact",
+      "personalized_pitch": "Brandon/David — I built PropertyDNA as the buyer-side tool I wished existed when I bought my first house. Free for buyers, Pro tier for serious investors ($299/mo) with portfolio tracking, off-market drips, DNA score alerts. Want to set up your team with free Pro accounts and offer your audience an exclusive code if it works for them. Happy to come on the show if it's a fit — I think the 'agent-side vs algorithm-side comp analysis' segment could be 15 minutes of fire. dan@thepropertydna.com.",
+      "value_offered": "Free Pro for their team. Exclusive code for BiggerPockets audience. Show appearance."
+    },
+    {
+      "rank": 4,
+      "name": "Ben Mallah",
+      "platform": "YouTube · 600K",
+      "niche": "Commercial real estate + buyer protection",
+      "best_dm": "Twitter @benmallah",
+      "personalized_pitch": "Ben — your blunt buyer-protection takes are exactly what the industry needs more of. We built PropertyDNA to surface the things you call out in your videos — bad comps, hidden permit problems, agent steering — automatically, free, on any address. Want to send you a free Pro account + run a custom analysis on any property you want to feature in a video. dan@thepropertydna.com.",
+      "value_offered": "Pro account + custom property analysis."
+    },
+    {
+      "rank": 5,
+      "name": "Patrick Bet-David",
+      "platform": "YouTube + Podcast · 5.8M",
+      "niche": "Entrepreneurship + business analysis + real estate",
+      "best_dm": "Twitter @patrickbetdavid",
+      "personalized_pitch": "Patrick — I built PropertyDNA over 18 months self-funded, just shipped to App Store + npm (first MCP server for real estate). The business model: free for consumers, monetized to agents/lenders/enterprises. Robinhood-for-housing thesis. Would love to come on Valuetainment to break down the structural commission economics of buyer agency and how PropertyDNA changes the math. Happy to bring data + the founder story. dan@thepropertydna.com.",
+      "value_offered": "Founder interview. Data analysis for any segment."
+    },
+    {
+      "rank": 6,
+      "name": "Codie Sanchez",
+      "platform": "Newsletter + YouTube · 1.5M",
+      "niche": "Boring businesses + small-business acquisitions",
+      "best_dm": "Twitter @Codie_Sanchez",
+      "personalized_pitch": "Codie — Contrarian Thinking is a regular read. We just shipped PropertyDNA: free property intel for the 99% of buyers who don't have institutional data access. The 'boring business' angle: residential real estate is the last consumer market without the data democratization that hit stocks (Robinhood) and travel (Kayak). We're the equivalent for housing. Would love to write a guest piece for Contrarian Thinking on the business-model dynamics or send you free Pro accounts for your team. dan@thepropertydna.com.",
+      "value_offered": "Guest essay. Pro accounts. Custom data for any future piece."
+    },
+    {
+      "rank": 7,
+      "name": "Lance Lambert",
+      "platform": "ResiClub Newsletter · 200K",
+      "niche": "Housing market data + analysis",
+      "best_dm": "Twitter @NewsLambert",
+      "personalized_pitch": "Lance — your ResiClub data work is the cleanest on the housing-data beat. We index 3.58M parcels with DNA-scored valuations + comp velocity + insurance trajectory and have anonymized case studies showing where agent CMAs diverge from algorithm comp sets. Want to send you the data, or set up a custom feed if there's an angle you've been wanting to dig into. Free, no strings. dan@thepropertydna.com.",
+      "value_offered": "Custom data feed. Anonymized case studies for ResiClub pieces."
+    },
+    {
+      "rank": 8,
+      "name": "Mike Simonsen",
+      "platform": "Altos Research / Top of Mind Podcast · 100K",
+      "niche": "Housing market analytics for agents",
+      "best_dm": "LinkedIn",
+      "personalized_pitch": "Mike — Top of Mind is one of the cleanest pods in the space. We built PropertyDNA as the consumer-facing complement to what Altos does for the agent side — we surface the algorithm-comp set buyers can use to verify the agent's CMA. Want to compare notes on data + perhaps come on the show to talk about how the buyer-side data layer changes the dynamics. dan@thepropertydna.com.",
+      "value_offered": "Data comparison + podcast appearance."
+    },
+    {
+      "rank": 9,
+      "name": "Sean Carroll (Logan Capital Partners)",
+      "platform": "Twitter · 200K",
+      "niche": "Real estate + macro + buyer protection",
+      "best_dm": "Twitter @seancarrolllpa",
+      "personalized_pitch": "Sean — your buyer-protection threads are the best on real-estate Twitter. We built PropertyDNA to surface what you call out in your threads — bad comps, hidden risks, agent steering — automatically on any address. Free Pro account for you + happy to provide data for any thread you want to write on the topic. dan@thepropertydna.com.",
+      "value_offered": "Pro account + thread-grade data."
+    },
+    {
+      "rank": 10,
+      "name": "Nick Maggiulli",
+      "platform": "Of Dollars and Data blog + Twitter · 100K",
+      "niche": "Personal finance + investing data analysis",
+      "best_dm": "Twitter @dollarsanddata",
+      "personalized_pitch": "Nick — Just Keep Buying was an instant classic. We're building the Robinhood layer for residential real estate — sovereign index, free for buyers, sourced from county data not MLS. Would love to send you the dataset to play with for an OfDollarsAndData piece on home-buying decision math, or just have you kick the tires. dan@thepropertydna.com.",
+      "value_offered": "Dataset access for a future piece. Pro account."
+    },
+    {
+      "rank": 11,
+      "name": "Frederik Gieschen",
+      "platform": "Neckar Substack · 50K (high-quality audience)",
+      "niche": "Markets + behavioral finance",
+      "best_dm": "Substack DM or Twitter @neckarvalue",
+      "personalized_pitch": "Frederik — Neckar's quality-over-quantity approach is rare. We just shipped PropertyDNA — the Robinhood for residential thesis built into a working product. Information asymmetry in housing is one of the cleanest remaining behavioral-finance arbitrage opportunities (per-transaction value is high, transaction frequency is low, retail data access is brutal). Would love to send the methodology page and the actual product if you'd be interested in writing it up. dan@thepropertydna.com.",
+      "value_offered": "Methodology + data access."
+    },
+    {
+      "rank": 12,
+      "name": "Patio11 (Patrick McKenzie)",
+      "platform": "Bits About Money newsletter · 100K (finance industry power audience)",
+      "niche": "Finance + payments + mortgage market",
+      "best_dm": "Twitter @patio11",
+      "personalized_pitch": "Patrick — Bits About Money is the most quotable finance writing of the decade. PropertyDNA: free property intel + sovereign parcel index + first MCP server for the category. The piece I'd most want you to write: 'what happens to mortgage origination + insurance binding when the buyer-side gets institutional data access.' Happy to be the source. dan@thepropertydna.com.",
+      "value_offered": "Source access + data."
+    },
+    {
+      "rank": 13,
+      "name": "Byrne Hobart",
+      "platform": "The Diff newsletter · 50K (high-power finance/strategy)",
+      "niche": "Markets + business strategy",
+      "best_dm": "Twitter @ByrneHobart",
+      "personalized_pitch": "Byrne — The Diff has changed how I think about competitive moats. PropertyDNA's moat: 47 named data sources joined per property + a refusal to monetize the consumer side. The Diff angle I'd love to read: how vertical AI distribution via MCP creates a new kind of data network effect in markets with high information asymmetry. Happy to be a source or send the platform for review. dan@thepropertydna.com.",
+      "value_offered": "Source for a Diff piece on data network effects in vertical AI."
+    },
+    {
+      "rank": 14,
+      "name": "Dan Primack",
+      "platform": "Axios Pro Rata podcast · 200K",
+      "niche": "Deals, prop-tech, venture",
+      "best_dm": "dan@axios.com",
+      "personalized_pitch": "Dan — Pro Rata is a daily must-listen. PropertyDNA is 18 months in, self-funded, just shipped to App Store + npm — the first MCP server for the real estate vertical. The pitch I think you'd find interesting: bootstrapped prop-tech that prices to never need to raise. Happy to send the build metrics or come on Pro Rata if it's a fit. dan@thepropertydna.com.",
+      "value_offered": "Founder interview + bootstrapped prop-tech case study."
+    },
+    {
+      "rank": 15,
+      "name": "Alex Lieberman (Morning Brew / Daily Refresh)",
+      "platform": "Twitter + LinkedIn · 350K",
+      "niche": "Consumer brand building",
+      "best_dm": "Twitter @businessbarista",
+      "personalized_pitch": "Alex — your branding posts on LinkedIn are some of the best content in the category. PropertyDNA: we shipped a tagline-first consumer brand ('Save the humans · The data your real estate agent doesn't want you to see') around what I think is one of the cleanest consumer-protection theses left. Would love your take + free Pro account. If you ever want to discuss on the Founder's Journal or 1Cup1Pod, happy to come on. dan@thepropertydna.com.",
+      "value_offered": "Pro account + show appearance."
+    },
+    {
+      "rank": 16,
+      "name": "Greg Isenberg",
+      "platform": "Twitter · 350K",
+      "niche": "Startups + creator economy + housing",
+      "best_dm": "Twitter @gregisenberg",
+      "personalized_pitch": "Greg — your community + tool ideas are the best on startup Twitter. We just shipped PropertyDNA: free property intel, Pro tier for agents, MCP server for AI distribution. The angle that fits Late Checkout / Boring Marketer: 'Robinhood for housing, built solo, indie-hacked into MCP distribution.' Would love your feedback + happy to share what we've learned about the build. dan@thepropertydna.com.",
+      "value_offered": "Build-in-public conversation + feedback exchange."
+    },
+    {
+      "rank": 17,
+      "name": "James Currier (NFX podcast: The Network Effects Bible)",
+      "platform": "NFX podcast · 100K",
+      "niche": "Network effects + marketplace dynamics",
+      "best_dm": "LinkedIn / NFX form",
+      "personalized_pitch": "James — your Network Effects Bible work shaped how I built PropertyDNA's moat. We're indexing 3.58M parcels (target: 140M nationally) with a data network effect — each new report enriches the underlying index for the next user. Would love to come on NFX to discuss how vertical AI distribution via MCP creates a new layer to that network effect specifically for asymmetric-information markets. dan@thepropertydna.com.",
+      "value_offered": "Podcast guest. Network-effects case study."
+    },
+    {
+      "rank": 18,
+      "name": "Sam Parr (My First Million)",
+      "platform": "Podcast · 1.5M",
+      "niche": "Startup ideas + founder stories",
+      "best_dm": "Twitter @theSamParr",
+      "personalized_pitch": "Sam — long-time MFM listener. The opportunity I want to pitch you on: residential real estate is the last consumer market where institutional data is gated and the retail user pays the asymmetry penalty. PropertyDNA: free for buyers, Pro tier for agents, MCP server for AI distribution, just hit npm. Self-funded 18 months. Happy to come on MFM and walk through the build + the unit economics. dan@thepropertydna.com.",
+      "value_offered": "Founder interview. Build + unit economics walkthrough."
+    },
+    {
+      "rank": 19,
+      "name": "Joel Pavelski (HiP / The Atlantic property reporter)",
+      "platform": "Twitter + reported writing",
+      "niche": "Housing policy + reporting",
+      "best_dm": "Twitter / outlet email",
+      "personalized_pitch": "Joel — your housing reporting is policy-grade. PropertyDNA: institutional-grade data, free for retail buyers, sovereign index across 9 states. Three story-fits if any work: (1) Florida insurance/Citizens crisis through buyer data, (2) the disclosure-form fiction vs algorithm-surfaced findings, (3) the structural commission economics of buyer agency. Happy to be a source. dan@thepropertydna.com.",
+      "value_offered": "Source. Custom data pulls per story angle."
+    },
+    {
+      "rank": 20,
+      "name": "Cleo Abram (Huge If True)",
+      "platform": "YouTube + IG · 1M",
+      "niche": "Tech storytelling + 'huge if true' beats",
+      "best_dm": "Twitter @cleoabram",
+      "personalized_pitch": "Cleo — your storytelling on Huge If True is the best in the science/tech category. The 'huge if true' angle for PropertyDNA: vertical AI distribution via MCP is the first time consumer-grade AI tools can call institutional-grade specialized databases without the user understanding any of the plumbing. The real estate version is just the first vertical. Would love to walk you through it and let you decide if it's a Huge If True episode. dan@thepropertydna.com.",
+      "value_offered": "Episode walkthrough. Founder demo. Custom angle pitch."
+    }
+  ]
+}

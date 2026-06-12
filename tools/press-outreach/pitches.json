@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "purpose": "10 personalized press pitches targeting top outlets. Each has a specific journalist + a beat-aligned angle. Send via gmail or Outreach.io. Don't blast — these are individual sends.",
+    "send_sequence": "Tue 8 AM ET (your time zone). 1 follow-up after 5 business days. Stop after 2."
+  },
+  "pitches": [
+    {
+      "rank": 1,
+      "outlet": "The Verge",
+      "journalist": "Nilay Patel (Editor-in-Chief, podcast: Decoder)",
+      "email": "decoder@theverge.com",
+      "angle": "AI-native distribution + Anthropic MCP ecosystem",
+      "subject": "PropertyDNA: first MCP server for real estate intelligence — Decoder angle",
+      "body": "Hi Nilay,\n\nLong-time listener. Loved the recent Decoder on agentic AI distribution.\n\nWe just shipped @propertydna/mcp-server — the first Model Context Protocol server for property intelligence. Meaning Claude Desktop, Cursor, Cline, ChatGPT (via wrapper), and any MCP-aware AI tool can now query property valuations, flood-zone designations, comp analysis, and luxury-provenance dossiers directly from inside the user's AI session.\n\nThe Decoder angle I think you'd find interesting: this is one of the first vertical-specific MCP servers shipping with real consumer-facing utility (not just dev infrastructure). It's a case study in what happens when MCP-enabled AI distribution meets a regulatory information-asymmetry market like residential real estate. We index 3.58M parcels across 9 states from county assessor data — no MLS license required. Free for buyers, monetized to enterprises.\n\nHappy to demo live or send a sandbox. Press kit: https://thepropertydna.com/press-kit. Founder background: built this over 18 months self-funded after watching three close friends get steered wrong by their buyer's agents.\n\nDan Stuart\nFounder, PropertyDNA\nhttps://thepropertydna.com"
+    },
+    {
+      "rank": 2,
+      "outlet": "Wall Street Journal — Real Estate",
+      "journalist": "Nicole Friedman (real estate housing reporter)",
+      "email": "nicole.friedman@wsj.com",
+      "angle": "Florida insurance crisis through buyer data",
+      "subject": "1.4M Florida homes now on Citizens — the binder shock buyers don't see at offer",
+      "body": "Hi Nicole,\n\nThanks for your recent piece on the Florida insurance market — sharp framing on the depopulation paradox.\n\nWe might have a buyer-side data angle that complements it: 1.4M Florida homes are now insured only by Citizens (the state-run insurer of last resort), up from 500K in 2020. The challenge is structural — buyers find out at the binder, not at the offer, because the seller's carrier doesn't transfer.\n\nPropertyDNA — institutional-grade property intel built for retail buyers — surfaces the carrier-tier per zip code, including post-Helene/Milton revised FEMA AE designations, at the offer stage. We can show you the data: how many properties under contract right now will face a 2-3x insurance premium increase at the binder, by metro.\n\nIf useful for a follow-up piece on the bind/offer information gap, happy to send the dataset + introduce you to a couple buyers who walked away because of what they saw. Press kit: thepropertydna.com/press-kit.\n\nDan Stuart\nFounder, PropertyDNA"
+    },
+    {
+      "rank": 3,
+      "outlet": "Bloomberg",
+      "journalist": "Patrick Clark (real estate reporter)",
+      "email": "pclark34@bloomberg.net",
+      "angle": "Robinhood for real estate + asymmetric data thesis",
+      "subject": "Robinhood for residential — building the sovereign property index",
+      "body": "Hi Patrick,\n\nFollowing your work on iBuyer dynamics and the prop-tech consolidation.\n\nWe've been building PropertyDNA over the last 18 months — the thesis is straightforward: residential real estate is one of the largest information-asymmetric markets in the country. Every $10K negotiated off the price costs the buyer's agent ~$250 in commission. The buyer carries 100% of the financial risk with 10% of the data.\n\nWhat we shipped: a sovereign parcel index (3.58M and growing across 9 states) sourced from county assessors directly — no MLS license required. DNA-scored valuations, FEMA flood zone (incl. post-Helene revisions), permit history (BuildZoom + county portals), comparable sales (full ring, not 3-comp CMA). Free for buyers via web + iOS. Monetized through realtor/lender/insurance/enterprise API access.\n\nThe market frame: we're building the Robinhood layer for residential real estate — the buyer-facing tool that retail investors actually had with stocks but never had with their largest single asset.\n\nHappy to send the data, the methodology page, or jump on a call if it's a fit.\n\nDan Stuart\nFounder, PropertyDNA\nhttps://thepropertydna.com"
+    },
+    {
+      "rank": 4,
+      "outlet": "Inman News (real estate trade)",
+      "journalist": "Jim Dalrymple II / Andrea Brambila (technology editors)",
+      "email": "jim@inman.com",
+      "angle": "First MCP for real estate + agent-tool implications",
+      "subject": "PropertyDNA shipped the first MCP server for real estate — buyer-side implications for agents",
+      "body": "Hi Jim,\n\nFollowing your tech coverage at Inman.\n\nQuick news drop that I think is novel for the real estate channel: we published @propertydna/mcp-server on npm yesterday — the first Model Context Protocol server for property intelligence. Meaning Claude / Cursor / ChatGPT can now query DNA-scored valuations, flood zones, permits, comps, off-market matches directly from inside the user's AI session.\n\nWhy I think Inman readers should care: buyer-side AI tools are about to fragment the agent's information advantage in real-time. Buyers who use AI for major decisions (already millions) can now run institutional-grade property intelligence from their normal AI workflow. That's a structural shift in how the agent's value proposition gets framed.\n\nWe also ship a Realtor Pro tier ($149/mo) with branded reports + listing tools — so this is positive-sum for agents who lead with information rather than gatekeep it.\n\nHappy to demo on a video call or send embed/screenshots. Press kit: thepropertydna.com/press-kit.\n\nDan Stuart\nFounder, PropertyDNA"
+    },
+    {
+      "rank": 5,
+      "outlet": "HousingWire",
+      "journalist": "Sarah Wheeler (Editor-in-Chief)",
+      "email": "sarah.wheeler@housingwire.com",
+      "angle": "Lender + insurer API integration play",
+      "subject": "PropertyDNA 3.58M-parcel API: lender + insurer integrations now live",
+      "body": "Hi Sarah,\n\nLong-time HousingWire reader, particularly the lending/policy coverage.\n\nWe launched PropertyDNA's enterprise API tier this week — 3.58M-parcel intelligence feed across 9 states (AZ, CA, NV, WA, TX, CT, FL, NY) with DNA-scored valuations, FEMA NFHL designations (incl. post-Helene/Milton revisions), permit history, and risk-tier classification.\n\nThe lender angle: pre-qualified buyers already running PropertyDNA reports on specific addresses are mid-search by definition. The insurer angle: real-time quote-at-offer capability vs the broken binder-after-offer workflow that's killing FL deals.\n\nIf you're covering lender tech consolidation or the insurance market structural shift, our data is available for analysis. Happy to send a sample query or set up an embargoed briefing.\n\nDan Stuart\nFounder, PropertyDNA\npartnerships@thepropertydna.com"
+    },
+    {
+      "rank": 6,
+      "outlet": "TechCrunch",
+      "journalist": "Mary Ann Azevedo (real estate tech)",
+      "email": "maryann@techcrunch.com",
+      "angle": "Self-funded prop-tech + AI-native distribution",
+      "subject": "Self-funded, free-for-consumers prop-tech with AI-native distribution",
+      "body": "Hi Mary Ann,\n\nFollowing your prop-tech coverage — particularly the recent Equity podcast segments.\n\nQuick founder pitch I think is on-format: PropertyDNA is 18 months in, fully self-funded, just shipped two things this week — (1) free iOS + web reports across a sovereign 3.58M-parcel index from county data, no MLS license, and (2) the first MCP server for property intelligence (Claude/Cursor/ChatGPT distribution).\n\nThe business model: free for consumers, paid Pro tiers for realtors + investors, enterprise API for lenders/insurers/iBuyers. The thesis: information asymmetry in residential real estate is a fixable market dysfunction, and AI-native distribution accelerates the fix.\n\nNo raise so far. Happy to share the build metrics + revenue stack if it's useful for a piece on the bootstrapped prop-tech category.\n\nDan Stuart\nFounder, PropertyDNA\nhttps://thepropertydna.com"
+    },
+    {
+      "rank": 7,
+      "outlet": "The Atlantic",
+      "journalist": "Jerusalem Demsas (housing policy + economics)",
+      "email": "jdemsas@theatlantic.com",
+      "angle": "Information asymmetry as housing policy lever",
+      "subject": "Information asymmetry in residential real estate — a policy angle",
+      "body": "Hi Jerusalem,\n\nLove your work on housing supply + policy framing. Your recent piece on the disclosure-form fiction was particularly sharp.\n\nWe've been building PropertyDNA — institutional-grade property intelligence for retail homebuyers — because the information asymmetry between agent + buyer is a fixable market dysfunction the policy tools haven't really addressed. Disclosure forms transfer 1% of relevant data. Asymmetric information transfers 99%.\n\nWhat we ship that policy can't legislate into existence: 47 data sources joined per property (county assessor + FEMA + USGS + crime + permit history + insurance trajectory), a DNA score with confidence interval, full-ring comp analysis (not the 3-comp CMA the agent picks), free for buyers, on demand.\n\nI think there's a piece worth writing on what happens when retail buyers get the same data access institutional ones do — and what that does to the structural commission economics. Happy to send the data + jump on a call if it's a fit. We have anonymized case studies + accuracy stats live at thepropertydna.com/accuracy.\n\nDan Stuart\nFounder, PropertyDNA"
+    },
+    {
+      "rank": 8,
+      "outlet": "Wired",
+      "journalist": "Lauren Goode (consumer + AI)",
+      "email": "lauren_goode@wired.com",
+      "angle": "AI consumer tools moving into vertical markets",
+      "subject": "AI is moving into vertical consumer tools — case study from real estate",
+      "body": "Hi Lauren,\n\nFollowing your work on the AI consumer-tool category — Gadget Lab is a regular listen.\n\nWe just shipped what I think is a clean case study for where AI-native consumer tools are heading: PropertyDNA, free property intelligence platform for homebuyers, now distributable inside any MCP-aware AI client (Claude Desktop, Cursor, ChatGPT, etc.) via @propertydna/mcp-server on npm.\n\nThe consumer angle: buyers using AI for major decisions can now run DNA-scored property reports inside the chat where they're already asking 'should I buy this house?' That's vertical AI distribution catching up to the horizontal LLM consumer experience.\n\nThe broader pattern I think you'd find interesting: this is one of the first non-developer-facing MCP servers shipping with real consumer utility. If you're writing about where AI consumer tools are going beyond chat, happy to demo live and walk you through the architecture.\n\nDan Stuart\nFounder, PropertyDNA\nhttps://thepropertydna.com"
+    },
+    {
+      "rank": 9,
+      "outlet": "Forbes",
+      "journalist": "Vivian Yee / Bernadette Berdychowski (real estate)",
+      "email": "vyee@forbes.com",
+      "angle": "Luxury provenance + verified-dossier angle",
+      "subject": "Verified luxury provenance database: William Cody, Lautner, Neutra at-sale verification",
+      "body": "Hi Vivian,\n\nFollowing your luxury real estate coverage at Forbes.\n\nWe've built something I think might be useful for the luxury reporting beat: a verified provenance database for architecturally significant homes. 92 Tier-A verified dossiers across the country (William Cody, John Lautner, Richard Neutra, Frank Lloyd Wright, Philip Johnson Glass House, etc.) cross-referenced against primary-source archives — Architectural Digest back issues, Palm Springs Modernism Committee, county deed records, AIA chapter commission catalogs.\n\nWe also flag claims that don't survive verification. The luxury market has a lot of 'Frank Lloyd Wright-inspired' listings that turn out to be 'home built by a guy who once visited Taliesin' — which is its own kind of consumer protection issue.\n\nIf you're working on a piece about the verification gap in luxury listings or want access to the verified database for a specific property, happy to help. thepropertydna.com/dossiers shows the public-facing version.\n\nDan Stuart\nFounder, PropertyDNA"
+    },
+    {
+      "rank": 10,
+      "outlet": "NYT Real Estate",
+      "journalist": "Stefanos Chen / Debra Kamin (residential real estate)",
+      "email": "stefanos.chen@nytimes.com",
+      "angle": "Robinhood-for-housing + buyer-side data democratization",
+      "subject": "Building the Robinhood for residential — sovereign property index",
+      "body": "Hi Stefanos,\n\nLong-time NYT Real Estate reader.\n\nQuick pitch I think fits the section: PropertyDNA is 18 months into building what I'd call the Robinhood for residential — institutional-grade property intelligence for retail homebuyers, free for consumers, sourced from a sovereign 3.58M-parcel index that doesn't require an MLS license.\n\nWhy it might be interesting for a piece: we just published our methodology + accuracy dashboard publicly (most competitors don't), and we shipped the first MCP server so the data is queryable directly from inside Claude / ChatGPT / Cursor. Buyer-side data democratization is suddenly happening in a real way, and the structural commission economics of residential real estate haven't priced it in yet.\n\nThe story arc that might fit NYT's framing: when the buyer-side of a long-asymmetric market finally gets the data access the sell-side has had for decades, what happens to the negotiation? We have anonymized case studies showing 14% comp-spread cherry-picking, $12K-on-average open-permit findings, and Florida buyers walking away when they see the carrier-tier reality.\n\nHappy to send data + arrange interviews.\n\nDan Stuart\nFounder, PropertyDNA\nhttps://thepropertydna.com"
+    }
+  ]
+}

@@ -14,13 +14,13 @@ const CC_LIST_ID = '662ac8de-4599-11f1-8c5f-02420a320003';
 const SUPA       = process.env.SUPABASE_URL || 'https://neccpdfhmfnvyjgyrysy.supabase.co';
 const SUPA_KEY   = process.env.SUPABASE_SERVICE_KEY;
 
-function supa(path) {
+function supa(path, extraHeaders = {}) {
   return new Promise((resolve) => {
     const u = new URL(SUPA + path);
     https.get({
       hostname: u.hostname,
       path:     u.pathname + u.search,
-      headers:  { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
+      headers:  { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, ...extraHeaders },
     }, (res) => {
       let body = '';
       res.on('data', c => body += c);
@@ -29,17 +29,31 @@ function supa(path) {
   });
 }
 
-function ccPost(token, path, payload) {
-  const body = JSON.stringify(payload);
+// Page through ALL rows of a PostgREST query, since the server caps each page.
+async function supaPaged(basePath, pageSize = 1000) {
+  const out = [];
+  let offset = 0;
+  while (true) {
+    const rangeEnd = offset + pageSize - 1;
+    const rows = await supa(basePath, { Range: `${offset}-${rangeEnd}`, 'Range-Unit': 'items' }) || [];
+    if (!Array.isArray(rows) || rows.length === 0) break;
+    out.push(...rows);
+    if (rows.length < pageSize) break;
+    offset += pageSize;
+    if (offset > 200000) break; // hard safety stop
+  }
+  return out;
+}
+
+function ccCall(method, token, path, payload) {
+  const body = payload ? JSON.stringify(payload) : '';
   return new Promise((resolve) => {
     const req = https.request({
-      hostname: CC_API,
-      path,
-      method:   'POST',
+      hostname: CC_API, path, method,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
+        ...(body ? { 'Content-Length': Buffer.byteLength(body) } : {}),
       },
     }, (res) => {
       let raw = '';
@@ -47,14 +61,17 @@ function ccPost(token, path, payload) {
       res.on('end', () => { try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); } catch { resolve({ status: res.statusCode, data: raw }); } });
     });
     req.on('error', e => resolve({ status: 0, data: { error: e.message } }));
-    req.write(body); req.end();
+    if (body) req.write(body);
+    req.end();
   });
 }
+const ccPost = (t, p, b) => ccCall('POST', t, p, b);
+const ccPut  = (t, p, b) => ccCall('PUT',  t, p, b);
+const ccGet  = (t, p)    => ccCall('GET',  t, p, null);
 
 exports.handler = async () => {
-  // 1. Get all unsubscribed emails
-  // PostgREST defaults to 1,000 rows. Bump high so we get the full 3K+ list in one shot.
-  const rows = await supa('/rest/v1/campaign_unsubscribes?select=email&order=created_at.desc&limit=50000') || [];
+  // 1. Get all unsubscribed emails (paginate around PostgREST's 1K cap)
+  const rows = await supaPaged('/rest/v1/campaign_unsubscribes?select=email&order=created_at.desc');
   const emails = Array.from(new Set(rows.map(r => (r.email || '').toLowerCase()).filter(Boolean)));
   if (emails.length === 0) {
     return { statusCode: 200, body: JSON.stringify({ ok: true, removed: 0, reason: 'no unsubscribes' }) };
@@ -67,20 +84,47 @@ exports.handler = async () => {
     return { statusCode: 503, body: JSON.stringify({ error: 'no CC token in oauth_tokens — re-authorize via cc-oauth-start' }) };
   }
 
-  // 3. CC bulk-removal accepts up to 5,000 email_addresses per call. Batch.
-  const BATCH = 4500;
+  // 3. Per-contact unsubscribe — lookup contact by email, PATCH permission_to_send.
+  // CC has no documented bulk email-only unsubscribe activity that we have
+  // confirmed working; their bulk endpoints work by contact_ids or list_ids.
+  // Per-contact is slower but bulletproof. Within one Lambda invocation we
+  // process up to MAX_PER_RUN contacts; the daily cron clears the rest.
+  const MAX_PER_RUN = 250;
+  const slice = emails.slice(0, MAX_PER_RUN);
   let totalAttempted = 0;
-  const responses = [];
-  for (let i = 0; i < emails.length; i += BATCH) {
-    const slice = emails.slice(i, i + BATCH);
-    const res = await ccPost(ccToken, '/v3/activities/remove_list_memberships', {
-      source:          { contact_ids: [], list_ids: [CC_LIST_ID] },
-      list_ids:        [CC_LIST_ID],
-      email_addresses: slice,
-    });
-    responses.push({ batch: i / BATCH, status: res.status, sliceSize: slice.length, response: typeof res.data === 'object' ? res.data : String(res.data).slice(0, 200) });
-    totalAttempted += slice.length;
+  let alreadyDone = 0;
+  let notInCC = 0;
+  let succeeded = 0;
+  let failed = 0;
+  const sampleErrors = [];
+
+  for (const email of slice) {
+    totalAttempted++;
+    try {
+      // Lookup contact — CC returns email_address by default, no include needed.
+      const look = await ccGet(ccToken, `/v3/contacts?email=${encodeURIComponent(email)}`);
+      const c = look?.data?.contacts?.[0];
+      if (!c) { notInCC++; continue; }
+      if (c.email_address?.permission_to_send === 'unsubscribed') { alreadyDone++; continue; }
+
+      // Unsubscribe — PUT requires full contact body; minimal mutate via PATCH-style PUT
+      const res = await ccPut(ccToken, `/v3/contacts/${c.contact_id}`, {
+        update_source: 'Account',
+        email_address: {
+          address: email,
+          permission_to_send: 'unsubscribed',
+        },
+      });
+      if (res.status >= 200 && res.status < 300) { succeeded++; } else {
+        failed++;
+        if (sampleErrors.length < 3) sampleErrors.push({ email, status: res.status, body: String(JSON.stringify(res.data)).slice(0, 200) });
+      }
+    } catch (e) {
+      failed++;
+      if (sampleErrors.length < 3) sampleErrors.push({ email, error: String(e.message || e).slice(0, 160) });
+    }
   }
+  const responses = [{ note: `processed ${totalAttempted} / ${emails.length} total unsub queue`, succeeded, alreadyDone, notInCC, failed, sampleErrors, status: failed === 0 ? 200 : 207 }];
 
   return {
     statusCode: 200,

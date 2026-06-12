@@ -86,11 +86,12 @@
 [functions."submitter-drip"]
   schedule = "0 17 * * *"
 
-# Wed 13:00 UTC = 6 AM PDT — sync website-side unsubscribes into the CC list.
-# Closes the CAN-SPAM gap where someone who unsubs via our site still gets the
-# CC newsletter. Bulk operation up to 5K emails per call.
+# Daily 13:00 UTC = 6 AM PDT — sync website-side unsubscribes into CC. Closes
+# the CAN-SPAM gap where someone who unsubs via our site still gets the CC
+# newsletter. Processes up to 250 contacts per run (per-contact lookup+PATCH);
+# daily cadence clears the ~3.3K backlog in ~13 days, then keeps up forward.
 [functions."sync-unsubscribes-to-cc"]
-  schedule = "0 13 * * 3"
+  schedule = "0 13 * * *"
   timeout = 60
 
 # Hourly — Tom Ferry 8-touch cadence for open-house leads (QR/web sign-ins).
@@ -122,6 +123,14 @@
 [functions."reddit-monitor"]
   schedule = "0 14,22 * * *"
   timeout = 60
+
+# Daily 13:30 UTC = 6:30 AM PDT. Autonomous mission status report
+# emailing Dan a one-page snapshot of indexing progress, engagement,
+# mission impact, and pending action items. Keeps the autonomous loop
+# transparent without Dan having to ask.
+[functions."daily-mission-report"]
+  schedule = "30 13 * * *"
+  timeout = 30
 
 # Apple Universal Links — must NOT be SPA-redirected, must have correct Content-Type
 [[redirects]]

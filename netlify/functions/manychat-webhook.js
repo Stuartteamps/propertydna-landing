@@ -206,6 +206,56 @@ const KEYWORD_FLOWS = {
     msg1: "sending the buyer checklist. real estate's not great about teaching this. how big a budget are you in? changes what i'd flag.",
     msg2: "https://www.thepropertydna.com/blog/permit-history-property-purchase?utm_source=ig&utm_medium=dm&utm_campaign=due\n\ntl;dr — always pull the permit history. always ask for architect drawings if MCM. always cross-check listing sqft against the assessor's record. that one bit catches 30% of overstated listings.",
   },
+
+  // ── iOS app launch keywords (added 2026-06-09) ──────────────────────
+  APP: {
+    tag: "lead_app_download",
+    msg1: "the iOS app is live — free for every buyer, every feature unlocked.",
+    msg2: "download: https://apps.apple.com/app/id6768064079?ct=manychat_keyword_app&mt=8\n\nreply VERIFIED for the verified luxury dossier list. reply REPORT to run a free DNA report on your address.",
+    button: { caption: "Download the app", url: "https://apps.apple.com/app/id6768064079?ct=manychat_keyword_app&mt=8" },
+  },
+  IOS: {
+    tag: "lead_app_download",
+    msg1: "the iOS app is live — free for every buyer, every feature unlocked.",
+    msg2: "download: https://apps.apple.com/app/id6768064079?ct=manychat_keyword_app&mt=8\n\nreply VERIFIED for the verified luxury dossier list. reply REPORT to run a free DNA report on your address.",
+    button: { caption: "Download the app", url: "https://apps.apple.com/app/id6768064079?ct=manychat_keyword_app&mt=8" },
+  },
+  LAUNCH: {
+    tag: "lead_app_download",
+    msg1: "the iOS app is live — free for every buyer, every feature unlocked.",
+    msg2: "download: https://apps.apple.com/app/id6768064079?ct=manychat_keyword_app&mt=8\n\nreply VERIFIED for the verified luxury dossier list. reply REPORT to run a free DNA report on your address.",
+    button: { caption: "Download the app", url: "https://apps.apple.com/app/id6768064079?ct=manychat_keyword_app&mt=8" },
+  },
+  DOWNLOAD: {
+    tag: "lead_app_download",
+    msg1: "the iOS app is live — free for every buyer, every feature unlocked.",
+    msg2: "download: https://apps.apple.com/app/id6768064079?ct=manychat_keyword_app&mt=8\n\nreply VERIFIED for the verified luxury dossier list. reply REPORT to run a free DNA report on your address.",
+    button: { caption: "Download the app", url: "https://apps.apple.com/app/id6768064079?ct=manychat_keyword_app&mt=8" },
+  },
+  FREE: {
+    tag: "lead_app_download",
+    msg1: "yes — the iOS app is 100% free. every feature, every metric, every report. no subscription. no ads. no tracking.",
+    msg2: "get it: https://apps.apple.com/app/id6768064079?ct=manychat_keyword_free&mt=8",
+    button: { caption: "Get the free app", url: "https://apps.apple.com/app/id6768064079?ct=manychat_keyword_free&mt=8" },
+  },
+  AGENT: {
+    tag: "lead_agent_pro",
+    msg1: "for real estate professionals: PropertyDNA Realtor Pro is $149/mo on the web — unlimited client-ready reports, comparable trend charts, listing intelligence, valuation deltas.",
+    msg2: "start: https://thepropertydna.com/pricing?utm_source=ig&utm_medium=dm&utm_campaign=agent_kw\n\nthe iOS consumer app stays free — the pros pay for power tools, that funds the buyer mission.",
+    button: { caption: "See Realtor Pro pricing", url: "https://thepropertydna.com/pricing?utm_source=ig&utm_medium=dm&utm_campaign=agent_kw" },
+  },
+  REALTOR: {
+    tag: "lead_agent_pro",
+    msg1: "for real estate professionals: PropertyDNA Realtor Pro is $149/mo on the web — unlimited client-ready reports, comparable trend charts, listing intelligence, valuation deltas.",
+    msg2: "start: https://thepropertydna.com/pricing?utm_source=ig&utm_medium=dm&utm_campaign=agent_kw\n\nthe iOS consumer app stays free — the pros pay for power tools, that funds the buyer mission.",
+    button: { caption: "See Realtor Pro pricing", url: "https://thepropertydna.com/pricing?utm_source=ig&utm_medium=dm&utm_campaign=agent_kw" },
+  },
+  DEFEND: {
+    tag: "lead_launch_press",
+    msg1: "sending the launch materials now.",
+    msg2: "press release: https://thepropertydna.com/press/ios-launch\n\nlaunch story: https://thepropertydna.com/launch\n\nshare with one buyer who needs this.",
+    button: { caption: "Read the launch story", url: "https://thepropertydna.com/launch" },
+  },
 };
 
 // Match a comment/message string to a trigger word (case-insensitive, fuzzy)
