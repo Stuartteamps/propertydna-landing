@@ -66,6 +66,7 @@ import CityLanding from "./pages/CityLanding";
 import CityTopicLanding from "./pages/CityTopicLanding";
 import Battlefield from "./pages/Battlefield";
 import TickerStock from "./pages/TickerStock";
+import Recruit from "./pages/Recruit";
 
 const queryClient = new QueryClient();
 
@@ -142,6 +143,9 @@ const AppRoutes = () => (
     <Route path="/battlefield" element={<Battlefield />} />
     <Route path="/predatory" element={<Battlefield />} />
     <Route path="/stock/:symbol" element={<TickerStock />} />
+    <Route path="/recruit" element={<Recruit />} />
+    <Route path="/agent-recruit" element={<Recruit />} />
+    <Route path="/assistant" element={<Recruit />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
