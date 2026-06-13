@@ -132,6 +132,13 @@
   schedule = "30 13 * * *"
   timeout = 30
 
+# Daily 02:00 UTC = 7 PM PDT. End-of-day log: commits shipped, content
+# moved, KPIs delta, and the top action items still needed from Dan.
+# The "stay on track" loop Dan asked for.
+[functions."eod-log"]
+  schedule = "0 2 * * *"
+  timeout = 30
+
 # Apple Universal Links — must NOT be SPA-redirected, must have correct Content-Type
 [[redirects]]
   from = "/.well-known/apple-app-site-association"
