@@ -10,18 +10,21 @@ const TIER_COLOR: Record<string, string> = {
 };
 
 const NEIGHBORHOODS = [
+  // Coachella Valley
   'Movie Colony', 'Old Las Palmas', 'Las Palmas', 'Vista Las Palmas',
   'The Mesa', 'Indian Canyons', 'Smoke Tree Ranch', 'Tahquitz River Estates',
   'Racquet Club Estates', 'Twin Palms',
   'Thunderbird Heights', 'Tamarisk Country Club', 'Mission Hills',
+  // Fairfield County CT — Gold Coast estate corridor
+  'Greenwich Gold Coast', 'Fairfield Beach', 'Stamford Historic', 'Norwalk Historic',
 ];
 
 // Seed from known verified DB counts — shown immediately, replaced by live query
 const TIER_SEED: Stat[] = [
-  { label: 'A — Verified Dossier',        count: 50,    color: TIER_COLOR.A },
-  { label: 'B — Top Hood + MCM Era',       count: 1322,  color: TIER_COLOR.B },
-  { label: 'C — Named / MCM-Era',           count: 5134,  color: TIER_COLOR.C },
-  { label: 'D — Mid-Century Provenance',    count: 10282, color: TIER_COLOR.D },
+  { label: 'A — Verified Dossier',                count: 84,    color: TIER_COLOR.A },
+  { label: 'B — Top Hood + Architect Era',         count: 1327,  color: TIER_COLOR.B },
+  { label: 'C — Named Hood / Estate Era',          count: 19082, color: TIER_COLOR.C },
+  { label: 'D — Period-Era Provenance',            count: 41976, color: TIER_COLOR.D },
 ];
 
 export default function PedigreeIndex() {
@@ -37,11 +40,10 @@ export default function PedigreeIndex() {
         supabase.from('property_master').select('apn', { count: 'exact', head: true }).eq('pedigree_tier', t)
       ));
       setTierStats([
-        // Never let count=0 overwrite a known fallback (silent RLS / cold-cache failure).
-        { label: 'A — Verified Dossier',        count: tierResults[0].count && tierResults[0].count > 0 ? tierResults[0].count : 50,    color: TIER_COLOR.A },
-        { label: 'B — Top Hood + MCM Era',       count: tierResults[1].count && tierResults[1].count > 0 ? tierResults[1].count : 1322,  color: TIER_COLOR.B },
-        { label: 'C — Named / MCM-Era',           count: tierResults[2].count && tierResults[2].count > 0 ? tierResults[2].count : 5134,  color: TIER_COLOR.C },
-        { label: 'D — Mid-Century Provenance',    count: tierResults[3].count && tierResults[3].count > 0 ? tierResults[3].count : 10282, color: TIER_COLOR.D },
+        { label: 'A — Verified Dossier',                count: tierResults[0].count && tierResults[0].count > 0 ? tierResults[0].count : 84,    color: TIER_COLOR.A },
+        { label: 'B — Top Hood + Architect Era',         count: tierResults[1].count && tierResults[1].count > 0 ? tierResults[1].count : 1327,  color: TIER_COLOR.B },
+        { label: 'C — Named Hood / Estate Era',          count: tierResults[2].count && tierResults[2].count > 0 ? tierResults[2].count : 19082, color: TIER_COLOR.C },
+        { label: 'D — Period-Era Provenance',            count: tierResults[3].count && tierResults[3].count > 0 ? tierResults[3].count : 41976, color: TIER_COLOR.D },
       ]);
 
       const hoodResults = await Promise.all(NEIGHBORHOODS.map(h =>
@@ -80,14 +82,16 @@ export default function PedigreeIndex() {
         {/* Header */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ fontSize: 11, letterSpacing: 4, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 12, fontWeight: 600 }}>
-            PropertyDNA — Coachella Valley Pedigree Index
+            PropertyDNA — Nationwide Pedigree Index
           </div>
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 44, lineHeight: 1.15, margin: 0, fontWeight: 400, color: '#fafafa' }}>
             The Pedigree of Every Home
           </h1>
           <p style={{ color: '#94a3b8', fontSize: 16, marginTop: 14, maxWidth: 720 }}>
-            We've systematically classified {total.toLocaleString()} Coachella Valley properties by architectural and cultural pedigree.
-            Verified celebrity provenance. Verified architect attribution. Indexed against Palm Springs Modernism Committee, Preservation Foundation, and primary source archives.
+            We've systematically classified {total.toLocaleString()} luxury properties across Palm Springs &amp; the Coachella Valley
+            and Fairfield County, Connecticut — by architectural and cultural pedigree. Verified celebrity provenance.
+            Verified architect attribution. Indexed against the Palm Springs Modernism Committee, Preservation Foundation,
+            Greenwich Historical Society, and primary-source county archives.
           </p>
           <div style={{ marginTop: 14, fontSize: 13 }}>
             <Link to="/blog/luxury-home-provenance-pedigree-classification" style={{ color: '#fbbf24', textDecoration: 'underline', textDecorationThickness: 1 }}>Read the full methodology →</Link>
@@ -207,8 +211,8 @@ export default function PedigreeIndex() {
         title="How the index works"
         items={[
           {
-            q: 'How did you pedigree-classify 16,788 Coachella Valley properties?',
-            a: 'We pulled every parcel from the Riverside County Assessor CREST API and Coachella Valley municipal datasets, joined to RentCast and our own property history, then layered three signals: named-neighborhood membership (Movie Colony, Old Las Palmas, Indian Canyons, etc.), MCM-era year built (1947-1979 for the core mid-century window), and architect attribution from primary-source archives. The composite produces the A/B/C/D pedigree tier and a 0-100 provenance score.',
+            q: 'How did you pedigree-classify 62,000+ luxury properties across two markets?',
+            a: 'For the Coachella Valley we pulled every parcel from the Riverside County Assessor CREST API and joined to RentCast plus our own property history. For Fairfield County, Connecticut, we ingested the county assessor cadastral data and applied the same composite signal: named-neighborhood membership, period-era year built (1947-1979 mid-century in Palm Springs; pre-1940 Gold Coast estate era + 1940-1969 post-war estate in Greenwich/Fairfield/Stamford/Norwalk/New Canaan/Wilton), and architect attribution from primary-source archives. The composite produces the A/B/C/D pedigree tier and a 0-100 provenance score.',
           },
           {
             q: 'What does the provenance score actually measure?',
@@ -219,8 +223,8 @@ export default function PedigreeIndex() {
             a: 'Eleven, with the heaviest coverage on the Palm Springs canon: John Lautner (8 verified PS commissions), Albert Frey (47), Richard Neutra (12), William Krisel (extensive tract attribution), E. Stewart Williams (Sinatra Twin Palms among others), Donald Wexler, Hugh Kaptur, William F. Cody, Howard Lapham, Walter S. White, Charles DuBois. Each architect has a profile page with their full PS portfolio and primary-source registry.',
           },
           {
-            q: 'Is this index just Palm Springs?',
-            a: 'The pedigree index is currently Coachella Valley — 16,788 properties across Palm Springs, Rancho Mirage, Cathedral City, Palm Desert, La Quinta, and surrounding cities. PropertyDNA itself indexes 3.58M properties nationwide. Expansion of the pedigree layer to Malibu, Paradise Valley, Palm Beach, Miami-Dade luxury, and Greenwich is on the roadmap.',
+            q: 'Which markets does the pedigree index cover?',
+            a: 'Two markets today: (1) the Coachella Valley — Palm Springs, Rancho Mirage, Cathedral City, Palm Desert, La Quinta, surrounding cities — ~16,800 properties; (2) Fairfield County, Connecticut — Greenwich, Fairfield, Stamford, Norwalk, New Canaan, Wilton — ~45,600 properties. Combined: 62,000+. PropertyDNA itself indexes 3.58M properties nationwide; the pedigree layer extends next to Malibu, Paradise Valley, Palm Beach, and the broader Miami-Dade luxury corridor.',
           },
           {
             q: 'Why does pedigree matter for value?',
