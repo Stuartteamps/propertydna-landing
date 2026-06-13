@@ -89,33 +89,24 @@ exports.handler = async () => {
   // confirmed working; their bulk endpoints work by contact_ids or list_ids.
   // Per-contact is slower but bulletproof. Within one Lambda invocation we
   // process up to MAX_PER_RUN contacts; the daily cron clears the rest.
-  const MAX_PER_RUN = 250;
+  const MAX_PER_RUN = 200;
+  const CONCURRENCY = 10;
   const slice = emails.slice(0, MAX_PER_RUN);
-  let totalAttempted = 0;
-  let alreadyDone = 0;
-  let notInCC = 0;
-  let succeeded = 0;
-  let failed = 0;
+  let alreadyDone = 0, notInCC = 0, succeeded = 0, failed = 0;
   const sampleErrors = [];
 
-  for (const email of slice) {
-    totalAttempted++;
+  async function processOne(email) {
     try {
-      // Lookup contact — CC returns email_address by default, no include needed.
       const look = await ccGet(ccToken, `/v3/contacts?email=${encodeURIComponent(email)}`);
       const c = look?.data?.contacts?.[0];
-      if (!c) { notInCC++; continue; }
-      if (c.email_address?.permission_to_send === 'unsubscribed') { alreadyDone++; continue; }
-
-      // Unsubscribe — PUT requires full contact body; minimal mutate via PATCH-style PUT
+      if (!c) { notInCC++; return; }
+      if (c.email_address?.permission_to_send === 'unsubscribed') { alreadyDone++; return; }
       const res = await ccPut(ccToken, `/v3/contacts/${c.contact_id}`, {
         update_source: 'Account',
-        email_address: {
-          address: email,
-          permission_to_send: 'unsubscribed',
-        },
+        email_address: { address: email, permission_to_send: 'unsubscribed' },
       });
-      if (res.status >= 200 && res.status < 300) { succeeded++; } else {
+      if (res.status >= 200 && res.status < 300) { succeeded++; }
+      else {
         failed++;
         if (sampleErrors.length < 3) sampleErrors.push({ email, status: res.status, body: String(JSON.stringify(res.data)).slice(0, 200) });
       }
@@ -124,6 +115,12 @@ exports.handler = async () => {
       if (sampleErrors.length < 3) sampleErrors.push({ email, error: String(e.message || e).slice(0, 160) });
     }
   }
+
+  // Process in concurrent windows of CONCURRENCY
+  for (let i = 0; i < slice.length; i += CONCURRENCY) {
+    await Promise.all(slice.slice(i, i + CONCURRENCY).map(processOne));
+  }
+  const totalAttempted = slice.length;
   const responses = [{ note: `processed ${totalAttempted} / ${emails.length} total unsub queue`, succeeded, alreadyDone, notInCC, failed, sampleErrors, status: failed === 0 ? 200 : 207 }];
 
   return {
