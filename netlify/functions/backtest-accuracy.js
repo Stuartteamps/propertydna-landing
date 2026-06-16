@@ -77,10 +77,16 @@ exports.handler = async (event) => {
   }
 
   const q = event.queryStringParameters || {};
-  const months = Math.min(Math.max(parseInt(q.months || "12", 10), 1), 60);
+  const months = Math.min(Math.max(parseInt(q.months || "12", 10), 1), 240);
   const limit = Math.min(Math.max(parseInt(q.limit || "800", 10), 10), 5000);
   const floor = Math.max(parseInt(q.floor || "50000", 10), 0);
+  // appreciate: annual % to age each prior sale forward to today, so an old
+  // recorded sale can be compared to a current estimate without the time gap
+  // showing up as false "error". 0 = off (raw sale price). Honest caveat:
+  // results then depend on this assumed appreciation rate.
+  const appreciate = Math.min(Math.max(parseFloat(q.appreciate || "0"), 0), 25) / 100;
   const cutoff = isoMonthsAgo(months);
+  const nowMs = Date.now();
 
   try {
     // Probe mode — inspect what's actually populated in `properties`.
@@ -142,24 +148,31 @@ exports.handler = async (event) => {
     }
     const piByHash = new Map(piRows.map((r) => [r.address_hash, r]));
 
-    // 3) Build comparison sets.
+    // 3) Build comparison sets (skipping junk rows; optionally time-adjusting).
     const pdnaPairs = [], rentcastPairs = [], estPairs = [];
+    const ages = [];
     for (const [hash, p] of byHash.entries()) {
-      const actual = Number(p.last_sale_price);
-      if (!actual) continue;
+      const sale = Number(p.last_sale_price);
+      if (!sale || !p.last_sale_date) continue;
+      if (!p.address || p.address === "--") continue; // junk row
+      const yrs = Math.max(0, (nowMs - Date.parse(p.last_sale_date)) / (365.25 * 864e5));
+      ages.push(yrs);
+      const actual = appreciate > 0 ? sale * Math.pow(1 + appreciate, yrs) : sale;
       const pi = piByHash.get(hash);
       if (pi && Number(pi.pdna_value_mid)) pdnaPairs.push({ predicted: Number(pi.pdna_value_mid), actual });
       if (pi && Number(pi.rentcast_value)) rentcastPairs.push({ predicted: Number(pi.rentcast_value), actual });
       if (Number(p.current_estimated_value)) estPairs.push({ predicted: Number(p.current_estimated_value), actual });
     }
+    const medianAgeYrs = ages.length ? +median(ages).toFixed(1) : null;
 
     const propertydna = score(pdnaPairs);
     const rentcast = score(rentcastPairs);
     const indexEstimate = score(estPairs);
 
     const lines = [];
-    lines.push(`PropertyDNA Back-Test — real recorded sales since ${cutoff}`);
+    lines.push(`PropertyDNA Back-Test — recorded sales since ${cutoff}`);
     lines.push(`Solds pulled: ${solds.length} | matched to a stored PropertyDNA value: ${propertydna.n || 0} (${((propertydna.n || 0) / solds.length * 100).toFixed(0)}%)`);
+    if (medianAgeYrs != null) lines.push(`Median sale age: ${medianAgeYrs} yrs${appreciate > 0 ? ` | time-adjusted forward at ${(appreciate * 100).toFixed(1)}%/yr` : ` | NOT time-adjusted (old sales inflate error — add &appreciate=6)`}`);
     if (propertydna.n) {
       lines.push("");
       lines.push(`PropertyDNA  → MdAPE ${propertydna.mdapePct}% | within10 ${propertydna.within10Pct}% | bias ${propertydna.biasPct > 0 ? "+" : ""}${propertydna.biasPct}% | DEFENSIBLE ${propertydna.defensibleAccuracyPct}%`);
@@ -178,8 +191,9 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         ok: true,
         ranAt: new Date().toISOString(),
-        params: { months, limit, floor, cutoff },
+        params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100 },
         soldsPulled: solds.length,
+        medianSaleAgeYrs: medianAgeYrs,
         matchRatePct: +(((propertydna.n || 0) / solds.length) * 100).toFixed(1),
         propertydna,
         rentcast,
