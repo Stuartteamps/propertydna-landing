@@ -20,6 +20,35 @@
 [functions."index-florida"]
   timeout = 26
 
+# East Coast / mid-Atlantic indexers (added 2026-06-15).
+# Staggered every ~4h so only ONE indexer fires at a time — IO budget concern
+# after the 2026-05-27 disk-IO exhaustion incident. All indexers idempotent
+# (resume from saved offset via kpi_events progress rows).
+[functions."index-tennessee"]
+  schedule = "15 2 * * *"
+  timeout = 26
+
+[functions."index-massachusetts"]
+  schedule = "15 6 * * *"
+  timeout = 26
+
+[functions."index-maryland"]
+  schedule = "15 10 * * *"
+  timeout = 26
+
+[functions."index-dc"]
+  schedule = "15 14 * * *"
+  timeout = 26
+
+[functions."index-georgia"]
+  schedule = "15 18 * * *"
+  timeout = 26
+
+# NY indexer is already coded; re-arm now that compute upgraded post-incident.
+[functions."index-newyork"]
+  schedule = "15 22 * * *"
+  timeout = 26
+
 # send-weekly-newsletter was firing on the same Thursday schedule as
 # send-cc-newsletter, causing every contact to receive 2 identical emails
 # 30s apart — a strong spam-folder signal. Schedule removed; the function

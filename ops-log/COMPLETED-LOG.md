@@ -151,3 +151,33 @@ DatabaseTimeout (residual from the 2026-05-27 IO incident).
 ### Ops tracking system (this folder) — ✅ LIVE
 Created `ops-log/` with status taxonomy that forbids "done" without proof.
 - **Verify:** `ls ops-log/` → `README.md  COMPLETED-LOG.md`
+
+### East Coast / mid-Atlantic indexers — ✅ LIVE (2026-06-15)
+Five new ArcGIS-backed indexers shipped to fill zero-state gaps post the
+2026-05-27 IO incident. Compute upgraded; IO budget now allows staggered runs.
+- **Files:** `netlify/functions/index-{tennessee,massachusetts,maryland,dc,georgia}.js`
+- **Crons (UTC, staggered every 4h to spread IO load):** TN 02:15, MA 06:15, MD 10:15, DC 14:15, GA 18:15, NY 22:15. `timeout = 26s` each.
+- **Endpoint inventory (all verified live with count queries before code shipped):**
+  - TN-Davidson: maps.nashville.gov Cadastral_Layers (286k)
+  - TN-Williamson: services1.arcgis.com/qTQ6qYkHpxlu0G82 kx_williamson (100k)
+  - TN-Sumner/Cheatham: TN State Public Use (108k boundary-only)
+  - MA: MassGIS L3 Property Tax Parcels statewide (180k Boston alone)
+  - MD-Anne Arundel: gis.aacounty.org Planning OpenData (267k)
+  - MD-Baltimore Co: bcgis.baltimorecountymd.gov Property/Property (375k)
+  - DC: maps2.dcgis.dc.gov DCGIS_DATA Common Ownership Layer (133k)
+  - GA-Fulton: AQDHTHDrZzfsFsB5 Tax_Parcels2020 (358k)
+  - GA-DeKalb: dcgis.dekalbcountyga.gov TaxParcels (246k)
+  - GA-Atlanta-City: gis.atlantaga.gov DPCD TaxParcel (171k)
+- **Endpoints that 404'd → fallback path:**
+  - MD-Montgomery / MD-Howard: no open ArcGIS layer with assessment data — deferred to SDAT API integration (separate task).
+  - GA-Cobb / GA-Gwinnett: county GIS portals require login or expose parcel boundaries without owner/value — DeKalb + Fulton + Atlanta cover the same metro.
+  - TN statewide layer is missing Davidson/Williamson/Shelby/Knox/Hamilton (the big metros) — pulled those from county-specific sources instead.
+- **Smoke test (`dryRun:true, batchSize:50`):** all 5 fetched real attributes from the live source, 0 errors.
+- **Real run (`batchSize:1000`) tonight:** TN +1000, MA +1000, MD +797, DC +1000, GA +1000 = **+4,797 rows** added to `property_master` (from 0 across all 5 states pre-tonight).
+- **Verify counts (current):**
+  ```
+  curl -s "https://neccpdfhmfnvyjgyrysy.supabase.co/rest/v1/property_master?state=eq.TN&select=apn" -H "apikey: $SK" -H "Authorization: Bearer $SK" -H "Prefer: count=exact" -H "Range: 0-0" -I | grep content-range
+  ```
+  → TN 1000, MA 1000, MD 797, DC 1000, GA 1000 (verified 2026-06-15).
+- **Known issue, fixed in flight:** MD source returns duplicate APNs (condo sub-parcels). Added `dedupeByApn()` to all 5 indexers — same dataset shape pattern across all ArcGIS sources.
+- **Resume / advance:** each cron call advances one batch via saved offset in `kpi_events` (`${state}_index_progress`). Will compound to ~70k rows/day across all 5 states once steady-state. Full coverage of Atlanta-metro + Boston-metro + Davidson + DC + AA/Baltimore expected in 3-4 weeks of cron runs.
