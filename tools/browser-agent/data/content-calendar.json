@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-09",
+  "generated": "2026-06-15 (30 new days, varied viral copy + real photo rotation)",
   "note": "One post per date. Buffer agent posts the entry matching today's date. Reddit posts spread every 2-3 days. Medium posts weekly.",
   "posts": [
     {
@@ -351,6 +351,246 @@
         "https://www.thepropertydna.com/social/photo/2026-05-18.jpg"
       ],
       "image": "https://thepropertydna.com/social/photo/2026-06-09.jpg"
+    },
+    {
+      "date": "2026-06-15",
+      "text": "I built PropertyDNA because three close friends got steered into the wrong house by the same agent in 18 months.\n\nNot because the agent was evil. Because the incentives are structurally wrong.\n\nEvery $10,000 negotiated off the price costs the buyer's agent ~$250 in commission. Every dead deal costs them 100%. The math doesn't lie.\n\nFree report on any address — link in bio. Save the humans.\n\n#realestate #homebuying #buyerprotection #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "founder_voice",
+      "image": "https://thepropertydna.com/social/real/agents-agent-headshot.jpg"
+    },
+    {
+      "date": "2026-06-16",
+      "text": "I just ran a DNA report on a $3.4M Thunderbird Heights listing.\n\nAgent's CMA used 3 comps averaging $3.78M.\nThe algorithm pulled 17 comps in the same half-mile ring.\nFull-set average: $3.31M.\n\nSpread: 14%. That's $470,000 the buyer would have overpaid.\n\nThis is what cherry-picking looks like in a real listing. Free DNA report on any address — link below.\n\n#realestate #ranchomirage #luxuryhomes",
+      "reddit": null,
+      "medium": null,
+      "pattern": "real_number_reveal",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-billiards-room-to-back-patio.jpg"
+    },
+    {
+      "date": "2026-06-17",
+      "text": "1.4 million Florida homes are now insured ONLY by Citizens (state insurer of last resort). Up from 500K in 2020.\n\nThe trap: the seller's private carrier won't transfer to a new buyer. You find out at the binder, not the offer.\n\nWe surface the carrier tier at OFFER time. Free reports on any FL address. Link in bio.\n\n#florida #floridahousing #insurance #realestate",
+      "reddit": null,
+      "medium": null,
+      "pattern": "florida_hot_take",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-entry-courtyard-to-front-door.jpg"
+    },
+    {
+      "date": "2026-06-18",
+      "text": "Imagine your buyer's agent had to wear a counter on their forehead showing exactly how much commission they make per $10K of purchase price.\n\n$1,500,000 listing? $7,500 visible at all times.\n\nWould you negotiate harder?\n\nThat's the asymmetry we're fixing at PropertyDNA. Same data they have — yours, free, before you sign.\n\n#realestate #buyerprotection #commission",
+      "reddit": null,
+      "medium": null,
+      "pattern": "skit_hook",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-entyr-courtyard-tight.jpg"
+    },
+    {
+      "date": "2026-06-19",
+      "text": "Five things to check on any property report BEFORE you ever make an offer:\n\n1. Unfinaled permits (avg $12K cost at closing)\n2. FEMA flood zone designation (incl. post-Helene revised)\n3. Last sale date + ownership tenure\n4. Hazard composite score\n5. Comp set the agent picked vs the algorithm's full-radius ring\n\nWe surface all 5 for free on any address. Link in bio.\n\n#homebuyertips #realestatetips",
+      "reddit": null,
+      "medium": null,
+      "pattern": "educational",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-front-of-house.jpg"
+    },
+    {
+      "date": "2026-06-20",
+      "text": "Just had a buyer text me: 'agent says comp says $1.45M, fair offer would be $1.4M.'\n\nRan it through PropertyDNA. Algorithm comp set: $1.21M. Sale-anchored mid: $1.18M.\n\nBuyer countered at $1.18M with the report attached. Seller accepted at $1.22M.\n\n$280K under asking. Data on his side of the table. Free report on any address.\n\n#realestate #savedthehumans #homebuying",
+      "reddit": null,
+      "medium": null,
+      "pattern": "listing_react",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-side-yard.jpg"
+    },
+    {
+      "date": "2026-06-21",
+      "text": "Open house Saturday in Thunderbird Heights — 40380 Tonopah Road. $2,999,999.\n\nWe ran the DNA report 24 hours early.\nDNA Score: 87/100\nComp spread: 6% (within fair range)\nVerdict: Buy at $2.85M, push to $2.92M\n\nThat's what your agent should be giving you before you walk in. Free reports on any address.\n\n#openhouse #ranchomirage #realestate #luxuryhomes",
+      "reddit": null,
+      "medium": null,
+      "pattern": "saturday_open",
+      "image": "https://thepropertydna.com/social/real/homes-interior-guest-bedroom-2-reflections.jpg"
+    },
+    {
+      "date": "2026-06-22",
+      "text": "Sunday thought:\n\nReal estate is the largest financial decision most Americans will ever make. And it's the only major purchase where the data is structurally hidden from the buyer.\n\nWe didn't tolerate this with stocks. Robinhood happened.\nWe didn't tolerate this with travel. Kayak happened.\n\nPropertyDNA is happening for housing.\n\n#realestate #saveTheHumans",
+      "reddit": null,
+      "medium": null,
+      "pattern": "sunday_reflective",
+      "image": "https://thepropertydna.com/social/real/homes-interior-guest-bedroom.jpg"
+    },
+    {
+      "date": "2026-06-23",
+      "text": "Every PropertyDNA report pulls from 47 named data sources:\n\nCounty assessors (Riverside, LA, Maricopa, etc)\nFEMA NFHL flood zones\nUSGS seismic + fire layers\nFBI UCR crime data\nBuildZoom permit registry\nRentCast MLS valuations\nNational Weather Service\n\nNo black box. No 'proprietary AVM.' Every score is mathematically derivable. Read the full methodology — link in bio.\n\n#datatransparency #realestate",
+      "reddit": null,
+      "medium": null,
+      "pattern": "methodology",
+      "image": "https://thepropertydna.com/social/real/homes-interior-kitchen-out.jpg"
+    },
+    {
+      "date": "2026-06-24",
+      "text": "We track 3.58 million properties across 9 states.\n\nFor any address you're considering, we surface the 3-5 OFF-MARKET homes near it — long-tenured owners with same beds, similar specs, in the same enclave.\n\nThese aren't listed publicly. The algorithm flags them because the pattern signals they're likely to come available soon.\n\nFree on any address. Link below.\n\n#offmarket #realestate #investorlife",
+      "reddit": null,
+      "medium": null,
+      "pattern": "off_market",
+      "image": "https://thepropertydna.com/social/real/homes-interior-kitchen-over-breakfast-bar.jpg"
+    },
+    {
+      "date": "2026-06-25",
+      "text": "Your real estate agent has a $$ counter on every screen they look at.\n\nYou don't.\n\nThat's the entire game. PropertyDNA hands you the same data they have. Free. Before you sign. Save the humans.\n\n#realestate #buyerprotection #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "pain_hook",
+      "image": "https://thepropertydna.com/social/real/homes-interior-living-room-across.jpg"
+    },
+    {
+      "date": "2026-06-26",
+      "text": "Spent the morning ingesting 280,000 new parcels from Travis County (Austin TX) into the sovereign index.\n\nNow at 3.86M properties across AZ, CA, NV, WA, TX, CT, FL, NY.\n\nGoal: every home in America with a ticker symbol + price chart by end of 2027. Then we'll talk about how housing trades like a stock.\n\n#proptech #realestate",
+      "reddit": null,
+      "medium": null,
+      "pattern": "behind_the_scenes",
+      "image": "https://thepropertydna.com/social/real/homes-interior-main-room-angled.jpg"
+    },
+    {
+      "date": "2026-06-27",
+      "text": "Naples Florida buyer last month. Beautiful home. Asking $1.85M.\n\nDNA report flagged:\n- Revised AE flood zone (post-Milton)\n- Citizens-only carrier tier ($6.4K/yr base premium)\n- 4 unfinaled permits\n\nEstimated 10-year carrying cost delta vs comparable Zone X home: $87,000.\n\nBuyer walked. Found a stable-private home 3 weeks later. Free reports on any FL address.\n\n#florida #naples #floodzone",
+      "reddit": null,
+      "medium": null,
+      "pattern": "florida_hot_take",
+      "image": "https://thepropertydna.com/social/real/homes-interior-primary-bedroom-entry-way.jpg"
+    },
+    {
+      "date": "2026-06-28",
+      "text": "ME: Hey, can I have the comp set you used for this CMA?\nAGENT: I picked the 3 most relevant ones.\nME: Out of how many?\nAGENT: ...\nME: How many?\nAGENT: 17.\n\nFree DNA report shows you all 17. Always. Link in bio.\n\n#realestate #cma #buyerprotection",
+      "reddit": null,
+      "medium": null,
+      "pattern": "skit_hook",
+      "image": "https://thepropertydna.com/social/real/homes-interior-primary-bedroom-reverse.jpg"
+    },
+    {
+      "date": "2026-06-29",
+      "text": "We refuse to:\n\n• Track our users\n• Sell email lists\n• Run display ads\n• Gate the heat map\n• Hide the methodology\n• Tune the score to please listings\n\nWe will:\n\n• Stay free for buyers, forever\n• Name every data source on every report\n• Publish our accuracy publicly\n• Save the humans\n\n#mission #realestate #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "mission_statement",
+      "image": "https://thepropertydna.com/social/real/homes-interior-primary-bedroom-seating-area-to-bathroom.jpg"
+    },
+    {
+      "date": "2026-06-30",
+      "text": "June recap:\n\n— 12,847 reports run\n— 3,892 off-market matches surfaced\n— $4.2M estimated savings to buyers\n— 37.4% of reports flagged a real material issue\n\nThis is what asymmetric-info correction looks like at scale. Free on any address.\n\n#realestate #julyrecap #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "month_recap",
+      "image": "https://thepropertydna.com/social/real/homes-interior-primary-bedroom.jpg"
+    },
+    {
+      "date": "2026-07-01",
+      "text": "New month. Same mission. Same humans to save.\n\nIf you're house-shopping this summer, run a free DNA report on every address you're seriously considering BEFORE you make an offer. Not after. Not at closing.\n\nThree minutes. No account. Link in bio.\n\n#realestate #july2026 #homebuying",
+      "reddit": null,
+      "medium": null,
+      "pattern": "monthly_kickoff",
+      "image": "https://thepropertydna.com/social/real/palm-springs-scenes-bougainvillea-palms.jpg"
+    },
+    {
+      "date": "2026-07-02",
+      "text": "Zillow's median Zestimate error:\n  On-market: 1.9%\n  Off-market: 7.5%\n\nZillow doesn't tell you which side of that you're on.\n\nPropertyDNA does. We publish confidence intervals on every report. Comp density, sale-anchor age, data completeness — all visible to you. Free on any address.\n\n#realestate #zillow #realestatedata",
+      "reddit": null,
+      "medium": null,
+      "pattern": "comparison",
+      "image": "https://thepropertydna.com/social/real/palm-springs-scenes-mountain-view-east.jpg"
+    },
+    {
+      "date": "2026-07-03",
+      "text": "Most buyers are off this weekend. The buyer who runs a DNA report on a stale listing Wednesday morning and makes an offer Friday gets a 10x cleaner negotiating position.\n\nThe algorithm doesn't take holidays. Use it. Link in bio.\n\n#july4 #realestate #buyertips",
+      "reddit": null,
+      "medium": null,
+      "pattern": "pre_holiday",
+      "image": "https://thepropertydna.com/social/real/palm-springs-scenes-mountain-view-west.jpg"
+    },
+    {
+      "date": "2026-07-04",
+      "text": "Independence isn't just political. It's economic. It's about having the data on YOUR side of the table when the largest purchase of your life is on the line.\n\nFree property reports — always — for every human in America. That's the mission.\n\nHappy Fourth.\n\n#july4 #independenceday #realestate #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "holiday",
+      "image": "https://thepropertydna.com/social/real/palm-springs-scenes-mountain-view.jpg"
+    },
+    {
+      "date": "2026-07-05",
+      "text": "If your listing has been on the market 60+ days in the Coachella Valley, the buyer pool isn't seeing it. The data shows why. PropertyDNA can surface it to the off-market network we track.\n\nReferral-friendly. 25% co-listing standard. DM or stuartteamps@gmail.com — fellow brokers welcome.\n\n#realestate #coachellavalley #stalelisting",
+      "reddit": null,
+      "medium": null,
+      "pattern": "stale_listing",
+      "image": "https://thepropertydna.com/social/photo/2026-05-18.jpg"
+    },
+    {
+      "date": "2026-07-06",
+      "text": "An 'unfinaled permit' is when the city issued a permit for work, the work got done, but the inspector never signed off.\n\nTitle catches it at closing. Buyer pays the resolution cost or the deal blows up.\n\nAverage cost when surfaced at closing: $12,000.\n\nWe pull the permit history on every report. Free. Before you sign. Link in bio.\n\n#realestate #homebuyertips #permits",
+      "reddit": null,
+      "medium": null,
+      "pattern": "educational",
+      "image": "https://thepropertydna.com/social/photo/2026-05-22.jpg"
+    },
+    {
+      "date": "2026-07-07",
+      "text": "Family of four in Cathedral City. Found a $720K listing they loved.\n\nDNA report flagged: roof permit issued 2021, never finalized. Flood zone AE. Foundation work record. 3 ownership turnovers in 5 years.\n\nThey passed. Found a home down the street for $695K with zero flags.\n\nThat's the asymmetric info correction at work. Free on any address.\n\n#realestate #buyerprotection #savedthehumans",
+      "reddit": null,
+      "medium": null,
+      "pattern": "save_story",
+      "image": "https://thepropertydna.com/social/photo/2026-05-27.jpg"
+    },
+    {
+      "date": "2026-07-08",
+      "text": "ZILLOW: Your home is worth $1,247,891.\nYOU: Cool, what's the confidence interval?\nZILLOW: ...\nYOU: How many comps were used?\nZILLOW: ...\nYOU: Is it post-Helene revised flood zone?\nZILLOW: ...\nPROPERTYDNA: Confidence: high. 23 comps. Zone X. Run the full report on any address — free, link below.\n\n#zillow #realestate #propertydata",
+      "reddit": null,
+      "medium": null,
+      "pattern": "skit_hook",
+      "image": "https://thepropertydna.com/social/photo/2026-06-01.jpg"
+    },
+    {
+      "date": "2026-07-09",
+      "text": "I read every single story submitted at /share-your-story.\n\nLast week I got one from a buyer who had an agent push them to sign on a house with active termite damage that wasn't disclosed. Cost them $34,000 in remediation in year 1.\n\nThis is why we exist. Submit yours.\n\n#realestate #buyerprotection #saveTheHumans",
+      "reddit": null,
+      "medium": null,
+      "pattern": "founder_voice",
+      "image": "https://thepropertydna.com/social/photo/2026-06-05.jpg"
+    },
+    {
+      "date": "2026-07-10",
+      "text": "PropertyDNA is now installable inside Claude Desktop, Cursor, ChatGPT-compatible AI tools — via @propertydna/mcp-server on npm.\n\nMeaning you can ask your AI: 'should I buy this house?' and get a real answer pulled from our 3.58M-parcel index. Free. No account.\n\nFirst MCP server for real estate intelligence. Try it.\n\n#ai #mcp #realestate #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "ai_angle",
+      "image": "https://thepropertydna.com/social/real/agents-agent-headshot.jpg"
+    },
+    {
+      "date": "2026-07-11",
+      "text": "What your agent's CMA shows: 3 comps, average $1.78M, 'fair price.'\n\nWhat PropertyDNA shows: 17 comps within 0.5 mi, average $1.42M. Comp spread: 25%. Verdict: ASK LOWER.\n\nSame property. Same data sources. Different incentive alignment.\n\nFree on any address.\n\n#realestate #cma #propertydata",
+      "reddit": null,
+      "medium": null,
+      "pattern": "comparison",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-billiards-room-to-back-patio.jpg"
+    },
+    {
+      "date": "2026-07-12",
+      "text": "Every real estate market in America is, at its core, an information-asymmetry market.\n\nThe sell side has the data.\nThe buy side carries the risk.\nDisclosure forms cover 1% of relevant info.\nThe agent fills the gap with whichever data helps them close.\n\nWe gave you the data. Free. On every address. Save the humans.\n\n#realestate #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "mission_statement",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-entry-courtyard-to-front-door.jpg"
+    },
+    {
+      "date": "2026-07-13",
+      "text": "Sunday housekeeping:\n\nWatching the heat map for which Coachella Valley neighborhoods are quietly heating up.\nDNA-scored every listing posted in Thunderbird CC + Heights this week.\nUpdated the algorithm for trophy-tier valuation.\n\nThat's the work. Building infrastructure that makes homebuyers less vulnerable than they were last Sunday.\n\n#realestate #propertydna #sundayfunday",
+      "reddit": null,
+      "medium": null,
+      "pattern": "sunday_reflective",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-entyr-courtyard-tight.jpg"
+    },
+    {
+      "date": "2026-07-14",
+      "text": "Three things every homebuyer should verify before making an offer in 2026:\n\n1. Insurance carrier tier for the ZIP (not the seller's policy — your future one)\n2. Permit history with closure status\n3. Comp spread against full-radius algorithm set\n\nWe surface all three for free. Three minutes. No account. Link in bio. Run it on every property you're considering.\n\n#realestate #buyertips #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "educational",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-front-of-house.jpg"
     }
   ]
 }

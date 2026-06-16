@@ -132,6 +132,15 @@
   schedule = "30 13 * * *"
   timeout = 30
 
+# Mondays 14:00 UTC = 7 AM PDT. Catches the "social feed went stale"
+# failure class — buffer agent's most-recent-past-entry fallback was
+# silently re-serving identical posts for 6 days when the calendar ran
+# out (root cause: calendar ended 6/9, kept replaying through 6/15).
+# Alerts Dan if <10 future entries remain OR <=2 unique images in last 7d.
+[functions."calendar-watchdog"]
+  schedule = "0 14 * * 1"
+  timeout = 15
+
 # Daily 02:00 UTC = 7 PM PDT. End-of-day log: commits shipped, content
 # moved, KPIs delta, and the top action items still needed from Dan.
 # The "stay on track" loop Dan asked for.
