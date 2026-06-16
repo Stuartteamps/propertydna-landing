@@ -196,6 +196,12 @@ exports.handler = async (event) => {
   const reportId  = crypto.randomUUID();
   const fullAddress = [address, city, state, zip].filter(Boolean).join(", ");
 
+  // Synthetic health-check submission (e.g. healthcheck+<ts>@thepropertydna.com from the
+  // monitor's Step-3 pipeline test). Exercise the full pipeline (row + n8n enrichment) but
+  // send NO email: the user address is a non-existent mailbox that always bounces, and the
+  // owner copy is just noise in Dan's inbox on every run.
+  const isHealthCheck = /^healthcheck\+/i.test(normalizedEmail);
+
   // ── 1. Save pending record ────────────────────────────────────────────────
   try {
     await db.insert("property_reports", {
@@ -214,17 +220,17 @@ exports.handler = async (event) => {
     console.error("[queue-report] failed to save pending record:", e.message);
   }
 
-  // ── 2. Send queued email to user ──────────────────────────────────────────
-  const emailResult = await sendQueuedEmail({
+  // ── 2. Send queued email to user (skipped for synthetic health-check runs) ──
+  const emailResult = isHealthCheck ? null : await sendQueuedEmail({
     recipientEmail: normalizedEmail,
     recipientName:  fullName || null,
     propertyAddress: fullAddress,
     viewToken,
   }).catch(e => { console.error("[queue-report] email error:", e.message); return null; });
 
-  // ── 3. Send owner copy ────────────────────────────────────────────────────
+  // ── 3. Send owner copy (skipped for synthetic health-check runs) ────────────
   const OWNER = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
-  if (OWNER && OWNER !== normalizedEmail) {
+  if (!isHealthCheck && OWNER && OWNER !== normalizedEmail) {
     sendQueuedEmail({
       recipientEmail: OWNER,
       recipientName:  `${fullName || normalizedEmail} (copy to owner)`,
