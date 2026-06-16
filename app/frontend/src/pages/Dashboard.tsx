@@ -20,6 +20,32 @@ interface Report {
 
 type LoadStatus = 'idle' | 'loading' | 'done' | 'error';
 
+/** Copies the public, no-login report link (/report/view/:token) to share with
+ *  clients or other agents — they never need to log into your account. */
+function CopyLinkButton({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(url); }
+    catch {
+      const ta = document.createElement('textarea');
+      ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch { /* noop */ }
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button
+      onClick={copy}
+      style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: copied ? '#2D9142' : '#6B6252', background: 'none', border: `1px solid ${copied ? 'rgba(45,145,66,0.5)' : 'rgba(255,255,255,0.12)'}`, padding: '8px 14px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+    >
+      {copied ? '✓ Copied' : '⧉ Copy Link'}
+    </button>
+  );
+}
+
 export default function Dashboard() {
   // iOS has no concept of user accounts — redirect to home (Apple Guideline
   // 3.1.1 + 2.1(a)). Saved reports live in the Home tab via SavedReportsStore.
@@ -294,16 +320,19 @@ export default function Dashboard() {
                   </div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
                     {report.reportUrl ? (
-                      <a
-                        href={report.reportUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.4)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(201,168,76,0.08)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                      >
-                        Open Report →
-                      </a>
+                      <>
+                        <CopyLinkButton url={report.reportUrl} />
+                        <a
+                          href={report.reportUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.4)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(201,168,76,0.08)'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                        >
+                          Open Report →
+                        </a>
+                      </>
                     ) : (
                       <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(107,98,82,0.5)' }}>Delivered by email</span>
                     )}

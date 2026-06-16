@@ -1139,3 +1139,10 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: err.message }) };
   }
 };
+
+// ── Named exports for offline tooling (the back-test harness in tools/backtest).
+//    The Netlify runtime only invokes exports.handler above; these are additive
+//    and do not change request handling. ──
+exports.computeDnaAdjustment = computeDnaAdjustment;
+exports.autoDetectFeatures   = autoDetectFeatures;
+exports.extractValuation     = extractValuation;

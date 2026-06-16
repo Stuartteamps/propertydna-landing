@@ -9,6 +9,8 @@ import { NeighborhoodBreakdown } from '@/components/report/NeighborhoodBreakdown
 import LuxuryDossierSection from '@/components/LuxuryDossierSection';
 import InvestmentAnalysis from '@/components/InvestmentAnalysis';
 import { arvFromComps as compArv } from '@/lib/investmentAnalysis';
+import ReportActions from '@/components/report/ReportActions';
+import PriceGapPanel from '@/components/report/PriceGapPanel';
 
 // Lazy-load Leaflet — isolates any crash to just the map section
 const ReportMap = lazy(() => import('@/components/report/ReportMap'));
@@ -228,10 +230,12 @@ export default function ReportViewByToken() {
 
   return (
     <div style={{ background: '#0A0908', minHeight: '100vh', color: '#F0EBE0' }}>
-      <Nav
-        onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
-        onRequestAccessClick={() => setPricingOpen(true)}
-      />
+      <div className="no-print">
+        <Nav
+          onSignInClick={() => { setModalTab('signin'); setModalOpen(true); }}
+          onRequestAccessClick={() => setPricingOpen(true)}
+        />
+      </div>
       <AuthModal isOpen={modalOpen} initialView={modalTab} onClose={() => setModalOpen(false)} />
       <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} />
 
@@ -291,6 +295,8 @@ export default function ReportViewByToken() {
       </section>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 48px 80px' }}>
+
+        <ReportActions shareUrl={typeof window !== 'undefined' ? window.location.href : undefined} />
 
         {dna.wouldWeBuyIt && (
           <div style={{ background: '#111', border: '1px solid rgba(201,168,76,0.2)', padding: 28, marginBottom: 40 }}>
@@ -393,6 +399,9 @@ export default function ReportViewByToken() {
           </Section>
         )}
 
+        {/* Pricing Gap Analysis — "why the price is off" (reads ?list= for verdict) */}
+        <PriceGapPanel dnaAdj={dnaAdj} val={val} />
+
         {/* Investment Analysis — real ROI for any property type */}
         {(() => {
           const num = (v: any) => { const n = Number(String(v ?? '').replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };
@@ -416,7 +425,7 @@ export default function ReportViewByToken() {
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', marginBottom: 16 }}>
               Subject property shown in gold. Comparable sales sized and colored by price.
             </div>
-            <div style={{ height: 420, borderRadius: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="no-print" style={{ height: 420, borderRadius: 0, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
               <MapErrorBoundary>
                 <Suspense fallback={<div style={{ height: '100%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6252', fontFamily: 'Jost, sans-serif', fontSize: 12 }}>Loading map…</div>}>
                   <ReportMap
@@ -785,7 +794,7 @@ export default function ReportViewByToken() {
         </div>
       </div>
 
-      <Footer />
+      <div className="no-print"><Footer /></div>
     </div>
   );
 }

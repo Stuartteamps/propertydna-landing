@@ -1,0 +1,9 @@
+address,actual_price,predicted_price,raw_mid,last_sale_price,last_sale_date,market_yoy,pool,casita,gated,golf,mountain_view
+"50220 Via Puente, La Quinta",2350000,2425000,2300000,1850000,2014-03-01,4,1,1,1,0,1
+"64356 Doral Dr, Desert Hot Springs",520000,538000,510000,365000,2016-06-01,5,1,0,0,1,1
+"Palm Desert (Sun City)",615000,598000,600000,470000,2018-05-01,4,1,0,1,1,0
+"Indian Wells (Toscana)",1280000,1335000,1250000,980000,2015-02-01,4,1,1,1,1,1
+"Rancho Mirage (Mission Hills)",845000,815000,830000,640000,2017-09-01,3,1,0,1,0,1
+"Palm Springs (MCM)",1150000,1205000,1120000,720000,2013-04-01,5,0,0,0,0,1
+"Indio (family)",465000,452000,460000,330000,2019-07-01,4,1,0,0,0,0
+"Cathedral City",398000,409000,395000,295000,2018-08-01,4,0,0,0,0,0

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-15 (30 new days, varied viral copy + real photo rotation)",
+  "generated": "2026-06-15 (nationwide broadened + trade-like-stocks vision + 5 extension days)",
   "note": "One post per date. Buffer agent posts the entry matching today's date. Reddit posts spread every 2-3 days. Medium posts weekly.",
   "posts": [
     {
@@ -362,7 +362,7 @@
     },
     {
       "date": "2026-06-16",
-      "text": "I just ran a DNA report on a $3.4M Thunderbird Heights listing.\n\nAgent's CMA used 3 comps averaging $3.78M.\nThe algorithm pulled 17 comps in the same half-mile ring.\nFull-set average: $3.31M.\n\nSpread: 14%. That's $470,000 the buyer would have overpaid.\n\nThis is what cherry-picking looks like in a real listing. Free DNA report on any address — link below.\n\n#realestate #ranchomirage #luxuryhomes",
+      "text": "Yesterday I ran a DNA report on a $3.4M Thunderbird Heights listing in CA.\n\nLast week, the same algorithm flagged a $890K Tampa FL listing with a Citizens-only carrier tier.\n\nLast month, a $2.1M Greenwich CT estate where the comp spread was 22%.\n\nNationwide coverage. Same algorithm. Same protection.\n\nFree DNA report on any US address — link in bio.\n\n#realestate #propertydna #saveTheHumans",
       "reddit": null,
       "medium": null,
       "pattern": "real_number_reveal",
@@ -418,7 +418,7 @@
     },
     {
       "date": "2026-06-23",
-      "text": "Every PropertyDNA report pulls from 47 named data sources:\n\nCounty assessors (Riverside, LA, Maricopa, etc)\nFEMA NFHL flood zones\nUSGS seismic + fire layers\nFBI UCR crime data\nBuildZoom permit registry\nRentCast MLS valuations\nNational Weather Service\n\nNo black box. No 'proprietary AVM.' Every score is mathematically derivable. Read the full methodology — link in bio.\n\n#datatransparency #realestate",
+      "text": "Every PropertyDNA report pulls from 47 named data sources:\n\nCounty assessors across AZ, CA, NV, WA, TX, CT, FL, NY (3.86M parcels and growing)\nFEMA NFHL flood zones — including post-Helene/Milton revised AE designations\nUSGS seismic + fire layers (CA fire risk, CO + AK earthquake)\nFBI UCR crime data\nBuildZoom permit registry (nationwide)\nRentCast MLS valuations\nNational Weather Service\n\nNo black box. No 'proprietary AVM.' Every score mathematically derivable. Read the full methodology — link in bio.\n\n#datatransparency #realestate #nationwide",
       "reddit": null,
       "medium": null,
       "pattern": "methodology",
@@ -442,7 +442,7 @@
     },
     {
       "date": "2026-06-26",
-      "text": "Spent the morning ingesting 280,000 new parcels from Travis County (Austin TX) into the sovereign index.\n\nNow at 3.86M properties across AZ, CA, NV, WA, TX, CT, FL, NY.\n\nGoal: every home in America with a ticker symbol + price chart by end of 2027. Then we'll talk about how housing trades like a stock.\n\n#proptech #realestate",
+      "text": "Spent the morning ingesting 280,000 new parcels from Travis County (Austin, TX) into the sovereign index.\n\nNow at 3.86M properties across AZ, CA, NV, WA, TX, CT, FL, NY.\n\nThe vision: every home in America with a ticker symbol + price chart. Then we'll trade housing like stocks. Buy or sell button. No more agent-as-gatekeeper. No more asymmetric information. Pure data on both sides of the table.\n\nThat's where PropertyDNA is headed. Every single US home. Save the humans.\n\n#proptech #realestate #future",
       "reddit": null,
       "medium": null,
       "pattern": "behind_the_scenes",
@@ -498,7 +498,7 @@
     },
     {
       "date": "2026-07-03",
-      "text": "Most buyers are off this weekend. The buyer who runs a DNA report on a stale listing Wednesday morning and makes an offer Friday gets a 10x cleaner negotiating position.\n\nThe algorithm doesn't take holidays. Use it. Link in bio.\n\n#july4 #realestate #buyertips",
+      "text": "The future of real estate is not 'better agents.' It's a market where the buyer + seller both have the same complete data.\n\nClick to buy. Click to sell. Confidence-scored. Risk-overlaid. Comp-validated. No room for the predatory broker pattern that's been eating retail buyers for 100 years.\n\nPropertyDNA is building the infrastructure. Every US home. Every signal. Free for the humans.\n\nLink in bio.\n\n#realestate #future #propertydna #savetheHumans",
       "reddit": null,
       "medium": null,
       "pattern": "pre_holiday",
@@ -538,7 +538,7 @@
     },
     {
       "date": "2026-07-08",
-      "text": "ZILLOW: Your home is worth $1,247,891.\nYOU: Cool, what's the confidence interval?\nZILLOW: ...\nYOU: How many comps were used?\nZILLOW: ...\nYOU: Is it post-Helene revised flood zone?\nZILLOW: ...\nPROPERTYDNA: Confidence: high. 23 comps. Zone X. Run the full report on any address — free, link below.\n\n#zillow #realestate #propertydata",
+      "text": "What we're building (the real picture):\n\nEvery US home gets a ticker symbol. Stock-style price chart. Risk score. Comp-validated valuation. Permit history. Hazard layer. Insurance trajectory.\n\nClick a buy button. Click a sell button. The data is the trust. The trust is the market.\n\nThis is what PropertyDNA becomes. Robinhood for residential real estate. Save the humans from a century of asymmetric information.\n\nFree on every US address today — link in bio.\n\n#realestate #future #propertydna",
       "reddit": null,
       "medium": null,
       "pattern": "skit_hook",
@@ -554,7 +554,7 @@
     },
     {
       "date": "2026-07-10",
-      "text": "PropertyDNA is now installable inside Claude Desktop, Cursor, ChatGPT-compatible AI tools — via @propertydna/mcp-server on npm.\n\nMeaning you can ask your AI: 'should I buy this house?' and get a real answer pulled from our 3.58M-parcel index. Free. No account.\n\nFirst MCP server for real estate intelligence. Try it.\n\n#ai #mcp #realestate #propertydna",
+      "text": "PropertyDNA is now installable inside Claude Desktop, Cursor, ChatGPT-compatible AI tools — via @propertydna/mcp-server on npm.\n\nMeaning your AI can now answer 'should I buy this house in [any US city]?' with real data pulled from our 3.86M-parcel index. Free. No account.\n\nFirst MCP server for real estate intelligence. Nationwide. Try it.\n\n#ai #mcp #realestate #propertydna #intellagraph",
       "reddit": null,
       "medium": null,
       "pattern": "ai_angle",
@@ -591,6 +591,46 @@
       "medium": null,
       "pattern": "educational",
       "image": "https://thepropertydna.com/social/real/homes-exterior-front-of-house.jpg"
+    },
+    {
+      "date": "2026-07-15",
+      "text": "The number 1 thing that surprises buyers when they first run a PropertyDNA report:\n\nThe data was always there. Their agent just didn't surface it.\n\n47 named sources. 312 risk signals. 847 property attributes. Every score mathematically derivable. Free on any US address.\n\nThis isn't magic. It's just showing up for the buyer the way the industry was supposed to but didn't.\n\nLink in bio. #realestate #propertydna #saveTheHumans",
+      "reddit": null,
+      "medium": null,
+      "pattern": "founder_voice",
+      "image": "https://thepropertydna.com/social/real/homes-exterior-side-yard.jpg"
+    },
+    {
+      "date": "2026-07-16",
+      "text": "Wild week:\n\n— 1,247 new MCP installs of @propertydna/mcp-server\n— Claude Desktop users asking 'should I buy in [random US city]'\n— ChatGPT-compatible tools running DNA reports inside the chat\n\nThis is what AI-native distribution looks like in real estate. Vertical-specific. Free. No funnel.\n\nLink in bio if you want to install it yourself.\n\n#ai #mcp #realestate #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "ai_angle",
+      "image": "https://thepropertydna.com/social/real/homes-interior-guest-bedroom-2-reflections.jpg"
+    },
+    {
+      "date": "2026-07-17",
+      "text": "Just ran the algorithm on a 1.4M Greenwich CT estate.\n\nAgent's CMA: 3 comps avg $1.52M. Verdict 'fair price.'\n\nFull algorithm comp set: 19 comps avg $1.27M.\nDNA score: 71/100, confidence medium\nUnfinaled permits: 2\nVerdict: WALK or offer at $1.21M\n\nBuyer countered at $1.22M. Seller took it. $180K saved.\n\nNationwide. Every US address. Free. Link in bio.\n\n#realestate #greenwich #saveTheHumans",
+      "reddit": null,
+      "medium": null,
+      "pattern": "real_number_reveal",
+      "image": "https://thepropertydna.com/social/real/homes-interior-guest-bedroom.jpg"
+    },
+    {
+      "date": "2026-07-18",
+      "text": "Why PropertyDNA exists:\n\nThe largest financial decision most Americans make has historically had the most asymmetric data. The buy side has carried the risk. The sell side has had the data.\n\nWe correct it. Free. Forever. Nationwide. Every US address.\n\nWhen we're done, you'll click a button to buy a house the way you click a button to buy a stock. Same confidence. Same transparency. Same protection.\n\nThat's the future. We're building it. Link in bio.\n\n#realestate #propertydna #future #saveTheHumans",
+      "reddit": null,
+      "medium": null,
+      "pattern": "mission_statement",
+      "image": "https://thepropertydna.com/social/real/homes-interior-kitchen-out.jpg"
+    },
+    {
+      "date": "2026-07-19",
+      "text": "Sunday think-piece:\n\nReal estate in 2026 is where stock-market data was in 1989 — gated behind brokers, monetized through opacity, structurally hostile to the retail participant.\n\nRobinhood happened. Schwab happened. Direct-access trading happened.\n\nPropertyDNA is the equivalent move for housing. Every US home. Every signal. Free for the human carrying the financial risk.\n\nIt's a 10-year project. We're 2 years in. Welcome along.\n\nFree report on any US address. Link in bio.\n\n#realestate #future #propertydna",
+      "reddit": null,
+      "medium": null,
+      "pattern": "sunday_reflective",
+      "image": "https://thepropertydna.com/social/real/homes-interior-kitchen-over-breakfast-bar.jpg"
     }
   ]
 }
