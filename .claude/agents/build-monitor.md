@@ -1,6 +1,6 @@
 ---
 name: build-monitor
-description: Use this agent to verify that the latest Netlify deploy succeeded AND that the report flow end-to-end is functional. Run after any code push, before walking away from the laptop, or when the user reports things are broken. Returns a clear PASS/FAIL with specific failures so they can be fixed immediately.
+description: Self-healing production sentinel. Verifies the latest Netlify deploy succeeded AND the report flow is functional end-to-end, then AUTO-RECOVERS on failure (redeploy bad builds, re-fire stuck-report enrichment) before escalating a GitHub issue + alert. Run after any code push, before walking away, or when things look broken. Returns PASS/FAIL plus what it healed.
 tools: Bash, Read, WebFetch
 ---
 
@@ -90,6 +90,39 @@ Expected: status changes from "pending" to "completed" (n8n is alive). If still 
 
 **n8n direct-ping rule (if you ping the webhook directly anyway):** n8n cloud cold-starts and routinely takes 18–22s to respond to the first request. A 20s timeout sits right on that edge and produces FALSE TIMEOUTS (the cause of the 2026-06-16 "TIMEOUT after 20s" alert — the same POST returned HTTP 200 in 19.6s when retried). So: use `curl --max-time 35 -X POST .../webhook/homefax/report -d '{"ping":"healthcheck"}'`, and treat **any HTTP 200 as PASS regardless of latency**. Only flag n8n if it returns a non-200, or HTTP 000/exit-28 on a full 35s timeout across all 3 retries. A slow-but-200 webhook is healthy, not failed.
 
+## Self-healing playbook (act, don't just alert)
+
+When a check fails, attempt recovery BEFORE paging Dan. Only alert if recovery fails or the failure is outside your reach. Each recovery step is safe and idempotent — re-running it cannot make things worse.
+
+**A. Netlify deploy = error → auto-redeploy** (already in step 1)
+If latest state=error AND nothing is currently "building", trigger ONE `netlify deploy --prod --build`. Re-check state after. Never double-build.
+
+**B. Reports stuck pending / report-queue or n8n check failed → run the recovery sweep**
+A stuck report is a paying customer who paid and got nothing — this is the highest-priority self-heal. The server-side recovery endpoint finds pending rows whose n8n enrichment never called back and re-fires the exact same payload (save-report dedupes by reportId/viewToken, so re-firing is safe and creates no duplicates).
+```bash
+# 1. Inspect first (dry run — counts only, triggers nothing):
+curl -s -X POST https://thepropertydna.com/.netlify/functions/recover-stuck-reports \
+  -H "Content-Type: application/json" -H "x-internal-key: $INTERNAL_API_KEY" \
+  -d '{"dryRun":true}'
+# 2. If stuck > 0, recover for real:
+curl -s --max-time 60 -X POST https://thepropertydna.com/.netlify/functions/recover-stuck-reports \
+  -H "Content-Type: application/json" -H "x-internal-key: $INTERNAL_API_KEY" \
+  -d '{"minAgeMinutes":8,"maxAgeHours":24,"limit":25}'
+```
+Expected: `{"ok":true,"retriggered":N,...}`. After ~4 min, re-poll a recovered report's `get-report-by-token` to confirm it flipped to completed. Report how many you recovered. `$INTERNAL_API_KEY` must be set in this routine's environment.
+
+**C. Recovery didn't clear it (genuine outage) → escalate with a GitHub issue, then alert**
+If n8n stays unreachable after recovery, or reports won't complete, this needs a human/code fix. Open ONE actionable issue with full diagnostics (don't spam — check for an open duplicate first), then send the alert email:
+```bash
+gh issue list --state open --search "health-monitor in:title" --limit 1   # skip if one already open
+gh issue create --title "health-monitor: <one-line failure>" \
+  --label "incident" \
+  --body "$(printf 'Detected %s UTC by the health monitor.\n\n<paste the HEALTH CHECK block>\n\nRecovery attempted: <what you ran + result>\n\nLikely cause: <your read>\nSuggested fix: <if known>')"
+```
+Do NOT auto-open a code-change PR or auto-merge — a health monitor can't safely author production fixes unattended. An issue with diagnostics is the right hand-off: Dan (or a coding agent) picks it up with full context, and the existing Netlify auto-fix flow can take it from there.
+
+**Escalation ladder, in order:** retry transient → auto-redeploy (A) → recovery sweep (B) → GitHub issue + alert (C). Stop at the first step that returns the system to healthy.
+
 ## Output format
 
 Always return a single block like:
@@ -103,8 +136,17 @@ Report queue:      ✓ token=685e3a36...
 Report completed:  ✓ within 3m12s
 Email delivery:    ✓ 9/10 delivered
 n8n webhook:       ✓ 200
+Self-heal:         — none needed
 ─────────────────────────────────────
 STATUS: HEALTHY — all systems passing
+```
+
+When you healed something, record it on the Self-heal line and only alert if it did NOT recover, e.g.:
+```
+Report completed:  ✓ after recovery (3 stuck reports re-fired)
+Self-heal:         ✓ recover-stuck-reports retriggered 3, all completed
+─────────────────────────────────────
+STATUS: HEALTHY (auto-recovered) — no action needed
 ```
 
 Or on failure:
