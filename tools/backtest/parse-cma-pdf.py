@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""
+parse-cma-pdf.py — extract SOLD comps (ground truth) from FlexMLS "statistical
+CMA" PDF exports (closed/sold listings).
+
+These PDFs are tabular; text-order extraction scrambles the columns, so we parse
+by word COORDINATES. Column x-ranges were mapped from the header row:
+
+  mls 0-80 | address 80-123 | city 123-163 | year 163-186 | P/S/G 186-207 |
+  date 207-245 | BD 245-263 | BTH 263-290 | SqFt 290-326 | LotSz 326-362 |
+  LP/SqFt 362-408 | OrigLP 408-471 | LP 471-527 | SP 527-565 | SP/SqFt 565-603 | SP/LP 603+
+
+SP = the actual SOLD price = ground truth.
+
+Usage:
+  python3 parse-cma-pdf.py <file.pdf | folder> [out.csv]
+  Default out: tools/backtest/solds-from-cma.csv  (appends/merges, de-dupes by MLS#)
+"""
+import sys, os, re, glob, csv
+import fitz  # PyMuPDF
+
+# Boundaries from VALUE x0 positions (numbers are right-aligned, so they sit
+# left of the left-aligned header anchors). SP value column starts at x~510.
+COLS = [
+    ("mls", 0, 80), ("address", 80, 123), ("city", 123, 163), ("year", 163, 186),
+    ("psg", 186, 206), ("date", 206, 245), ("bd", 245, 265), ("bth", 265, 287),
+    ("sqft", 287, 325), ("lotsz", 325, 359), ("lp_sqft", 359, 401),
+    ("orig_lp", 401, 454), ("lp", 454, 510), ("sp", 510, 562),
+    ("sp_sqft", 562, 602), ("ratio", 602, 9999),
+]
+LISTING_RE = re.compile(r"^[A-Z0-9]{0,2}-?\d{6,9}$")
+DATE_RE = re.compile(r"\d{2}/\d{2}/\d{4}")
+
+def col_of(x):
+    for name, lo, hi in COLS:
+        if lo <= x < hi:
+            return name
+    return None
+
+def num(s):
+    s = re.sub(r"[^0-9.]", "", s or "")
+    try:
+        return float(s) if s else None
+    except ValueError:
+        return None
+
+def parse_pdf(path):
+    doc = fitz.open(path)
+    records = []
+    for page in doc:
+        words = page.get_text("words")  # x0,y0,x1,y1,text,...
+        # Record anchors = listing# tokens in the mls column. Each record's
+        # cells stack within ~±13px of the listing line (street number sits a
+        # line above, street suffix + date 2nd-half a line below).
+        anchors = sorted([w for w in words if w[0] < 80 and LISTING_RE.match(w[4])], key=lambda w: w[1])
+        ys = []
+        for a in anchors:
+            if not ys or abs(a[1] - ys[-1]) > 6:
+                ys.append(a[1])
+        for yL in ys:
+            cells = {name: [] for name, _, _ in COLS}
+            band = [w for w in words if yL - 13 <= w[1] <= yL + 13]
+            for w in sorted(band, key=lambda w: (round(w[1]), w[0])):
+                c = col_of(w[0])
+                if c:
+                    cells[c].append(w[4])
+            rec = {k: " ".join(v).strip() for k, v in cells.items()}
+            sp = num(rec.get("sp"))
+            date_m = DATE_RE.search(rec.get("date", "").replace(" ", ""))
+            if sp and sp > 1000 and rec.get("address"):
+                records.append({
+                    "mls": rec["mls"].strip(),
+                    "address": re.sub(r"\s+", " ", rec["address"]).strip(),
+                    "city": re.sub(r"\s+", " ", rec["city"]).strip(),
+                    "state": "CA",
+                    "actual_price": int(sp),
+                    "sold_date": date_m.group(0) if date_m else "",
+                    "beds": rec.get("bd", "").strip(),
+                    "baths": rec.get("bth", "").strip(),
+                    "sqft": (num(rec.get("sqft")) and int(num(rec.get("sqft")))) or "",
+                    "lot_sqft": (num(rec.get("lotsz")) and int(num(rec.get("lotsz")))) or "",
+                    "year_built": rec.get("year", "").strip(),
+                    "list_price": (num(rec.get("lp")) and int(num(rec.get("lp")))) or "",
+                    "sp_lp_ratio": rec.get("ratio", "").strip(),
+                    "pool_spa_gated": rec.get("psg", "").replace(" ", ""),
+                    "source_file": os.path.basename(path),
+                })
+    return records
+
+def main():
+    if len(sys.argv) < 2:
+        print("usage: parse-cma-pdf.py <file.pdf|folder> [out.csv]"); sys.exit(1)
+    target = sys.argv[1]
+    out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), "solds-from-cma.csv")
+    pdfs = ([target] if target.lower().endswith(".pdf")
+            else sorted(glob.glob(os.path.join(target, "*.pdf"))))
+    if not pdfs:
+        print(f"no PDFs found at {target}"); sys.exit(1)
+
+    # merge with existing, de-dupe by MLS#
+    existing = {}
+    if os.path.exists(out):
+        with open(out, newline="") as f:
+            for row in csv.DictReader(f):
+                existing[row["mls"]] = row
+
+    fields = ["mls","address","city","state","actual_price","sold_date","beds","baths",
+              "sqft","lot_sqft","year_built","list_price","sp_lp_ratio","pool_spa_gated","source_file"]
+    new = 0
+    for pdf in pdfs:
+        recs = parse_pdf(pdf)
+        for r in recs:
+            if r["mls"] and r["mls"] not in existing:
+                existing[r["mls"]] = r; new += 1
+        print(f"  {os.path.basename(pdf):45s} → {len(recs):3d} solds parsed")
+
+    rows = [r for r in existing.values() if r.get("actual_price")]
+    with open(out, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: r.get(k, "") for k in fields})
+
+    prices = [int(r["actual_price"]) for r in rows if str(r.get("actual_price")).isdigit()]
+    print(f"\n  Total unique solds: {len(rows)}  (+{new} new)")
+    if prices:
+        prices.sort()
+        print(f"  Price range: ${min(prices):,} – ${max(prices):,}  | median ${prices[len(prices)//2]:,}")
+    print(f"  Wrote → {out}")
+
+if __name__ == "__main__":
+    main()
