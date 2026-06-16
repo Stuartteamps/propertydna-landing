@@ -2,6 +2,13 @@
   base = "app/frontend"
   command = "pnpm install --no-frozen-lockfile && NODE_OPTIONS=--max-old-space-size=4096 pnpm run build"
   publish = "dist"
+  # Netlify's default "skip if no content change" hashes only the publish dir
+  # (app/frontend/dist), so function-only commits (netlify/functions/**) were
+  # silently dropped and never deployed. This custom ignore builds whenever the
+  # functions, frontend, or config change, and skips pure tools/docs commits.
+  # Exit 0 = skip build; non-zero = build. Repo-root pathspecs (':/') because
+  # the ignore command runs from base = app/frontend.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ':/netlify/functions' ':/app/frontend' ':/netlify.toml'"
 
 [build.environment]
   NODE_VERSION = "20.17.0"
