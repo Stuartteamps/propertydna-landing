@@ -49,3 +49,4 @@ android/app/release/
 # npm tokens — never commit
 .npmrc
 **/.npmrc
+tools/backtest/solds-from-cma.csv

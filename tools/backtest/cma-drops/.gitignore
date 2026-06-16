@@ -1,0 +1,4 @@
+# Never commit licensed MLS data to the repo
+*.pdf
+*.csv
+!README.md
