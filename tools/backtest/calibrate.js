@@ -125,6 +125,7 @@ const pct = x => `${(x*100).toFixed(1)}%`;
   } else {
     console.log('  No RentCast matches — check address formatting / key quota.');
   }
-  if (sample.length < 50) console.log(`\n  ⚠ ${sample.length} samples — directional. This file is luxury ($4M+); RentCast is weakest there. Mid-market files will read better.`);
+  const medActual = median(detail.filter(d => !d.miss).map(d => d.actual)) || 0;
+  if (dna.n && dna.n < 50) console.log(`\n  ⚠ ${dna.n} matched samples — directional (target ≥50). Median sale ≈ $${Math.round(medActual).toLocaleString()}${medActual > 2e6 ? ' — luxury tier, RentCast weakest here' : ''}.`);
   console.log('');
 })();
