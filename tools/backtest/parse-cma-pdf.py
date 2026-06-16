@@ -44,6 +44,25 @@ def num(s):
     except ValueError:
         return None
 
+STREET_TYPES = {"avenue","ave","drive","dr","court","ct","lane","ln","way","road","rd",
+    "boulevard","blvd","place","pl","circle","cir","terrace","ter","street","st","trail",
+    "trl","point","pt","canyon","cyn","loop","run","path","cove","bend","ridge","real"}
+
+def normalize_address(addr):
+    """Reorder addresses where the street suffix wrapped above the number
+    (e.g. 'Drive 57785 Black' -> '57785 Black Drive') so they geocode."""
+    toks = addr.split()
+    if not toks or toks[0].isdigit():
+        return addr
+    num_idx = next((i for i, t in enumerate(toks) if t.isdigit()), None)
+    if num_idx is None:
+        return addr
+    number = toks[num_idx]
+    rest = toks[:num_idx] + toks[num_idx + 1:]
+    suffix = [t for t in rest if t.lower().strip(",.") in STREET_TYPES]
+    names  = [t for t in rest if t.lower().strip(",.") not in STREET_TYPES]
+    return " ".join([number] + names + suffix)
+
 def parse_pdf(path):
     doc = fitz.open(path)
     records = []
@@ -70,7 +89,7 @@ def parse_pdf(path):
             if sp and sp > 1000 and rec.get("address"):
                 records.append({
                     "mls": rec["mls"].strip(),
-                    "address": re.sub(r"\s+", " ", rec["address"]).strip(),
+                    "address": normalize_address(re.sub(r"\s+", " ", rec["address"]).strip()),
                     "city": re.sub(r"\s+", " ", rec["city"]).strip(),
                     "state": "CA",
                     "actual_price": int(sp),
