@@ -115,29 +115,31 @@ exports.handler = async (event) => {
   try {
     // Count mode — definitive row counts to tell RLS-limited from sparse data.
     if (q.count) {
-      const [total, priced, dated, datedPriced, datedRecent, piTotal, piValued] = await Promise.all([
-        countRows("properties"),
-        countRows("properties", "&last_sale_price=gte.80000"),
-        countRows("properties", "&last_sale_date=gte.2000-01-01"),
-        countRows("properties", "&last_sale_date=gte.2016-06-16&last_sale_price=gte.80000"),
-        countRows("properties", "&last_sale_date=gte.2024-06-16&last_sale_price=gte.80000"),
+      const [pmTotal, pmRentcast, phTotal, phSales, piTotal, piValued, prTotal, propsTotal] = await Promise.all([
+        countRows("property_master"),
+        countRows("property_master", "&rentcast_value=gte.1"),
+        countRows("property_history"),
+        countRows("property_history", "&event_type=eq.sale"),
         countRows("property_intelligence"),
         countRows("property_intelligence", "&pdna_value_mid=gte.1"),
+        countRows("property_reports"),
+        countRows("properties"),
       ]);
       return {
         statusCode: 200, headers: CORS,
         body: JSON.stringify({
           ok: true, count: true, usingServiceKey: USING_SERVICE_KEY,
-          properties_total: total,
-          properties_priced_ge_80k: priced,
-          properties_with_any_sale_date: dated,
-          properties_dated_since_2016_and_priced: datedPriced,
-          properties_sold_last_24mo_priced: datedRecent,
+          property_master_total: pmTotal,
+          property_master_with_rentcast_value: pmRentcast,
+          property_history_total: phTotal,
+          property_history_SALE_events: phSales,
           property_intelligence_total: piTotal,
           property_intelligence_with_pdna_value: piValued,
+          property_reports_total: prTotal,
+          properties_legacy_total: propsTotal,
           note: USING_SERVICE_KEY
-            ? "Service key in use (RLS bypassed) — counts are the true table totals."
-            : "WARNING: SUPABASE_SERVICE_KEY not set — using anon key, RLS may hide most rows. Counts may be a small visible subset.",
+            ? "Service key (RLS bypassed) — true totals. Ground truth = property_history SALE events; our model value = property_intelligence/property_reports."
+            : "WARNING: SUPABASE_SERVICE_KEY not set — anon key, RLS may hide rows.",
         }, null, 2),
       };
     }
