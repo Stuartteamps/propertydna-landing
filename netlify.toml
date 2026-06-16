@@ -56,6 +56,43 @@
   schedule = "15 22 * * *"
   timeout = 26
 
+# Wave 2 nationwide indexers (added 2026-06-16). Staggered every 4h on the :30
+# mark so they NEVER collide with Wave 1's :15 slots — IO budget protection
+# after the 2026-05-27 disk-IO exhaustion incident. All indexers idempotent
+# (resume from saved offset via kpi_events progress rows).
+[functions."index-newjersey"]
+  schedule = "30 0 * * *"
+  timeout = 26
+
+[functions."index-virginia"]
+  schedule = "30 4 * * *"
+  timeout = 26
+
+[functions."index-northcarolina"]
+  schedule = "30 8 * * *"
+  timeout = 26
+
+[functions."index-southcarolina"]
+  schedule = "30 12 * * *"
+  timeout = 26
+
+[functions."index-coloradoluxury"]
+  schedule = "30 16 * * *"
+  timeout = 26
+
+[functions."index-utahluxury"]
+  schedule = "30 20 * * *"
+  timeout = 26
+
+# Ski/resort small counties fill the odd-hour off-peak slots.
+[functions."index-wyomingluxury"]
+  schedule = "45 3 * * *"
+  timeout = 26
+
+[functions."index-tahoeluxury"]
+  schedule = "45 11 * * *"
+  timeout = 26
+
 # send-weekly-newsletter was firing on the same Thursday schedule as
 # send-cc-newsletter, causing every contact to receive 2 identical emails
 # 30s apart — a strong spam-folder signal. Schedule removed; the function

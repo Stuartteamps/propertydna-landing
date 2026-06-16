@@ -83,6 +83,25 @@ exports.handler = async (event) => {
   const cutoff = isoMonthsAgo(months);
 
   try {
+    // Probe mode — inspect what's actually populated in `properties`.
+    if (q.probe) {
+      const anyRows = await db.from("properties").select("address,city,state,zip,last_sale_price,last_sale_date,current_estimated_value,updated_at").limit(8).get().catch((e) => ({ _err: e.message }));
+      const byDate = await db.from("properties").select("address,city,state,last_sale_price,last_sale_date").order("last_sale_date", { ascending: false }).limit(8).get().catch((e) => ({ _err: e.message }));
+      const withPrice = await db.from("properties").select("address,city,state,last_sale_price,last_sale_date").gte("last_sale_price", 1).limit(8).get().catch((e) => ({ _err: e.message }));
+      const piSample = await db.from("property_intelligence").select("address_hash,pdna_value_mid,rentcast_value").gte("pdna_value_mid", 1).limit(5).get().catch((e) => ({ _err: e.message }));
+      return {
+        statusCode: 200, headers: CORS,
+        body: JSON.stringify({
+          ok: true, probe: true,
+          anyRows_count: Array.isArray(anyRows) ? anyRows.length : anyRows,
+          sample_anyRows: anyRows,
+          sample_orderedByLastSaleDate: byDate,
+          sample_withLastSalePrice: withPrice,
+          sample_property_intelligence: piSample,
+        }, null, 2),
+      };
+    }
+
     // 1) Recent recorded sales (ground truth).
     const solds = await db
       .from("properties")
