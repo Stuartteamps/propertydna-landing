@@ -10,7 +10,6 @@
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
 
 const GOLD = '#fbbf24';
 
@@ -40,19 +39,18 @@ export default function NationwideCoverage() {
   useEffect(() => {
     (async () => {
       try {
-        const results = await Promise.all(
-          MARKETS.map(m =>
-            supabase.from('property_master')
-              .select('apn', { count: 'exact', head: true })
-              .eq('state', m.state)
-              // Important: use fallback when count is 0, null, OR undefined.
-              // RLS issues can return count=0 silently; never let 0 overwrite a
-              // known fallback (we have 3.58M parcels in the DB; 0 is always wrong).
-              .then(r => ({ ...m, count: r.count && r.count > 0 ? r.count : m.fallback }))
-          )
-        );
-        setData(results);
-        setTotal(results.reduce((s, r) => s + (r.count && r.count > 0 ? r.count : r.fallback), 0));
+        // Server-side index-stats uses the service key (RLS bypassed) and the
+        // exact total across ALL states — the anon query RLS-zeroed and the
+        // 2-letter state filter missed 'California'-format rows. The `total` is
+        // authoritative (the full index); the grid shows named markets.
+        const res = await fetch('/.netlify/functions/index-stats');
+        const j = await res.json();
+        if (j && j.total > 0) {
+          const byState: Record<string, number> = {};
+          (j.states || []).forEach((s: any) => { if (s.count > 0) byState[s.state] = s.count; });
+          setData(MARKETS.map(m => ({ ...m, count: byState[m.state] || m.fallback })));
+          setTotal(j.total);
+        }
         setLoaded(true);
       } catch {
         setLoaded(true);
