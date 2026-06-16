@@ -20,8 +20,8 @@ import PainPointGrid from '@/components/PainPointGrid';
 type ModalView = 'signin' | 'pricing';
 
 const metrics = [
-  ['3.58M PROPERTIES INDEXED'],
-  ['ACCURACY RATE 97.6%'],
+  ['5M+ PROPERTIES INDEXED'],
+  ['WE PUBLISH OUR ACCURACY'],
   ['AVG VALUATION SPEED 1.8S'],
   ['RISK SIGNALS TRACKED 312'],
   ['DATA PARTNERS 47'],

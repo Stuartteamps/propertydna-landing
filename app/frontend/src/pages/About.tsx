@@ -125,9 +125,9 @@ export default function About() {
             <div className="font-sans text-[10px] tracking-[3px] text-gold uppercase mb-12">By the Numbers</div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
               {[
-                ['3.58M', 'Properties profiled'],
+                ['5M+', 'Properties profiled'],
                 ['47',    'Live data sources'],
-                ['97.6%', 'Valuation accuracy'],
+                ['Published', 'Accuracy → /accuracy'],
                 ['< 3 min', 'Report delivery'],
               ].map(([num, label], i) => (
                 <FadeUp key={label} delay={i * 0.08}>

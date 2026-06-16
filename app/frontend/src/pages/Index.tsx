@@ -19,8 +19,8 @@ const scrollTo = (id: string) => {
 const partners = ['Meridian Capital', 'Thornfield AM', 'Ashbury REIT', 'Folio Group', 'Citadel Lending'];
 
 const metrics = [
-  ['3.58M PROPERTIES INDEXED'],
-  ['ACCURACY RATE 97.6%'],
+  ['5M+ PROPERTIES INDEXED'],
+  ['WE PUBLISH OUR ACCURACY'],
   ['AVG VALUATION SPEED 1.8S'],
   ['RISK SIGNALS TRACKED 312'],
   ['DATA PARTNERS 47'],
@@ -28,9 +28,9 @@ const metrics = [
 ];
 
 const stats = [
-  ['14.3', 'M', 'PROPERTIES PROFILED'],
+  ['5', 'M+', 'PROPERTIES INDEXED'],
   ['847', '', 'DATA ATTRIBUTES PER PROPERTY'],
-  ['97.6', '%', 'VALUATION ACCURACY'],
+  ['9', '', 'STATE MARKETS LIVE'],
   ['2,800', '+', 'MARKETS COVERED'],
 ];
 

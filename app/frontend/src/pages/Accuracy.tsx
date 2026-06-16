@@ -10,7 +10,6 @@
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
 
 const C = {
   bg: '#0A0908', card: '#12100D', border: 'rgba(255,255,255,0.08)',
@@ -22,14 +21,14 @@ const FONT_SANS  = "'Jost', -apple-system, BlinkMacSystemFont, sans-serif";
 
 interface Stat { label: string; value: string; sub: string; trend?: 'up' | 'down' | 'flat'; }
 
-// Honest seed numbers. Updated as the platform matures.
+// Real, verifiable numbers only — overlaid live from /index-stats on load.
+// No invented figures: if we can't verify it, we don't print it. That is the
+// whole point of this page.
 const SEED_STATS: Stat[] = [
-  { label: 'Reports run (lifetime)',          value: '12,847', sub: 'across the indexed footprint' },
-  { label: 'Reports flagged a real issue',    value: '37.4%',  sub: 'permit / flood / comp / hazard signal triggered', trend: 'up' },
-  { label: 'Median price-anchor delta',       value: '4.8%',   sub: 'PropertyDNA mid vs final sale (last 90 days)' },
-  { label: 'Confidence-marked "high"',        value: '68%',    sub: 'of reports run on indexed parcels' },
-  { label: 'Unfinaled permits surfaced',      value: '11,420', sub: 'pulled from BuildZoom + county portals' },
-  { label: 'Off-market matches generated',    value: '3,892',  sub: 'long-tenured-owner candidates surfaced' },
+  { label: 'Properties indexed',     value: '5,067,280', sub: 'county assessor + cadastral data — live, grows daily' },
+  { label: 'Reports run (lifetime)', value: '94',        sub: 'verified property reports generated' },
+  { label: 'Active state markets',   value: '9',         sub: 'expanding monthly' },
+  { label: 'Accuracy validation',    value: 'In progress', sub: 'published against verified MLS solds at n≥50 per market' },
 ];
 
 const CASE_STUDIES = [
@@ -41,23 +40,24 @@ const CASE_STUDIES = [
 
 export default function Accuracy() {
   const [stats, setStats] = useState<Stat[]>(SEED_STATS);
-  const [reportCount, setReportCount] = useState<number | null>(null);
 
   useEffect(() => {
-    // Live overlay: pull lifetime report count from kpi_events if available
-    supabase.from('kpi_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('event_type', 'report_generated')
-      .then(({ count }) => {
-        if (count && count > 100) setReportCount(count);
-      })
-      .catch(() => {});
+    // Live overlay from the real index-stats endpoint (service-key counts).
+    (async () => {
+      try {
+        const res = await fetch('/.netlify/functions/index-stats');
+        const j = await res.json();
+        setStats(prev => prev.map(s => {
+          if (s.label === 'Properties indexed'     && j.total > 0)   return { ...s, value: Number(j.total).toLocaleString() };
+          if (s.label === 'Reports run (lifetime)' && j.reports > 0) return { ...s, value: Number(j.reports).toLocaleString() };
+          if (s.label === 'Active state markets'   && j.markets > 0) return { ...s, value: String(j.markets) };
+          return s;
+        }));
+      } catch { /* keep honest seed values */ }
+    })();
   }, []);
 
-  // Overlay live count over the first stat if we got it
-  const displayStats = reportCount
-    ? [{ ...stats[0], value: reportCount.toLocaleString() }, ...stats.slice(1)]
-    : stats;
+  const displayStats = stats;
 
   return (
     <div style={{ background: C.bg, color: C.text, minHeight: '100vh' }}>

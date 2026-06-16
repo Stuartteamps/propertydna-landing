@@ -22,9 +22,9 @@ const SUPA_URL = process.env.SUPABASE_URL || "https://neccpdfhmfnvyjgyrysy.supab
 const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || "";
 
 /** Exact count via PostgREST Content-Range header (Prefer: count=exact). */
-function countRows(filterQS = "", timeoutMs = 7000) {
+function countRows(filterQS = "", timeoutMs = 7000, table = "property_master") {
   return new Promise((resolve) => {
-    const path = `/rest/v1/property_master?select=apn${filterQS}`;
+    const path = `/rest/v1/${table}?select=*${filterQS}`;
     const req = https.request(
       { hostname: new URL(SUPA_URL).hostname, path, method: "HEAD",
         headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, Prefer: "count=exact", Range: "0-0" } },
@@ -67,6 +67,9 @@ exports.handler = async (event) => {
   // Total first (single fast indexed count) — the honest headline number.
   const total = await countRows("");
 
+  // Real lifetime report count (the /accuracy page must show the TRUE number).
+  const reports = await countRows("", 6000, "property_reports");
+
   // Per-state best-effort, in parallel; null on timeout (frontend keeps fallback).
   const states = await Promise.all(
     STATES.map(async (s) => {
@@ -75,8 +78,9 @@ exports.handler = async (event) => {
       return { ...s, count };
     })
   );
+  const marketsLive = states.filter((s) => s.count && s.count > 0).length;
 
-  const result = { total, states, computedAt: new Date().toISOString() };
+  const result = { total, reports, markets: marketsLive, states, computedAt: new Date().toISOString() };
   if (total) { CACHE = result; CACHE_AT = now; }
   return { statusCode: 200, headers: CORS, body: JSON.stringify(result) };
 };

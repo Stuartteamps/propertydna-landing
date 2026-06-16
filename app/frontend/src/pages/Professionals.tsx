@@ -139,9 +139,9 @@ export default function Professionals() {
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
             ['< 3 min', 'Report delivery'],
-            ['3.58M', 'Properties indexed'],
+            ['5M+', 'Properties indexed'],
             ['47', 'Live data sources'],
-            ['97.6%', 'Valuation accuracy'],
+            ['Published', 'Accuracy → /accuracy'],
           ].map(([num, label]) => (
             <div key={label}>
               <div className="font-serif font-light text-canvas mb-1" style={{ fontSize: 'clamp(28px,3vw,40px)', letterSpacing: '-0.5px' }}>{num}</div>
