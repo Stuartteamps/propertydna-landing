@@ -59,27 +59,36 @@ curl -s "https://thepropertydna.com/.netlify/functions/get-report-by-token?token
 Expected: status changes from "pending" to "completed" with property_dna object populated.
 
 **5. Email delivery via Resend**
+EXCLUDE synthetic healthcheck addresses before scoring — this monitor's own test
+sends go to non-existent `healthcheck+*@thepropertydna.com` mailboxes, which always
+bounce/suppress. Counting them against the ratio is a FALSE POSITIVE (the cause of the
+2026-06-16 "4/10 delivered" alert). Score only real recipient mail.
 ```bash
-curl -s "https://api.resend.com/emails?limit=10" \
+curl -s "https://api.resend.com/emails?limit=20" \
   -H "Authorization: Bearer re_fhn2aN5T_PRTXTGcCuPHCBMYq4rf3wppC" | python3 -c "
 import sys,json
 d=json.load(sys.stdin)
-recent = d.get('data', [])[:10]
-delivered = sum(1 for e in recent if e.get('last_event')=='delivered')
-bounced   = sum(1 for e in recent if e.get('last_event')=='bounced')
-print(f'Last 10 emails: {delivered} delivered, {bounced} bounced')
-for e in recent[:5]:
+def synthetic(e):
+    return any('healthcheck+' in a or a.endswith('@thepropertydna.com') for a in e.get('to',[]))
+real = [e for e in d.get('data', []) if not synthetic(e)][:10]
+delivered = sum(1 for e in real if e.get('last_event')=='delivered')
+inflight  = sum(1 for e in real if e.get('last_event') in ('sent','queued','scheduled','delivery_delayed'))
+bounced   = sum(1 for e in real if e.get('last_event')=='bounced')
+print(f'Last 10 REAL emails: {delivered} delivered, {inflight} in-flight, {bounced} bounced')
+for e in real[:5]:
     print(f\"  {e.get('last_event','?'):12} | {','.join(e.get('to',[]))[:30]} | {e.get('subject','?')[:50]}\")
 "
 ```
-Expected: delivered count >= 7/10. If bounce rate climbing, flag.
+Expected: among REAL recipients, `delivered + in-flight >= 7/10`. In-flight (sent/queued/delayed) is NOT a failure — it just hasn't landed yet. Only flag if real bounces are climbing. Never count synthetic healthcheck addresses.
 
 **6. Report enrichment end-to-end (validates n8n indirectly)**
 Use the viewToken from step 3. Wait 4 minutes, then check:
 ```bash
 curl -s "https://thepropertydna.com/.netlify/functions/get-report-by-token?token=$VIEW_TOKEN" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status','?'))"
 ```
-Expected: status changes from "pending" to "completed" (n8n is alive). If still pending after 4 min, n8n is slow/stuck — flag it. Skip the direct n8n webhook ping — n8n cloud blocks empty bodies and returns 000, creating false positives.
+Expected: status changes from "pending" to "completed" (n8n is alive). If still pending after 4 min, n8n is slow/stuck — flag it.
+
+**n8n direct-ping rule (if you ping the webhook directly anyway):** n8n cloud cold-starts and routinely takes 18–22s to respond to the first request. A 20s timeout sits right on that edge and produces FALSE TIMEOUTS (the cause of the 2026-06-16 "TIMEOUT after 20s" alert — the same POST returned HTTP 200 in 19.6s when retried). So: use `curl --max-time 35 -X POST .../webhook/homefax/report -d '{"ping":"healthcheck"}'`, and treat **any HTTP 200 as PASS regardless of latency**. Only flag n8n if it returns a non-200, or HTTP 000/exit-28 on a full 35s timeout across all 3 retries. A slow-but-200 webhook is healthy, not failed.
 
 ## Output format
 
