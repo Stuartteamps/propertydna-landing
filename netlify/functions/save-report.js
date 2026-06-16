@@ -341,22 +341,29 @@ function autoDetectFeatures(reportData) {
   // Premium luxury (built earlier, large home)
   if (sqft && sqft >= 3000) features.premium_community = true;
 
-  // Pool: explicit field if present, else listing keyword
-  const poolField = String(prop.pool ?? prop.hasPool ?? "").toLowerCase();
-  const explicitPool = poolField === "true" || poolField === "yes" || poolField === "1";
+  // Pool: positive evidence from an explicit field OR a listing keyword.
+  // IMPORTANT: only apply the desert "no pool" penalty when a pool is CONFIRMED absent.
+  // Missing/empty pool data must NOT be treated as "no pool" — doing so systematically
+  // penalized pool homes (e.g. "Yes / Yes", "In Ground", "Pebble Tec") whose feature
+  // data didn't reach the pipeline, biasing those valuations downward.
+  const poolField = String(prop.pool ?? prop.hasPool ?? prop.poolType ?? "").toLowerCase().trim();
+  const poolNegative = /^(no|none|false|0|n)\b/.test(poolField) || /\bno pool\b/.test(poolField);
+  const poolPositive = !poolNegative && /\b(yes|true|y|1|private|in[- ]?ground|gunite|pebble[- ]?tec|pebble|salt|infinity|lap|community|pool\/spa)\b/.test(poolField);
   const listingText = [
     reportData?.normalized?.property?.description,
     reportData?.normalized?.listing?.remarks,
     reportData?.normalized?.listing?.publicRemarks,
     reportData?.normalized?.subject?.description,
   ].filter(Boolean).join(" ").toLowerCase();
-  const poolKeyword = /\b(pool|salt[- ]?water pool|infinity pool|spool|pool\/spa)\b/.test(listingText);
-  if (explicitPool || poolKeyword) {
+  const poolKeyword = /\b(pool|salt[- ]?water pool|infinity pool|spool|pool\/spa|pebble[- ]?tec)\b/.test(listingText);
+  if (poolPositive || poolKeyword) {
     features.pool = true;
     poolAddOnCost = 80000; // typical CV pool capex; recoup logic in computeDnaAdjustment
-  } else if (desertCity) {
+  } else if (desertCity && poolNegative) {
+    // confirmed no pool in a desert market — the penalty is warranted here
     features.no_pool_desert_penalty = true;
   }
+  // else: pool status unknown → no adjustment either way (neutral, never a silent penalty)
 
   // ADU/casita auto-detect (re-uses existing keyword scanner)
   const adu = detectADU(reportData);
