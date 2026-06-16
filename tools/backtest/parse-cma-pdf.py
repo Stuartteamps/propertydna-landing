@@ -63,44 +63,77 @@ def normalize_address(addr):
     names  = [t for t in rest if t.lower().strip(",.") not in STREET_TYPES]
     return " ".join([number] + names + suffix)
 
+HEADER_LABELS = {"Listing": "mls", "Address": "address", "City": "city", "Year": "year",
+                 "Date": "date", "BD": "bd", "BTH": "bth", "SqFt": "sqft", "LotSz": "lotsz"}
+LEFT_ORDER = ["mls", "address", "city", "year", "psg", "date", "bd", "bth", "sqft", "lotsz"]
+MONEY_RE = re.compile(r"^\$[\d,]+(?:\.\d+)?$")
+
 def parse_pdf(path):
     doc = fitz.open(path)
     records = []
     for page in doc:
         words = page.get_text("words")  # x0,y0,x1,y1,text,...
-        # Record anchors = listing# tokens in the mls column. Each record's
-        # cells stack within ~±13px of the listing line (street number sits a
-        # line above, street suffix + date 2nd-half a line below).
-        anchors = sorted([w for w in words if w[0] < 80 and LISTING_RE.match(w[4])], key=lambda w: w[1])
+        # Column anchors derived PER PAGE from the header row — the table
+        # auto-fits column widths, so x-positions shift between files. Only the
+        # LEFT-side fields use x-columns; prices are read by pattern below.
+        anchors = {}
+        for w in words:
+            lab = w[4].strip().rstrip(":")
+            if w[0] < 470 and lab in HEADER_LABELS and HEADER_LABELS[lab] not in anchors:
+                anchors[HEADER_LABELS[lab]] = w[0]
+            elif w[0] < 470 and lab.startswith("P/S") and "psg" not in anchors:
+                anchors["psg"] = w[0]
+        if "mls" not in anchors or "sqft" not in anchors:
+            continue  # not a listings page
+
+        left = [(f, anchors[f]) for f in LEFT_ORDER if f in anchors]
+        max_left_x = max(x for _, x in left) + 25  # ignore right-side noise (ratio, counts)
+        def nearest(x):
+            return min(left, key=lambda fa: abs(fa[1] - x))[0]
+
+        mls_x = anchors["mls"]
+        lw = sorted([w for w in words if abs(w[0] - mls_x) < 32 and LISTING_RE.match(w[4])], key=lambda w: w[1])
         ys = []
-        for a in anchors:
+        for a in lw:
             if not ys or abs(a[1] - ys[-1]) > 6:
                 ys.append(a[1])
-        for yL in ys:
-            cells = {name: [] for name, _, _ in COLS}
-            band = [w for w in words if yL - 13 <= w[1] <= yL + 13]
-            for w in sorted(band, key=lambda w: (round(w[1]), w[0])):
-                c = col_of(w[0])
-                if c:
-                    cells[c].append(w[4])
-            rec = {k: " ".join(v).strip() for k, v in cells.items()}
-            sp = num(rec.get("sp"))
+        for i, yL in enumerate(ys):
+            # Adaptive band: midpoint between consecutive rows — luxury rows wrap
+            # 3 lines (wide) while cheaper homes are single-line and tight.
+            top = (ys[i - 1] + yL) / 2 if i > 0 else yL - 15
+            bot = (yL + ys[i + 1]) / 2 if i + 1 < len(ys) else yL + 15
+            band = sorted([w for w in words if top <= w[1] < bot], key=lambda w: (round(w[1]), w[0]))
+            cells = {f: [] for f, _ in left}
+            money = []
+            for w in band:
+                if MONEY_RE.match(w[4]):
+                    money.append((w[0], num(w[4])))
+                elif w[0] <= max_left_x:
+                    cells[nearest(w[0])].append(w[4])
+            # Prices by PATTERN (layout-independent): big-dollar values in x-order
+            # are Orig LP, LP, SP — SP is the last. The two $/sqft values are
+            # small (<$50k) and excluded.
+            money.sort()
+            big = [v for _, v in money if v and v > 50_000]
+            sp = big[-1] if big else None
+            lp = big[-2] if len(big) >= 2 else None
+            rec = {k: re.sub(r"\s+", " ", " ".join(v)).strip() for k, v in cells.items()}
             date_m = DATE_RE.search(rec.get("date", "").replace(" ", ""))
-            if sp and sp > 1000 and rec.get("address"):
+            if sp and 50_000 < sp < 100_000_000 and rec.get("address"):
                 records.append({
-                    "mls": rec["mls"].strip(),
-                    "address": normalize_address(re.sub(r"\s+", " ", rec["address"]).strip()),
-                    "city": re.sub(r"\s+", " ", rec["city"]).strip(),
+                    "mls": rec.get("mls", "").strip(),
+                    "address": normalize_address(rec.get("address", "")),
+                    "city": rec.get("city", ""),
                     "state": "CA",
                     "actual_price": int(sp),
                     "sold_date": date_m.group(0) if date_m else "",
-                    "beds": rec.get("bd", "").strip(),
-                    "baths": rec.get("bth", "").strip(),
+                    "beds": rec.get("bd", ""),
+                    "baths": rec.get("bth", ""),
                     "sqft": (num(rec.get("sqft")) and int(num(rec.get("sqft")))) or "",
                     "lot_sqft": (num(rec.get("lotsz")) and int(num(rec.get("lotsz")))) or "",
-                    "year_built": rec.get("year", "").strip(),
-                    "list_price": (num(rec.get("lp")) and int(num(rec.get("lp")))) or "",
-                    "sp_lp_ratio": rec.get("ratio", "").strip(),
+                    "year_built": rec.get("year", ""),
+                    "list_price": int(lp) if lp else "",
+                    "sp_lp_ratio": (round(sp / lp, 2) if lp else ""),
                     "pool_spa_gated": rec.get("psg", "").replace(" ", ""),
                     "source_file": os.path.basename(path),
                 })
