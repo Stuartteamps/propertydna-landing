@@ -19,9 +19,33 @@
  * much of the portfolio actually had a stored prediction.
  */
 const crypto = require("crypto");
+const https = require("https");
 const db = require("./_supabase");
 
 const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
+
+const SUPA_URL = process.env.SUPABASE_URL || "https://neccpdfhmfnvyjgyrysy.supabase.co";
+const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || "";
+const USING_SERVICE_KEY = !!process.env.SUPABASE_SERVICE_KEY;
+
+/** Exact row count via PostgREST Content-Range (Prefer: count=exact). */
+function countRows(table, filterQS = "") {
+  return new Promise((resolve) => {
+    const path = `/rest/v1/${table}?select=*${filterQS}`;
+    const req = https.request(
+      { hostname: new URL(SUPA_URL).hostname, path, method: "HEAD",
+        headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, Prefer: "count=exact", Range: "0-0" } },
+      (res) => {
+        const cr = res.headers["content-range"] || "";
+        const total = cr.includes("/") ? cr.split("/")[1] : null;
+        res.on("data", () => {}); res.on("end", () => resolve(total === "*" ? null : (total != null ? Number(total) : null)));
+      }
+    );
+    req.on("error", () => resolve(null));
+    req.setTimeout(8000, () => { req.destroy(); resolve(null); });
+    req.end();
+  });
+}
 
 function addressHash(address, city, state, zip, unit) {
   const normalized = [address, unit, city, state, zip]
@@ -89,6 +113,35 @@ exports.handler = async (event) => {
   const nowMs = Date.now();
 
   try {
+    // Count mode — definitive row counts to tell RLS-limited from sparse data.
+    if (q.count) {
+      const [total, priced, dated, datedPriced, datedRecent, piTotal, piValued] = await Promise.all([
+        countRows("properties"),
+        countRows("properties", "&last_sale_price=gte.80000"),
+        countRows("properties", "&last_sale_date=gte.2000-01-01"),
+        countRows("properties", "&last_sale_date=gte.2016-06-16&last_sale_price=gte.80000"),
+        countRows("properties", "&last_sale_date=gte.2024-06-16&last_sale_price=gte.80000"),
+        countRows("property_intelligence"),
+        countRows("property_intelligence", "&pdna_value_mid=gte.1"),
+      ]);
+      return {
+        statusCode: 200, headers: CORS,
+        body: JSON.stringify({
+          ok: true, count: true, usingServiceKey: USING_SERVICE_KEY,
+          properties_total: total,
+          properties_priced_ge_80k: priced,
+          properties_with_any_sale_date: dated,
+          properties_dated_since_2016_and_priced: datedPriced,
+          properties_sold_last_24mo_priced: datedRecent,
+          property_intelligence_total: piTotal,
+          property_intelligence_with_pdna_value: piValued,
+          note: USING_SERVICE_KEY
+            ? "Service key in use (RLS bypassed) — counts are the true table totals."
+            : "WARNING: SUPABASE_SERVICE_KEY not set — using anon key, RLS may hide most rows. Counts may be a small visible subset.",
+        }, null, 2),
+      };
+    }
+
     // Probe mode — inspect what's actually populated in `properties`.
     if (q.probe) {
       const anyRows = await db.from("properties").select("address,city,state,zip,last_sale_price,last_sale_date,current_estimated_value,updated_at").limit(8).get().catch((e) => ({ _err: e.message }));
