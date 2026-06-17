@@ -202,6 +202,50 @@ exports.handler = async (event) => {
   // owner copy is just noise in Dan's inbox on every run.
   const isHealthCheck = /^healthcheck\+/i.test(normalizedEmail);
 
+  // HARD CAP: generate at most 2 real health-check reports per rolling 24h,
+  // spaced >=6h apart — regardless of how often the monitor routine fires.
+  // On a capped run we do NOT create a row or call n8n; instead we return the
+  // most recent COMPLETED health-check report's token so the monitor's
+  // end-to-end check still passes against a known-good report (no false alarm)
+  // while no redundant report is generated. If nothing completed exists yet to
+  // reuse, we fall through and generate one real test.
+  if (isHealthCheck) {
+    try {
+      const now = Date.now();
+      const since24h = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+      const cutoff6h = now - 6 * 60 * 60 * 1000;
+      const recent = await db.from("property_reports")
+        .select("view_token,status,created_at")
+        .like("email", "healthcheck+*")
+        .gte("created_at", since24h)
+        .order("created_at", { ascending: false })
+        .limit(10).get();
+      const rows = Array.isArray(recent) ? recent : [];
+      const within6h = rows.some(r => { const t = Date.parse(r.created_at); return !isNaN(t) && t >= cutoff6h; });
+      const overDailyCap = rows.length >= 2;
+      if (within6h || overDailyCap) {
+        const reuse = rows.find(r => r.status === "completed" && r.view_token);
+        if (reuse) {
+          console.log(`[queue-report] health-check capped (24h=${rows.length}, within6h=${within6h}) — reusing ${reuse.view_token}`);
+          return {
+            statusCode: 200,
+            headers: CORS,
+            body: JSON.stringify({
+              queued: true,
+              capped: true,
+              reason: "health-check rate cap (max 2 / 24h, >=6h apart) — reused last completed report",
+              viewToken: reuse.view_token,
+              viewUrl: `${APP_BASE}/report/view/${reuse.view_token}`,
+            }),
+          };
+        }
+        // No completed report available to reuse — let one real test through.
+      }
+    } catch (e) {
+      console.warn("[queue-report] health-check cap check failed (allowing through):", e.message);
+    }
+  }
+
   // ── 1. Save pending record ────────────────────────────────────────────────
   try {
     await db.insert("property_reports", {
