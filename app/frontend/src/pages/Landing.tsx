@@ -64,6 +64,17 @@ const OAuthBtn = ({
   </button>
 );
 
+const emailInputStyle: React.CSSProperties = {
+  width: '100%', padding: '13px 14px', boxSizing: 'border-box',
+  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.15)',
+  color: '#F4F0E8', fontFamily: 'Jost, sans-serif', fontSize: 14, outline: 'none',
+};
+const emailBtnStyle: React.CSSProperties = {
+  width: '100%', padding: '13px 20px', background: '#B89355', border: 'none',
+  color: '#0F0E0D', fontFamily: 'Jost, sans-serif', fontSize: 12, fontWeight: 600,
+  letterSpacing: '1.5px', textTransform: 'uppercase', cursor: 'pointer',
+};
+
 export default function Landing() {
   const [modalOpen,   setModalOpen]   = useState(false);
   const [modalView,   setModalView]   = useState<ModalView>('signin');
@@ -73,7 +84,12 @@ export default function Landing() {
   const [teaserAddr,  setTeaserAddr]  = useState('');
   const [submitting,  setSubmitting]  = useState(false);
   const pendingFire = useRef(false);
-  const { user, signInWithGoogle, signInWithApple } = useAuth();
+  const { user, signInWithGoogle, signInWithApple, signInWithEmail, verifyEmailCode } = useAuth();
+  const [authEmail, setAuthEmail] = useState('');
+  const [authCode,  setAuthCode]  = useState('');
+  const [codeSent,  setCodeSent]  = useState(false);
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [emailErr,  setEmailErr]  = useState('');
   const premium = isPremiumUser();
   const navigate = useNavigate();
 
@@ -132,6 +148,31 @@ export default function Landing() {
     } else {
       submitReport(trimmed, addrResult);
     }
+  };
+
+  // Email sign-in via 6-digit code — works in the native app (no magic-link
+  // round-trip). pendingFire/teaserAddr are already set by handleSearch when the
+  // gate is shown, so the post-login useEffect fires the report just like OAuth.
+  const handleEmailCode = async () => {
+    if (!authEmail.includes('@')) { setEmailErr('Enter a valid email address.'); return; }
+    setEmailErr(''); setEmailBusy(true);
+    try {
+      await signInWithEmail(authEmail);
+      setCodeSent(true);
+    } catch (err: any) {
+      setEmailErr(err?.message || 'Could not send the code. Please try again.');
+    } finally { setEmailBusy(false); }
+  };
+
+  const handleVerifyCode = async () => {
+    if (authCode.trim().length < 6) { setEmailErr('Enter the 6-digit code from your email.'); return; }
+    setEmailErr(''); setEmailBusy(true);
+    try {
+      await verifyEmailCode(authEmail, authCode);
+      // auth state change -> post-login useEffect fires any pending report
+    } catch (err: any) {
+      setEmailErr(err?.message || "That code didn't work. Check it and try again.");
+    } finally { setEmailBusy(false); }
   };
 
   const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0];
@@ -334,6 +375,51 @@ export default function Landing() {
                 </OAuthBtn>
 
               </div>
+
+              {/* Email sign-in — 6-digit code. Works in-app with ANY email
+                  (e.g. a work address) since it needs no magic-link round-trip. */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0' }}>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+                <span style={{ fontFamily: 'Jost, sans-serif', fontSize: 9, color: 'rgba(244,240,232,0.3)', letterSpacing: '2px', textTransform: 'uppercase' }}>or use email</span>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+              </div>
+
+              {!codeSent ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <input
+                    type="email" inputMode="email" autoCapitalize="none" autoCorrect="off"
+                    placeholder="you@work.com"
+                    value={authEmail}
+                    onChange={e => { setAuthEmail(e.target.value); if (emailErr) setEmailErr(''); }}
+                    onKeyDown={e => { if (e.key === 'Enter') handleEmailCode(); }}
+                    style={emailInputStyle}
+                  />
+                  <button onClick={handleEmailCode} disabled={emailBusy} style={{ ...emailBtnStyle, opacity: emailBusy ? 0.6 : 1 }}>
+                    {emailBusy ? 'Sending…' : 'Email me a 6-digit code'}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: 'rgba(244,240,232,0.5)', lineHeight: 1.5 }}>
+                    Enter the 6-digit code sent to <strong style={{ color: '#F0EBE0' }}>{authEmail}</strong>.
+                  </div>
+                  <input
+                    type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
+                    placeholder="123456"
+                    value={authCode}
+                    onChange={e => { setAuthCode(e.target.value.replace(/\D/g, '')); if (emailErr) setEmailErr(''); }}
+                    onKeyDown={e => { if (e.key === 'Enter') handleVerifyCode(); }}
+                    style={{ ...emailInputStyle, letterSpacing: '6px', textAlign: 'center', fontSize: 18 }}
+                  />
+                  <button onClick={handleVerifyCode} disabled={emailBusy} style={{ ...emailBtnStyle, opacity: emailBusy ? 0.6 : 1 }}>
+                    {emailBusy ? 'Verifying…' : 'Verify & sign in'}
+                  </button>
+                  <button onClick={() => { setCodeSent(false); setAuthCode(''); setEmailErr(''); }} style={{ background: 'none', border: 'none', color: 'rgba(244,240,232,0.4)', fontFamily: 'Jost, sans-serif', fontSize: 11, cursor: 'pointer', marginTop: 2 }}>
+                    Use a different email
+                  </button>
+                </div>
+              )}
+              {emailErr && <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#E5736B', marginTop: 8 }}>{emailErr}</div>}
 
               <div style={{
                 fontFamily: 'Jost, sans-serif', fontSize: 10,

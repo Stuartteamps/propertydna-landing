@@ -35,6 +35,7 @@ interface AuthState {
   signInWithApple: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
   signInWithEmail: (email: string) => Promise<void>;
+  verifyEmailCode: (email: string, token: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -44,6 +45,7 @@ const AuthContext = createContext<AuthState>({
   signInWithApple: async () => {},
   signInWithFacebook: async () => {},
   signInWithEmail: async () => {},
+  verifyEmailCode: async () => {},
   signOut: async () => {},
 });
 
@@ -185,6 +187,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   }
 
+  // Verify the 6-digit code from the OTP email. Works fully in-app — no
+  // Universal Link round-trip — so users can sign up with ANY email (e.g. a
+  // work address) even in the native iOS app, where magic links can't reliably
+  // bounce back into the WebView.
+  async function verifyEmailCode(email: string, token: string) {
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.toLowerCase().trim(),
+      token: token.trim(),
+      type: 'email',
+    });
+    if (error) throw error;
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     setTier('free');
@@ -197,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, tier, plan, reportCount, loading, signInWithGoogle, signInWithApple, signInWithFacebook, signInWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, session, tier, plan, reportCount, loading, signInWithGoogle, signInWithApple, signInWithFacebook, signInWithEmail, verifyEmailCode, signOut }}>
       {children}
     </AuthContext.Provider>
   );
