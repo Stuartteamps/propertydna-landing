@@ -251,8 +251,13 @@ def update_version_metadata(version_id: str, marketing: str, notes: dict) -> Non
         if not (locale and (locale.startswith("en") or len(locs.get("data", [])) == 1)):
             continue
         attrs = {"promotionalText": notes["promo"][:170]}
-        if existing_whats_new is not None:
+        # whatsNew is REQUIRED for updates (any version after the initial 1.0)
+        # and must be set even when the freshly-created localization starts null.
+        # Always set it when we have copy; the try/except below tolerates the
+        # rare initial-release case where Apple won't accept it.
+        if notes["whats_new"]:
             attrs["whatsNew"] = notes["whats_new"][:4000]
+        _ = existing_whats_new  # no longer gates whatsNew
         log(f"  updating localization {loc['id']} ({locale}) with {list(attrs)}")
         try:
             api(
