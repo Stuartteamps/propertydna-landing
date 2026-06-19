@@ -249,6 +249,19 @@ async function bulkWrite(masterRows, historyRows) {
   ]);
 }
 
+async function getProgress(community) {
+  const rows = await db.from("kpi_events").select("metadata,created_at")
+    .eq("event_type", "sd_index_progress").eq("email", `sd_community:${community}`)
+    .order("created_at", { ascending: false }).limit(1).get().catch(() => []);
+  if (!Array.isArray(rows) || !rows.length) return { offset: 0, total: null, done: false };
+  const m = rows[0].metadata || {};
+  return { offset: m.nextOffset || 0, total: m.total || null, done: m.done || false };
+}
+
+async function saveProgress(community, nextOffset, total, done) {
+  db.kpi("sd_index_progress", `sd_community:${community}`, { community, nextOffset, total, done });
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 exports.handler = async (event) => {
@@ -265,17 +278,34 @@ exports.handler = async (event) => {
 
   const dryRun    = body.dryRun === true;
   const runSize   = Math.min(body.batchSize || DEFAULT_BATCH, 500);
-  const community = (body.community || "ALL").toUpperCase().trim();
-  const offset    = Number(body.offset) || 0;
+  let community   = (body.community || "ALL").toUpperCase().trim();
 
   try {
+    // If community already finished, hop to the next unfinished one in the queue.
+    let prog = await getProgress(community);
+    if (prog.done) {
+      const startIdx = COMMUNITY_QUEUE.indexOf(community);
+      let hop = startIdx >= 0 ? startIdx + 1 : 0;
+      while (hop < COMMUNITY_QUEUE.length) {
+        const candidate = COMMUNITY_QUEUE[hop];
+        const p2 = await getProgress(candidate);
+        if (!p2.done) { community = candidate; prog = p2; break; }
+        hop++;
+      }
+      if (hop >= COMMUNITY_QUEUE.length) {
+        return { statusCode: 200, headers: CORS,
+          body: JSON.stringify({ message: "All SD communities indexed.", allDone: true }) };
+      }
+    }
+    const offset = body.offset != null ? Number(body.offset) : prog.offset;
     const where  = buildWhere(community);
-    const total  = body.total || await countParcels(where);
+    const total  = body.total || prog.total || await countParcels(where);
     const rows   = await fetchParcels(where, offset, runSize);
 
     if (!rows.length) {
       const trulyDone = total > 0 && offset >= total;
       if (trulyDone) {
+        await saveProgress(community, offset, total, true);
         const nextIdx = COMMUNITY_QUEUE.indexOf(community);
         const nextCommunity = COMMUNITY_QUEUE[nextIdx + 1] || null;
         return { statusCode: 200, headers: CORS,
@@ -314,6 +344,7 @@ exports.handler = async (event) => {
     const nextIdx   = COMMUNITY_QUEUE.indexOf(community);
     const nextCommunity = cityDone ? (COMMUNITY_QUEUE[nextIdx + 1] || null) : community;
 
+    if (!dryRun) await saveProgress(community, newOffset, total, cityDone);
     db.kpi("sd_property_indexed", null, { community, processed: rows.length, newOffset, total, dryRun });
 
     return {
