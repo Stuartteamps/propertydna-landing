@@ -1,6 +1,6 @@
 -- PROPOSED migration — Phase 1 Owner Portal + Data Integrity Office
 -- DO NOT APPLY UNTIL REVIEWED.
--- Renamed with `proposed_` prefix so the standard migration runner skips it.
+-- Promoted to 033_ on 2026-06-23 — Phase 1 owner portal go-live.
 --
 -- Branch: intellagraph-network-transition
 -- Author: Phase 1 architecture pass, 2026-06-23
