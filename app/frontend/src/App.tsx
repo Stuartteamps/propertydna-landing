@@ -67,6 +67,11 @@ import CityTopicLanding from "./pages/CityTopicLanding";
 import Battlefield from "./pages/Battlefield";
 import TickerStock from "./pages/TickerStock";
 import Recruit from "./pages/Recruit";
+import OwnerPortal from "./pages/OwnerPortal";
+import OwnerPortalClaim from "./pages/OwnerPortalClaim";
+import DataIntegrity from "./pages/DataIntegrity";
+import { DIOMethodology, DIODataStandards, DIOOwnerRights, DIOAuditTrail, DIOReportError } from "./pages/DataIntegrityPages";
+import Network from "./pages/Network";
 
 const queryClient = new QueryClient();
 
@@ -146,6 +151,18 @@ const AppRoutes = () => (
     <Route path="/recruit" element={<Recruit />} />
     <Route path="/agent-recruit" element={<Recruit />} />
     <Route path="/assistant" element={<Recruit />} />
+    {/* Owner Portal — claim flow, gated to "Pending verification" until KYC ships */}
+    <Route path="/owner-portal" element={<OwnerPortal />} />
+    <Route path="/owner-portal/:apn" element={<OwnerPortalClaim />} />
+    {/* Data Integrity Office — transparency layer (replaces "HEC" working name) */}
+    <Route path="/data-integrity" element={<DataIntegrity />} />
+    <Route path="/data-integrity/methodology" element={<DIOMethodology />} />
+    <Route path="/data-integrity/data-standards" element={<DIODataStandards />} />
+    <Route path="/data-integrity/owner-rights" element={<DIOOwnerRights />} />
+    <Route path="/data-integrity/audit-trail" element={<DIOAuditTrail />} />
+    <Route path="/data-integrity/report-error" element={<DIOReportError />} />
+    {/* National Property Intelligence Network landing (replaces "NHSE" working name) */}
+    <Route path="/network" element={<Network />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
