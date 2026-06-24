@@ -7,7 +7,7 @@
  * Source: property_owner_claims (existing). Dedup: kpi_events 'historian_ask'.
  * NO new tables. Safe: ENGAGEMENT_MODE=dryrun default. Daily.
  */
-const { callClaude, resendSend, alreadySent, markSent, ownerDigest, MODE, APP_BASE, db } = require("./_engage");
+const { callClaude, resendSend, alreadySent, markSent, ownerDigest, shouldSend, MODE, APP_BASE, db } = require("./_engage");
 const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, x-internal-key" };
 const MAX = 25;
 
@@ -35,6 +35,7 @@ exports.handler = async (event) => {
     const email = (r.claimed_email || "").toLowerCase().trim();
     if (!email || seen.has(email)) continue; seen.add(email);
     if (await alreadySent("historian_ask", email)) continue;
+    if (!(await shouldSend(email, "historian"))) continue;
     if (items.length >= MAX) break;
     const addrLabel = r.apn ? `your home (APN ${r.apn})` : "your home";
     const addUrl = `${APP_BASE}/dashboard`;

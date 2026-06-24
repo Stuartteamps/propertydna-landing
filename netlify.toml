@@ -31,16 +31,19 @@
 
 # Audience Engagement OS agents. Default ENGAGEMENT_MODE=dryrun (email Dan a
 # preview); set ENGAGEMENT_MODE=live to actually reach users. Staggered daily.
+# Advocate runs FIRST (9am PT) so a safety alert claims the user's daily slot
+# before Steward/Historian — the frequency cap then blocks the lower-priority
+# agents for anyone Advocate just warned. Advocate itself bypasses the cap.
+[functions."advocate-agent"]
+  schedule = "0 16 * * *"
+  timeout = 26
+
 [functions."steward-agent"]
   schedule = "30 16 * * *"
   timeout = 26
 
-[functions."advocate-agent"]
-  schedule = "30 18 * * *"
-  timeout = 26
-
 [functions."historian-agent"]
-  schedule = "30 17 * * *"
+  schedule = "0 17 * * *"
   timeout = 26
 
 # Weekly cadence agents (staggered Mon/Wed/Fri) — lower frequency by design.

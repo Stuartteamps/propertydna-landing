@@ -9,7 +9,7 @@
  *
  * Scheduled daily (netlify.toml). Manual POST needs x-internal-key.
  */
-const { callClaude, resendSend, alreadySent, markSent, ownerDigest, MODE, APP_BASE, db } = require("./_engage");
+const { callClaude, resendSend, alreadySent, markSent, ownerDigest, shouldSend, MODE, APP_BASE, db } = require("./_engage");
 
 const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, x-internal-key" };
 const MAX_PER_RUN = 25;
@@ -58,6 +58,7 @@ exports.handler = async (event) => {
     if (!email || email.includes("healthcheck+") || seen.has(email)) continue;
     seen.add(email);
     if (await alreadySent("steward_welcome", email)) continue;
+    if (!(await shouldSend(email, "steward"))) continue;   // consent + frequency cap
     if (items.length >= MAX_PER_RUN) break;
 
     const addr = r.full_address || r.address || "your property";

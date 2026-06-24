@@ -57,7 +57,71 @@ async function alreadySent(eventType, email) {
     .limit(1).get().catch(() => []);
   return Array.isArray(rows) && rows.length > 0;
 }
-function markSent(eventType, email, meta = {}) { db.kpi(eventType, email, meta); }
+function markSent(eventType, email, meta = {}) {
+  db.kpi(eventType, email, meta);
+  // Uniform marker that powers the cross-agent frequency cap (one "slot" used).
+  db.kpi("engagement_sent", email, { type: eventType });
+}
+
+// ── Consent + frequency cap (anti-spam) ─────────────────────────────────────
+// Opt-out model: a notification_preferences row with enabled=false for this
+// agent (or agent='all') blocks the send. No row = allowed.
+async function consentOk(email, agent) {
+  try {
+    const rows = await db.from("notification_preferences").select("agent,enabled")
+      .eq("email", (email || "").toLowerCase().trim()).in("agent", ["all", agent]).get();
+    if (Array.isArray(rows)) for (const r of rows) if (r.enabled === false) return false;
+    return true;
+  } catch { return true; }
+}
+
+// Blocked if this email already got an engagement email within
+// ENGAGEMENT_MIN_GAP_DAYS (default 4). This is what assigns each recipient to
+// the FIRST agent that reaches them and prevents the other agents from piling on.
+async function withinCap(email) {
+  try {
+    const days = Number(process.env.ENGAGEMENT_MIN_GAP_DAYS || 4);
+    const since = new Date(Date.now() - days * 86400000).toISOString();
+    const rows = await db.from("kpi_events").select("id")
+      .eq("event_type", "engagement_sent").eq("email", (email || "").toLowerCase().trim())
+      .gte("created_at", since).limit(1).get();
+    return Array.isArray(rows) && rows.length > 0;
+  } catch { return false; }
+}
+
+// Single gate. bypassCap=true only for safety-critical agents (Advocate).
+async function shouldSend(email, agent, { bypassCap = false } = {}) {
+  if (!(await consentOk(email, agent))) return false;
+  if (!bypassCap && (await withinCap(email))) return false;
+  return true;
+}
+
+// ── Referral code (stable, deterministic — no new random) ───────────────────
+function hashCode(s) { let h = 0; for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0; return h; }
+async function getReferralCode(email) {
+  const e = (email || "").toLowerCase().trim();
+  const fallback = "PD" + Math.abs(hashCode(e)).toString(36).toUpperCase().slice(0, 7);
+  try {
+    const rows = await db.from("referral_codes").select("code").eq("email", e).limit(1).get();
+    if (Array.isArray(rows) && rows[0]) return rows[0].code;
+    await db.insert("referral_codes", { email: e, code: fallback }).catch(() => {});
+    return fallback;
+  } catch { return fallback; }
+}
+
+// ── Push (FCM legacy server key; no-op until tokens + key exist) ─────────────
+async function sendPush(email, title, msg, url) {
+  const serverKey = process.env.FCM_SERVER_KEY;
+  let tokens = [];
+  try { const rows = await db.from("device_tokens").select("token").eq("email", (email || "").toLowerCase().trim()).get(); tokens = (rows || []).map(r => r.token).filter(Boolean); } catch {}
+  if (!serverKey || !tokens.length) return { sent: 0, reason: !serverKey ? "no_fcm_key" : "no_tokens" };
+  let sent = 0;
+  for (const t of tokens) {
+    const payload = JSON.stringify({ to: t, notification: { title, body: msg }, data: { url: url || "" } });
+    await new Promise((res) => { const req = https.request({ hostname: "fcm.googleapis.com", path: "/fcm/send", method: "POST", headers: { Authorization: `key=${serverKey}`, "Content-Type": "application/json", "Content-Length": Buffer.byteLength(payload) } }, (r) => { r.on("data", () => {}); r.on("end", () => { sent++; res(); }); }); req.on("error", () => res()); req.write(payload); req.end(); });
+  }
+  return { sent };
+}
 
 // ── Owner digest (dry-run output) ───────────────────────────────────────────
 async function ownerDigest(agent, mode, items) {
@@ -80,4 +144,4 @@ async function ownerDigest(agent, mode, items) {
   return resendSend({ to: OWNER, from: "PropertyDNA Engagement <reports@thepropertydna.com>", subject: `🤖 ${agent} agent — ${mode} — ${items.length} recipients`, html });
 }
 
-module.exports = { callClaude, resendSend, alreadySent, markSent, ownerDigest, MODE, APP_BASE, OWNER, db };
+module.exports = { callClaude, resendSend, alreadySent, markSent, ownerDigest, shouldSend, consentOk, withinCap, getReferralCode, sendPush, MODE, APP_BASE, OWNER, db };

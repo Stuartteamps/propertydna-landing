@@ -7,7 +7,7 @@
  * NO new tables (RSVP tracking = local_events/event_rsvps is a Phase 2 migration).
  * Safe: ENGAGEMENT_MODE=dryrun default. Weekly.
  */
-const { callClaude, resendSend, alreadySent, markSent, ownerDigest, MODE, APP_BASE, db } = require("./_engage");
+const { callClaude, resendSend, alreadySent, markSent, ownerDigest, shouldSend, MODE, APP_BASE, db } = require("./_engage");
 const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, x-internal-key" };
 const MIN_DENSITY = 3;     // min distinct users in a ZIP to propose a meetup
 const MAX = 30;
@@ -47,6 +47,7 @@ exports.handler = async (event) => {
     catch { bodyHtml = `<p>There are ${g.emails.size} PropertyDNA owners near ${area}. Want to meet up — compare notes, run a tax-appeal clinic together? Reply if you're in. 🏠</p>`; }
     for (const email of g.emails) {
       if (await alreadySent("connector_invite", email)) continue;
+      if (!(await shouldSend(email, "connector"))) continue;
       if (items.length >= MAX) break;
       items.push({ email, address: area, subject: `${g.emails.size} PropertyDNA neighbors near ${area}`, html: bodyHtml, zip });
     }

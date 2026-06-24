@@ -8,7 +8,7 @@
  * NO new tables (full referral attribution = a referrals table in Phase 2).
  * Safe: ENGAGEMENT_MODE=dryrun default. Weekly.
  */
-const { callClaude, resendSend, alreadySent, markSent, ownerDigest, MODE, APP_BASE, db } = require("./_engage");
+const { callClaude, resendSend, alreadySent, markSent, ownerDigest, shouldSend, getReferralCode, MODE, APP_BASE, db } = require("./_engage");
 const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, x-internal-key" };
 const MAX = 25;
 
@@ -40,10 +40,12 @@ exports.handler = async (event) => {
     const email = (r.email || "").toLowerCase().trim();
     if (!email || email.includes("healthcheck+") || seen.has(email)) continue; seen.add(email);
     if (await alreadySent("ambassador_invite", email)) continue;
+    if (!(await shouldSend(email, "ambassador"))) continue;
     if (items.length >= MAX) break;
     const addr = r.full_address || r.address || "your home";
-    // Their report is the shareable proof; the home page is where a neighbor runs their own.
-    const shareUrl = `${APP_BASE}/?utm_source=ambassador&utm_medium=referral`;
+    // Attributed referral link: routes through /referral to log the click + who shared.
+    const code = await getReferralCode(email);
+    const shareUrl = `${APP_BASE}/.netlify/functions/referral?ref=${code}`;
     let html;
     try { html = await callClaude(SYSTEM, `Property they ran: ${addr}\nShare link (neighbor runs their own free report): ${shareUrl}\n\nWrite the ambassador invite body.`); }
     catch { html = `<p>You took ownership of your home's data. Know a neighbor — or someone about to buy — who deserves the same?</p><p>Send them their free report: <a href="${shareUrl}">${shareUrl}</a></p><p>That's how we save the humans, one neighbor at a time. 🏠</p>`; }

@@ -7,7 +7,7 @@
  * (Cross-time deltas need a market_snapshots table — Phase 2 enhancement.)
  * Safe: ENGAGEMENT_MODE=dryrun default. Weekly.
  */
-const { callClaude, resendSend, alreadySent, markSent, ownerDigest, MODE, APP_BASE, db } = require("./_engage");
+const { callClaude, resendSend, alreadySent, markSent, ownerDigest, shouldSend, MODE, APP_BASE, db } = require("./_engage");
 const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, x-internal-key" };
 const MAX = 30;
 
@@ -54,6 +54,7 @@ exports.handler = async (event) => {
     const email = (r.email || "").toLowerCase().trim();
     if (!email || email.includes("healthcheck+") || seen.has(email)) continue; seen.add(email);
     if (await alreadySent(dedupType, email)) continue;
+    if (!(await shouldSend(email, "market"))) continue;
     if (items.length >= MAX) break;
     const addr = r.full_address || r.address || "your home";
     const url = r.view_token ? `${APP_BASE}/report/view/${r.view_token}` : `${APP_BASE}/dashboard`;

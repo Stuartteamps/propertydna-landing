@@ -318,6 +318,18 @@ exports.handler = async (event) => {
     viewToken,
   });
 
+  // Referral attribution (additive, fire-and-forget — never blocks the report).
+  // Frontend forwards ?ref through to this field; absent for normal traffic.
+  if (body.ref) {
+    db.insert("referrals", {
+      code: String(body.ref).slice(0, 40),
+      invitee_email: normalizedEmail,
+      status: "signed_up",
+      attributed_at: new Date().toISOString(),
+    }).catch(() => {});
+    db.kpi("referral_conversion", normalizedEmail, { code: body.ref });
+  }
+
   return {
     statusCode: 200,
     headers: CORS,
