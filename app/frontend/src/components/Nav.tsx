@@ -11,14 +11,14 @@ const linkStyle: React.CSSProperties = {
   transition: 'color 0.2s', padding: 0, textDecoration: 'none',
 };
 
-// Simple, user-friendly nav. Core flow: Login → enter property address → get report.
-// Map and IntellaGraph AI showcase the data depth. Everything else moves to Footer.
+// Three visitors, three questions. Everything else is footer.
+//   Analyze  → "What's this house worth?" — address search → DNA report
+//   Network  → "Show me what you know"    — NPIN rollup (heatmap, dossiers, ticker, IntellaGraph AI)
+//   Owners   → "I own a home"             — Owner Portal claim + watchlist
 const navLinks = [
-  { label: 'Analyze',  href: '/analyze' },
-  { label: 'Dossiers', href: '/dossiers' },
-  { label: 'Heat Map', href: '/market-heatmaps' },
-  { label: 'iOS App',  href: '/launch' },
-  { label: 'About',    href: '/about' },
+  { label: 'Analyze', href: '/analyze' },
+  { label: 'Network', href: '/network'  },
+  { label: 'Owners',  href: '/owner-portal' },
 ];
 
 interface NavProps {
@@ -65,7 +65,7 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
         borderBottom: '1px solid rgba(255,255,255,0.07)',
         transition: 'background 0.3s ease',
       }}>
-        {/* Logo */}
+        {/* Logo + accuracy strapline */}
         <Link to="/" style={{
           display: 'flex', alignItems: 'center', gap: '10px',
           fontFamily: 'Jost, sans-serif', fontSize: '12px', fontWeight: 500,
@@ -78,7 +78,20 @@ const Nav: React.FC<NavProps> = ({ onSignInClick, onRequestAccessClick }) => {
               <line x1="1" y1="7" x2="13" y2="7" stroke="#C9A84C" strokeWidth="0.75"/>
             </svg>
           </div>
-          PropertyDNA
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+            <span>PropertyDNA</span>
+            {/* Trust strapline — links to the methodology so the claim is one click from proof */}
+            <Link
+              to="/data-integrity/methodology"
+              style={{
+                fontFamily: 'Jost, sans-serif', fontSize: 8, letterSpacing: '1.4px',
+                color: '#6B6252', textDecoration: 'none', marginTop: 2,
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              VALUATION + RISK · TRANSPARENT METHODOLOGY
+            </Link>
+          </div>
         </Link>
 
         {/* Center links — desktop */}

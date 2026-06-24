@@ -54,21 +54,56 @@ const SOCIAL = [
   },
 ];
 
-const links = [
-  { label: 'iOS App',         href: '/launch' },
+// Footer is the overflow surface for the 3-item top nav (Analyze / Network / Owners).
+// Three columns: Product · Standards · Company. Pricing hidden on iOS (Apple 3.1.1).
+const PRODUCT = [
   { label: 'Analyze',         href: '/analyze' },
-  { label: 'Luxury Index',    href: '/pedigree-index' },
-  { label: 'Inventory',       href: '/luxury-inventory' },
-  { label: 'Heat Maps',       href: '/market-heatmaps' },
+  { label: 'Network',         href: '/network' },
+  { label: 'Owner Portal',    href: '/owner-portal' },
   { label: 'IntellaGraph AI', href: '/intellagraph' },
+  { label: 'Heat Maps',       href: '/market-heatmaps' },
+  { label: 'Luxury Index',    href: '/pedigree-index' },
+  { label: 'Dossiers',        href: '/dossiers' },
+  { label: 'Inventory',       href: '/luxury-inventory' },
+  { label: 'iOS App',         href: '/launch' },
+];
+const STANDARDS = [
+  { label: 'Data Integrity Office', href: '/data-integrity' },
+  { label: 'Methodology',           href: '/data-integrity/methodology' },
+  { label: 'Data Standards',        href: '/data-integrity/data-standards' },
+  { label: 'Owner Rights',          href: '/data-integrity/owner-rights' },
+  { label: 'AI Audit Trail',        href: '/data-integrity/audit-trail' },
+  { label: 'Report a Data Error',   href: '/data-integrity/report-error' },
+];
+const COMPANY = [
+  { label: 'About',           href: '/about' },
   { label: 'How It Works',    href: '/how-it-works' },
   { label: 'Pricing',         href: '/pricing' },
-  { label: 'About',           href: '/about' },
   { label: 'Press',           href: '/press' },
   { label: 'Launch Story',    href: '/press/ios-launch' },
   { label: 'Contact',         href: '/contact' },
   { label: 'Privacy',         href: '/privacy' },
 ];
+
+function FooterColumn({ title, items }: { title: string; items: { label: string; href: string }[] }) {
+  return (
+    <div>
+      <div className="font-sans text-[10px] tracking-[3px] uppercase text-gold/80 mb-3" style={{ fontWeight: 600 }}>{title}</div>
+      <div className="flex flex-col gap-2">
+        {items.map(({ label, href }) => (
+          <Link
+            key={href}
+            to={href}
+            className="font-sans text-[11px] tracking-[1.5px] uppercase text-canvas/50 hover:text-gold transition-colors"
+            style={{ textDecoration: 'none' }}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Footer() {
   return (
@@ -86,17 +121,10 @@ export default function Footer() {
               Property intelligence for buyers, sellers, and investors — valuation, risk, and market data for any address in the US.
             </div>
           </div>
-          <div className="flex flex-wrap gap-x-8 gap-y-3">
-            {links.filter(l => !(isNative() && l.href === '/pricing')).map(({ label, href }) => (
-              <Link
-                key={href}
-                to={href}
-                className="font-sans text-[11px] tracking-[2px] uppercase text-canvas/50 hover:text-gold transition-colors"
-                style={{ textDecoration: 'none' }}
-              >
-                {label}
-              </Link>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-12 gap-y-8">
+            <FooterColumn title="Product"   items={PRODUCT}   />
+            <FooterColumn title="Standards" items={STANDARDS} />
+            <FooterColumn title="Company"   items={COMPANY.filter(l => !(isNative() && l.href === '/pricing'))} />
           </div>
         </div>
         {/* Social icons */}
