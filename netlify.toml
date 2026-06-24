@@ -21,6 +21,14 @@
   directory = "../../netlify/functions"
   node_bundler = "esbuild"
 
+# Social Publisher agent — generates a mission-driven daily post via Claude and
+# (in publish mode) hands it to social-poster. Daily 10am PT (17:00 UTC).
+# Default mode = draft (emails Dan the post). After /admin/oauth is granted,
+# set env SOCIAL_AGENT_MODE=publish and it posts autonomously — no code change.
+[functions."social-agent"]
+  schedule = "0 17 * * *"
+  timeout = 26
+
 [functions."index-properties"]
   timeout = 26
 
