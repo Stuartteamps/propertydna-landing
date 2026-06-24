@@ -18,6 +18,24 @@ Every agent is designed to make a user feel one or more of: **informed · recogn
 
 ---
 
+## ✅ Implementation status (2026-06-24)
+
+All six agents are **built, deployed, and scheduled** as Netlify functions, gated by `ENGAGEMENT_MODE` (default `dryrun` = email Dan a preview; set `live` to reach users). Shared toolkit: `netlify/functions/_engage.js` (Claude brain + Resend + kpi dedup + owner digest). Built fully additive — zero schema changes; dedup on `kpi_events`; reuse `property_reports` + the existing `033_owner_governance` tables (`property_owner_claims`, `property_owner_updates`).
+
+| Agent | Function | Cadence | Live-channel today |
+|---|---|---|---|
+| Steward | `steward-agent.js` | daily 9:30 PT | email |
+| Advocate | `advocate-agent.js` | daily 11:30 PT | email |
+| Historian | `historian-agent.js` | daily 10:30 PT | email |
+| Market Analyst | `market-agent.js` | Mon 9 PT | email |
+| Connector | `connector-agent.js` | Wed 12 PT | email |
+| Ambassador | `ambassador-agent.js` | Fri 13 PT | email |
+| *(Social Publisher)* | `social-agent.js` | daily 10 PT | social (via social-poster) |
+
+**Phase-2 enhancements (need migrations / the push channel):** `market_snapshots` (cross-time deltas), `local_events`/`event_rsvps` (Connector RSVP), `referrals` (Ambassador attribution + K-factor), `notification_preferences` (per-agent consent), and push (APNs/FCM) for native alerts.
+
+---
+
 ## 1. System architecture
 
 A thin, event-driven layer. Nothing here is a new product surface — it's backend services + scheduled intelligence + the channels you already run.

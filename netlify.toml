@@ -39,6 +39,23 @@
   schedule = "30 18 * * *"
   timeout = 26
 
+[functions."historian-agent"]
+  schedule = "30 17 * * *"
+  timeout = 26
+
+# Weekly cadence agents (staggered Mon/Wed/Fri) — lower frequency by design.
+[functions."market-agent"]
+  schedule = "0 16 * * 1"
+  timeout = 26
+
+[functions."connector-agent"]
+  schedule = "0 19 * * 3"
+  timeout = 26
+
+[functions."ambassador-agent"]
+  schedule = "0 20 * * 5"
+  timeout = 26
+
 [functions."index-properties"]
   timeout = 26
 
