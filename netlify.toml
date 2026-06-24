@@ -65,6 +65,14 @@
 [functions."index-florida"]
   timeout = 26
 
+# pull-solds: ground-truth ingest for the back-test. Pulls recently SOLD
+# listings from RentCast /v1/listings/sale and writes them to `properties`
+# (back-test ground-truth source) + `property_history` (when APN is
+# resolvable via property_master lookup). Fire per market; no schedule
+# while we tune.
+[functions."pull-solds"]
+  timeout = 26
+
 # East Coast / mid-Atlantic indexers (added 2026-06-15).
 # Staggered every ~4h so only ONE indexer fires at a time — IO budget concern
 # after the 2026-05-27 disk-IO exhaustion incident. All indexers idempotent
