@@ -29,6 +29,16 @@
   schedule = "0 17 * * *"
   timeout = 26
 
+# Audience Engagement OS agents. Default ENGAGEMENT_MODE=dryrun (email Dan a
+# preview); set ENGAGEMENT_MODE=live to actually reach users. Staggered daily.
+[functions."steward-agent"]
+  schedule = "30 16 * * *"
+  timeout = 26
+
+[functions."advocate-agent"]
+  schedule = "30 18 * * *"
+  timeout = 26
+
 [functions."index-properties"]
   timeout = 26
 
