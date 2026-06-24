@@ -15,6 +15,11 @@ const db = require("./_supabase");
 const { ingestProperty }   = require("./property-ingest");
 const { enrichProperty }   = require("./enrich-property");
 const { rentcastEnrich }   = require("./rentcast-enrich");
+const {
+  classifyPropertyType,
+  getValuationProfile,
+  filterFeaturesByProfile,
+} = require("./_valuation_profile");
 
 // ── Direct data fetchers (bypass broken n8n nodes) ───────────────────────────
 
@@ -245,8 +250,10 @@ function detectADU(reportData) {
 // When 2+ comps within 0.30 mi have correlation >= 95%, blend their average
 // into the AVM mid. Catches "AVM ignores the $3.6M next-door sale" cases.
 // Returns null if not applicable.
-function computeClosestCompAnchor(avmMid, comps = []) {
+function computeClosestCompAnchor(avmMid, comps = [], compRules = null) {
   if (!avmMid || !Array.isArray(comps) || comps.length === 0) return null;
+  // Per-property-type comp rules. Default = SFR tier-1 (current behavior).
+  const RULES = compRules || { radiusMi: 0.30, corrPct: 95, minComps: 2, fallbackTopN: 3, fallbackCorrPct: 90 };
 
   const parseNum = (v) => {
     if (v == null) return null;
@@ -289,17 +296,18 @@ function computeClosestCompAnchor(avmMid, comps = []) {
     });
   }
 
-  // Tier 1: tightest filter — within 0.30 mi AND correlation >= 95%
-  let qualifying = enriched.filter(c => c.dist != null && c.dist <= 0.30 && c.corr != null && c.corr >= 95);
+  // Tier 1: profile-driven tight filter (default SFR: 0.30mi, 95% corr; condo:
+  // 0.10mi, 92%; multifamily: 1.00mi, 80%; trophy SFR: 1.50mi, 85%)
+  let qualifying = enriched.filter(c => c.dist != null && c.dist <= RULES.radiusMi && c.corr != null && c.corr >= RULES.corrPct);
 
-  // Tier 2 fallback: top 3 by correlation if no tight matches
-  if (qualifying.length < 2) {
+  // Tier 2 fallback: top N by correlation (default 3, condo 5, multifamily 5)
+  if (qualifying.length < (RULES.minComps || 2)) {
     qualifying = enriched
-      .filter(c => c.corr != null && c.corr >= 90)
+      .filter(c => c.corr != null && c.corr >= (RULES.fallbackCorrPct || 90))
       .sort((a, b) => b.corr - a.corr)
-      .slice(0, 3);
+      .slice(0, RULES.fallbackTopN || 3);
   }
-  if (qualifying.length < 2) return null;
+  if (qualifying.length < (RULES.minComps || 2)) return null;
 
   const avgComp = Math.round(qualifying.reduce((s, c) => s + c.price, 0) / qualifying.length);
   const gap = (avgComp - avmMid) / avmMid;
@@ -426,6 +434,7 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
   marketPriceYoY = null,
   comps = null,
   luxuryTier = false,         // when true, extend sale-anchor window to 84 months
+  compRules = null,           // per-property-type comp rules (see _valuation_profile.js)
 } = {}) {
   if (!avmMid) return { smartLow: avmLow, smartMid: avmMid, smartHigh: avmHigh, baseAdjustment: null };
 
@@ -500,7 +509,7 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
   // ── Layer 2: closest-comp anchor (independent of sale) ────────────────────
   // Take the HIGHER of sale anchor vs comp anchor — both protect against undervaluation.
   if (Array.isArray(comps) && comps.length > 0) {
-    const compAnchor = computeClosestCompAnchor(smartMid, comps);
+    const compAnchor = computeClosestCompAnchor(smartMid, comps, compRules);
     if (compAnchor && compAnchor.blendMid > smartMid) {
       const scale = compAnchor.blendMid / smartMid;
       smartMid  = compAnchor.blendMid;
@@ -523,26 +532,56 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   poolAddOnCost = null, // explicit pool capex (e.g. 100000); recoups 60% in luxury
   recentReno = null,    // { cost: 50000, year: 2024 } recent renovation capex
   comps = null,         // comps array for closest-comp anchor
+  // ── Property-type-aware fields (added 2026-06-23) ─────────────────────────
+  // Pass `propertyTypeRaw` (the raw string from property_master.property_type)
+  // and any hints we have (beds/sqft/units). When provided, the valuation
+  // applies per-type weight multipliers, caps, and feature allow/blocklists.
+  // Backwards-compatible: if omitted, falls back to SFR-default behavior.
+  propertyTypeRaw = null,
+  propertyHints   = {},  // { beds, baths, sqft, units, lot_sqft }
 } = {}) {
-  // Phase 1 — correct the AVM base using recent sale anchor + closest-comp anchor
-  const base = computeSmartBase(rawLow, rawMid, rawHigh, { lastSalePrice, lastSaleDate, marketPriceYoY, comps, luxuryTier });
+  // Phase 0 — classify property type and resolve preliminary profile
+  // (preliminary because luxury-tier comp rules depend on smartMid which we
+  // don't have until after the sale anchor runs — we resolve the FINAL
+  // profile after computeSmartBase using smartMid)
+  const propertyType = classifyPropertyType(propertyTypeRaw, propertyHints);
+  const prelimProfile = getValuationProfile(propertyType, rawMid);
+
+  // Phase 1 — correct the AVM base using recent sale anchor + closest-comp
+  // anchor, with type-aware comp rules
+  const base = computeSmartBase(rawLow, rawMid, rawHigh, {
+    lastSalePrice, lastSaleDate, marketPriceYoY, comps, luxuryTier,
+    compRules: prelimProfile.compRules,
+  });
   const { smartLow, smartMid, smartHigh, baseAdjustment } = base;
 
-  // Phase 2 — percentage adjustments from DNA feature flags
+  // Resolve FINAL profile now that we know smartMid (luxury-tier overrides
+  // depend on it: cap lifts to ±60% SFR / ±35% condo at $3M+)
+  const profile = getValuationProfile(propertyType, smartMid);
+
+  // Filter features by profile allow/blocklist. A condo doesn't get pool/lot
+  // credit; a multifamily building doesn't get celebrity pedigree credit.
+  const allowedFeatures = filterFeaturesByProfile(features, profile);
+
+  // Phase 2 — percentage adjustments from DNA feature flags, scaled by type
   let totalLow = 0, totalMid = 0, totalHigh = 0;
   const drivers = [];
+  const mult = profile.featureMultiplier;
 
-  for (const [key, active] of Object.entries(features)) {
+  for (const [key, active] of Object.entries(allowedFeatures)) {
     if (!active) continue;
     const adj = DNA_ADJUSTMENTS[key];
     if (!adj) continue;
-    totalLow  += adj.pct_low;
-    totalMid  += adj.pct_mid;
-    totalHigh += adj.pct_high;
+    const scaledLow  = adj.pct_low  * mult;
+    const scaledMid  = adj.pct_mid  * mult;
+    const scaledHigh = adj.pct_high * mult;
+    totalLow  += scaledLow;
+    totalMid  += scaledMid;
+    totalHigh += scaledHigh;
     drivers.push({
       key,
       label: FEATURE_LABELS[key] || key.replace(/_/g, " "),
-      pct: adj.pct_mid,
+      pct: Math.round(scaledMid * 10) / 10,
     });
   }
 
@@ -564,10 +603,12 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     drivers.push({ key: "luxury_sparse_comps", label: LUXURY_PCT.label, pct: LUXURY_PCT.pct_mid });
   }
 
-  // Cap total % adjustment. Standard: ±40%. Trophy luxury ($3M+) lifts to ±60%
-  // because RentCast AVM underweights enclave/architect/celebrity premiums and
-  // the stacked feature uplift can legitimately compound to that range.
-  const adjustmentCap = smartMid >= 3_000_000 ? 60 : 40;
+  // Cap total % adjustment per property-type profile.
+  //   SFR baseline ±40% (lifts to ±60% at $3M+, ±60% for trophy).
+  //   Condo ±25% (±35% trophy). Townhouse ±35% (±45% trophy).
+  //   Multifamily small ±25%, large ±20%, commercial ±15%, land ±30%.
+  // See _valuation_profile.js for the full table + reasoning.
+  const adjustmentCap = profile.adjustmentCap;
   totalLow  = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalLow));
   totalMid  = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalMid));
   totalHigh = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalHigh));
@@ -647,6 +688,12 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     renoUplift: renoUplift || null,
     baseAdjustment: baseAdjustment || null,
     luxuryTier,
+    // Property-type profile applied (added 2026-06-23)
+    propertyType:        propertyType,
+    propertyTypeRawIn:   propertyTypeRaw,
+    valuationMethod:     profile.valuationMethod,
+    featureMultiplier:   profile.featureMultiplier,
+    adjustmentCapUsed:   profile.adjustmentCap,
   };
 }
 
@@ -875,6 +922,26 @@ exports.handler = async (event) => {
 
       const comps = reportData?.normalized?.comps || [];
 
+      // ── Pull property type + hints for type-aware valuation ───────────────
+      // n8n / RentCast surface property class on normalized.property.* or
+      // normalized.subject.*; sometimes also under reportData.body. We try
+      // multiple paths defensively.
+      const propertyTypeRaw =
+        reportData?.normalized?.property?.propertyType
+        || reportData?.normalized?.property?.property_type
+        || reportData?.normalized?.subject?.propertyType
+        || reportData?.normalized?.subject?.property_type
+        || reportData?.normalized?.subject?.useCode
+        || body?.propertyType
+        || null;
+      const propertyHints = {
+        beds:    reportData?.normalized?.property?.bedrooms ?? reportData?.normalized?.subject?.bedrooms,
+        baths:   reportData?.normalized?.property?.bathrooms ?? reportData?.normalized?.subject?.bathrooms,
+        sqft:    reportData?.normalized?.property?.squareFootage ?? reportData?.normalized?.subject?.squareFootage,
+        units:   reportData?.normalized?.property?.units ?? reportData?.normalized?.subject?.units,
+        lot_sqft:reportData?.normalized?.property?.lotSize ?? reportData?.normalized?.subject?.lotSize,
+      };
+
       dnaAdjusted = computeDnaAdjustment(low, mid, high, mergedFeatures, {
         lastSalePrice:  effectiveLastSalePrice ? Number(effectiveLastSalePrice) : null,
         lastSaleDate:   effectiveLastSaleDate,
@@ -884,6 +951,8 @@ exports.handler = async (event) => {
         poolAddOnCost:  effectivePoolCost != null ? Number(effectivePoolCost) : null,
         recentReno:     recentRenoCost ? { cost: Number(recentRenoCost), year: recentRenoYear ? Number(recentRenoYear) : null } : null,
         comps,
+        propertyTypeRaw,
+        propertyHints,
       });
       featureProfile = { low, mid, high, dnaAdjusted, autoDetected: mergedFeatures };
 
