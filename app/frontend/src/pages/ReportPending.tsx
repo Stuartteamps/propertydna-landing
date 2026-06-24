@@ -21,8 +21,9 @@ async function fireReport(data: Record<string, string>, sessionId?: string) {
       notes:           data.notes || '',
       propertyType:    data.propertyType || '',
       stripeSessionId: sessionId || 'bypass',
+      ref:             (() => { try { return localStorage.getItem('pdna_ref') || ''; } catch { return ''; } })(),
     }),
-  }).then(r => r.json()).catch(() => ({}));
+  }).then(r => r.json()).then(j => { try { localStorage.removeItem('pdna_ref'); } catch { /* noop */ } return j; }).catch(() => ({}));
 }
 
 function DoneAndRedirect({ requestId, isSub, navigate }: { requestId: string; isSub: boolean; navigate: (path: string) => void }) {

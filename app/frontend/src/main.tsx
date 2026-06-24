@@ -4,6 +4,13 @@ import App from './App.tsx';
 import './index.css';
 import { loadRuntimeConfig } from './lib/config.ts';
 
+// Capture an Ambassador referral code (?ref=CODE) on first load so it can be
+// attributed when this visitor eventually runs a report. Persists across nav.
+try {
+  const _ref = new URLSearchParams(window.location.search).get('ref');
+  if (_ref) localStorage.setItem('pdna_ref', _ref.slice(0, 40));
+} catch { /* localStorage unavailable */ }
+
 // In the iOS/Android app, window.location.origin is "capacitor://localhost",
 // so a fetch to "/.netlify/functions/X" resolves to "capacitor://localhost/..."
 // and fails. Rewrite those calls to the production domain so every Netlify
