@@ -184,6 +184,7 @@ exports.handler = async (event) => {
     }
 
     // 2) Look up our stored predictions by address_hash, in chunks.
+    // Also pull property_type from property_master for type-bucketed accuracy.
     const byHash = new Map();
     for (const p of solds) {
       byHash.set(addressHash(p.address, p.city, p.state, p.zip, p.unit), p);
@@ -195,7 +196,7 @@ exports.handler = async (event) => {
       const slice = hashes.slice(i, i + CHUNK);
       const rows = await db
         .from("property_intelligence")
-        .select("address_hash,pdna_value_mid,rentcast_value")
+        .select("address_hash,pdna_value_mid,rentcast_value,property_type")
         .in("address_hash", slice)
         .get()
         .catch(() => []);
@@ -203,9 +204,29 @@ exports.handler = async (event) => {
     }
     const piByHash = new Map(piRows.map((r) => [r.address_hash, r]));
 
+    // Type classifier (loaded inline so test caller doesn't need the module path)
+    let classifyPropertyType;
+    try {
+      ({ classifyPropertyType } = require("./_valuation_profile"));
+    } catch {
+      classifyPropertyType = () => "unknown";
+    }
+
     // 3) Build comparison sets (skipping junk rows; optionally time-adjusting).
+    // Each pair is tagged with price tier + property type so we can break out
+    // accuracy by bucket (essential for tracking progress toward the 97%
+    // MdAPE target especially at $2M+ and on non-SFR property types).
     const pdnaPairs = [], rentcastPairs = [], estPairs = [];
     const ages = [];
+
+    // Price-tier bucketing — actual sale price decides the bucket
+    function priceTier(sale) {
+      if (sale < 1_000_000) return 'under_1M';
+      if (sale < 2_000_000) return '1M_to_2M';
+      if (sale < 5_000_000) return '2M_to_5M';
+      return '5M_plus';
+    }
+
     for (const [hash, p] of byHash.entries()) {
       const sale = Number(p.last_sale_price);
       if (!sale || !p.last_sale_date) continue;
@@ -214,15 +235,40 @@ exports.handler = async (event) => {
       ages.push(yrs);
       const actual = appreciate > 0 ? sale * Math.pow(1 + appreciate, yrs) : sale;
       const pi = piByHash.get(hash);
-      if (pi && Number(pi.pdna_value_mid)) pdnaPairs.push({ predicted: Number(pi.pdna_value_mid), actual });
-      if (pi && Number(pi.rentcast_value)) rentcastPairs.push({ predicted: Number(pi.rentcast_value), actual });
-      if (Number(p.current_estimated_value)) estPairs.push({ predicted: Number(p.current_estimated_value), actual });
+      const tier = priceTier(sale);
+      const propertyType = classifyPropertyType(pi?.property_type, {});
+      const tags = { tier, propertyType };
+      if (pi && Number(pi.pdna_value_mid)) pdnaPairs.push({ predicted: Number(pi.pdna_value_mid), actual, ...tags });
+      if (pi && Number(pi.rentcast_value)) rentcastPairs.push({ predicted: Number(pi.rentcast_value), actual, ...tags });
+      if (Number(p.current_estimated_value)) estPairs.push({ predicted: Number(p.current_estimated_value), actual, ...tags });
     }
     const medianAgeYrs = ages.length ? +median(ages).toFixed(1) : null;
 
     const propertydna = score(pdnaPairs);
     const rentcast = score(rentcastPairs);
     const indexEstimate = score(estPairs);
+
+    // ── Bucketed breakdowns — the path to 97% accuracy ────────────────────
+    // Per price tier and per property type. We score each sub-population
+    // independently so we can see where the model is strongest/weakest.
+    function bucketScore(pairs, key) {
+      const buckets = {};
+      for (const p of pairs) {
+        const b = p[key] || 'unknown';
+        (buckets[b] ||= []).push(p);
+      }
+      const out = {};
+      for (const [b, sub] of Object.entries(buckets)) {
+        out[b] = score(sub);
+      }
+      return out;
+    }
+
+    const propertydna_byTier = bucketScore(pdnaPairs, 'tier');
+    const propertydna_byType = bucketScore(pdnaPairs, 'propertyType');
+    const rentcast_byTier    = bucketScore(rentcastPairs, 'tier');
+    // 97% target line (DEFENSIBLE = within 3% MdAPE)
+    const TARGET_MDAPE_PCT = 3.0;
 
     const lines = [];
     lines.push(`PropertyDNA Back-Test — recorded sales since ${cutoff}`);
@@ -241,17 +287,51 @@ exports.handler = async (event) => {
     }
     if ((propertydna.n || 0) < 50) lines.push(`\n⚠ ${propertydna.n || 0} matched samples — below 50; treat as directional. Run PropertyDNA on more of the weekly solds to grow this.`);
 
+    // ── Per-bucket breakdown to surface the 97% MdAPE gap ─────────────────
+    function fmtBucketLine(label, s) {
+      if (!s || !s.n) return `  ${label.padEnd(22)} (no samples)`;
+      const onTarget = s.mdapePct <= TARGET_MDAPE_PCT ? '✓' : '✗';
+      const gap = (s.mdapePct - TARGET_MDAPE_PCT).toFixed(1);
+      return `  ${label.padEnd(22)} n=${String(s.n).padStart(3)} | MdAPE ${String(s.mdapePct).padStart(5)}% | within10 ${String(s.within10Pct).padStart(5)}% | ${onTarget} ${gap}pt vs 97% target`;
+    }
+    const TIER_ORDER = ['under_1M', '1M_to_2M', '2M_to_5M', '5M_plus'];
+    const TYPE_ORDER = ['sfr', 'condo', 'townhouse', 'multifamily_small', 'multifamily_large', 'commercial', 'land', 'unknown'];
+
+    if (propertydna.n) {
+      lines.push("");
+      lines.push(`── PropertyDNA accuracy by PRICE TIER (target: MdAPE ≤ ${TARGET_MDAPE_PCT}%) ──`);
+      for (const t of TIER_ORDER) lines.push(fmtBucketLine(t, propertydna_byTier[t]));
+
+      lines.push("");
+      lines.push(`── PropertyDNA accuracy by PROPERTY TYPE (target: MdAPE ≤ ${TARGET_MDAPE_PCT}%) ──`);
+      for (const t of TYPE_ORDER) {
+        if (propertydna_byType[t]?.n) lines.push(fmtBucketLine(t, propertydna_byType[t]));
+      }
+    }
+    if (rentcast.n) {
+      lines.push("");
+      lines.push(`── RentCast baseline by PRICE TIER (independent benchmark) ──`);
+      for (const t of TIER_ORDER) {
+        const s = rentcast_byTier[t];
+        if (s?.n) lines.push(`  ${t.padEnd(22)} n=${String(s.n).padStart(3)} | MdAPE ${String(s.mdapePct).padStart(5)}%`);
+      }
+    }
+
     return {
       statusCode: 200, headers: CORS,
       body: JSON.stringify({
         ok: true,
         ranAt: new Date().toISOString(),
+        targetMdapePct: TARGET_MDAPE_PCT,
         params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100 },
         soldsPulled: solds.length,
         medianSaleAgeYrs: medianAgeYrs,
         matchRatePct: +(((propertydna.n || 0) / solds.length) * 100).toFixed(1),
         propertydna,
+        propertydna_byTier,
+        propertydna_byType,
         rentcast,
+        rentcast_byTier,
         indexEstimate,
         report: lines.join("\n"),
       }, null, 2),
