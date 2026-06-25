@@ -199,7 +199,9 @@
 # fires non-opener follow-ups (different angle, same offer). Respects Dan's
 # "no follow-up for 7 days" rule strictly.
 [functions."cc-followup-scheduler"]
-  schedule = "0 16 * * *"
+  # PAUSED 2026-06-25 (churn control — was chasing non-openers with a 7-day follow-up,
+  # a top unsubscribe driver). Re-enable after list is segmented to engaged opt-ins.
+  # schedule = "0 16 * * *"
 
 # Daily 10 AM PT — nurture inbound form submitters who didn't subscribe.
 # 3-touch sequence: Day 2 (educate), Day 5 (market move), Day 10 (personal).
