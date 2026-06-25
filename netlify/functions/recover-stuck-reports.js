@@ -76,7 +76,11 @@ exports.handler = async (event) => {
 
   const minAgeMinutes = Number(body.minAgeMinutes ?? 8);   // give n8n time to finish normally
   const maxAgeHours   = Number(body.maxAgeHours ?? 24);    // don't resurrect ancient dead rows
-  const limit         = Math.min(Number(body.limit ?? 25), 100);
+  // THROTTLED 2026-06-25: a 25-wide burst overwhelmed the n8n cloud instance +
+  // tripped RentCast 429s, crashing the workflow and auto-deactivating it.
+  // Small batch + spacing between re-fires so n8n drains gently, never bursts.
+  const limit         = Math.min(Number(body.limit ?? 3), 10);   // small batch = no burst (key fix)
+  const spaceMs       = Number(body.spaceMs ?? 1500);            // light spacing; stays under fn timeout
   const dryRun        = !!body.dryRun;
 
   const now = Date.now();
@@ -144,6 +148,8 @@ exports.handler = async (event) => {
       n8nStatus: res?.status ?? 0,
     });
     db.kpi("stuck_report_recovered", r.email, { reportId: r.id, address: r.full_address, n8nStatus: res?.status ?? 0, ok });
+    // Space out re-fires so we never burst the n8n cloud instance / RentCast.
+    if (spaceMs > 0) await new Promise(rs => setTimeout(rs, spaceMs));
   }
 
   const retriggered = results.filter(r => r.retriggered).length;
