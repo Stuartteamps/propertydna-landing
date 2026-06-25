@@ -27,6 +27,10 @@ const CORS = {
 
 const N8N_URL = process.env.N8N_WEBHOOK_URL || "https://dillabean.app.n8n.cloud/webhook/homefax/report";
 const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").replace(/\/$/, "");
+// In-house enrichment (replaces the crash-prone n8n cloud workflow). Set
+// ENRICHMENT_MODE=n8n to fall back to the old webhook if ever needed.
+const ENRICH_URL = `${APP_BASE}/.netlify/functions/enrich-report`;
+const USE_N8N = (process.env.ENRICHMENT_MODE || "inhouse").toLowerCase() === "n8n";
 
 // ── Resend email (identical helper to send-report-email) ────────────────────
 function httpsPost(hostname, path, headers, body) {
@@ -148,6 +152,31 @@ function fireN8n(payload) {
       // Wait one more tick to ensure the OS send buffer has flushed
       setTimeout(() => done({ status: 202, completed: false, sent: true }), 250);
     });
+    req.setTimeout(8000, () => { req.destroy(); done({ status: 0, error: "timeout" }); });
+    req.write(body);
+    req.end();
+  });
+}
+
+// Fire the in-house enrichment function (enrich-report) — the n8n replacement.
+// Same fire-and-forget contract as fireN8n: resolve once the request body is
+// flushed (~250ms). enrich-report then runs as its own Lambda to completion
+// (RentCast -> save-report), so queue-report returns fast while the report fills
+// in. enrich-report requires the internal key.
+function fireEnrich(payload) {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const done = (r) => { if (!resolved) { resolved = true; resolve(r); } };
+    const body = JSON.stringify(payload);
+    const url  = new URL(ENRICH_URL);
+    const req  = https.request(
+      { hostname: url.hostname, path: url.pathname, method: "POST",
+        headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body),
+          "x-internal-key": process.env.INTERNAL_API_KEY || "" } },
+      (res) => { res.on("data", () => {}); res.on("end", () => done({ status: res.statusCode, completed: true })); }
+    );
+    req.on("error",  (e) => done({ status: 0, error: e.message }));
+    req.on("finish", () => setTimeout(() => done({ status: 202, completed: false, sent: true }), 250));
     req.setTimeout(8000, () => { req.destroy(); done({ status: 0, error: "timeout" }); });
     req.write(body);
     req.end();
@@ -291,8 +320,10 @@ exports.handler = async (event) => {
     }).catch(() => {});
   }
 
-  // ── 4. Fire n8n enrichment (AWAITED — Lambda freezes on return) ───────────
-  const n8nResult = await fireN8n({
+  // ── 4. Fire enrichment (AWAITED — Lambda freezes on return) ───────────────
+  // In-house enrich-report by default (the n8n cloud workflow kept OOM-crashing
+  // and auto-deactivating). Set ENRICHMENT_MODE=n8n to fall back to the webhook.
+  const enrichPayload = {
     fullName:        fullName || "",
     email:           normalizedEmail,
     phone:           phone   || "",
@@ -310,12 +341,14 @@ exports.handler = async (event) => {
     leadSource:      "property_dna_web",
     pageUrl:         APP_BASE,
     timestamp:       new Date().toISOString(),
-  });
+  };
+  const n8nResult = USE_N8N ? await fireN8n(enrichPayload) : await fireEnrich(enrichPayload);
+  const enrichName = USE_N8N ? "n8n" : "enrich-report";
 
-  if (!n8nResult || n8nResult.status !== 200) {
-    console.error("[queue-report] n8n enrichment did NOT complete:", n8nResult);
+  if (!n8nResult || (n8nResult.status !== 200 && n8nResult.status !== 202)) {
+    console.error(`[queue-report] ${enrichName} enrichment did NOT complete:`, n8nResult);
   } else {
-    console.log("[queue-report] n8n enrichment complete:", n8nResult.body);
+    console.log(`[queue-report] ${enrichName} enrichment in flight:`, n8nResult.status);
   }
 
   // ── 5. KPI log ────────────────────────────────────────────────────────────

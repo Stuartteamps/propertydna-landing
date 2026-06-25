@@ -32,21 +32,26 @@ const CORS = {
 
 const N8N_URL = process.env.N8N_WEBHOOK_URL || "https://dillabean.app.n8n.cloud/webhook/homefax/report";
 const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").replace(/\/$/, "");
+// In-house enrichment (replaces n8n). recover re-fires this for stuck rows;
+// save-report matches the existing pending row on viewToken/reportId -> no dupes.
+const ENRICH_URL = `${APP_BASE}/.netlify/functions/enrich-report`;
+const USE_N8N = (process.env.ENRICHMENT_MODE || "inhouse").toLowerCase() === "n8n";
 
-// Re-fire the n8n enrichment webhook with the SAME payload shape queue-report
-// uses. We wait for the response (n8n cold-starts ~18-22s) up to 30s so we can
-// report a real status, but a 202/finish is also success — n8n calls back to
-// save-report asynchronously regardless.
-function fireN8n(payload) {
+// Re-fire enrichment with the SAME payload shape queue-report uses. Default path
+// is the in-house enrich-report (n8n kept OOM-crashing). We resolve on response
+// or on flush (202) — enrich-report runs to completion in its own Lambda and
+// calls save-report regardless. ENRICHMENT_MODE=n8n falls back to the webhook.
+function fireEnrichment(payload) {
   return new Promise((resolve) => {
     let resolved = false;
     const done = (r) => { if (!resolved) { resolved = true; resolve(r); } };
 
     const body = JSON.stringify(payload);
-    const url = new URL(N8N_URL);
+    const url = new URL(USE_N8N ? N8N_URL : ENRICH_URL);
+    const headers = { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) };
+    if (!USE_N8N) headers["x-internal-key"] = process.env.INTERNAL_API_KEY || "";
     const req = https.request(
-      { hostname: url.hostname, path: url.pathname, method: "POST",
-        headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) } },
+      { hostname: url.hostname, path: url.pathname, method: "POST", headers },
       (res) => {
         res.on("data", () => {});
         res.on("end", () => done({ status: res.statusCode, completed: true }));
@@ -137,7 +142,7 @@ exports.handler = async (event) => {
       pageUrl: APP_BASE,
       timestamp: new Date().toISOString(),
     };
-    const res = await fireN8n(payload);
+    const res = await fireEnrichment(payload);
     const ok = res && (res.status === 200 || res.status === 202);
     results.push({
       id: r.id,
