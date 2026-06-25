@@ -12,27 +12,45 @@ const OUT = path.resolve(__dirname, "../../../app/frontend/public/social/newslet
 // image reinforces the section text instead of being generic stock.
 const JOBS: { filename: string; prompt: string }[] = [
   {
-    // Week of 2026-06-04 — early June: first real heat of summer, triple-digit days
-    filename: "latest-weather.jpg",
-    prompt: `Coachella Valley desert in the first true heat of summer — a fierce
-afternoon sun blazing in a deep cobalt sky, the first wisps of monsoon clouds
-gathering over the Santa Rosa mountains, visible heat shimmer rising off the
-desert floor, tall palm trees, stark and dry. Editorial travel photography in
-the style of Palm Springs Life magazine. Photorealistic, scorching tones.
-No text, no logos, no watermarks, no people. Horizontal 3:2 composition with
-clean negative space in the upper third for a headline overlay.`,
+    // Week of 2026-06-25 — top hero. Sweeping aspirational Coachella Valley luxury
+    // at the height of summer; reinforces the "PropertyDNA is live" banner above it.
+    filename: "latest-hero.jpg",
+    prompt: `A breathtaking aerial golden-hour view over the Coachella Valley in
+high summer — a sweeping vista of ultra-luxury desert estates with resort pools
+glinting, emerald golf greens and palm-lined boulevards threading between them,
+the dramatic Santa Rosa and San Jacinto mountains glowing in warm evening light,
+deep blue sky above. Aspirational, cinematic, expensive. Architectural Digest
+meets Robb Report editorial aerial photography. Photorealistic. No text, no logos,
+no watermarks, no people. Wide horizontal composition with clean negative space
+in the upper third for a headline overlay.`,
   },
   {
-    // Week of 2026-06-04 — pool season opens: twilight resort pool, summer-evening valley lifestyle
+    // Week of 2026-06-25 — brutal late-June dry heat (100-118°F), cloudless, NOT monsoon yet
+    filename: "latest-weather.jpg",
+    prompt: `Coachella Valley desert under a brutal late-June heat wave — a blinding
+white-hot afternoon sun high in a perfectly cloudless deep-blue sky, intense heat
+shimmer rippling off the bone-dry desert floor, towering date palms standing
+perfectly still in the breathless heat, the jagged San Jacinto mountains stark
+through the heat haze, sun-bleached sand and rock. Ultra-photorealistic editorial
+photography shot on a high-end DSLR, razor-sharp detail, harsh natural midday
+light, hyper-realistic, in the style of Palm Springs Life magazine — not an
+illustration. No text, no logos, no watermarks, no people. Horizontal 3:2
+composition with clean negative space in the upper third for a headline overlay.`,
+  },
+  {
+    // Week of 2026-06-25 — matches the events copy: downtown Palm Springs summer
+    // evening (VillageFest Thursdays + ShortFest week on Palm Canyon Drive)
     filename: "latest-events.jpg",
-    prompt: `Palm Springs at twilight as pool season opens — a glamorous mid-century
-modern resort pool with warm string lights overhead, classic curved diving
-platform, palms silhouetted against a violet and orange sunset sky, a few
-lounge chairs, the underwater pool lights just coming on, aspirational and
-serene. Editorial lifestyle photography in the style of Condé Nast Traveler.
-Photorealistic, warm cinematic tones. No text, no logos, no watermarks, no
-recognizable faces. Horizontal 3:2 composition with negative space in the
-upper third for a headline overlay.`,
+    prompt: `Downtown Palm Springs on a warm summer Thursday evening — historic Palm
+Canyon Drive glowing at dusk, vintage mid-century neon marquee signs and warm
+string lights against a deepening violet desert sky, towering palms uplit from
+below, an elegant lively street-fair atmosphere with outdoor cafe tables, the
+San Jacinto mountains darkening behind. Ultra-photorealistic editorial
+photography shot on a high-end DSLR, razor-sharp detail, warm cinematic evening
+light, hyper-realistic, in the style of Condé Nast Traveler — not an
+illustration. No text, no logos, no watermarks, no recognizable faces.
+Horizontal 3:2 composition with negative space in the upper third for a headline
+overlay.`,
   },
   {
     // matches "West Valley New Listings": Palm Springs + Cathedral City, updated design homes

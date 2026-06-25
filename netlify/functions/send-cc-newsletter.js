@@ -215,12 +215,18 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <tr><td style="padding:18px 34px;border-bottom:1px solid #e4d8c9;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8d7b67;">
 <table width="100%"><tr><td>The Stuart Team</td><td align="right">${weekLabel}</td></tr></table>
 </td></tr>
-<tr><td style="background:#1f1a15;padding:34px 40px 28px;text-align:center;">
-<div style="display:inline-block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c9a86a;border:1px solid #c9a86a;padding:5px 11px;margin-bottom:18px;">Launched Today &bull; App Store</div>
-<div style="font-family:Georgia,serif;font-size:30px;line-height:1.25;color:#fcfaf7;">The iOS app is live. Free for every buyer. Forever.</div>
-<div style="font-size:15px;line-height:1.6;color:#e4d8c9;padding:14px 0 22px;max-width:480px;margin:0 auto;">1.67M parcels indexed. Every feature unlocked. Download free on iOS.</div>
-<a href="https://apps.apple.com/app/id6768064079?ct=newsletter_launch&amp;mt=8" target="_blank" style="background:#c9a86a;color:#1f1a15;padding:14px 28px;text-decoration:none;font-size:15px;font-weight:bold;letter-spacing:1px;">Download Free on iOS &rarr;</a>
-<div style="padding-top:14px;font-size:12px;color:#9a8671;"><a href="${SITE}/launch" target="_blank" style="color:#c9a86a;text-decoration:underline;">Read the launch story</a></div>
+<tr><td style="background:#1f1a15;padding:34px 40px 30px;text-align:center;">
+<div style="display:inline-block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c9a86a;border:1px solid #c9a86a;padding:5px 11px;margin-bottom:18px;">PropertyDNA is LIVE &bull; Web + iOS</div>
+<div style="font-family:Georgia,serif;font-size:30px;line-height:1.25;color:#fcfaf7;">We&rsquo;re live. The data is finally on your side.</div>
+<div style="font-size:15px;line-height:1.6;color:#e4d8c9;padding:14px 0 22px;max-width:500px;margin:0 auto;">5M+ properties indexed nationwide. Free DNA reports on any address. Real comps, permit history, valuation, flood and fire risk. The intel agents hoped you&rsquo;d never see.</div>
+<a href="${SITE}/?utm_source=cc&amp;utm_medium=newsletter&amp;utm_campaign=live_hero&amp;email=[[EMAILADDRESS]]&amp;firstName=[[FIRSTNAME]]&amp;lastName=[[LASTNAME]]" target="_blank" style="display:inline-block;background:#c9a86a;color:#1f1a15;padding:14px 28px;text-decoration:none;font-size:15px;font-weight:bold;letter-spacing:1px;margin:0 4px 10px;">Run a Free Report &rarr;</a>
+<a href="https://apps.apple.com/app/id6768064079?ct=newsletter_live&amp;mt=8" target="_blank" style="display:inline-block;background:transparent;color:#fcfaf7;border:1px solid #c9a86a;padding:13px 26px;text-decoration:none;font-size:15px;letter-spacing:1px;margin:0 4px 10px;">Get the iOS App &rarr;</a>
+<div style="padding-top:18px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9a8671;">Follow along for daily market intel</div>
+<div style="padding-top:10px;">
+<a href="https://instagram.com/danielstuartps" target="_blank" style="display:inline-block;margin:4px;background:#2c241d;color:#fcfaf7;padding:9px 17px;text-decoration:none;font-size:13px;">Instagram &rarr;</a>
+<a href="https://youtube.com/@stuartteamrealestate3059" target="_blank" style="display:inline-block;margin:4px;background:#2c241d;color:#fcfaf7;padding:9px 17px;text-decoration:none;font-size:13px;">YouTube &rarr;</a>
+<a href="https://facebook.com/danstuartps" target="_blank" style="display:inline-block;margin:4px;background:#2c241d;color:#fcfaf7;padding:9px 17px;text-decoration:none;font-size:13px;">Facebook &rarr;</a>
+</div>
 </td></tr>
 <tr><td><img src="${heroImageUrl}" width="100%" alt="Coachella Valley this week" style="display:block;"></td></tr>
 <tr><td align="center" style="padding:40px 40px 24px;">
@@ -228,16 +234,16 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9a8671;padding-top:10px;">Luxury Real Estate &bull; Market Insight &bull; Desert Lifestyle</div>
 </td></tr>
 <tr><td style="padding:0 60px 16px;font-size:17px;line-height:1.7;color:#2c241d;">Hi [[FIRSTNAME]],</td></tr>
-<tr><td style="padding:0 60px 24px;font-size:16px;line-height:1.8;color:#2c241d;">Mid-June in the desert means the off-season buying window is officially open. Inventory is fuller, sellers are more flexible, and the data shows it &mdash; below, this week's MLS activity, the actual market read, and one new thing you can do <em>today</em> to never get out-negotiated by an agent again.</td></tr>
-<tr><td style="padding:0 60px 6px;font-family:Georgia,serif;font-size:24px;color:#1f1a15;">Coachella Valley Market Snapshot &mdash; ${weekLabel}</td></tr>
+<tr><td style="padding:0 60px 24px;font-size:16px;line-height:1.8;color:#2c241d;">Late June, and the desert&rsquo;s off-season buying window is wide open. Inventory is fuller, sellers are more flexible, and the data backs it up. Below you&rsquo;ll find this week&rsquo;s verified MLS activity, the real market read pulled fresh from the numbers, and one thing you can do <em>today</em> to never get out-negotiated by an agent again. PropertyDNA is now live, so run a free report on any address before you make a move.</td></tr>
+<tr><td style="padding:0 60px 6px;font-family:Georgia,serif;font-size:24px;color:#1f1a15;">Coachella Valley Market Snapshot: ${weekLabel}</td></tr>
 <tr><td style="padding:0 60px 30px;font-size:16px;line-height:1.8;color:#2c241d;">${marketNarrative}</td></tr>
 <tr><td style="padding:0 40px;font-family:Georgia,serif;font-size:26px;">This Week's Weather</td></tr>
 <tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">${weatherText}<br><br>
 <a href="https://weather.com/weather/weekend/l/Palm+Springs+California+92264" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Full Forecast</a></td></tr>
 <tr><td style="padding:0 40px 20px;"><img src="${weatherImageUrl}" width="100%" alt="Coachella Valley desert this week" style="display:block;"></td></tr>
 <tr><td style="padding:0 40px;font-family:Georgia,serif;font-size:26px;">Things To Do This Week</td></tr>
-<tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">Mid-June and the valley has fully exhaled into summer. The VillageFest street fair takes over downtown Palm Canyon Thursday nights, the College of the Desert Street Fair runs Saturday mornings, and resort pool decks &mdash; Parker, Saguaro, Kimpton Rowan &mdash; turn into the de-facto Friday evening scene. Sunrise hikes at the Indian Canyons before the heat is the local move.<br><br>
-<a href="https://visitpalmsprings.com/events/this-weekend/" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">Explore This Week's Events</a></td></tr>
+<tr><td style="padding:20px 40px;font-size:15px;line-height:1.8;">Even at 110 degrees, downtown has life this week. The Palm Springs International ShortFest is running through June 29th at the Festival Theaters on Baristo. It&rsquo;s the Oscar-qualifying short-film festival and honestly one of my favorite weeks of the summer to be in town. VillageFest is on summer hours now too: Thursday nights, 7 to 10 along Palm Canyon, close to 200 booths once the sun drops and it&rsquo;s cool enough to walk it. My real move this time of year? Out the door for a sunrise hike in the Indian Canyons before it hits triple digits, then let the resort pool decks carry the rest of the day. The Parker, the Saguaro, Kimpton Rowan. Here&rsquo;s the full calendar so you can build your week.<br><br>
+<a href="https://visitgreaterpalmsprings.com/events/" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">See This Week&rsquo;s Events</a></td></tr>
 <tr><td style="padding:0 40px;"><img src="${eventImageUrl}" width="100%" alt="Coachella Valley this week" style="display:block;"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">West Valley New Listings</td></tr>
 <tr><td style="padding:0 40px 30px;font-size:15px;line-height:1.8;">Palm Springs and Cathedral City continue to lead activity. Updated homes with strong design and lifestyle appeal are moving quickly.<br><br>
@@ -248,33 +254,33 @@ function buildHtml(weatherText, marketNarrative, weekLabel, links) {
 <a href="${evLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View East Valley Listings</a></td></tr>
 <tr><td style="padding:0 40px;"><img src="${eastValleyImageUrl}" width="100%" alt="East Valley luxury estates" style="display:block;"></td></tr>
 <tr><td style="padding:20px 40px;font-family:Georgia,serif;font-size:26px;">Recently Sold</td></tr>
-<tr><td style="padding:0 40px 40px;font-size:15px;line-height:1.8;">See what actually sold this week across the valley &mdash; the most accurate read on where the market stands.<br><br>
+<tr><td style="padding:0 40px 40px;font-size:15px;line-height:1.8;">See what actually sold this week across the valley. The most accurate read on where the market stands.<br><br>
 <a href="${soldLink}" target="_blank" style="background:#1f1a15;color:#fff;padding:12px 20px;text-decoration:none;">View Recent Sales</a></td></tr>
 <tr><td style="padding:48px 40px 12px;border-top:1px solid #e4d8c9;font-family:Georgia,serif;font-size:28px;color:#1f1a15;text-align:center;">The PropertyDNA App Is Live</td></tr>
 <tr><td style="padding:0 40px 8px;text-align:center;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#9a8671;">The data on YOUR side of the table</td></tr>
 <tr><td style="padding:18px 40px 8px;font-size:16px;line-height:1.8;color:#2c241d;">
 [[FIRSTNAME]], comps cherry-picked to justify the price. Permits never pulled. Flood and fire exposure quietly omitted. We built PropertyDNA to flip that.<br><br>
-Now in your pocket: pull a full DNA report on any address in seconds. Real comps. Permit history. Valuation. Risk. The same intel a $1M family-office buyer pays for &mdash; free, on iOS, no agent gatekeeping it.
+Now in your pocket: pull a full DNA report on any address in seconds. Real comps. Permit history. Valuation. Risk. The same intel a $1M family-office buyer pays for. Free, on iOS, no agent gatekeeping it.
 </td></tr>
 <tr><td align="center" style="padding:14px 40px 28px;">
 <a href="https://apps.apple.com/app/id6768064079?ct=newsletter_launch_body&mt=8" target="_blank" style="background:#1f1a15;color:#fff;padding:16px 32px;text-decoration:none;font-size:16px;">Download PropertyDNA on iOS &rarr;</a>
 </td></tr>
-<tr><td style="padding:24px 40px 8px;background:#1f1a15;color:#f4ede4;font-family:Georgia,serif;font-size:22px;">Join the movement &mdash; defend the next buyer</td></tr>
+<tr><td style="padding:24px 40px 8px;background:#1f1a15;color:#f4ede4;font-family:Georgia,serif;font-size:22px;">Join the movement. Defend the next buyer.</td></tr>
 <tr><td style="padding:8px 40px 28px;background:#1f1a15;color:#e4d8c9;font-size:15px;line-height:1.8;">
 This newsletter exists for one reason: to end the information asymmetry that lets predatory agents win at the buyer's expense.
 <ol style="padding-left:22px;margin:14px 0 4px;color:#e4d8c9;">
-  <li style="margin-bottom:10px;"><strong style="color:#fff;">Download the app</strong> &mdash; so you have the data before you sign a buyer-rep agreement.</li>
-  <li style="margin-bottom:10px;"><strong style="color:#fff;">Run a free DNA report</strong> on the address you're watching &mdash; see what your agent isn't telling you.</li>
+  <li style="margin-bottom:10px;"><strong style="color:#fff;">Download the app</strong> so you have the data before you sign a buyer-rep agreement.</li>
+  <li style="margin-bottom:10px;"><strong style="color:#fff;">Run a free DNA report</strong> on the address you're watching, and see what your agent isn't telling you.</li>
   <li style="margin-bottom:0;"><strong style="color:#fff;">Forward this email to one person</strong> who's buying or selling in the next year. That's how the movement scales. One human at a time.</li>
 </ol>
 </td></tr>
 <tr><td style="padding:36px 40px 8px;border-top:1px solid #e4d8c9;font-family:Georgia,serif;font-size:22px;color:#1f1a15;">Why this newsletter stays in your inbox</td></tr>
 <tr><td style="padding:8px 40px 28px;font-size:15px;line-height:1.8;color:#2c241d;">
-Our weekly snapshot pairs verified MLS activity with provenance intelligence you won&rsquo;t find on Zillow or Redfin &mdash; architect attribution, the quiet sales above $5M, permit history, and the homes celebrities and family offices are actually buying. No drip funnels. No spam. One curated email each Thursday from a desert agent who reads the data before he writes the copy.<br><br>
+Our weekly snapshot pairs verified MLS activity with provenance intelligence you won&rsquo;t find on Zillow or Redfin: architect attribution, the quiet sales above $5M, permit history, and the homes celebrities and family offices are actually buying. No drip funnels. No spam. One curated email each Thursday from a desert agent who reads the data before he writes the copy.<br><br>
 <em style="color:#5a4e3f;">If a friend would benefit, forward this. If it&rsquo;s not useful, the unsubscribe link below works in one click.</em>
 </td></tr>
 <tr><td style="padding:40px;background:#f4ede4;text-align:center;">
-<div style="font-family:Georgia,serif;font-size:28px;">Your Property DNA Report &mdash; Free</div>
+<div style="font-family:Georgia,serif;font-size:28px;">Your Free Property DNA Report</div>
 <p style="font-size:15px;line-height:1.8;color:#2c241d;">[[FIRSTNAME]], before you buy or sell, see the real story your property tells. Property DNA shows comps, valuation, permits, flood risk, and a 5&#8209;year trajectory most buyers never get to see.</p>
 <p style="font-size:14px;line-height:1.7;color:#5a4e3f;margin:6px 0 18px;"><strong>No card. 60 seconds. Delivered to your inbox.</strong></p>
 <a href="${SITE}/?utm_source=cc&utm_medium=newsletter&utm_campaign=weekly_snapshot&email=[[EMAILADDRESS]]&firstName=[[FIRSTNAME]]&lastName=[[LASTNAME]]" target="_blank" style="background:#1f1a15;color:#fff;padding:14px 26px;text-decoration:none;">Get a Free PropertyDNA Report &rarr;</a>
