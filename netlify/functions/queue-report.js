@@ -202,6 +202,14 @@ exports.handler = async (event) => {
   // owner copy is just noise in Dan's inbox on every run.
   const isHealthCheck = /^healthcheck\+/i.test(normalizedEmail);
 
+  // Back-test backfill: an internal pipeline that fires queue-report for every
+  // ground-truth address in `properties` so n8n generates a stored DNA value
+  // we can join against in backtest-accuracy. Suppresses both the user email
+  // and the owner copy (the same way isHealthCheck does), but does NOT hit
+  // the health-check rate cap — backfills run 1000+ at a time intentionally.
+  // Use email pattern: `backtest+<id>@thepropertydna.com`.
+  const isBacktest = /^backtest\+/i.test(normalizedEmail);
+
   // HARD CAP: generate at most 2 real health-check reports per rolling 24h,
   // spaced >=6h apart — regardless of how often the monitor routine fires.
   // On a capped run we do NOT create a row or call n8n; instead we return the
@@ -264,17 +272,17 @@ exports.handler = async (event) => {
     console.error("[queue-report] failed to save pending record:", e.message);
   }
 
-  // ── 2. Send queued email to user (skipped for synthetic health-check runs) ──
-  const emailResult = isHealthCheck ? null : await sendQueuedEmail({
+  // ── 2. Send queued email to user (skipped for synthetic health-check + backtest runs) ──
+  const emailResult = (isHealthCheck || isBacktest) ? null : await sendQueuedEmail({
     recipientEmail: normalizedEmail,
     recipientName:  fullName || null,
     propertyAddress: fullAddress,
     viewToken,
   }).catch(e => { console.error("[queue-report] email error:", e.message); return null; });
 
-  // ── 3. Send owner copy (skipped for synthetic health-check runs) ────────────
+  // ── 3. Send owner copy (skipped for synthetic health-check + backtest runs) ──
   const OWNER = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
-  if (!isHealthCheck && OWNER && OWNER !== normalizedEmail) {
+  if (!isHealthCheck && !isBacktest && OWNER && OWNER !== normalizedEmail) {
     sendQueuedEmail({
       recipientEmail: OWNER,
       recipientName:  `${fullName || normalizedEmail} (copy to owner)`,
