@@ -15,6 +15,7 @@ const db = require("./_supabase");
 const { ingestProperty }   = require("./property-ingest");
 const { enrichProperty }   = require("./enrich-property");
 const { rentcastEnrich }   = require("./rentcast-enrich");
+const { lookupCommunity }  = require("./_cv_luxury_index");
 const {
   classifyPropertyType,
   getValuationProfile,
@@ -250,7 +251,7 @@ function detectADU(reportData) {
 // When 2+ comps within 0.30 mi have correlation >= 95%, blend their average
 // into the AVM mid. Catches "AVM ignores the $3.6M next-door sale" cases.
 // Returns null if not applicable.
-function computeClosestCompAnchor(avmMid, comps = [], compRules = null) {
+function computeClosestCompAnchor(avmMid, comps = [], compRules = null, luxuryTier = false) {
   if (!avmMid || !Array.isArray(comps) || comps.length === 0) return null;
   // Per-property-type comp rules. Default = SFR tier-1 (current behavior).
   const RULES = compRules || { radiusMi: 0.30, corrPct: 95, minComps: 2, fallbackTopN: 3, fallbackCorrPct: 90 };
@@ -315,7 +316,12 @@ function computeClosestCompAnchor(avmMid, comps = [], compRules = null) {
   // Only anchor when comps suggest valuation is too LOW by >10%
   if (gap < 0.10) return null;
 
-  const compWeight = Math.min(0.45, 0.30 + qualifying.length * 0.05);
+  // Luxury/trophy homes: the AVM is unreliable on this tier (thin comp set,
+  // pedigree it can't see), so let real comparable sales DOMINATE the blend
+  // when they prove the AVM is low. Standard homes keep the 45% cap.
+  const compWeight = luxuryTier
+    ? Math.min(0.75, 0.35 + qualifying.length * 0.10)
+    : Math.min(0.45, 0.30 + qualifying.length * 0.05);
   const blendMid = Math.round(avmMid * (1 - compWeight) + avgComp * compWeight);
 
   return {
@@ -423,7 +429,17 @@ function autoDetectFeatures(reportData) {
     features.mcm_authentic = true;
   }
 
-  return { features, aduSqft, poolAddOnCost };
+  // ── CV community pedigree premium (proprietary PropertyDNA community index) ──
+  // Matched by subdivision/community + city, so it applies even with
+  // owner-entered data and no listing remarks. Supersedes the keyword-based
+  // historic_enclave (avoid double-counting the same enclave premium).
+  const subdivision = prop.subdivision || prop.neighborhood || subj.subdivision || subj.neighborhood
+    || prop.community || subj.community || "";
+  const lookupCity = subj.city || prop.city || "";
+  const communityPremium = lookupCommunity(subdivision, lookupCity);
+  if (communityPremium) features.historic_enclave = false;
+
+  return { features, aduSqft, poolAddOnCost, communityPremium };
 }
 
 // Compute sale-anchored smart base values
@@ -509,7 +525,7 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
   // ── Layer 2: closest-comp anchor (independent of sale) ────────────────────
   // Take the HIGHER of sale anchor vs comp anchor — both protect against undervaluation.
   if (Array.isArray(comps) && comps.length > 0) {
-    const compAnchor = computeClosestCompAnchor(smartMid, comps, compRules);
+    const compAnchor = computeClosestCompAnchor(smartMid, comps, compRules, luxuryTier);
     if (compAnchor && compAnchor.blendMid > smartMid) {
       const scale = compAnchor.blendMid / smartMid;
       smartMid  = compAnchor.blendMid;
@@ -539,6 +555,11 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   // Backwards-compatible: if omitted, falls back to SFR-default behavior.
   propertyTypeRaw = null,
   propertyHints   = {},  // { beds, baths, sqft, units, lot_sqft }
+  // ── CV community pedigree premium (added 2026-06-25) ──────────────────────
+  // Result of lookupCommunity(subdivision, city) — a standing per-development
+  // luxury tier (S/A/B) applied even with owner-entered data and no remarks.
+  // Proprietary PropertyDNA community index. See _cv_luxury_index.js.
+  communityPremium = null,
 } = {}) {
   // Phase 0 — classify property type and resolve preliminary profile
   // (preliminary because luxury-tier comp rules depend on smartMid which we
@@ -601,6 +622,38 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     totalMid  += LUXURY_PCT.pct_mid;
     totalHigh += LUXURY_PCT.pct_high;
     drivers.push({ key: "luxury_sparse_comps", label: LUXURY_PCT.label, pct: LUXURY_PCT.pct_mid });
+  }
+
+  // CV community pedigree premium — proprietary PropertyDNA community index.
+  // Applied by subdivision/development match (works with owner-entered data),
+  // so a Southridge / Madison Club / Vintage Club home carries its standing
+  // tier even when the AVM and listing text can't see it.
+  if (communityPremium && communityPremium.pct_mid) {
+    totalLow  += communityPremium.pct_low;
+    totalMid  += communityPremium.pct_mid;
+    totalHigh += communityPremium.pct_high;
+    drivers.push({ key: "community_pedigree", label: communityPremium.label, pct: communityPremium.pct_mid });
+  }
+
+  // ── Comp/pedigree reconciliation (prevents double-counting) ──────────────
+  // The closest-comp anchor already lifted the base by `compLiftedPct`, and
+  // those comps are usually same-community/same-tier sales — so they ALREADY
+  // price in much of the pedigree the premiums above estimate. Apply only the
+  // RESIDUAL premium beyond what the comps already captured, so a Southridge
+  // home corrects UP from a low AVM without overshooting past its real comps.
+  const compLiftedPct = (smartMid && rawMid) ? Math.max(0, (smartMid - rawMid) / rawMid) : 0;
+  if (compLiftedPct > 0.02 && totalMid > 0) {
+    const lift = compLiftedPct * 100;
+    const grossMid = totalMid;
+    totalLow  = Math.max(0, totalLow  - lift);
+    totalMid  = Math.max(0, totalMid  - lift);
+    totalHigh = Math.max(0, totalHigh - lift);
+    // Scale the displayed driver %s proportionally so they sum to what's applied.
+    const scale = grossMid > 0 ? totalMid / grossMid : 0;
+    drivers.forEach(d => { if (d.pct != null) d.pct = Math.round(d.pct * scale * 10) / 10; });
+    if (scale < 0.999) {
+      drivers.push({ key: "comp_reconciliation", label: `Comps already reflect +${Math.round(lift)}% of pedigree (premiums netted to avoid double-count)`, pct: null });
+    }
   }
 
   // Cap total % adjustment per property-type profile.
@@ -953,6 +1006,7 @@ exports.handler = async (event) => {
         comps,
         propertyTypeRaw,
         propertyHints,
+        communityPremium: autoDetected.communityPremium || null,
       });
       featureProfile = { low, mid, high, dnaAdjusted, autoDetected: mergedFeatures };
 
