@@ -26,7 +26,8 @@
 # Default mode = draft (emails Dan the post). After /admin/oauth is granted,
 # set env SOCIAL_AGENT_MODE=publish and it posts autonomously — no code change.
 [functions."social-agent"]
-  schedule = "0 17 * * *"
+  # DISABLED 2026-06-25 (0 social platforms OAuth-connected — was burning runs). Re-enable when connected.
+  # schedule = "0 17 * * *"
   timeout = 26
 
 # Audience Engagement OS agents. Default ENGAGEMENT_MODE=dryrun (email Dan a
@@ -226,7 +227,8 @@
 # forwards scan requests to Dan's inbox. Skips gracefully if no YouTube
 # OAuth token is wired yet.
 [functions."youtube-engagement"]
-  schedule = "*/15 * * * *"
+  # DISABLED 2026-06-25 (0 social platforms OAuth-connected — was burning runs). Re-enable when connected.
+  # schedule = "*/15 * * * *"
   timeout = 30
 
 # Daily 13:00 UTC = 6 AM PDT. Re-pulls DNA score + estimated value for
