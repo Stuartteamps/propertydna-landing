@@ -31,13 +31,18 @@ function callClaude(system, user, maxTokens = 900) {
 }
 
 // ── Resend send ─────────────────────────────────────────────────────────────
-function resendSend({ to, from, subject, html, replyTo }) {
+function resendSend({ to, from, subject, html, replyTo, bcc }) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return Promise.resolve({ status: 0, skipped: "no_resend_key" });
+  const toFirst = (Array.isArray(to) ? to[0] : to || "").toLowerCase();
+  // Always send a copy of every user-facing email to Dan (bcc), unless the
+  // recipient IS Dan. Sender is always thepropertydna.com.
+  const bccList = bcc || (toFirst !== OWNER.toLowerCase() ? [OWNER] : undefined);
   const payload = JSON.stringify({
     from: from || "PropertyDNA <reports@thepropertydna.com>",
     to, subject, html,
     reply_to: replyTo || "stuartteamps@gmail.com",
+    ...(bccList ? { bcc: bccList } : {}),
     headers: { "List-Unsubscribe": `<${APP_BASE}/unsubscribe?email=${encodeURIComponent(Array.isArray(to) ? to[0] : to)}>` },
   });
   return new Promise((resolve) => {
@@ -57,10 +62,14 @@ async function alreadySent(eventType, email) {
     .limit(1).get().catch(() => []);
   return Array.isArray(rows) && rows.length > 0;
 }
+function addrKey(address) { return String(address || "").toLowerCase().trim().slice(0, 120); }
+
 function markSent(eventType, email, meta = {}) {
   db.kpi(eventType, email, meta);
   // Uniform marker that powers the cross-agent frequency cap (one "slot" used).
   db.kpi("engagement_sent", email, { type: eventType });
+  // Address-level marker so NO two agents work the same property in the window.
+  if (meta.address) db.kpi("engagement_addr", addrKey(meta.address), { type: eventType, email });
 }
 
 // ── Consent + frequency cap (anti-spam) ─────────────────────────────────────
@@ -89,10 +98,28 @@ async function withinCap(email) {
   } catch { return false; }
 }
 
-// Single gate. bypassCap=true only for safety-critical agents (Advocate).
-async function shouldSend(email, agent, { bypassCap = false } = {}) {
+// Blocked if this PROPERTY was already touched by any agent within the window —
+// prevents two agents emailing different people about the same address.
+async function withinCapAddr(address) {
+  const key = addrKey(address);
+  if (!key) return false;
+  try {
+    const days = Number(process.env.ENGAGEMENT_MIN_GAP_DAYS || 4);
+    const since = new Date(Date.now() - days * 86400000).toISOString();
+    const rows = await db.from("kpi_events").select("id")
+      .eq("event_type", "engagement_addr").eq("email", key)
+      .gte("created_at", since).limit(1).get();
+    return Array.isArray(rows) && rows.length > 0;
+  } catch { return false; }
+}
+
+// Single gate. No-duplication: one agent per contact AND per address per window.
+// bypassCap=true only for safety-critical agents (Advocate) — still respects opt-out.
+async function shouldSend(email, agent, { bypassCap = false, address = null } = {}) {
   if (!(await consentOk(email, agent))) return false;
-  if (!bypassCap && (await withinCap(email))) return false;
+  if (bypassCap) return true;
+  if (await withinCap(email)) return false;
+  if (address && (await withinCapAddr(address))) return false;
   return true;
 }
 

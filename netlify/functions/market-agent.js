@@ -54,7 +54,7 @@ exports.handler = async (event) => {
     const email = (r.email || "").toLowerCase().trim();
     if (!email || email.includes("healthcheck+") || seen.has(email)) continue; seen.add(email);
     if (await alreadySent(dedupType, email)) continue;
-    if (!(await shouldSend(email, "market"))) continue;
+    if (!(await shouldSend(email, "market", { address: r.full_address || r.address || "" }))) continue;
     if (items.length >= MAX) break;
     const addr = r.full_address || r.address || "your home";
     const url = r.view_token ? `${APP_BASE}/report/view/${r.view_token}` : `${APP_BASE}/dashboard`;
@@ -64,7 +64,7 @@ exports.handler = async (event) => {
     items.push({ email, address: addr, subject: `Your home this week — ${addr}`, html });
   }
   let sent = 0;
-  if (mode === "live") for (const it of items) { const r = await resendSend({ to: it.email, subject: it.subject, html: it.html + foot(it.email) }); if (r.status && r.status < 300) { markSent(dedupType, it.email, {}); sent++; } }
+  if (mode === "live") for (const it of items) { const r = await resendSend({ to: it.email, subject: it.subject, html: it.html + foot(it.email) }); if (r.status && r.status < 300) { markSent(dedupType, it.email, { address: it.address }); sent++; } }
   await ownerDigest("Market Analyst", mode, items).catch(() => {});
   db.kpi("market_agent_run", null, { mode, week, candidates: items.length, sent });
   return { statusCode: 200, headers: CORS, body: JSON.stringify({ agent: "market", mode, week, candidates: items.length, sent }) };

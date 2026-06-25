@@ -35,7 +35,7 @@ exports.handler = async (event) => {
     const email = (r.claimed_email || "").toLowerCase().trim();
     if (!email || seen.has(email)) continue; seen.add(email);
     if (await alreadySent("historian_ask", email)) continue;
-    if (!(await shouldSend(email, "historian"))) continue;
+    if (!(await shouldSend(email, "historian", { address: r.apn || "" }))) continue;
     if (items.length >= MAX) break;
     const addrLabel = r.apn ? `your home (APN ${r.apn})` : "your home";
     const addUrl = `${APP_BASE}/dashboard`;
@@ -45,7 +45,7 @@ exports.handler = async (event) => {
     items.push({ email, address: addrLabel, subject: "One fact only you know about your home", html });
   }
   let sent = 0;
-  if (mode === "live") for (const it of items) { const r = await resendSend({ to: it.email, subject: it.subject, html: it.html + foot(it.email) }); if (r.status && r.status < 300) { markSent("historian_ask", it.email, {}); sent++; } }
+  if (mode === "live") for (const it of items) { const r = await resendSend({ to: it.email, subject: it.subject, html: it.html + foot(it.email) }); if (r.status && r.status < 300) { markSent("historian_ask", it.email, { address: it.address }); sent++; } }
   await ownerDigest("Historian", mode, items).catch(() => {});
   db.kpi("historian_agent_run", null, { mode, candidates: items.length, sent });
   return { statusCode: 200, headers: CORS, body: JSON.stringify({ agent: "historian", mode, candidates: items.length, sent }) };

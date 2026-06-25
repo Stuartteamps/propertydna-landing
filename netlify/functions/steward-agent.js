@@ -58,7 +58,7 @@ exports.handler = async (event) => {
     if (!email || email.includes("healthcheck+") || seen.has(email)) continue;
     seen.add(email);
     if (await alreadySent("steward_welcome", email)) continue;
-    if (!(await shouldSend(email, "steward"))) continue;   // consent + frequency cap
+    if (!(await shouldSend(email, "steward", { address: r.full_address || r.address || "" }))) continue;   // consent + per-contact + per-address dedup
     if (items.length >= MAX_PER_RUN) break;
 
     const addr = r.full_address || r.address || "your property";

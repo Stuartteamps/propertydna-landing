@@ -40,7 +40,7 @@ exports.handler = async (event) => {
     const email = (r.email || "").toLowerCase().trim();
     if (!email || email.includes("healthcheck+") || seen.has(email)) continue; seen.add(email);
     if (await alreadySent("ambassador_invite", email)) continue;
-    if (!(await shouldSend(email, "ambassador"))) continue;
+    if (!(await shouldSend(email, "ambassador", { address: r.full_address || r.address || "" }))) continue;
     if (items.length >= MAX) break;
     const addr = r.full_address || r.address || "your home";
     // Attributed referral link: routes through /referral to log the click + who shared.
@@ -52,7 +52,7 @@ exports.handler = async (event) => {
     items.push({ email, address: addr, subject: "Help a neighbor take ownership", html });
   }
   let sent = 0;
-  if (mode === "live") for (const it of items) { const r = await resendSend({ to: it.email, subject: it.subject, html: it.html + foot(it.email) }); if (r.status && r.status < 300) { markSent("ambassador_invite", it.email, {}); sent++; } }
+  if (mode === "live") for (const it of items) { const r = await resendSend({ to: it.email, subject: it.subject, html: it.html + foot(it.email) }); if (r.status && r.status < 300) { markSent("ambassador_invite", it.email, { address: it.address }); sent++; } }
   await ownerDigest("Ambassador", mode, items).catch(() => {});
   db.kpi("ambassador_agent_run", null, { mode, candidates: items.length, sent });
   return { statusCode: 200, headers: CORS, body: JSON.stringify({ agent: "ambassador", mode, candidates: items.length, sent }) };
