@@ -172,6 +172,25 @@ function getWeekLabel() {
   return `Week of ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
 }
 
+// Derive a readable plaintext part from the HTML. A multipart/alternative email
+// (text + HTML) scores materially better with spam filters than HTML-only —
+// pure-HTML is a classic spam signal. Resend builds multipart when we pass both.
+function htmlToText(html) {
+  return String(html || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<head[\s\S]*?<\/head>/gi, '')
+    .replace(/<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, txt) => `${txt.replace(/<[^>]+>/g, '').trim()} (${href})`)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|tr|div|h\d|li)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&rsquo;|&#8217;/g, "'").replace(/&rdquo;|&ldquo;/g, '"').replace(/&amp;/g, '&')
+    .replace(/&middot;/g, '·').replace(/&bull;/g, '•').replace(/&rarr;/g, '->').replace(/&nbsp;/g, ' ')
+    .replace(/&[a-z#0-9]+;/gi, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 // CC processes [[FIRSTNAME]] / [[LASTNAME]] / [[EMAILADDRESS]] natively. Resend
 // does NOT, so on any Resend path (preview + full-list fallback) we substitute
 // the tags ourselves to avoid shipping a literal "Hi [[FIRSTNAME]],".
@@ -313,16 +332,25 @@ async function sendViaResend(subject, html, weatherText, marketNarrative, weekLa
   const campaign  = (campaigns || []).find(c => (c.name || '').includes('Constant Contact Database'));
   if (!campaign) return { sent: 0, method: 'resend_fallback', error: 'CC campaign not found' };
 
+  // DOMAIN WARMUP: never cold-blast the full list from an unwarmed domain — that
+  // is the #1 reason a new Resend domain spam-folders. NEWSLETTER_MAX_PER_RUN
+  // caps how many we send per run; ramp it up over ~2-3 weeks (e.g. 2000 ->
+  // 5000 -> 12000 -> unlimited) as the domain earns reputation. 0/unset = no cap
+  // (only safe once warmed). We send FRESHEST contacts first (most recently
+  // added = most likely valid + engaged) to maximize positive open signals.
+  const MAX_PER_RUN = Number(process.env.NEWSLETTER_MAX_PER_RUN || 0) || Infinity;
+
   let offset = 0, sent = 0, failed = 0;
   const BATCH = 50;
 
-  while (offset < (campaign.total_contacts || 9999)) {
+  while (offset < (campaign.total_contacts || 9999) && sent < MAX_PER_RUN) {
     const batch = await db.from('campaign_contacts')
       .select('id,email,first_name,last_name').eq('campaign_id', campaign.id)
-      .order('created_at', { ascending: true }).range(offset, offset + BATCH - 1).get().catch(() => null);
+      .order('created_at', { ascending: false }).range(offset, offset + BATCH - 1).get().catch(() => null);
     if (!Array.isArray(batch) || !batch.length) break;
 
     for (const c of batch) {
+      if (sent >= MAX_PER_RUN) break;
       if (unsubSet.has((c.email || '').toLowerCase())) continue;
       const perEmailHtml = fillMergeTags(
         html.replace(
@@ -334,7 +362,7 @@ async function sendViaResend(subject, html, weatherText, marketNarrative, weekLa
       const oneClickUnsub = `${unsubUrl.replace('[[EMAILADDRESS]]', encodeURIComponent(c.email))}`;
       const payload = JSON.stringify({
         from: `${SENDER_NAME} <${SENDER_RESEND}>`, reply_to: REPLY_TO,
-        to: c.email, subject, html: perEmailHtml,
+        to: c.email, subject, html: perEmailHtml, text: htmlToText(perEmailHtml),
         headers: {
           'List-Unsubscribe':      `<mailto:${UNSUB_MAILTO}?subject=unsubscribe>, <${oneClickUnsub}>`,
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
@@ -535,6 +563,7 @@ exports.handler = async (event) => {
       to: testEmail,
       subject: `[TEST] ${subject}`,
       html: perEmailHtml,
+      text: htmlToText(perEmailHtml),
       headers: {
         'List-Unsubscribe':      `<mailto:${unsubMailto}?subject=unsubscribe>, <${oneClickUnsub}>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
@@ -562,12 +591,19 @@ exports.handler = async (event) => {
 
   // Token storage was moved out of Netlify env (4KB Lambda ceiling) into
   // Supabase. Prefer the DB; fall back to env for legacy compatibility.
+  // NEWSLETTER_FORCE_RESEND=1 retires Constant Contact entirely: send via Resend
+  // from our OWN domain (hello@mail.thepropertydna.com), building OUR reputation
+  // instead of CC's shared ccsend.com pool. Reversible — unset it to fall back to
+  // CC while a token exists. (Set this once the warmup ramp has proven inbox.)
+  const forceResend = process.env.NEWSLETTER_FORCE_RESEND === '1';
   let ccToken = null;
-  try {
-    const rows = await db.from('oauth_tokens').select('access_token,expires_at').eq('provider', 'constant_contact').limit(1).get();
-    if (rows?.[0]?.access_token) ccToken = rows[0].access_token;
-  } catch { /* table may not exist yet — fall back to env */ }
-  if (!ccToken) ccToken = process.env.CC_ACCESS_TOKEN || null;
+  if (!forceResend) {
+    try {
+      const rows = await db.from('oauth_tokens').select('access_token,expires_at').eq('provider', 'constant_contact').limit(1).get();
+      if (rows?.[0]?.access_token) ccToken = rows[0].access_token;
+    } catch { /* table may not exist yet — fall back to env */ }
+    if (!ccToken) ccToken = process.env.CC_ACCESS_TOKEN || null;
+  }
   let result;
 
   if (ccToken) {
