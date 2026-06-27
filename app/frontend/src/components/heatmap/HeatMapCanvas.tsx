@@ -6,6 +6,7 @@ import { HexagonLayer } from '@deck.gl/aggregation-layers';
 import { ScatterplotLayer } from '@deck.gl/layers';
 import type { HeatParcel, HeatFilterWeights, HeatHoverState } from '@/types/heatmap';
 import { heatScoreToRgb } from '@/lib/colorScaleHeatmap';
+import { makeHeatValue, metricLabel, METRIC_META, type HeatMetric } from '@/lib/heatMetric';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
@@ -32,6 +33,7 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
   const mapRef       = useRef<mapboxgl.Map | null>(null);
   const deckRef      = useRef<Deck | null>(null);
   const [zoom, setZoom] = useState(4);
+  const [metric, setMetric] = useState<HeatMetric>('dna');
 
   // Refs to keep mapbox event handlers (registered once) in sync with current props/state.
   // Without these, the handlers capture stale `parcels = []` from first render and
@@ -74,12 +76,14 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
 
     if (pts.length === 0) return [];
 
+    const heatVal = makeHeatValue(pts, metric);
+
     if (z < 12) {
       return [new HexagonLayer({
         id: 'hex',
         data: pts,
         getPosition: (d: HeatParcel) => [d.lon, d.lat] as [number,number],
-        getColorWeight: (d: HeatParcel) => d.score,
+        getColorWeight: (d: HeatParcel) => heatVal(d),
         colorAggregation: 'MEAN',
         radius: 200,
         extruded: false,
@@ -89,14 +93,14 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
         onHover: (info: any) => {
           if (info.object?.points?.length) {
             const top = [...info.object.points]
-              .sort((a: any, b: any) => b.source.score - a.source.score)[0].source as HeatParcel;
+              .sort((a: any, b: any) => heatVal(b.source) - heatVal(a.source))[0].source as HeatParcel;
             onHover({ parcel: top, x: info.x, y: info.y });
           } else { onHover(null); }
         },
         onClick: (info: any) => {
           if (info.object?.points?.length) {
             const top = [...info.object.points]
-              .sort((a: any, b: any) => b.source.score - a.source.score)[0].source as HeatParcel;
+              .sort((a: any, b: any) => heatVal(b.source) - heatVal(a.source))[0].source as HeatParcel;
             onSelect(top);
           }
         },
@@ -104,7 +108,7 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
     }
 
     return [];
-  }, [onHover, onSelect, onCityClick]);
+  }, [onHover, onSelect, onCityClick, metric]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -188,15 +192,16 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
       if (!map.isStyleLoaded() || !map.getSource('parcels-fill')) return;
 
       if (zoom >= 12 && parcels.length) {
+        const heatVal = makeHeatValue(parcels, metric);
         const features = parcels.map(p => {
-          const [r,g,b] = heatScoreToRgb(p.score);
+          const [r,g,b] = heatScoreToRgb(Math.round(heatVal(p)));
           return { type: 'Feature' as const,
-            properties: { id: p.id, score: String(p.score), fillColor: `rgb(${r},${g},${b})`, fillOpacity: 0.5 + p.confidence * 0.3 },
+            properties: { id: p.id, score: metricLabel(p, metric), fillColor: `rgb(${r},${g},${b})`, fillOpacity: 0.5 + p.confidence * 0.3 },
             geometry: { type: 'Polygon' as const, coordinates: [p.polygon] } };
         });
         (map.getSource('parcels-fill') as mapboxgl.GeoJSONSource).setData({ type: 'FeatureCollection', features });
         const labelFeats = parcels.map(p => ({ type: 'Feature' as const,
-          properties: { id: p.id, score: p.score },
+          properties: { id: p.id, score: metricLabel(p, metric) },
           geometry: { type: 'Point' as const, coordinates: [p.lon, p.lat] } }));
         (map.getSource('parcel-labels') as mapboxgl.GeoJSONSource).setData({ type: 'FeatureCollection', features: labelFeats });
         map.setLayoutProperty('parcels-fill',    'visibility', 'visible');
@@ -211,11 +216,28 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
 
     if (map.isStyleLoaded()) { updateLayers(); }
     else { map.once('load', updateLayers); }
-  }, [parcels, cityMarkets, zoom, weights, buildLayers]);
+  }, [parcels, cityMarkets, zoom, weights, buildLayers, metric]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+
+      {/* Heat-metric toggle */}
+      <div style={{
+        position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
+        zIndex: 10, display: 'flex', gap: 4,
+        background: 'rgba(10,9,8,0.85)', border: '1px solid rgba(107,98,82,0.3)',
+        borderRadius: 8, padding: 4, fontFamily: 'Jost, sans-serif',
+      }}>
+        {(Object.keys(METRIC_META) as HeatMetric[]).map((m) => (
+          <button key={m} onClick={() => setMetric(m)} style={{
+            cursor: 'pointer', border: 'none', borderRadius: 5, padding: '5px 12px',
+            fontSize: 11, fontFamily: 'Jost, sans-serif',
+            background: metric === m ? '#B89355' : 'transparent',
+            color: metric === m ? '#0A0908' : '#B89355',
+          }}>{METRIC_META[m].label}</button>
+        ))}
+      </div>
 
       {loading && (
         <div style={{
@@ -238,7 +260,7 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
         <span style={{ fontSize: 9, color: '#6B6252' }}>Low</span>
         <div style={{ width: 100, height: 6, borderRadius: 3, background: 'linear-gradient(90deg,rgb(68,1,84),rgb(52,94,141),rgb(32,144,140),rgb(68,190,112),rgb(253,231,37))' }} />
         <span style={{ fontSize: 9, color: '#6B6252' }}>High</span>
-        <span style={{ fontSize: 10, color: '#B89355', marginLeft: 4 }}>DNA Score</span>
+        <span style={{ fontSize: 10, color: '#B89355', marginLeft: 4 }}>{METRIC_META[metric].legend}</span>
         {zoom < 8 && <span style={{ fontSize: 9, color: '#6B6252', marginLeft: 8 }}>Click city to drill in</span>}
         {zoom >= 8 && zoom < 12 && parcels.length > 0 && <span style={{ fontSize: 9, color: '#6B6252', marginLeft: 8 }}>{parcels.length} listings · zoom for parcels</span>}
         {zoom >= 12 && <span style={{ fontSize: 9, color: '#22c55e', marginLeft: 8 }}>Parcel mode</span>}
