@@ -17,6 +17,12 @@ const { enrichProperty }   = require("./enrich-property");
 const { rentcastEnrich }   = require("./rentcast-enrich");
 const { lookupCommunity }  = require("./_cv_luxury_index");
 const {
+  deriveLuxuryScores,
+  isLuxuryMode,
+  computeLuxuryPremium,
+  buildLuxuryNarrative,
+} = require("./_luxury_premiums");
+const {
   classifyPropertyType,
   getValuationProfile,
   filterFeaturesByProfile,
@@ -201,6 +207,182 @@ const FEATURE_LABELS = {
   architectural_digest_featured: "Featured in Architectural Digest",
   mcm_authentic: "Authentic Mid-Century Modern",
 };
+
+// ── Permit-detected improvement value model (Agent 6) ────────────────────────
+// Percentage uplift to smartMid per detected, permitted improvement class.
+// Bounded: recency-weighted, status-weighted, then capped by PERMIT_CAP below.
+// Categories mirror classifyPermit() in enrich-property.js. NOTE: roof/HVAC/
+// solar/electrical/plumbing currently all classify as "mechanical"; we split
+// them back out by scanning raw_data.description where possible (see
+// refinePermitCategory()), falling back to a blended "mechanical" rate.
+const PERMIT_VALUE_ADDS = {
+  pool:             { pct_low: 1.5, pct_mid: 3,   pct_high: 5,   recoupYears: 12, label: "Permitted Pool/Spa" },
+  remodel:          { pct_low: 2,   pct_mid: 4,   pct_high: 7,   recoupYears: 8,  label: "Permitted Remodel" },
+  addition:         { pct_low: 2,   pct_mid: 5,   pct_high: 9,   recoupYears: 10, label: "Permitted Addition/ADU" },
+  solar:            { pct_low: 0.5, pct_mid: 1.5, pct_high: 3,   recoupYears: 12, label: "Permitted Solar" },
+  roof:             { pct_low: 0.5, pct_mid: 1.5, pct_high: 3,   recoupYears: 15, label: "Permitted Roof" },
+  hvac:             { pct_low: 0.3, pct_mid: 1,   pct_high: 2,   recoupYears: 12, label: "Permitted HVAC" },
+  structural:       { pct_low: 0.5, pct_mid: 1.5, pct_high: 3,   recoupYears: 20, label: "Permitted Structural" },
+  mechanical:       { pct_low: 0.5, pct_mid: 1.5, pct_high: 3,   recoupYears: 12, label: "Permitted Mechanical Upgrade" },
+  new_construction: { pct_low: 3,   pct_mid: 6,   pct_high: 10,  recoupYears: 15, label: "Permitted New Construction" },
+};
+// Hard ceiling on the SUM of all permit value-adds, before the per-type
+// adjustmentCap at line ~664 takes its second pass. Keeps a pile of permits
+// from dominating the valuation.
+const PERMIT_CAP = { low: 5, mid: 9, high: 15 };
+// Status → confidence weight. Finaled/completed work is fully credited;
+// open/active permits (work may be unfinished) are discounted; void/expired
+// permits credit nothing and instead raise the unpermitted/consistency risk.
+const PERMIT_STATUS_WEIGHT = {
+  final: 1.0, finaled: 1.0, complete: 1.0, completed: 1.0, closed: 1.0, approved: 0.9,
+  issued: 0.7, active: 0.6, open: 0.6, "in review": 0.4, pending: 0.4, applied: 0.4,
+  expired: 0.0, void: 0.0, cancelled: 0.0, canceled: 0.0, denied: 0.0, withdrawn: 0.0,
+};
+
+// Incorporated Coachella Valley cities. The Riverside County permit ArcGIS layer
+// (enrich-property.js fetchRivcoPermits) only covers UNINCORPORATED parcels, so
+// these cities NEVER have rows in permit_registry — "no permits on file" here is
+// a DATA GAP, not evidence of unpermitted work. Used to suppress the unpermitted-
+// risk severity from "medium" → "low" so we don't systematically under-value
+// incorporated-city luxury homes (e.g. Southridge, Palm Springs). See doc 06-07
+// "Known limitations: Incorporated-city coverage".
+const INCORPORATED_CV_CITIES = [
+  "palm springs", "palm desert", "indian wells", "la quinta",
+  "rancho mirage", "cathedral city", "indio", "coachella", "desert hot springs",
+];
+function isIncorporatedCvCity(city) {
+  const c = String(city || "").toLowerCase();
+  return INCORPORATED_CV_CITIES.some((x) => c.includes(x));
+}
+
+// ── Agent 6: read permits already persisted by enrichProperty (read-back) ────
+// enrichProperty writes permit_registry fire-and-forget AFTER valuation, so on
+// FIRST run this is empty; on re-runs it fills in. Fast indexed SELECT — safe
+// to await (unlike the 12s ArcGIS fetch). Returns [] on any error.
+async function fetchPersistedPermits(address) {
+  if (!address) return [];
+  try {
+    const rows = await db.from("permit_registry")
+      .select("permit_number,permit_type,permit_category,description,issued_date,status,estimated_value,raw_data")
+      .ilike("address", `${String(address).trim().slice(0, 60)}%`)
+      .order("issued_date", { ascending: false })
+      .limit(40)
+      .get();
+    return Array.isArray(rows) ? rows : [];
+  } catch (e) {
+    console.warn("[save-report:permits] read-back failed:", e.message);
+    return [];
+  }
+}
+
+// Refine "mechanical" rows back into solar/roof/hvac/structural using description.
+function refinePermitCategory(category, description) {
+  const d = (description || "").toLowerCase();
+  if (/\bsolar|photovolt|\bpv\b/.test(d)) return "solar";
+  if (/\broof/.test(d)) return "roof";
+  if (/\bhvac|furnace|air condition|\ba\/c\b|mini[- ]?split|heat pump/.test(d)) return "hvac";
+  if (/\bfoundation|structural|retaining|seismic retrofit|shear/.test(d)) return "structural";
+  if (/\bpool|spa\b/.test(d)) return "pool";
+  if (/\bkitchen|bath|remodel|alteration/.test(d)) return "remodel";
+  if (/\baddition|adu|accessory|casita|guest house/.test(d)) return "addition";
+  return category || "general";
+}
+
+// Turn permit_registry rows into bounded, recency+status-weighted value-adds.
+// Returns { adds:[{key,label,pct,date,status,confidence}], unpermittedRisk, totalPct }.
+function computePermitValueAdds(permitRows, { luxuryTier = false, detectedFeatures = {}, incorporatedNoPermitData = false } = {}) {
+  const out = { adds: [], unpermittedRisk: null, totalPct: { low: 0, mid: 0, high: 0 } };
+  const now = Date.now();
+  const seen = new Set();
+  let voidImprovementHit = false;
+
+  for (const r of (permitRows || [])) {
+    const cat = refinePermitCategory(r.permit_category, r.description);
+    const spec = PERMIT_VALUE_ADDS[cat];
+    if (!spec) continue;
+
+    const statusKey = String(r.status || "").toLowerCase().trim();
+    const statusW = PERMIT_STATUS_WEIGHT[statusKey] != null ? PERMIT_STATUS_WEIGHT[statusKey] : 0.5;
+
+    // Recency decay: full credit < 2yr, linear to 0 at recoupYears.
+    const issued = r.issued_date ? new Date(r.issued_date).getTime() : null;
+    const yearsAgo = issued ? Math.max(0, (now - issued) / (365.25 * 24 * 3600 * 1000)) : null;
+    const recencyW = yearsAgo == null ? 0.5
+      : yearsAgo < 2 ? 1.0
+      : Math.max(0, 1 - (yearsAgo - 2) / Math.max(1, spec.recoupYears - 2));
+
+    // Void/expired permit for a real improvement → consistency risk, no credit.
+    if (statusW === 0) {
+      if (["pool", "remodel", "addition", "new_construction", "structural"].includes(cat)) voidImprovementHit = true;
+      continue;
+    }
+
+    const conf = Math.round(statusW * recencyW * 100) / 100;
+    if (conf <= 0.05) continue;
+
+    // De-dupe: only the strongest instance of each category counts toward $ value.
+    if (seen.has(cat)) {
+      out.adds.push({ key: `permit_${cat}_extra`, label: `${spec.label} (additional)`, pct: 0,
+        date: r.issued_date || null, status: r.status || "unknown", confidence: conf, counted: false });
+      continue;
+    }
+    seen.add(cat);
+
+    const w = conf;
+    out.totalPct.low  += spec.pct_low  * w;
+    out.totalPct.mid  += spec.pct_mid  * w;
+    out.totalPct.high += spec.pct_high * w;
+    out.adds.push({
+      key: `permit_${cat}`,
+      label: `${spec.label} (${r.issued_date || "date n/a"}, ${r.status || "status n/a"})`,
+      pct: Math.round(spec.pct_mid * w * 10) / 10,
+      date: r.issued_date || null,
+      status: r.status || "unknown",
+      confidence: conf,
+      counted: true,
+    });
+  }
+
+  // Cap the permit stack BEFORE it re-enters the per-type adjustmentCap.
+  out.totalPct.low  = Math.min(PERMIT_CAP.low,  out.totalPct.low);
+  out.totalPct.mid  = Math.min(PERMIT_CAP.mid,  out.totalPct.mid);
+  out.totalPct.high = Math.min(PERMIT_CAP.high, out.totalPct.high);
+
+  // ── Unpermitted-risk flag ──────────────────────────────────────────────────
+  // Listing/feature evidence of an improvement that has NO matching permit, OR a
+  // void/expired permit on a major improvement, OR zero permits on record for a
+  // property the listing calls "remodeled/new pool/addition". This is a BUYER
+  // DEFENSE signal (unpermitted work = liability, insurance + resale risk).
+  const improvementClaims = [];
+  if (detectedFeatures.pool && !seen.has("pool")) improvementClaims.push("pool");
+  if ((detectedFeatures.fully_remodeled || detectedFeatures.updated) && !seen.has("remodel")) improvementClaims.push("remodel");
+  if (detectedFeatures.adu_casita && !seen.has("addition")) improvementClaims.push("addition/ADU");
+  if (voidImprovementHit) improvementClaims.push("void/expired major permit");
+
+  if (improvementClaims.length) {
+    const noPermits = (permitRows || []).length === 0;
+    // CRITICAL incorporated-city fix: when the city is an incorporated CV city,
+    // the county permit layer simply doesn't cover it, so "no permits on file"
+    // is a coverage gap — NOT evidence of unpermitted work. Suppress severity to
+    // "low" so it does not wrongly discount luxury homes (Southridge-class).
+    // A genuine void/expired permit (only possible when rows DO exist) still
+    // escalates to "high".
+    const severity = voidImprovementHit ? "high"
+      : (noPermits ? (incorporatedNoPermitData ? "low" : "medium") : "low");
+    out.unpermittedRisk = {
+      flagged: true,
+      claims: improvementClaims,
+      hadAnyPermits: !noPermits,
+      incorporatedNoData: !!(noPermits && incorporatedNoPermitData),
+      label: incorporatedNoPermitData && noPermits && !voidImprovementHit
+        ? `Improvement claimed (${improvementClaims.join(", ")}); incorporated-city permits not in county layer — verify with city records`
+        : `Possible unpermitted work: ${improvementClaims.join(", ")} claimed but no matching ${noPermits ? "" : "valid "}permit on file`,
+      // Used by Agent 7 as a data-quality / liability discount input.
+      severity,
+    };
+  }
+  return out;
+}
 
 // ── Smart base value: anchors AVM to last sale + time appreciation ────────────
 
@@ -560,6 +742,15 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   // luxury tier (S/A/B) applied even with owner-entered data and no remarks.
   // Proprietary PropertyDNA community index. See _cv_luxury_index.js.
   communityPremium = null,
+  // ── Permit-detected improvements (Agent 6) ────────────────────────────────
+  // Result of computePermitValueAdds(...). Null-safe; omit for SFR-default.
+  permitProfile = null,
+  // ── Luxury premium layer inputs (Agent 5) ─────────────────────────────────
+  // All null/neutral by default so existing reports are unaffected.
+  permitAdj      = null,   // permitValueAdjustment-shaped { estimatedValuePct, recentAddition }
+  elevationM     = null,   // USGS/Google elevation in metres
+  locationScores = null,   // location_scores row, or null
+  listingText    = "",     // joined listing remarks (for terrain/boulder cues)
 } = {}) {
   // Phase 0 — classify property type and resolve preliminary profile
   // (preliminary because luxury-tier comp rules depend on smartMid which we
@@ -662,11 +853,57 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   //   Multifamily small ±25%, large ±20%, commercial ±15%, land ±30%.
   // See _valuation_profile.js for the full table + reasoning.
   const adjustmentCap = profile.adjustmentCap;
+
+  // ── Phase 1.5 — Luxury premium layer (Agent 5) ─────────────────────────────
+  // Derives nine weighted 0-100 premium scores from signals already in the
+  // pipeline (community tier, elevation, permits, location_scores, comp count,
+  // listing cues) and lets the strongest trophy combinations consume the
+  // REMAINING headroom under the profile cap. Lives BEFORE the clamp below so it
+  // can never breach ±adjustmentCap. Fully null-safe / backwards-compatible.
+  let luxuryScores = null;
+  let luxuryPremium = null;
+  const luxScoresCtx = {
+    features: allowedFeatures,
+    communityPremium,
+    permitAdj,
+    elevationM,
+    locationScores,
+    lotSqft: propertyHints?.lot_sqft ? Number(String(propertyHints.lot_sqft).replace(/[^0-9.]/g, "")) : null,
+    compCount: Array.isArray(comps) ? comps.length : null,
+    listingText: (listingText || "").toLowerCase(),
+  };
+  luxuryScores = deriveLuxuryScores(luxScoresCtx);
+
+  if (isLuxuryMode({ smartMid, communityPremium, scores: luxuryScores })) {
+    // alreadyLiftedPct = the feature/community/luxury % already in totalMid plus
+    // the comp-anchor lift baked into smartMid (compLiftedPct). The luxury
+    // premium only consumes the headroom that remains under the cap.
+    const alreadyLiftedPct = Math.max(0, totalMid) + (compLiftedPct * 100);
+    luxuryPremium = computeLuxuryPremium(luxuryScores, {
+      profileCap: adjustmentCap,
+      alreadyLiftedPct,
+    });
+    if (luxuryPremium.premiumPct > 0) {
+      // Apply asymmetrically: mid gets full premium, low 60%, high 130%.
+      totalLow  += luxuryPremium.premiumPct * 0.6;
+      totalMid  += luxuryPremium.premiumPct;
+      totalHigh += luxuryPremium.premiumPct * 1.3;
+      drivers.push({
+        key: "luxury_premium_layer",
+        label: `Luxury Premium Layer (+${luxuryPremium.premiumPct}%${luxuryPremium.capped ? ", capped" : ""})`,
+        pct: luxuryPremium.premiumPct,
+      });
+    }
+  }
+  // ── end Phase 1.5 ──────────────────────────────────────────────────────────
+
   totalLow  = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalLow));
   totalMid  = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalMid));
   totalHigh = Math.max(-adjustmentCap, Math.min(adjustmentCap, totalHigh));
 
   const applyPct = (base, pct) => (base ? Math.round(base * (1 + pct / 100)) : null);
+  // Agent 6: apply a delta % to an already-computed dollar figure.
+  const applyPctDelta = (base, pctDelta) => (base ? Math.round(base * (1 + pctDelta / 100)) : null);
 
   let adjLow  = applyPct(smartLow,  totalLow);
   let adjMid  = applyPct(smartMid,  totalMid);
@@ -708,6 +945,29 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     drivers.push({ key: "recent_reno", label: `Recent Renovation (~$${(recentReno.cost / 1000).toFixed(0)}k @ ${Math.round(recoupRate*100)}% recoup)`, dollar: renoUplift, pct: null });
   }
 
+  // Phase 6 — Permit-detected improvements as bounded % value-adds (Agent 6).
+  // Percentage (not raw $) so the comp-anchored base + per-type cap still bound
+  // it: completed permitted work is partly priced into comps already.
+  let permitUplift = null;
+  if (permitProfile && permitProfile.totalPct && permitProfile.totalPct.mid > 0) {
+    const p = permitProfile.totalPct;
+    adjLow  = adjLow  ? applyPctDelta(adjLow,  p.low)  : null;
+    adjMid  = adjMid  ? applyPctDelta(adjMid,  p.mid)  : null;
+    adjHigh = adjHigh ? applyPctDelta(adjHigh, p.high) : null;
+    permitUplift = { low: p.low, mid: p.mid, high: p.high };
+    for (const a of permitProfile.adds) {
+      if (!a.counted) continue;
+      drivers.push({ key: a.key, label: a.label, pct: a.pct,
+        permit: { date: a.date, status: a.status, confidence: a.confidence } });
+    }
+  }
+  // Surface the unpermitted-risk flag as a (non-valuation) driver for the UI and
+  // hand it to Agent 7 (consumed via the returned object) for a data-quality hit.
+  if (permitProfile && permitProfile.unpermittedRisk) {
+    drivers.push({ key: "unpermitted_risk", label: permitProfile.unpermittedRisk.label,
+      pct: null, risk: permitProfile.unpermittedRisk });
+  }
+
   const featureCount = Object.values(features).filter(Boolean).length + (luxuryTier ? 1 : 0) + (aduSqft ? 1 : 0) + (poolAddOnCost ? 1 : 0) + (recentReno ? 1 : 0);
   const confidence = Math.max(0.52, 0.88 - featureCount * 0.03);
 
@@ -725,6 +985,23 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     avmDeltaPercent = Math.round(((adjMid - rawMid) / rawMid) * 1000) / 10;
   }
   const confidenceLabel = confidence >= 0.78 ? "High" : confidence >= 0.62 ? "Medium" : "Low";
+
+  // ── Five-field luxury output (Agent 5) ────────────────────────────────────
+  const standard_avm_value = rawMid || null;            // untouched RentCast AVM mid
+  const luxury_adjusted_value = adjMid || null;          // final DNA+luxury mid
+  const undervaluation_gap = (standard_avm_value && luxury_adjusted_value)
+    ? Math.round(((luxury_adjusted_value - standard_avm_value) / standard_avm_value) * 1000) / 10
+    : null;                                              // % the standard model misses by
+  // Confidence: reuse existing `confidence`, but DAMPEN for high luxury premium
+  // (more premium = more model extrapolation = lower certainty). Floor 0.45.
+  const luxPremPct = luxuryPremium?.premiumPct || 0;
+  const confidence_score = Math.round(Math.max(0.45, confidence - luxPremPct * 0.004) * 100) / 100;
+  const narrative_explanation = buildLuxuryNarrative(luxuryScores, luxuryPremium, {
+    standardAvm: standard_avm_value,
+    luxuryValue: luxury_adjusted_value,
+    gapPct: undervaluation_gap,
+    communityPremium,
+  });
 
   return {
     adjLow, adjMid, adjHigh,
@@ -747,6 +1024,18 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
     valuationMethod:     profile.valuationMethod,
     featureMultiplier:   profile.featureMultiplier,
     adjustmentCapUsed:   profile.adjustmentCap,
+    // ── Permit intelligence (Agent 6) ──────────────────────────────────────
+    permitUplift:   permitUplift || null,
+    permitProfile:  permitProfile || null,
+    unpermittedRisk: permitProfile?.unpermittedRisk || null,
+    // ── Luxury premium layer + five-field output (Agent 5) ─────────────────
+    luxuryScores,
+    luxuryPremium,
+    standard_avm_value,
+    luxury_adjusted_value,
+    undervaluation_gap,
+    confidence_score,
+    narrative_explanation,
   };
 }
 
@@ -829,6 +1118,108 @@ function buildRiskProfile(normalized, freshFlood) {
     earthquake,
     summary: `Overall: ${overallRating} (${overallScore}/100). Flood: ${flood.label || 'Minimal'}. Earthquake: ${earthquake.label}. Wildfire: ${wildfire.label}. Crime: ${crimeScore < 35 ? 'Low' : crimeScore < 55 ? 'Moderate' : 'Elevated'}.`,
   };
+}
+
+// ── Agent 7: risk MODIFIES the valuation + confidence (not just a badge) ──────
+// Caps: total downside discount on mid is bounded to RISK_CAP.mid. Each factor
+// is individually bounded so no single signal dominates. Returns a NEW adjusted
+// object; never mutates inputs.
+const RISK_CAP = { low: 0.14, mid: 0.09, high: 0.04 }; // max fractional haircut per band
+const RISK_CONF_CAP = 0.18;                            // max absolute confidence reduction
+
+function applyRiskToValuation(dna, risk, ctx = {}) {
+  if (!dna || !risk) return dna;
+  const { luxuryTier = false, daysOnMarket = null, hoaMonthly = null, hasHoa = false } = ctx;
+
+  // Each modifier returns a 0..1 "pressure". Weights sum the pressures; the
+  // weighted sum is squashed into the capped band below.
+  const f = [];
+  const push = (key, pressure, weight, note) => {
+    if (pressure > 0) f.push({ key, pressure: Math.min(1, pressure), weight, note });
+  };
+
+  // FEMA flood: score 85 high / 45 unknown-zone / 15 minimal.
+  push("flood", Math.max(0, (risk.flood?.score ?? 30) - 30) / 70, 1.4,
+       risk.flood?.label || risk.flood?.zone);
+  // Wildfire (buildWildfireRisk): desert CV 35, CA 50, hill/canyon higher.
+  push("wildfire", Math.max(0, (risk.wildfire?.score ?? 20) - 30) / 70, 1.0,
+       risk.wildfire?.label);
+  // Seismic / fault (buildEarthquakeRisk): CV San-Andreas = 78.
+  push("seismic", Math.max(0, (risk.earthquake?.score ?? 25) - 45) / 55, 1.0,
+       risk.earthquake?.label);
+  // Slope / topography: hill/canyon-adjacent CV enclaves carry slope + access +
+  // FHSZ risk. Derived from wildfire label + listing text (canyon/hillside).
+  const slopeHit = /hill|canyon|slope|andreas hills|palm hills|tahquitz/i.test(
+    `${risk.wildfire?.summary || ""} ${ctx.listingText || ""}`);
+  push("slope", slopeHit ? 0.5 : 0, 0.6, slopeHit ? "Hillside/canyon-adjacent" : null);
+  // Insurance pressure: CA wildfire + flood drive FAIR-plan-only / non-renewal
+  // exposure. Proxy = max(wildfire, flood) pressure, weighted heavily in CA.
+  const insPressure = Math.max(
+    Math.max(0, (risk.wildfire?.score ?? 20) - 35) / 65,
+    Math.max(0, (risk.flood?.score ?? 30) - 40) / 60);
+  push("insurance", insPressure, 1.2, insPressure > 0.4 ? "Elevated CA insurance/FAIR-plan exposure" : null);
+  // HOA / liquidity: high HOA + luxury thin liquidity widens downside.
+  const hoaPressure = (hoaMonthly && hoaMonthly > 800) ? 0.6 : (hasHoa && luxuryTier ? 0.3 : 0);
+  push("hoa_liquidity", hoaPressure, 0.6, hoaPressure ? "High HOA / thin resale liquidity" : null);
+  // DOM: long days-on-market = soft demand → downside pressure.
+  const domPressure = daysOnMarket == null ? 0
+    : daysOnMarket > 180 ? 0.8 : daysOnMarket > 90 ? 0.5 : daysOnMarket > 60 ? 0.25 : 0;
+  push("dom", domPressure, 0.8, domPressure ? `${daysOnMarket} days on market` : null);
+  // Data quality: low base confidence OR Agent-6 unpermitted-work flag.
+  // INCORPORATED-CITY FIX: when the flag is only a county-layer coverage gap
+  // (incorporatedNoData), it is informational for the buyer but must NOT
+  // discount the valuation — so it contributes 0 pressure here.
+  const unperm = dna.unpermittedRisk;
+  const unpermPressure = !unperm ? 0
+    : unperm.severity === "high" ? 0.8
+    : unperm.severity === "medium" ? 0.5
+    : unperm.incorporatedNoData ? 0
+    : 0.3;
+  const lowConfPressure = dna.confidence != null ? Math.max(0, 0.70 - dna.confidence) / 0.20 : 0;
+  push("data_quality", Math.max(unpermPressure, lowConfPressure), 1.1,
+       unperm ? unperm.label : (lowConfPressure > 0 ? "Thin/low-confidence inputs" : null));
+
+  if (!f.length) return dna;
+
+  // Weighted, normalized pressure 0..1.
+  const wSum = f.reduce((s, x) => s + x.weight, 0);
+  const pressure = f.reduce((s, x) => s + x.pressure * x.weight, 0) / Math.max(1, wSum);
+
+  // Asymmetric haircut: low band cut most, high band least.
+  const cutLow  = Math.min(RISK_CAP.low,  pressure * RISK_CAP.low);
+  const cutMid  = Math.min(RISK_CAP.mid,  pressure * RISK_CAP.mid);
+  const cutHigh = Math.min(RISK_CAP.high, pressure * RISK_CAP.high);
+
+  const out = { ...dna };
+  out.adjLow  = dna.adjLow  ? Math.round(dna.adjLow  * (1 - cutLow))  : dna.adjLow;
+  out.adjMid  = dna.adjMid  ? Math.round(dna.adjMid  * (1 - cutMid))  : dna.adjMid;
+  out.adjHigh = dna.adjHigh ? Math.round(dna.adjHigh * (1 - cutHigh)) : dna.adjHigh;
+  // Keep ordering sane after asymmetric cut.
+  if (out.adjLow && out.adjMid && out.adjLow > out.adjMid) out.adjLow = Math.round(out.adjMid * 0.9);
+  if (out.adjHigh && out.adjMid && out.adjHigh < out.adjMid) out.adjHigh = Math.round(out.adjMid * 1.1);
+
+  // Confidence reduction (bounded) + recompute accuracy with the SAME formula
+  // used in computeDnaAdjustment so badge + number stay consistent.
+  const confCut = Math.min(RISK_CONF_CAP, pressure * RISK_CONF_CAP);
+  const newConf = Math.max(0.45, (dna.confidence ?? 0.7) - confCut);
+  out.confidence = Math.round(newConf * 100) / 100;
+  out.confidenceLabel = newConf >= 0.78 ? "High" : newConf >= 0.62 ? "Medium" : "Low";
+  if (out.adjMid && out.adjLow && out.adjHigh) {
+    const spread = (out.adjHigh - out.adjLow) / out.adjMid;
+    const spreadScore = Math.max(0, 1 - spread / 0.40);
+    out.accuracyPercent = Math.round((newConf * 0.7 + spreadScore * 0.3) * 1000) / 10;
+  }
+
+  out.riskAdjustment = {
+    pressure: Math.round(pressure * 100) / 100,
+    cutMidPct: Math.round(cutMid * 1000) / 10,
+    confidenceCut: Math.round(confCut * 100) / 100,
+    factors: f.filter(x => x.note).map(x => ({ key: x.key, note: x.note, pressure: Math.round(x.pressure * 100) / 100 })),
+    label: `Risk discount −${Math.round(cutMid * 100)}% mid (${risk.overallRating || "risk"}); confidence −${Math.round(confCut * 100)}pts`,
+  };
+  out.drivers = [...(dna.drivers || []),
+    { key: "risk_discount", label: out.riskAdjustment.label, pct: -Math.round(cutMid * 1000) / 10 }];
+  return out;
 }
 
 function buildSalesActivity(normalized) {
@@ -995,6 +1386,39 @@ exports.handler = async (event) => {
         lot_sqft:reportData?.normalized?.property?.lotSize ?? reportData?.normalized?.subject?.lotSize,
       };
 
+      // ── Agent 6: read permits persisted by a prior enrich pass (read-back) ──
+      // First-ever run returns [] (enrichProperty writes permits AFTER save);
+      // re-runs fill in. Fast indexed SELECT — safe to await.
+      const permitRows = await fetchPersistedPermits(address);
+      const valCity = city || reportData?.normalized?.subject?.city || reportData?.normalized?.property?.city || "";
+      // Incorporated CV cities have NO county permit layer → "no permits" is a
+      // data gap, not unpermitted work. Suppresses the false-positive medium flag.
+      const incorporatedNoPermitData = isIncorporatedCvCity(valCity);
+      const permitProfile = (permitRows.length || mergedFeatures.pool || mergedFeatures.fully_remodeled || mergedFeatures.updated)
+        ? computePermitValueAdds(permitRows, { luxuryTier, detectedFeatures: mergedFeatures, incorporatedNoPermitData })
+        : null;
+      // Lightweight permitValueAdjustment-shaped shim for the luxury reno score,
+      // derived from the permit profile we already built (no second fetch).
+      const permitAdjForLux = permitProfile ? {
+        estimatedValuePct: permitProfile.totalPct?.mid || 0,
+        recentAddition: (permitProfile.adds || []).some(a => a.counted && a.key === "permit_addition"),
+        fullyRemodeled: (permitProfile.adds || []).some(a => a.counted && a.key === "permit_remodel"),
+      } : null;
+
+      // ── Agent 5: luxury premium layer inputs (all null/neutral-safe) ────────
+      const elevationM = Number(
+        reportData?.normalized?.property?.elevation_m
+        ?? reportData?.normalized?.subject?.elevation_m
+        ?? reportData?.normalized?.elevation?.elevationM
+      ) || null;
+      const locationScores = reportData?.normalized?.locationScores || null;
+      const listingTextForVal = [
+        reportData?.normalized?.property?.description,
+        reportData?.normalized?.listing?.publicRemarks,
+        reportData?.normalized?.listing?.remarks,
+        reportData?.normalized?.subject?.description,
+      ].filter(Boolean).join(" ");
+
       dnaAdjusted = computeDnaAdjustment(low, mid, high, mergedFeatures, {
         lastSalePrice:  effectiveLastSalePrice ? Number(effectiveLastSalePrice) : null,
         lastSaleDate:   effectiveLastSaleDate,
@@ -1007,6 +1431,11 @@ exports.handler = async (event) => {
         propertyTypeRaw,
         propertyHints,
         communityPremium: autoDetected.communityPremium || null,
+        permitProfile,
+        permitAdj:      permitAdjForLux,
+        elevationM,
+        locationScores,
+        listingText:    listingTextForVal,
       });
       featureProfile = { low, mid, high, dnaAdjusted, autoDetected: mergedFeatures };
 
@@ -1039,6 +1468,24 @@ exports.handler = async (event) => {
     const neighborhood = buildNeighborhoodProfile(norm, freshDemo);
     const risk         = buildRiskProfile(norm, freshFlood);
     const salesActivity = buildSalesActivity(norm);
+
+    // ── Agent 7: let risk actually MOVE the valuation + confidence ────────────
+    // Bounded, asymmetric haircut (low cut most, high least) + confidence drop.
+    if (dnaAdjusted && risk) {
+      const riskListingText = [norm.property?.description, norm.listing?.publicRemarks, norm.listing?.remarks]
+        .filter(Boolean).join(" ");
+      const domRaw = norm.listing?.daysOnMarket ?? norm.listing?.dom ?? null;
+      const dna2 = applyRiskToValuation(dnaAdjusted, risk, {
+        luxuryTier: !!dnaAdjusted.luxuryTier,
+        daysOnMarket: domRaw != null ? Number(String(domRaw).replace(/[^0-9.]/g, "")) || null : null,
+        hoaMonthly: norm.property?.hoaFee ? Number(String(norm.property.hoaFee).replace(/[^0-9.]/g, "")) || null : null,
+        hasHoa: !!(norm.property?.hoaFee || /\bhoa\b/i.test(riskListingText)),
+        listingText: riskListingText,
+      });
+      dnaAdjusted = dna2; // overwrite so the merge below persists the discounted figure
+      // Keep the persisted feature-profile row consistent with the post-risk number.
+      if (featureProfile) featureProfile.dnaAdjusted = dnaAdjusted;
+    }
 
     // Also overlay fresh demographics + flood into normalized so the existing
     // ReportView frontend (which reads n.demographics, n.flood) renders correctly
@@ -1269,3 +1716,7 @@ exports.handler = async (event) => {
 exports.computeDnaAdjustment = computeDnaAdjustment;
 exports.autoDetectFeatures   = autoDetectFeatures;
 exports.extractValuation     = extractValuation;
+exports.computePermitValueAdds = computePermitValueAdds;
+exports.applyRiskToValuation   = applyRiskToValuation;
+exports.buildRiskProfile       = buildRiskProfile;
+exports.isIncorporatedCvCity   = isIncorporatedCvCity;
