@@ -14,6 +14,7 @@ import ReportView from "./pages/ReportView";
 import ReportViewByToken from "./pages/ReportViewByToken";
 import Professionals from "./pages/Professionals";
 import MarketHeatMap from "./pages/MarketHeatMap";
+import PropertyMapPage from "./pages/PropertyMapPage";
 import IntellaGraph from "./pages/IntellaGraph";
 import OpenHouse from "./pages/OpenHouse";
 import SellerValuation from "./pages/SellerValuation";
@@ -101,6 +102,10 @@ const AppRoutes = () => (
     <Route path="/report/:id" element={<ReportView />} />
     <Route path="/professionals" element={<Professionals />} />
     <Route path="/market-heatmaps" element={<MarketHeatMap />} />
+    {/* TODO(live-data): premium PropertyMap — fed by mockMapData; swap getMockMapData() for a
+        fetch piped through normalizePropertyData() to go live. Reversible: delete this route +
+        the PropertyMapPage import to fully remove. */}
+    <Route path="/map" element={<PropertyMapPage />} />
     <Route path="/intellagraph"     element={<IntellaGraph />} />
     <Route path="/report" element={<ReportView />} />
     <Route path="/property-dna" element={<Index />} />
