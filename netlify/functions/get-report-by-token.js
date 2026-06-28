@@ -31,7 +31,7 @@ exports.handler = async (event) => {
     // Check new property_reports table first
     const [newRows, legacyRows] = await Promise.all([
       db.from("property_reports")
-        .select("id,email,address,city,state,zip,full_address,report_data,enrichment_data,view_token,status,created_at,apn")
+        .select("id,email,address,city,state,zip,full_address,report_data,enrichment_data,view_token,status,generation_error,created_at,apn")
         .eq("view_token", token)
         .limit(1)
         .get()
@@ -53,6 +53,19 @@ exports.handler = async (event) => {
           statusCode: 202,
           headers: CORS,
           body: JSON.stringify({ status: row.status, message: "Report is still being generated. Please check back in a moment." }),
+        };
+      }
+
+      // Terminal failure (e.g. enrich-report exhausted every valuation source).
+      // Surface the user-facing reason instead of polling forever.
+      if (row.status === "failed") {
+        return {
+          statusCode: 200,
+          headers: CORS,
+          body: JSON.stringify({
+            status: "failed",
+            error: row.generation_error || "Valuation data is temporarily unavailable for this address. Please try again later.",
+          }),
         };
       }
 
