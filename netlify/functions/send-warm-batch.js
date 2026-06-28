@@ -21,6 +21,7 @@
  */
 const https = require('https');
 const db    = require('./_supabase');
+const { rampCap } = require('./_email');
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
@@ -34,7 +35,9 @@ const REPLY_TO     = process.env.REPLY_TO_EMAIL      || 'stuartteamps@gmail.com'
 const UNSUB_MAILTO = process.env.UNSUB_MAILTO        || 'unsubscribe@mail.thepropertydna.com';
 const SITE_URL     = 'https://thepropertydna.com';
 const MAX_PER_CALL = 25;
-const DAILY_LIMIT  = parseInt(process.env.WARMUP_DAILY_LIMIT || '50', 10);
+// Daily quota from the shared ramp dial (EMAIL_RAMP_WEEK); WARMUP_DAILY_LIMIT
+// overrides per-channel when set.
+const DAILY_LIMIT  = rampCap('warmupDaily');
 
 function resendSend(payload) {
   return new Promise((resolve, reject) => {

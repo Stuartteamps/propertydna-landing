@@ -1,7 +1,8 @@
-// Sends a batch of 50 campaign emails via Resend.
+// Sends a batch of campaign emails via Resend (batch size from the shared ramp).
 // Called repeatedly by CampaignManager until done=true.
 const https = require('https');
 const db    = require('./_supabase');
+const { rampCap } = require('./_email');
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -9,7 +10,10 @@ const CORS = {
   'Content-Type': 'application/json',
 };
 
-const BATCH_SIZE   = 50;
+// Per-invocation recipients from the shared ramp dial (EMAIL_RAMP_WEEK);
+// CAMPAIGN_BATCH_SIZE overrides per-channel. Caps Resend exposure per call so a
+// warming domain ramps gradually instead of cold-blasting.
+const BATCH_SIZE   = rampCap('campaignBatch');
 const SENDER       = process.env.CAMPAIGN_SENDER_EMAIL || 'hello@mail.thepropertydna.com';
 const SENDER_NAME  = process.env.CAMPAIGN_SENDER_NAME  || 'PropertyDNA';
 const SITE_URL     = 'https://thepropertydna.com';

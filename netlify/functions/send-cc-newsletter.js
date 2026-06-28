@@ -10,6 +10,7 @@
 
 const https = require('https');
 const db    = require('./_supabase');
+const { rampCap } = require('./_email');
 
 const CC_API     = 'api.cc.email';
 const CC_LIST_ID = '662ac8de-4599-11f1-8c5f-02420a320003';
@@ -333,12 +334,11 @@ async function sendViaResend(subject, html, weatherText, marketNarrative, weekLa
   if (!campaign) return { sent: 0, method: 'resend_fallback', error: 'CC campaign not found' };
 
   // DOMAIN WARMUP: never cold-blast the full list from an unwarmed domain — that
-  // is the #1 reason a new Resend domain spam-folders. NEWSLETTER_MAX_PER_RUN
-  // caps how many we send per run; ramp it up over ~2-3 weeks (e.g. 2000 ->
-  // 5000 -> 12000 -> unlimited) as the domain earns reputation. 0/unset = no cap
-  // (only safe once warmed). We send FRESHEST contacts first (most recently
-  // added = most likely valid + engaged) to maximize positive open signals.
-  const MAX_PER_RUN = Number(process.env.NEWSLETTER_MAX_PER_RUN || 0) || Infinity;
+  // is the #1 reason a new Resend domain spam-folders. The cap comes from the
+  // shared ramp dial (EMAIL_RAMP_WEEK 1..4 in _email.js); NEWSLETTER_MAX_PER_RUN
+  // overrides it per-channel when set. We send FRESHEST contacts first (most
+  // recently added = most likely valid + engaged) to maximize open signals.
+  const MAX_PER_RUN = rampCap('newsletter');
 
   let offset = 0, sent = 0, failed = 0;
   const BATCH = 50;
