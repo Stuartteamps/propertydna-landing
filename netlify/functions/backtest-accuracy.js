@@ -194,9 +194,14 @@ exports.handler = async (event) => {
     const piRows = [];
     for (let i = 0; i < hashes.length; i += CHUNK) {
       const slice = hashes.slice(i, i + CHUNK);
+      // property_intelligence has no property_type column — the per-type bucketing
+      // would need a separate join to property_master.property_type via apn,
+      // which we don't have a hash for here. Per-tier bucketing still works
+      // (driven by ground-truth sale price, not property_type). Per-type
+      // breakdown is a Phase-2 follow-up.
       const rows = await db
         .from("property_intelligence")
-        .select("address_hash,pdna_value_mid,rentcast_value,property_type")
+        .select("address_hash,pdna_value_mid,rentcast_value")
         .in("address_hash", slice)
         .get()
         .catch(() => []);
@@ -236,7 +241,10 @@ exports.handler = async (event) => {
       const actual = appreciate > 0 ? sale * Math.pow(1 + appreciate, yrs) : sale;
       const pi = piByHash.get(hash);
       const tier = priceTier(sale);
-      const propertyType = classifyPropertyType(pi?.property_type, {});
+      // property_type not available on property_intelligence — bucketing falls
+      // back to 'unknown' for the by-type breakdown. Phase 2: join to
+      // property_master.property_type via apn.
+      const propertyType = classifyPropertyType(null, {});
       const tags = { tier, propertyType };
       if (pi && Number(pi.pdna_value_mid)) pdnaPairs.push({ predicted: Number(pi.pdna_value_mid), actual, ...tags });
       if (pi && Number(pi.rentcast_value)) rentcastPairs.push({ predicted: Number(pi.rentcast_value), actual, ...tags });
