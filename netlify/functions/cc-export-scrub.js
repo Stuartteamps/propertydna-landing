@@ -117,14 +117,17 @@ exports.handler = async (event) => {
       byNorm.get(n).push(c);
     }
     const norms = [...byNorm.keys()];
+    // Build chunks of raw street addresses to look up.
     const CHUNK = 40;
+    const chunks = [];
     for (let i = 0; i < norms.length; i += CHUNK) {
-      if (Date.now() - t0 > maxMatchMs) break; // time budget — return what we have
       const slice = norms.slice(i, i + CHUNK);
-      // property_master.address isn't pre-normalized, so match on raw street via ilike batches.
-      // Use the raw street values for the in-list (exact-ish); fall back is the norm map.
-      const rawSlice = slice.flatMap((n) => byNorm.get(n).map((c) => c.street)).slice(0, CHUNK);
-      const rows = await pmByAddresses(rawSlice);
+      chunks.push(slice.flatMap((n) => byNorm.get(n).map((c) => c.street)));
+    }
+    // Run lookups in parallel with a concurrency cap so all 2,285 finish within
+    // the gateway budget (sequential was too slow and timed out partway).
+    const CONCURRENCY = 12;
+    const applyRows = (rows) => {
       for (const row of rows) {
         const n = normAddr(row.address);
         const hits = byNorm.get(n);
@@ -132,6 +135,12 @@ exports.handler = async (event) => {
           if (!c.matched_apn) { c.matched_apn = row.apn; c.matched_value = row.rentcast_value || null; matched++; }
         }
       }
+    };
+    for (let i = 0; i < chunks.length; i += CONCURRENCY) {
+      if (Date.now() - t0 > maxMatchMs) break;
+      const batch = chunks.slice(i, i + CONCURRENCY);
+      const results = await Promise.all(batch.map((c) => pmByAddresses(c)));
+      results.forEach(applyRows);
     }
   }
 
