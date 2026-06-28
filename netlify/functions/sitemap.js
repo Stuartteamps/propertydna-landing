@@ -102,6 +102,19 @@ const NAMED_NEIGHBORHOODS = [
   'Thunderbird Heights', 'Tamarisk Country Club', 'Mission Hills',
 ];
 
+// Programmatic coverage pages — high-intent local SEO. Routes:
+// /coverage/:slug (CityLanding) and /coverage/:slug/:topic (CityTopicLanding).
+// Hardcoded here because this Lambda can't import the frontend data file;
+// keep in sync with app/frontend/src/data/cityLandingPages.ts.
+const CITY_SLUGS = [
+  'boca-raton-fl', 'coral-gables-fl', 'darien-ct', 'fort-lauderdale-fl',
+  'greenwich-ct', 'indio-ca', 'la-quinta-ca', 'miami-beach-fl', 'miami-fl',
+  'naples-fl', 'new-canaan-ct', 'palm-desert-ca', 'palm-springs-ca',
+  'rancho-mirage-ca', 'tampa-fl', 'west-palm-beach-fl', 'westchester-ny',
+  'westport-ct',
+];
+const CITY_TOPICS = ['fema-flood-zones', 'insurance-crisis', 'permit-history'];
+
 function slugify(s) {
   return String(s).toLowerCase().replace(/\./g, '').replace(/\s+/g, '-');
 }
@@ -133,6 +146,14 @@ exports.handler = async () => {
   // Named neighborhoods (long-tail SEO)
   NAMED_NEIGHBORHOODS.forEach(n => {
     urls.push(url(`${SITE}/neighborhood/${slugify(n)}`, { changefreq: 'weekly', priority: 0.8 }));
+  });
+
+  // City coverage pages + topic sub-pages (high-intent local long-tail)
+  CITY_SLUGS.forEach(slug => {
+    urls.push(url(`${SITE}/coverage/${slug}`, { changefreq: 'weekly', priority: 0.85 }));
+    CITY_TOPICS.forEach(topic => {
+      urls.push(url(`${SITE}/coverage/${slug}/${topic}`, { changefreq: 'monthly', priority: 0.7 }));
+    });
   });
 
   // Verified dossiers — the highest-value pages on the site
