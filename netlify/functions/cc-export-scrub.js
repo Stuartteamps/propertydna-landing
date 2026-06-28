@@ -63,6 +63,19 @@ exports.handler = async (event) => {
   const token = await getToken();
   if (!token) return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: "no CC token" }) };
 
+  // Debug: surface the raw first-page CC API status so we can tell an expired
+  // token from an empty list.
+  if (q.debug === "1") {
+    const r = await ccGet("/v3/contacts?status=all&limit=5", token);
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({
+      tokenPresent: !!token, tokenLen: token.length,
+      ccStatus: r.status,
+      ccDataKeys: r.data ? Object.keys(r.data) : null,
+      ccContactsCount: r.data && r.data.contacts ? r.data.contacts.length : null,
+      ccSnippet: JSON.stringify(r.data).slice(0, 500),
+    }, null, 2) };
+  }
+
   // 1) Pull all CC contacts, paginated.
   const contacts = [];
   let path = "/v3/contacts?include=street_addresses,phone_numbers,list_memberships,custom_fields&status=all&limit=500";
