@@ -32,10 +32,14 @@ const CORS = {
 
 const N8N_URL = process.env.N8N_WEBHOOK_URL || "https://dillabean.app.n8n.cloud/webhook/homefax/report";
 const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").replace(/\/$/, "");
-// In-house enrichment (replaces n8n). recover re-fires this for stuck rows;
-// save-report matches the existing pending row on viewToken/reportId -> no dupes.
+// In-house enrichment is the ONLY live path. recover re-fires this for stuck
+// rows; save-report matches the existing pending row on viewToken/reportId -> no dupes.
 const ENRICH_URL = `${APP_BASE}/.netlify/functions/enrich-report`;
-const USE_N8N = (process.env.ENRICHMENT_MODE || "inhouse").toLowerCase() === "n8n";
+// n8n is RETIRED. The webhook + branch below are kept ONLY as a dormant
+// break-glass fallback and never fire unless someone explicitly sets
+// ENABLE_N8N_FALLBACK=true. Deliberately decoupled from ENRICHMENT_MODE so a
+// stale env var can't silently route recovery back to the dead n8n instance.
+const USE_N8N = (process.env.ENABLE_N8N_FALLBACK || "").toLowerCase() === "true";
 
 // Re-fire enrichment with the SAME payload shape queue-report uses. Default path
 // is the in-house enrich-report (n8n kept OOM-crashing). We resolve on response
@@ -150,9 +154,9 @@ exports.handler = async (event) => {
       address: r.full_address || r.address,
       ageMin: Math.round((now - Date.parse(r.created_at)) / 60000),
       retriggered: ok,
-      n8nStatus: res?.status ?? 0,
+      enrichStatus: res?.status ?? 0,
     });
-    db.kpi("stuck_report_recovered", r.email, { reportId: r.id, address: r.full_address, n8nStatus: res?.status ?? 0, ok });
+    db.kpi("stuck_report_recovered", r.email, { reportId: r.id, address: r.full_address, enrichStatus: res?.status ?? 0, ok });
     // Space out re-fires so we never burst the n8n cloud instance / RentCast.
     if (spaceMs > 0) await new Promise(rs => setTimeout(rs, spaceMs));
   }

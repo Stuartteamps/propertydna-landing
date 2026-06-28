@@ -27,10 +27,12 @@ const CORS = {
 
 const N8N_URL = process.env.N8N_WEBHOOK_URL || "https://dillabean.app.n8n.cloud/webhook/homefax/report";
 const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").replace(/\/$/, "");
-// In-house enrichment (replaces the crash-prone n8n cloud workflow). Set
-// ENRICHMENT_MODE=n8n to fall back to the old webhook if ever needed.
+// In-house enrichment is the only live path. n8n is RETIRED and kept only as a
+// dormant break-glass fallback — never fires unless ENABLE_N8N_FALLBACK=true
+// (decoupled from ENRICHMENT_MODE so a stale env var can't route reports to the
+// dead n8n instance).
 const ENRICH_URL = `${APP_BASE}/.netlify/functions/enrich-report`;
-const USE_N8N = (process.env.ENRICHMENT_MODE || "inhouse").toLowerCase() === "n8n";
+const USE_N8N = (process.env.ENABLE_N8N_FALLBACK || "").toLowerCase() === "true";
 
 // ── Resend email (identical helper to send-report-email) ────────────────────
 function httpsPost(hostname, path, headers, body) {
