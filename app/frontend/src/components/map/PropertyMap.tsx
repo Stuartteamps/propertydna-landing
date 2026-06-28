@@ -9,13 +9,19 @@
 //   HeatMapOverlay ─► one of 8 selectable heat layers (MarketLayerControls)
 //   PropertyPin[]  ─► React overlay positioned via map.project()
 //   PropertyBottomSheet ─► tabbed asset intelligence + charts
+//
+// Real-data flow:
+//   moveend (debounced 600ms) ─► reverse-geocode center ─► get-heatmap-parcels
+//   ─► normalizeHeatParcelList ─► assets state (replaces mock fallback)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { getMockMapData, MOCK_MAP_CENTER, MOCK_MAP_ZOOM } from '@/lib/property-dna/mockMapData';
-import type { HeatLayerId, MapStyleId, PropertyDNAAsset } from '@/lib/property-dna/types';
+import { normalizeHeatParcelList } from '@/lib/property-dna/normalizePropertyData';
+import type { HeatLayerId, HeatPoint, MapStyleId, PropertyDNAAsset } from '@/lib/property-dna/types';
+import type { HeatParcel } from '@/types/heatmap';
 import MapLayerToggle from './MapLayerToggle';
 import MarketLayerControls from './MarketLayerControls';
 import HeatMapOverlay from './HeatMapOverlay';
@@ -43,13 +49,35 @@ interface Props {
   onExit?: () => void;
 }
 
+/** Derive HeatPoint[] directly from normalized assets for the heat overlay. */
+function assetsToHeatPoints(list: PropertyDNAAsset[]): HeatPoint[] {
+  return list.map((a) => ({ lat: a.lat, lon: a.lon, values: a.heatValues }));
+}
+
 export default function PropertyMap({ onExit }: Props) {
-  const { assets, heatPoints } = useMemo(() => getMockMapData(), []);
+  // Mock data is computed once and used as the initial/fallback state while
+  // real data loads. Never mixed with real data — replaced in full on fetch success.
+  const mockData = useMemo(() => getMockMapData(), []);
+  const [assets, setAssets] = useState<PropertyDNAAsset[]>(mockData.assets);
+  const [heatPoints, setHeatPoints] = useState<HeatPoint[]>(mockData.heatPoints);
+  const [dataLoading, setDataLoading] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const appliedStyleRef = useRef<MapStyleId>('standard');
   const locMarkerRef = useRef<mapboxgl.Marker | null>(null);
+
+  // Always-current assets ref — lets the map's move handler read the latest
+  // assets without the map init effect depending on `assets` state (which
+  // would recreate the Mapbox instance on every fetch).
+  const assetsRef = useRef<PropertyDNAAsset[]>(mockData.assets);
+  useEffect(() => {
+    assetsRef.current = assets;
+  }, [assets]);
+
+  // Fetch state: prevents concurrent in-flight calls and tracks last-fetched city.
+  const fetchRef = useRef({ fetching: false, lastCity: '' });
+  const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [mapReady, setMapReady] = useState(false);
   const [styleId, setStyleId] = useState<MapStyleId>('standard');
@@ -61,7 +89,57 @@ export default function PropertyMap({ onExit }: Props) {
 
   const hasToken = Boolean(mapboxgl.accessToken);
 
-  // ── Map init (once) ─────────────────────────────────────────────────────────
+  // ── Real-data fetch ─────────────────────────────────────────────────────────
+  // Reverse-geocodes the map center to a city/state, then calls
+  // get-heatmap-parcels. If real data arrives it replaces mock entirely.
+  // On fetch failure or empty response the existing data (mock or last real)
+  // is kept — no flash of empty content.
+  const fetchForCenter = useCallback(
+    async (lat: number, lng: number, zoom: number): Promise<void> => {
+      if (!hasToken || zoom < 10 || fetchRef.current.fetching) return;
+      fetchRef.current.fetching = true;
+      setDataLoading(true);
+      try {
+        // Reverse-geocode the viewport center → city + state abbreviation
+        const gcRes = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=place&access_token=${mapboxgl.accessToken}`,
+        );
+        const gc: { features?: { text: string; context?: { id: string; short_code?: string }[] }[] } = await gcRes.json();
+        const feat = gc.features?.[0];
+        if (!feat) return;
+
+        const city = feat.text;
+        const regionCtx = feat.context?.find((c) => c.id.startsWith('region'));
+        const stateAbbr = ((regionCtx?.short_code ?? 'US-CA') as string).replace('US-', '');
+
+        // Skip refetch if the viewport city hasn't changed
+        if (city === fetchRef.current.lastCity) return;
+
+        const qs = new URLSearchParams({ city, state: stateAbbr });
+        const res = await fetch(`/.netlify/functions/get-heatmap-parcels?${qs}`);
+        const data: { parcels?: HeatParcel[] } = await res.json();
+
+        if (Array.isArray(data.parcels) && data.parcels.length > 0) {
+          const normalized = normalizeHeatParcelList(data.parcels);
+          setAssets(normalized);
+          setHeatPoints(assetsToHeatPoints(normalized));
+          setSelected(null); // clear any stale selection from prior dataset
+          fetchRef.current.lastCity = city;
+        }
+        // else: keep existing assets (mock or prior real fetch)
+      } catch {
+        // Network / parse error — silently keep existing data
+      } finally {
+        fetchRef.current.fetching = false;
+        setDataLoading(false);
+      }
+    },
+    [hasToken],
+  );
+
+  // ── Map init (once per token) ───────────────────────────────────────────────
+  // `assets` is intentionally NOT in the dependency array — using assetsRef
+  // ensures the move handler always has current data without recreating the map.
   useEffect(() => {
     if (!containerRef.current || !hasToken) return;
 
@@ -75,11 +153,12 @@ export default function PropertyMap({ onExit }: Props) {
     });
     mapRef.current = map;
 
-    const updatePins = () => {
+    // Projects assets from assetsRef (always current) to screen coordinates.
+    const computePins = () => {
       const w = map.getContainer().clientWidth;
       const h = map.getContainer().clientHeight;
       const next: PinPos[] = [];
-      for (const asset of assets) {
+      for (const asset of assetsRef.current) {
         const p = map.project([asset.lng, asset.lat]);
         if (p.x < -60 || p.y < -60 || p.x > w + 60 || p.y > h + 60) continue;
         next.push({ asset, x: p.x, y: p.y });
@@ -90,18 +169,46 @@ export default function PropertyMap({ onExit }: Props) {
     map.on('load', () => {
       setMapReady(true);
       setStyleVersion((v) => v + 1);
-      updatePins();
+      computePins();
+      // Kick off the initial real-data fetch for the default center
+      const { lat, lng } = map.getCenter();
+      fetchForCenter(lat, lng, map.getZoom());
     });
     map.on('style.load', () => setStyleVersion((v) => v + 1));
-    map.on('move', updatePins);
-    map.on('resize', updatePins);
+    map.on('move', computePins);
+    map.on('resize', computePins);
+
+    // Throttled moveend: wait 600ms after panning stops before fetching
+    map.on('moveend', () => {
+      if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
+      moveTimerRef.current = setTimeout(() => {
+        const { lat, lng } = map.getCenter();
+        fetchForCenter(lat, lng, map.getZoom());
+      }, 600);
+    });
 
     return () => {
       locMarkerRef.current?.remove();
+      if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
       map.remove();
       mapRef.current = null;
     };
-  }, [assets, hasToken]);
+  }, [hasToken, fetchForCenter]);
+
+  // ── Re-project pins when assets change (after real fetch) ──────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const w = map.getContainer().clientWidth;
+    const h = map.getContainer().clientHeight;
+    const next: PinPos[] = [];
+    for (const asset of assets) {
+      const p = map.project([asset.lng, asset.lat]);
+      if (p.x < -60 || p.y < -60 || p.x > w + 60 || p.y > h + 60) continue;
+      next.push({ asset, x: p.x, y: p.y });
+    }
+    setPins(next);
+  }, [assets, mapReady]);
 
   // ── Base-style switching ────────────────────────────────────────────────────
   useEffect(() => {
@@ -195,6 +302,28 @@ export default function PropertyMap({ onExit }: Props) {
           ))}
       </div>
 
+      {/* Loading indicator — shown while real-data fetch is in progress */}
+      {dataLoading && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            zIndex: 50,
+            background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)`,
+            animation: 'pdna-shimmer 1.4s ease-in-out infinite',
+          }}
+        />
+      )}
+      <style>{`
+        @keyframes pdna-shimmer {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
+
       {/* ── Premium dark translucent header ── */}
       <div
         style={{
@@ -222,8 +351,15 @@ export default function PropertyMap({ onExit }: Props) {
             <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11, letterSpacing: 3, color: GOLD, fontWeight: 600 }}>PROPERTYDNA</div>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, color: '#fff', lineHeight: 1.05 }}>Map</div>
           </div>
-          <div style={{ marginLeft: 'auto', fontFamily: 'Jost, sans-serif', fontSize: 11.5, color: 'rgba(255,255,255,0.7)', textAlign: 'right', maxWidth: 150 }}>
-            Track your home like a portfolio
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            {dataLoading && (
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 1.5, color: GOLD, opacity: 0.85 }}>
+                LOADING...
+              </div>
+            )}
+            <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 11.5, color: 'rgba(255,255,255,0.7)', textAlign: 'right', maxWidth: 150 }}>
+              Track your home like a portfolio
+            </div>
           </div>
         </div>
 

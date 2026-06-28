@@ -52,7 +52,7 @@ const POINTS: PainPoint[] = [
     metricColor: '#00cc77',
     detail: 'FBI UCR + local PD blotter. Violent crime down 18%, property crime flat. School proficiency +6.',
     cta: 'See the neighborhood',
-    href: '/market-heatmaps',
+    href: '/map',
   },
   {
     question: 'Will it sell — or will I get stuck?',
@@ -61,7 +61,7 @@ const POINTS: PainPoint[] = [
     metricColor: '#ff8800',
     detail: 'Median DOM up 51% over 30 days. Sub-$5M tier seeing 2-3% price cuts after 60 DOM.',
     cta: 'Read the market',
-    href: '/market-heatmaps',
+    href: '/map',
   },
   {
     question: 'What did the prior buyer actually pay?',

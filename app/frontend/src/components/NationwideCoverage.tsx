@@ -124,7 +124,7 @@ export default function NationwideCoverage() {
 
         {/* CTAs */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 32 }}>
-          <Link to="/market-heatmaps" style={ctaPrimary}>Explore the Heat Map →</Link>
+          <Link to="/map" style={ctaPrimary}>Explore the Heat Map →</Link>
           <Link to="/intellagraph" style={ctaSecondary}>IntellaGraph AI</Link>
           <Link to="/dossiers" style={ctaSecondary}>Luxury Dossiers</Link>
         </div>

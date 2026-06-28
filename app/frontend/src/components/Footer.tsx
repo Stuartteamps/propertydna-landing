@@ -61,7 +61,7 @@ const PRODUCT = [
   { label: 'Network',         href: '/network' },
   { label: 'Owner Portal',    href: '/owner-portal' },
   { label: 'IntellaGraph AI', href: '/intellagraph' },
-  { label: 'Heat Maps',       href: '/market-heatmaps' },
+  { label: 'Heat Maps',       href: '/map' },
   { label: 'Luxury Index',    href: '/pedigree-index' },
   { label: 'Dossiers',        href: '/dossiers' },
   { label: 'Inventory',       href: '/luxury-inventory' },

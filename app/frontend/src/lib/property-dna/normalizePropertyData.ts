@@ -32,6 +32,7 @@ import type {
   SaleHistory,
   TimeRange,
 } from './types';
+import type { HeatParcel } from '@/types/heatmap';
 
 /**
  * Loose, source-agnostic input. Every field is optional; only an address +
@@ -307,4 +308,113 @@ export function normalizePropertyData(raw: RawPropertyInput, index = 0): Propert
 /** Batch helper. */
 export function normalizePropertyList(rows: RawPropertyInput[]): PropertyDNAAsset[] {
   return rows.map((r, i) => normalizePropertyData(r, i));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HeatParcel → PropertyDNAAsset
+//
+// Converts the scored parcel shape returned by get-heatmap-parcels (HeatParcel)
+// into a full PropertyDNAAsset. Real sub-scores (compsScore, domScore, etc.)
+// are mapped directly onto heatValues after the base normalization runs;
+// synthesized fields (risk factors, ADU potential, opportunities) are derived
+// via calculatePropertyDNA as usual.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function synthesizeInsight(p: HeatParcel): string {
+  if (p.score >= 80) return `Top-scored property in ${p.neighborhood} — strong fundamentals across all signals.`;
+  if (p.permitsScore >= 75) return `Recent permit activity in ${p.neighborhood} — renovation premium likely.`;
+  if (p.dom > 0 && p.dom < 20) return `Fast absorption (${p.dom} days) in ${p.neighborhood} — high demand signal.`;
+  if (p.priceDeltaScore >= 70) return `Competitively priced vs. ${p.neighborhood} comps — potential value play.`;
+  return `Tracked as an asset in ${p.neighborhood} — value, risk, and upside in one view.`;
+}
+
+/**
+ * Convert a single HeatParcel (from get-heatmap-parcels) into a PropertyDNAAsset.
+ *
+ * Real fields:     id, address, city, state, zip, lat/lon, price, sqft,
+ *                  bedrooms, bathrooms, yearBuilt, propertyType, dom,
+ *                  score, confidence, compsScore, priceDeltaScore,
+ *                  domScore, permitsScore, livability, sparkline
+ *
+ * Synthesized:     fireScore, floodScore, heatScore, insuranceScore,
+ *                  hoaScore, aduPotential, saleHistory, comparableSales,
+ *                  permits, opportunities, futureScenarios (via calculatePropertyDNA)
+ */
+export function normalizeHeatParcel(p: HeatParcel, index = 0): PropertyDNAAsset {
+  // Derive annualized appreciation from the 30-day sparkline
+  const sparkLen = p.sparkline.length;
+  const sparkStart = sparkLen > 0 ? p.sparkline[0] : 100;
+  const sparkEnd = sparkLen > 0 ? p.sparkline[sparkLen - 1] : 100;
+  const appreciationPct =
+    sparkStart > 0
+      ? Math.min(15, Math.max(-3, ((sparkEnd - sparkStart) / sparkStart) * 100 * (365 / 30)))
+      : 6.5;
+
+  // ADU potential inferred from property type + size
+  const aduPotential: PropertyDNAAsset['aduPotential'] =
+    p.propertyType === 'single_family' && p.sqft > 2500
+      ? 'strong'
+      : p.propertyType === 'single_family' && p.sqft > 1400
+        ? 'possible'
+        : 'none';
+
+  // Map to RawPropertyInput — zeros become undefined so normalizePropertyData
+  // falls back to sensible defaults rather than dividing by zero.
+  const raw: RawPropertyInput = {
+    id: p.id,
+    address: p.address,
+    city: p.city,
+    state: p.state,
+    zip: p.zip,
+    lat: p.lat,
+    lon: p.lon,
+    propertyType: p.propertyType === 'multi_family' ? 'multifamily' : p.propertyType,
+    beds: p.bedrooms > 0 ? p.bedrooms : undefined,
+    baths: p.bathrooms > 0 ? p.bathrooms : undefined,
+    sqft: p.sqft > 0 ? p.sqft : undefined,
+    yearBuilt: p.yearBuilt > 0 ? p.yearBuilt : undefined,
+    value: p.price,
+    appreciationPct,
+    neighborhood: p.neighborhood,
+    // Risk synthesis (0=safe…100=severe, inverted from HeatParcel's 0=bad…100=good)
+    heatScore: 65,                                               // Desert / SW default
+    fireScore: Math.max(10, Math.round(50 - p.livability * 0.25)),
+    floodScore: 15,
+    insuranceScore: 40,
+    hoaScore: p.propertyType === 'condo' ? 55 : 5,
+    permitScore: Math.max(5, Math.round(60 - p.permitsScore * 0.4)),
+    aduPotential,
+    topInsight: synthesizeInsight(p),
+  };
+
+  const asset = normalizePropertyData(raw, index);
+
+  // Override confidenceScore with the real model confidence from HeatParcel
+  const confidenceScore = Math.max(35, Math.min(99, Math.round(p.confidence * 100)));
+
+  // Override heatValues with REAL HeatParcel sub-scores (replacing synthesized placeholders)
+  const sparkTrend =
+    sparkStart > 0
+      ? Math.max(0, Math.min(1, ((sparkEnd - sparkStart) / sparkStart) * 12 + 0.5))
+      : 0.5;
+
+  return {
+    ...asset,
+    confidenceScore,
+    heatValues: {
+      'recent-sales':       Math.max(0, Math.min(1, p.dom > 0 ? 1 - p.dom / 90 : 0.5)),
+      'price-per-sqft':     Math.max(0, Math.min(1, p.pricePerSqft > 0 ? p.pricePerSqft / 950 : 0.5)),
+      'days-on-market':     Math.max(0, Math.min(1, p.domScore / 100)),
+      appreciation:         sparkTrend,
+      'inventory-pressure': Math.max(0, Math.min(1, p.priceDeltaScore / 100)),
+      'risk-score':         Math.max(0, Math.min(1, (100 - p.score) / 100)),
+      'permit-opportunity': Math.max(0, Math.min(1, p.permitsScore / 100)),
+      'future-equity':      Math.max(0, Math.min(1, (p.score / 100) * 0.7 + sparkTrend * 0.3)),
+    },
+  };
+}
+
+/** Batch-normalize a HeatParcel[] into PropertyDNAAsset[]. */
+export function normalizeHeatParcelList(parcels: HeatParcel[]): PropertyDNAAsset[] {
+  return parcels.map((p, i) => normalizeHeatParcel(p, i));
 }
