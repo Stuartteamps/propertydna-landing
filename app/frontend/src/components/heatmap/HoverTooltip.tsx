@@ -2,15 +2,31 @@ import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import type { HeatHoverState } from '@/types/heatmap';
 import { heatScoreToHex, heatScoreToRgba } from '@/lib/colorScaleHeatmap';
 import { heatScoreLabel } from '@/lib/scoringHeatmap';
+import { confidenceBadgeDark } from '@/lib/confidenceBadge';
 
 interface Props { hover: HeatHoverState | null; }
+
+function ConfidencePillDark({ confidence }: { confidence: number }) {
+  const b = confidenceBadgeDark(confidence);
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 3,
+      padding: '2px 7px', borderRadius: 20, background: b.bg,
+      border: `1px solid ${b.border}`, fontFamily: 'Jost, sans-serif',
+      fontSize: 9, fontWeight: 600, color: b.text, letterSpacing: 0.3, whiteSpace: 'nowrap',
+    }}>
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: b.dot, flexShrink: 0, boxShadow: `0 0 4px ${b.dot}` }} />
+      {b.label}
+    </div>
+  );
+}
 
 export default function HoverTooltip({ hover }: Props) {
   if (!hover) return null;
   const { parcel: p, x, y } = hover;
   const hex = heatScoreToHex(p.score);
   const sparkData = p.sparkline.map((v, i) => ({ i, v }));
-  const tipW = 220, tipH = 180;
+  const tipW = 220, tipH = 190;
   const left = x + 16 + tipW > window.innerWidth ? x - tipW - 8 : x + 16;
   const top  = y + tipH > window.innerHeight ? y - tipH - 8 : y + 8;
 
@@ -31,7 +47,7 @@ export default function HoverTooltip({ hover }: Props) {
         }}>{p.score}</div>
         <div>
           <div style={{ fontSize: 11, fontWeight: 600, color: hex }}>{heatScoreLabel(p.score)}</div>
-          <div style={{ fontSize: 10, color: '#6B6252' }}>{Math.round(p.confidence * 100)}% confidence</div>
+          <ConfidencePillDark confidence={p.confidence} />
         </div>
       </div>
       <div style={{ fontSize: 11, color: '#F4F0E8', fontWeight: 500, marginBottom: 2, lineHeight: 1.3 }}>{p.street}</div>

@@ -5,6 +5,7 @@ import { heatScoreToHex, heatScoreToRgba } from '@/lib/colorScaleHeatmap';
 import { heatScoreLabel, heatScoreBadgeColor } from '@/lib/scoringHeatmap';
 import { useAuth } from '@/lib/auth';
 import ReportProgress from './ReportProgress';
+import { confidenceBadgeTerminal } from '@/lib/confidenceBadge';
 
 const N8N_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'https://dillabean.app.n8n.cloud/webhook/homefax/report';
 
@@ -12,6 +13,22 @@ interface Props {
   parcel: HeatParcel | null;
   onClose: () => void;
   onNeedAuth: () => void;
+}
+
+function ConfidencePillTerminal({ confidence }: { confidence: number }) {
+  const b = confidenceBadgeTerminal(confidence);
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4,
+      padding: '3px 8px', borderRadius: 3, background: b.bg,
+      border: `1px solid ${b.border}`, fontFamily: "'Share Tech Mono', monospace",
+      fontSize: 8, fontWeight: 600, color: b.text, letterSpacing: 0.8,
+      textTransform: 'uppercase', whiteSpace: 'nowrap',
+    }}>
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: b.dot, flexShrink: 0, boxShadow: `0 0 6px ${b.dot}` }} />
+      {b.label}
+    </div>
+  );
 }
 
 export default function PropertyDrawer({ parcel, onClose, onNeedAuth }: Props) {
@@ -125,7 +142,7 @@ export default function PropertyDrawer({ parcel, onClose, onNeedAuth }: Props) {
                   <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: heatScoreBadgeColor(parcel.score), letterSpacing: 0.5 }}>
                     {heatScoreLabel(parcel.score)}
                   </div>
-                  <div style={{ fontSize: 9, color: T_M, marginTop: 2 }}>{Math.round(parcel.confidence * 100)}% model confidence</div>
+                  <ConfidencePillTerminal confidence={parcel.confidence} />
                   <div style={{ fontSize: 9, color: T_M }}>{parcel.neighborhood}</div>
                 </div>
               </div>
