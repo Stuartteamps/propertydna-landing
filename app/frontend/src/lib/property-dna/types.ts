@@ -225,6 +225,48 @@ export interface HeatPoint {
   values: Record<HeatLayerId, number>;
 }
 
+/** A single moving-average overlay returned by get-value-series. */
+export interface MovingAverage {
+  /** Trailing window in days (e.g. 90, 365). */
+  windowDays: number;
+  /** Human legend label, e.g. "90-Day Avg". */
+  label: string;
+  points: SeriesPoint[];
+}
+
+/** One row in the market-ticker strip (neighborhood / city / metro momentum). */
+export interface TickerEntry {
+  key: string;
+  label: string;
+  /** Latest median value for the geo (USD). */
+  value: number | null;
+  /** % change for the geo's index. */
+  changePct: number;
+  dir: 'up' | 'down' | 'flat';
+}
+
+/**
+ * Response from the get-value-series Netlify function — a REAL value/index
+ * time-series + computed moving averages + ticker momentum for a geo.
+ */
+export interface ValueSeriesResponse {
+  ok: boolean;
+  /** 'market_ticker' | 'sales' | 'assessments' | 'empty' | 'error'. */
+  source: string;
+  geo_key: string | null;
+  geo_type: 'zip' | 'city';
+  city: string;
+  state: string;
+  sampleSize: number;
+  /** Reference value for the dashed baseline (period-start). */
+  baseline: number | null;
+  /** % change start → end of the series. */
+  changePct: number;
+  series: SeriesPoint[];
+  movingAverages: { short: MovingAverage | null; long: MovingAverage | null };
+  ticker: TickerEntry[];
+}
+
 /** Display config for one heat layer. */
 export interface MapLayerConfig {
   id: HeatLayerId;

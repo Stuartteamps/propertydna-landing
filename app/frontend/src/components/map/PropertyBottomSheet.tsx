@@ -14,14 +14,26 @@ import {
   fmtSqft,
   fmtUSD,
 } from '@/lib/property-dna/calculatePropertyDNA';
+import {
+  changePct as seriesChangePct,
+  computeMovingAverage,
+  fallbackTicker,
+  fetchValueSeries,
+  sliceToRange,
+  windowsForRange,
+} from '@/lib/property-dna/valueSeries';
 import type {
   HeatLayerId,
   ImprovementOpportunity,
   PropertyDNAAsset,
   RiskFactor,
+  SeriesPoint,
+  TickerEntry,
   TimeRange,
+  ValueSeriesResponse,
 } from '@/lib/property-dna/types';
 import PropertyValueChart, { type ChartSeries } from './PropertyValueChart';
+import MarketTickerStrip from './MarketTickerStrip';
 
 const GOLD = '#B89355';
 const INK = '#2C2825';
@@ -52,8 +64,40 @@ interface Props {
   onClose: () => void;
 }
 
+/** Build value-chart props from live real data when present, else mock + client MAs. */
+function buildValueChart(asset: PropertyDNAAsset, live: ValueSeriesResponse | null, range: TimeRange) {
+  let points: SeriesPoint[];
+  let maOverlays: ChartSeries[];
+  if (live && live.series.length >= 2) {
+    points = sliceToRange(live.series, range);
+    const wins = windowsForRange(range);
+    const short = live.movingAverages.short?.points
+      ? sliceToRange(live.movingAverages.short.points, range)
+      : computeMovingAverage(points, wins.short);
+    const long = live.movingAverages.long?.points
+      ? sliceToRange(live.movingAverages.long.points, range)
+      : computeMovingAverage(points, wins.long);
+    maOverlays = [
+      { label: live.movingAverages.short?.label ?? `${wins.short}-Day Avg`, points: short, color: '#3D6FB0' },
+      { label: live.movingAverages.long?.label ?? `${wins.long}-Day Avg`, points: long, color: '#A06CC9' },
+    ];
+  } else {
+    points = asset.valueHistory.find((s) => s.range === range)?.points ?? asset.valueHistory[0]?.points ?? [];
+    const wins = windowsForRange(range);
+    maOverlays = [
+      { label: `${Math.round(wins.short / 30) || 1}-Mo Avg`, points: computeMovingAverage(points, wins.short), color: '#3D6FB0' },
+      { label: `${Math.round(wins.long / 30) || 1}-Mo Avg`, points: computeMovingAverage(points, wins.long), color: '#A06CC9' },
+    ];
+  }
+  const baseline = points.length ? points[0].value : undefined;
+  const change = seriesChangePct(points);
+  return { points, maOverlays, baseline, change };
+}
+
 export default function PropertyBottomSheet({ asset, onClose }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
+  const [live, setLive] = useState<ValueSeriesResponse | null>(null);
+  const [valueRange, setValueRange] = useState<TimeRange>('1Y');
   const [vh, setVh] = useState(() => (typeof window !== 'undefined' ? window.innerHeight : 800));
   // Sheet height in px; snaps between peek / half / full.
   const snaps = useMemo(() => ({ peek: Math.round(vh * 0.32), half: Math.round(vh * 0.6), full: Math.round(vh * 0.92) }), [vh]);
@@ -70,9 +114,40 @@ export default function PropertyBottomSheet({ asset, onClose }: Props) {
   useEffect(() => {
     if (asset) {
       setTab('overview');
+      setValueRange('1Y');
       setHeight(snaps.half);
     }
   }, [asset?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch the REAL value/index series + moving averages + ticker for this geo.
+  // Falls back silently to the calculated series if no real data is available.
+  useEffect(() => {
+    setLive(null);
+    if (!asset) return;
+    const ctrl = new AbortController();
+    fetchValueSeries({ zip: asset.zip, city: asset.city, state: asset.state, signal: ctrl.signal })
+      .then((res) => {
+        if (res) setLive(res);
+      })
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [asset?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Value-chart props (real or fallback) + the ticker strip for the header.
+  const vc = useMemo(() => (asset ? buildValueChart(asset, live, valueRange) : null), [asset, live, valueRange]);
+  const ticker = useMemo<TickerEntry[]>(() => {
+    if (!asset) return [];
+    if (live?.ticker?.length) return live.ticker;
+    const base = asset.neighborhood.changePct[valueRange];
+    return fallbackTicker({
+      zip: asset.zip,
+      city: asset.city,
+      neighborhoodName: asset.neighborhood.name,
+      zipChangePct: base * 1.04,
+      cityChangePct: base * 0.82,
+      areaChangePct: base,
+    });
+  }, [asset, live, valueRange]);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -175,14 +250,35 @@ export default function PropertyBottomSheet({ asset, onClose }: Props) {
                 </button>
               </div>
 
-              {/* Big value + change */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 12 }}>
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 44, fontWeight: 500, lineHeight: 1, color: INK }}>
-                  {fmtUSD(asset.dnaValue)}
-                </div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: asset.neighborhoodTrendPct >= 0 ? GREEN : RED }}>
-                  {fmtPct(asset.neighborhoodTrendPct)} <span style={{ color: MUTED, fontWeight: 400 }}>1Y</span>
-                </div>
+              {/* Big value + period change (Fidelity-style "+$X (+Y%)") */}
+              {(() => {
+                const change = vc?.change ?? asset.neighborhoodTrendPct;
+                const delta = Math.round((asset.dnaValue * change) / 100);
+                const pos = change >= 0;
+                return (
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
+                    <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 44, fontWeight: 500, lineHeight: 1, color: INK }}>
+                      {fmtUSD(asset.dnaValue)}
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: pos ? GREEN : RED, fontVariantNumeric: 'tabular-nums' }}>
+                      {pos ? '+' : '−'}{fmtCompactUSD(Math.abs(delta))} ({fmtPct(change)})
+                      <span style={{ color: MUTED, fontWeight: 400, marginLeft: 4 }}>{valueRange}</span>
+                    </div>
+                    {live && (
+                      <span
+                        title={`Real ${live.source} series · ${live.sampleSize} samples`}
+                        style={{ fontSize: 9.5, letterSpacing: 0.6, textTransform: 'uppercase', color: GREEN, fontWeight: 700, border: `1px solid ${GREEN}55`, borderRadius: 999, padding: '2px 7px' }}
+                      >
+                        Live data
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Market-ticker strip: neighborhood / city / metro momentum */}
+              <div style={{ margin: '12px -20px 0' }}>
+                <MarketTickerStrip entries={ticker} />
               </div>
 
               {/* Three stat chips */}
@@ -222,7 +318,9 @@ export default function PropertyBottomSheet({ asset, onClose }: Props) {
 
             {/* Tab content */}
             <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 20px 32px' }}>
-              {tab === 'overview' && <OverviewTab asset={asset} />}
+              {tab === 'overview' && vc && (
+                <OverviewTab asset={asset} vc={vc} range={valueRange} onRange={setValueRange} hasLive={!!live} />
+              )}
               {tab === 'sales' && <SalesTab asset={asset} />}
               {tab === 'risk' && <RiskTab asset={asset} />}
               {tab === 'permits' && <PermitsTab asset={asset} />}
@@ -279,7 +377,26 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en-US', { mon
 
 // ── Overview ────────────────────────────────────────────────────────────────────
 
-function OverviewTab({ asset }: { asset: PropertyDNAAsset }) {
+interface ValueChartProps {
+  points: SeriesPoint[];
+  maOverlays: ChartSeries[];
+  baseline?: number;
+  change: number;
+}
+
+function OverviewTab({
+  asset,
+  vc,
+  range,
+  onRange,
+  hasLive,
+}: {
+  asset: PropertyDNAAsset;
+  vc: ValueChartProps;
+  range: TimeRange;
+  onRange: (r: TimeRange) => void;
+  hasLive: boolean;
+}) {
   return (
     <div>
       <Card style={{ background: 'rgba(184,147,85,0.06)', borderColor: 'rgba(184,147,85,0.25)' }}>
@@ -287,9 +404,22 @@ function OverviewTab({ asset }: { asset: PropertyDNAAsset }) {
         <div style={{ fontSize: 14.5, color: INK, marginTop: 6, lineHeight: 1.45 }}>{asset.topInsight}</div>
       </Card>
 
-      <SectionLabel>Value History</SectionLabel>
+      <SectionLabel>Value History{hasLive ? ' · Live' : ''}</SectionLabel>
       <Card>
-        <PropertyValueChart series={asset.valueHistory} showRangeToggle defaultRange="1Y" valueFormat={(n) => fmtCompactUSD(n)} />
+        <PropertyValueChart
+          points={vc.points}
+          maOverlays={vc.maOverlays}
+          showMAToggle
+          showRangeToggle
+          ranges={asset.valueHistory.map((s) => s.range)}
+          range={range}
+          onRangeChange={onRange}
+          baseline={vc.baseline}
+          baselineLabel="Period start"
+          defaultRange={range}
+          valueFormat={(n) => fmtCompactUSD(n)}
+          height={210}
+        />
       </Card>
 
       <Row label="Value range" value={`${fmtCompactUSD(asset.valueRange.low)} – ${fmtCompactUSD(asset.valueRange.high)}`} />
@@ -498,6 +628,11 @@ function IndexTab({ asset }: { asset: PropertyDNAAsset }) {
     { label: `${asset.city}`, points: cityPts, color: MUTED, comparison: true },
     { label: `ZIP ${asset.zip}`, points: zipPts, color: '#3D6FB0', comparison: true },
   ];
+  const wins = windowsForRange(range);
+  const maOverlays: ChartSeries[] = [
+    { label: `${Math.round(wins.short / 30) || 1}-Mo Avg`, points: computeMovingAverage(primary, wins.short), color: '#1E8E5A' },
+    { label: `${Math.round(wins.long / 30) || 1}-Mo Avg`, points: computeMovingAverage(primary, wins.long), color: '#A06CC9' },
+  ];
 
   return (
     <div>
@@ -531,7 +666,16 @@ function IndexTab({ asset }: { asset: PropertyDNAAsset }) {
           ))}
         </div>
 
-        <PropertyValueChart points={primary} overlays={overlays} baseline={100} valueFormat={(n) => n.toFixed(0)} height={180} />
+        <PropertyValueChart
+          points={primary}
+          overlays={overlays}
+          maOverlays={maOverlays}
+          showMAToggle
+          baseline={100}
+          baselineLabel="Index 100"
+          valueFormat={(n) => n.toFixed(0)}
+          height={180}
+        />
       </Card>
 
       <SectionLabel>Compare</SectionLabel>
