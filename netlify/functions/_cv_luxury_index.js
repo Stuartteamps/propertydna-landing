@@ -32,7 +32,8 @@ const TIER_PREMIUM = {
 // (lowercase, alphanumerics+spaces). City is an optional disambiguation hint.
 const COMMUNITIES = [
   // ── Tier S — ultra-trophy / celebrity / signature architect ──────────────
-  { tier: "S", city: "palm springs",  names: ["southridge", "south ridge"] },           // Bob Hope / Steve McQueen / hillside trophy
+  { tier: "S", city: "palm springs",  names: ["southridge", "south ridge"],
+    anchorStreets: ["southridge dr", "southridge drive"] },                              // Bob Hope / Steve McQueen / hillside trophy
   { tier: "S", city: "la quinta",     names: ["the madison club", "madison club"] },
   { tier: "S", city: "indian wells",  names: ["the vintage club", "vintage club"] },
   { tier: "S", city: "palm desert",   names: ["bighorn golf club", "bighorn"] },
@@ -60,6 +61,17 @@ const COMMUNITIES = [
   { tier: "B", city: "palm springs",  names: ["andreas hills", "araby cove", "deepwell", "indian canyons", "canyon view"] },
   { tier: "B", city: "rancho mirage", names: ["magnesia falls", "rancho las palmas"] },
   { tier: "B", city: "indio",         names: ["terra lago", "sun city shadow hills", "shadow hills"] },
+
+  // ── Added (Agent 3 / Patch A): 3 missing named CV communities + street anchors ──
+  // Tier A — Palm Springs hillside architectural enclave
+  { tier: "A", city: "palm springs",  names: ["little tuscany"],
+    anchorStreets: ["rose ave", "ridge rd", "crestview dr", "panorama rd"] },
+  // Tier A — Sinatra-era Krisel/Alexander modernist tract (Twin Palms Estates)
+  { tier: "A", city: "palm springs",  names: ["twin palms"],
+    anchorStreets: ["sonora rd", "san lorenzo rd", "via monte vista"] },
+  // Tier B — iconic Alexander/Krisel MCM tract
+  { tier: "B", city: "palm springs",  names: ["racquet club estates", "racquet club road estates"],
+    anchorStreets: ["e francis dr", "vista chino", "san marco way", "via olivera"] },
 ];
 
 function norm(s) {
@@ -102,4 +114,47 @@ function lookupCommunity(subdivision, city = "") {
   return best;
 }
 
-module.exports = { lookupCommunity, TIER_PREMIUM, COMMUNITIES };
+/**
+ * lookupCommunityByAddress — infer a COMP's CV community from its street line.
+ *
+ * RentCast comps do not return a subdivision, so for community-first comp ranking
+ * we infer a comp's enclave from its street address. Only matches when a community
+ * row defines `anchorStreets` (a verified, high-signal seed). Returns the same
+ * shape as lookupCommunity, plus { via: "street" }. Null when no confident hit.
+ *
+ * Backwards-compatible: additive export; lookupCommunity is unchanged.
+ *
+ * @param {string} addressLine  e.g. "2175 Southridge Dr, Palm Springs, CA"
+ * @param {string} city         optional disambiguation hint
+ * @returns {{tier,label,pct_low,pct_mid,pct_high,matched,via}} | null
+ */
+function lookupCommunityByAddress(addressLine, city = "") {
+  const addr = norm(addressLine);
+  const cty  = norm(city);
+  if (!addr) return null;
+  let best = null;
+  for (const row of COMMUNITIES) {
+    if (!row.anchorStreets || !row.anchorStreets.length) continue;
+    const cityOk = !row.city || !cty || cty.includes(norm(row.city)) || norm(row.city).includes(cty);
+    if (!cityOk) continue;
+    for (const st of row.anchorStreets) {
+      const n = norm(st);
+      if (n.length >= 4 && addr.includes(n)) {
+        const rank = { S: 3, A: 2, B: 1 }[row.tier];
+        if (!best || rank > best._rank) {
+          const p = TIER_PREMIUM[row.tier];
+          best = {
+            tier: row.tier,
+            label: `${p.label}: ${row.names[0].replace(/\b\w/g, (c) => c.toUpperCase())}`,
+            pct_low: p.pct_low, pct_mid: p.pct_mid, pct_high: p.pct_high,
+            matched: row.names[0], via: "street", _rank: rank,
+          };
+        }
+      }
+    }
+  }
+  if (best) delete best._rank;
+  return best;
+}
+
+module.exports = { lookupCommunity, lookupCommunityByAddress, TIER_PREMIUM, COMMUNITIES };

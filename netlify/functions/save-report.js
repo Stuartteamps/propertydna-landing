@@ -16,6 +16,7 @@ const { ingestProperty }   = require("./property-ingest");
 const { enrichProperty }   = require("./enrich-property");
 const { rentcastEnrich }   = require("./rentcast-enrich");
 const { lookupCommunity }  = require("./_cv_luxury_index");
+const { rankCompsCommunityFirst } = require("./_community_comps");
 const {
   deriveLuxuryScores,
   isLuxuryMode,
@@ -433,8 +434,10 @@ function detectADU(reportData) {
 // When 2+ comps within 0.30 mi have correlation >= 95%, blend their average
 // into the AVM mid. Catches "AVM ignores the $3.6M next-door sale" cases.
 // Returns null if not applicable.
-function computeClosestCompAnchor(avmMid, comps = [], compRules = null, luxuryTier = false) {
+function computeClosestCompAnchor(avmMid, comps = [], compRules = null, luxuryTier = false, ctx = {}) {
   if (!avmMid || !Array.isArray(comps) || comps.length === 0) return null;
+  // Optional community context (Agent 3). Absent → falls back to old behavior.
+  const { subject = null, subjectCommunity = null } = ctx || {};
   // Per-property-type comp rules. Default = SFR tier-1 (current behavior).
   const RULES = compRules || { radiusMi: 0.30, corrPct: 95, minComps: 2, fallbackTopN: 3, fallbackCorrPct: 90 };
 
@@ -479,11 +482,34 @@ function computeClosestCompAnchor(avmMid, comps = [], compRules = null, luxuryTi
     });
   }
 
-  // Tier 1: profile-driven tight filter (default SFR: 0.30mi, 95% corr; condo:
-  // 0.10mi, 92%; multifamily: 1.00mi, 80%; trophy SFR: 1.50mi, 85%)
-  let qualifying = enriched.filter(c => c.dist != null && c.dist <= RULES.radiusMi && c.corr != null && c.corr >= RULES.corrPct);
+  // ── COMMUNITY-FIRST selection (Agent 3) ───────────────────────────────────
+  // Rank by hierarchy: community -> tier -> type -> view -> lot -> recency ->
+  // distance (distance LAST, structurally — a closer comp can never outrank a
+  // same-community comp). `enriched[i].raw` is the original comp object (carries
+  // address/city/lotSize/saleDate after enrich-report Patch B); rank on those,
+  // keep the parsed price/dist/corr alongside via `_parsed`.
+  const ranked = rankCompsCommunityFirst(
+    subject || {}, subjectCommunity,
+    enriched.map(e => ({ ...e.raw, _parsed: e }))
+  );
 
-  // Tier 2 fallback: top N by correlation (default 3, condo 5, multifamily 5)
+  // Take the top comps that clear a minimal similarity floor, then cut. We do NOT
+  // hard-filter on radius first — the hierarchy already orders near-before-far
+  // WITHIN each affinity rung. A comp qualifies if it has ANY community/tier/type
+  // affinity OR is within a (widened) profile radius so distant junk can't blend.
+  const fallbackTopN = Math.max(RULES.fallbackTopN || 3, 4);
+  let qualifying = ranked
+    .filter(c => {
+      const p = c._parsed;
+      const close = p.dist != null && p.dist <= (RULES.radiusMi * 4); // order already prioritizes near
+      const aff   = c.affinity.sameCommunity || c.affinity.sameTier >= 1 || c.affinity.sameType;
+      return aff || close;
+    })
+    .slice(0, Math.max(fallbackTopN, 6))
+    .map(c => c._parsed);
+
+  // GRACEFUL DEGRADATION: if community-first yields too few, fall back to the
+  // old top-N-by-correlation behavior so we never produce fewer comps than before.
   if (qualifying.length < (RULES.minComps || 2)) {
     qualifying = enriched
       .filter(c => c.corr != null && c.corr >= (RULES.fallbackCorrPct || 90))
@@ -492,27 +518,40 @@ function computeClosestCompAnchor(avmMid, comps = [], compRules = null, luxuryTi
   }
   if (qualifying.length < (RULES.minComps || 2)) return null;
 
+  // Re-attach affinity for weighting/labeling (qualifying are `_parsed` objects).
+  const affByParsed = new Map(ranked.map(c => [c._parsed, c.affinity]));
+  const communityHits = qualifying.filter(c => {
+    const a = affByParsed.get(c);
+    return a && (a.sameCommunity || a.sameTier >= 2);
+  }).length;
+
   const avgComp = Math.round(qualifying.reduce((s, c) => s + c.price, 0) / qualifying.length);
   const gap = (avgComp - avmMid) / avmMid;
 
   // Only anchor when comps suggest valuation is too LOW by >10%
   if (gap < 0.10) return null;
 
+  // Community/tier comps ARE the market for this address — trust them harder.
   // Luxury/trophy homes: the AVM is unreliable on this tier (thin comp set,
   // pedigree it can't see), so let real comparable sales DOMINATE the blend
   // when they prove the AVM is low. Standard homes keep the 45% cap.
-  const compWeight = luxuryTier
-    ? Math.min(0.75, 0.35 + qualifying.length * 0.10)
-    : Math.min(0.45, 0.30 + qualifying.length * 0.05);
+  const compWeight = communityHits >= 2
+    ? Math.min(0.80, 0.45 + communityHits * 0.10)
+    : luxuryTier
+      ? Math.min(0.75, 0.35 + qualifying.length * 0.10)
+      : Math.min(0.45, 0.30 + qualifying.length * 0.05);
   const blendMid = Math.round(avmMid * (1 - compWeight) + avgComp * compWeight);
 
   return {
     blendMid,
     avgComp,
     compCount: qualifying.length,
+    communityHits,
     gapPct: Math.round(gap * 100),
     weight: Math.round(compWeight * 100),
-    label: `Comp anchor: ${qualifying.length} comps avg $${(avgComp / 1e6).toFixed(2)}M (${Math.round(compWeight * 100)}% weight)`,
+    label: communityHits >= 2
+      ? `Community comp anchor: ${qualifying.length} comps (${communityHits} same-enclave) avg $${(avgComp / 1e6).toFixed(2)}M (${Math.round(compWeight * 100)}% weight)`
+      : `Comp anchor: ${qualifying.length} comps avg $${(avgComp / 1e6).toFixed(2)}M (${Math.round(compWeight * 100)}% weight)`,
   };
 }
 
@@ -633,6 +672,9 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
   comps = null,
   luxuryTier = false,         // when true, extend sale-anchor window to 84 months
   compRules = null,           // per-property-type comp rules (see _valuation_profile.js)
+  // ── Community-first comp context (Agent 3) — null-safe / backwards-compatible ──
+  subject = null,             // { propertyType, sqft, lotSize, city }
+  subjectCommunity = null,    // lookupCommunity() result for the subject (or null)
 } = {}) {
   if (!avmMid) return { smartLow: avmLow, smartMid: avmMid, smartHigh: avmHigh, baseAdjustment: null };
 
@@ -707,7 +749,8 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
   // ── Layer 2: closest-comp anchor (independent of sale) ────────────────────
   // Take the HIGHER of sale anchor vs comp anchor — both protect against undervaluation.
   if (Array.isArray(comps) && comps.length > 0) {
-    const compAnchor = computeClosestCompAnchor(smartMid, comps, compRules, luxuryTier);
+    const compAnchor = computeClosestCompAnchor(smartMid, comps, compRules, luxuryTier,
+                                                { subject, subjectCommunity });
     if (compAnchor && compAnchor.blendMid > smartMid) {
       const scale = compAnchor.blendMid / smartMid;
       smartMid  = compAnchor.blendMid;
@@ -764,6 +807,16 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   const base = computeSmartBase(rawLow, rawMid, rawHigh, {
     lastSalePrice, lastSaleDate, marketPriceYoY, comps, luxuryTier,
     compRules: prelimProfile.compRules,
+    // ── Community-first comp ranking (Agent 3) ────────────────────────────────
+    // Reuse the lookupCommunity() result the caller already computed (zero extra
+    // lookups, single source of truth for the subject's community/tier).
+    subjectCommunity: communityPremium,
+    subject: {
+      propertyType: propertyTypeRaw,
+      sqft:    propertyHints.sqft,
+      lotSize: propertyHints.lot_sqft,
+      city:    propertyHints.city || null,
+    },
   });
   const { smartLow, smartMid, smartHigh, baseAdjustment } = base;
 
@@ -1384,6 +1437,8 @@ exports.handler = async (event) => {
         sqft:    reportData?.normalized?.property?.squareFootage ?? reportData?.normalized?.subject?.squareFootage,
         units:   reportData?.normalized?.property?.units ?? reportData?.normalized?.subject?.units,
         lot_sqft:reportData?.normalized?.property?.lotSize ?? reportData?.normalized?.subject?.lotSize,
+        // city: feeds the Agent-3 community-comp ranker (ignored by classifyPropertyType).
+        city:    city || reportData?.normalized?.subject?.city || reportData?.normalized?.property?.city || null,
       };
 
       // ── Agent 6: read permits persisted by a prior enrich pass (read-back) ──

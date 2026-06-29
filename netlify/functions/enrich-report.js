@@ -67,6 +67,15 @@ function buildNormalized({ address, city, state, zip }, avm, props) {
     lat: num(c.latitude), lon: num(c.longitude),
     address: c.formattedAddress || c.addressLine1 || "",
     propertyType: c.propertyType || null,
+    // ── added for community-first comp ranking (Agent 3 / Patch B) ──
+    // RentCast AVM comparables already carry these; we were discarding them.
+    beds: num(c.bedrooms),
+    baths: num(c.bathrooms),
+    lotSize: num(c.lotSize),
+    yearBuilt: num(c.yearBuilt),
+    city: c.city || null,
+    // RentCast surfaces sale recency under several keys depending on listingType.
+    saleDate: c.removedDate || c.lastSeenDate || c.listedDate || null,
   }));
 
   return {
@@ -175,6 +184,11 @@ function toCompShape(c) {
     lat: c.lat || null, lon: c.lon || null,
     address: c.address || "",
     propertyType: c.propertyType || null,
+    // Keep the comp shape consistent with buildNormalized so the community-first
+    // ranker (Agent 3) can read these. distance/correlation stay null on purpose.
+    beds: null, baths: null, lotSize: null, yearBuilt: null,
+    city: c.city || null,
+    saleDate: c.date || null,
   };
 }
 
