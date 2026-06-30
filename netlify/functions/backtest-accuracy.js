@@ -164,9 +164,13 @@ exports.handler = async (event) => {
     }
 
     // 1) Recent recorded sales (ground truth).
+    // sqft is needed for the PSF outlier filter that drops non-arms-length sales
+    // (trust transfers, family deeds, distressed) from ground truth — without it
+    // the under-$1M tier shows ~34% MdAPE driven by ground-truth pollution, not
+    // model error.
     const solds = await db
       .from("properties")
-      .select("address,unit,city,state,zip,last_sale_price,last_sale_date,current_estimated_value")
+      .select("address,unit,city,state,zip,sqft,last_sale_price,last_sale_date,current_estimated_value")
       .gte("last_sale_date", cutoff)
       .gte("last_sale_price", floor)
       .order("last_sale_date", { ascending: false })
@@ -183,10 +187,67 @@ exports.handler = async (event) => {
       };
     }
 
+    // ── 1.5) Ground-truth PSF outlier filter ──────────────────────────────
+    // The ground-truth `properties` table is populated from RentCast's
+    // /listings/sale feed, which includes trust transfers, family deeds,
+    // partial-interest conveyances, and distressed/auction sales. None of those
+    // represent market value, but they're recorded as "sales" — and they pollute
+    // accuracy measurement.
+    //
+    // Mirror the same arms-length guard `computeClosestCompAnchor` uses on the
+    // comp side: compute median PSF within each (zip OR city) cohort with ≥3
+    // ground-truth sales, then drop sales whose PSF is outside 0.5x–2.0x of
+    // that median. Sales without sqft are kept (we can't judge; trust them).
+    //
+    // Validated against Palm Springs: this filter is what drove the
+    // computeClosestCompAnchor MAPE down from ~61% to ~33% on the comp side
+    // (per the inline comment in save-report.js).
+    //
+    // Toggle via ?psfFilter=0 to compare unfiltered numbers.
+    const psfFilter = (q.psfFilter || "1") !== "0";
+    const filterStats = { soldsBeforeFilter: solds.length, droppedByPsf: 0, droppedNoSqft: 0, keptNoCohort: 0 };
+
+    let cleanSolds = solds;
+    if (psfFilter) {
+      // Group by (zip OR city) and compute median PSF for each cohort
+      const cohorts = new Map();   // key → [psf values]
+      const cohortKey = (p) => `${(p.zip || "").trim()}|${(p.city || "").toLowerCase().trim()}|${(p.state || "").toUpperCase().trim()}`;
+      for (const p of solds) {
+        const sqft = Number(p.sqft);
+        const sale = Number(p.last_sale_price);
+        if (!sqft || sqft < 200 || !sale) continue;
+        const psf = sale / sqft;
+        if (psf < 10 || psf > 50000) continue; // obvious junk
+        const k = cohortKey(p);
+        if (!cohorts.has(k)) cohorts.set(k, []);
+        cohorts.get(k).push(psf);
+      }
+      const cohortMedians = new Map();
+      for (const [k, vals] of cohorts) {
+        if (vals.length >= 3) cohortMedians.set(k, median(vals));
+      }
+
+      cleanSolds = solds.filter((p) => {
+        const sqft = Number(p.sqft);
+        const sale = Number(p.last_sale_price);
+        if (!sqft || sqft < 200) { filterStats.droppedNoSqft++; return true; } // can't judge — keep (counted)
+        const k = cohortKey(p);
+        const med = cohortMedians.get(k);
+        if (!med) { filterStats.keptNoCohort++; return true; } // cohort too small — trust the row
+        const psf = sale / sqft;
+        const ratio = psf / med;
+        if (ratio < 0.5 || ratio > 2.0) { filterStats.droppedByPsf++; return false; }
+        return true;
+      });
+      // Reset the "noSqft" counter to only count those we actually kept under that branch
+      // (filter currently RETURNS TRUE for them — they're kept, just flagged)
+      filterStats.kept = cleanSolds.length;
+      filterStats.cohortsBuilt = cohortMedians.size;
+    }
+
     // 2) Look up our stored predictions by address_hash, in chunks.
-    // Also pull property_type from property_master for type-bucketed accuracy.
     const byHash = new Map();
-    for (const p of solds) {
+    for (const p of cleanSolds) {
       byHash.set(addressHash(p.address, p.city, p.state, p.zip, p.unit), p);
     }
     const hashes = [...byHash.keys()];
@@ -280,7 +341,12 @@ exports.handler = async (event) => {
 
     const lines = [];
     lines.push(`PropertyDNA Back-Test — recorded sales since ${cutoff}`);
-    lines.push(`Solds pulled: ${solds.length} | matched to a stored PropertyDNA value: ${propertydna.n || 0} (${((propertydna.n || 0) / solds.length * 100).toFixed(0)}%)`);
+    if (psfFilter) {
+      lines.push(`Ground-truth PSF filter ON: pulled ${filterStats.soldsBeforeFilter} | dropped ${filterStats.droppedByPsf} non-arms-length | kept ${filterStats.kept || cleanSolds.length} (cohorts=${filterStats.cohortsBuilt || 0})`);
+    } else {
+      lines.push(`Ground-truth PSF filter OFF (?psfFilter=0) — raw ${solds.length}`);
+    }
+    lines.push(`Matched to stored PropertyDNA value: ${propertydna.n || 0} (${((propertydna.n || 0) / (cleanSolds.length || 1) * 100).toFixed(0)}%)`);
     if (medianAgeYrs != null) lines.push(`Median sale age: ${medianAgeYrs} yrs${appreciate > 0 ? ` | time-adjusted forward at ${(appreciate * 100).toFixed(1)}%/yr` : ` | NOT time-adjusted (old sales inflate error — add &appreciate=6)`}`);
     if (propertydna.n) {
       lines.push("");
@@ -331,10 +397,12 @@ exports.handler = async (event) => {
         ok: true,
         ranAt: new Date().toISOString(),
         targetMdapePct: TARGET_MDAPE_PCT,
-        params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100 },
+        params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100, psfFilter },
         soldsPulled: solds.length,
+        soldsAfterFilter: cleanSolds.length,
+        groundTruthFilter: filterStats,
         medianSaleAgeYrs: medianAgeYrs,
-        matchRatePct: +(((propertydna.n || 0) / solds.length) * 100).toFixed(1),
+        matchRatePct: +(((propertydna.n || 0) / (cleanSolds.length || 1)) * 100).toFixed(1),
         propertydna,
         propertydna_byTier,
         propertydna_byType,
