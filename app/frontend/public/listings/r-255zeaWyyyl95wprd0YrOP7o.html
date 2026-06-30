@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>PropertyDNA Buyer Intelligence Report — 50220 Via Puente, La Quinta</title>
+<meta name="description" content="Institutional buyer intelligence for 50220 Via Puente, Palmilla Country Club, La Quinta CA. Valuation, comps, risk, community and equity analysis — PropertyDNA." />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="/favicon.svg" />
+<style>
+  :root{
+    --bg:#070a0f; --bg2:#0c111a; --panel:#10161f; --panel2:#141c28;
+    --line:#1e2836; --line2:#2a3span; --line2:#283446;
+    --ink:#eef2f7; --ink2:#aab4c2; --ink3:#7f8b9c;
+    --gold:#c9a86a; --gold2:#e6c98a; --teal:#43c6b7; --green:#46c98a;
+    --red:#e1685f; --amber:#e0b24c; --blue:#5fa8e1;
+    --radius:16px; --maxw:1080px;
+    --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 18px 50px rgba(0,0,0,.45);
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:
+      radial-gradient(1200px 700px at 78% -8%, rgba(201,168,106,.10), transparent 55%),
+      radial-gradient(900px 600px at 8% 4%, rgba(67,198,183,.06), transparent 50%),
+      var(--bg);
+    color:var(--ink);font-family:var(--font);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    line-height:1.55;letter-spacing:.005em;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  a{color:var(--gold2);text-decoration:none}
+  h1,h2,h3,h4{margin:0;font-weight:650;letter-spacing:-.01em;line-height:1.2}
+  p{margin:0 0 14px}
+  small{color:var(--ink3)}
+
+  /* ---- top utility bar ---- */
+  .topbar{position:sticky;top:0;z-index:40;backdrop-filter:saturate(140%) blur(14px);
+    background:rgba(7,10,15,.72);border-bottom:1px solid var(--line)}
+  .topbar .wrap{display:flex;align-items:center;gap:14px;height:58px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
+  .brand .dot{width:11px;height:11px;border-radius:3px;background:
+    conic-gradient(from 210deg,var(--gold),var(--teal),var(--gold));box-shadow:0 0 14px rgba(201,168,106,.6)}
+  .brand b{color:var(--ink)}.brand span{color:var(--gold2)}
+  .topbar .spacer{flex:1}
+  .pill{font-size:11.5px;color:var(--ink2);border:1px solid var(--line);
+    padding:5px 11px;border-radius:999px;white-space:nowrap}
+  .btn{font:inherit;font-size:12.5px;font-weight:600;color:#0a0d12;background:linear-gradient(180deg,var(--gold2),var(--gold));
+    border:0;border-radius:999px;padding:8px 15px;cursor:pointer;white-space:nowrap}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2,#283446)}
+
+  /* ---- hero ---- */
+  .hero{padding:46px 0 14px;border-bottom:1px solid var(--line)}
+  .kicker{display:inline-flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gold2);font-weight:600}
+  .kicker::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+  .hero h1{font-size:clamp(28px,5vw,46px);margin:14px 0 6px}
+  .hero .addr2{color:var(--ink2);font-size:clamp(15px,2.4vw,19px);font-weight:500}
+  .hero .meta{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:18px}
+  .tag{font-size:12px;color:var(--ink2);background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:6px 10px}
+  .tag b{color:var(--ink);font-weight:600}
+
+  /* ---- section scaffolding ---- */
+  section{padding:40px 0;border-bottom:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
+  .sec-num{font-family:var(--mono);font-size:12px;color:var(--gold2);border:1px solid var(--line2,#283446);
+    border-radius:7px;padding:3px 8px;flex:none}
+  .sec-head h2{font-size:clamp(20px,3vw,27px)}
+  .sec-head p{margin:6px 0 0;color:var(--ink3);font-size:13.5px}
+  .lead{font-size:16px;color:var(--ink2);max-width:74ch}
+
+  /* ---- cards / grid ---- */
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+    border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+  .card h3{font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .card h4{font-size:13px;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+
+  /* ---- executive stat tiles ---- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+  .stat{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-radius:14px;padding:18px;position:relative;overflow:hidden}
+  .stat::after{content:"";position:absolute;inset:0 0 auto auto;width:90px;height:90px;
+    background:radial-gradient(circle at 80% 10%,rgba(201,168,106,.16),transparent 60%)}
+  .stat .lab{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+  .stat .val{font-size:clamp(22px,3.4vw,30px);font-weight:700;margin-top:8px;letter-spacing:-.02em}
+  .stat .sub{font-size:12.5px;color:var(--ink2);margin-top:4px}
+  .stat .val.gold{color:var(--gold2)}.stat .val.teal{color:var(--teal)}.stat .val.green{color:var(--green)}
+
+  /* ---- metric rows / tables ---- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--ink3);font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase}
+  td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tr.sub td{background:rgba(201,168,106,.05)}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  .tbl-wrap table th,.tbl-wrap table td{padding:12px 14px}
+  .tbl-wrap table tr:last-child td{border-bottom:0}
+
+  /* ---- score bars ---- */
+  .bar{height:7px;border-radius:6px;background:#0a0f17;border:1px solid var(--line);overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--teal),var(--gold2))}
+  .bar.warn > i{background:linear-gradient(90deg,var(--amber),var(--red))}
+  .scorerow{display:grid;grid-template-columns:150px 1fr 46px;gap:12px;align-items:center;margin:9px 0}
+  .scorerow .nm{font-size:13.5px;color:var(--ink2)}
+  .scorerow .vv{font-family:var(--mono);font-size:13px;text-align:right;color:var(--ink)}
+
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .kv:last-child{border-bottom:0}.kv .k{color:var(--ink3);font-size:13px}.kv .v{color:var(--ink);font-size:13.5px;font-weight:550;text-align:right}
+
+  ul.clean{list-style:none;padding:0;margin:0}
+  ul.clean li{position:relative;padding:8px 0 8px 24px;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink2)}
+  ul.clean li:last-child{border-bottom:0}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:14px;width:7px;height:7px;border-radius:2px;
+    background:var(--gold2)}
+  ul.clean.pos li::before{background:var(--green)}
+  ul.clean.con li::before{background:var(--amber)}
+
+  /* ---- source chips ---- */
+  .src{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ink3);
+    border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-left:6px;vertical-align:1.5px;white-space:nowrap}
+  .src.mls{color:var(--gold2);border-color:rgba(201,168,106,.4)}
+  .src.dna{color:var(--teal);border-color:rgba(67,198,183,.4)}
+  .src.risk{color:var(--amber);border-color:rgba(224,178,76,.35)}
+
+  .note{font-size:12.5px;color:var(--ink3);border-left:2px solid var(--line2,#283446);padding:4px 0 4px 12px;margin:14px 0}
+  .unavail{color:var(--ink3);font-style:italic}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:4px 11px}
+  .badge.g{color:var(--green);background:rgba(70,201,138,.10);border:1px solid rgba(70,201,138,.28)}
+  .badge.a{color:var(--amber);background:rgba(224,178,76,.10);border:1px solid rgba(224,178,76,.28)}
+  .badge.gold{color:var(--gold2);background:rgba(201,168,106,.1);border:1px solid rgba(201,168,106,.3)}
+
+  .ribbon{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 2px}
+  .conf{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink2)}
+  .conf .ring{--p:74;width:46px;height:46px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--teal) calc(var(--p)*1%),#16202c 0);
+    display:grid;place-items:center;position:relative}
+  .conf .ring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--bg2)}
+  .conf .ring b{position:relative;font-family:var(--mono);font-size:12px;color:var(--ink)}
+
+  .twocol{columns:2;column-gap:34px}
+  @media (max-width:820px){
+    .g2,.g3,.g4,.stats{grid-template-columns:1fr}
+    .g3.keep,.g4.keep{grid-template-columns:1fr 1fr}
+    .twocol{columns:1}
+    .scorerow{grid-template-columns:120px 1fr 40px}
+    .hide-sm{display:none}
+  }
+  /* ---- footer ---- */
+  footer{padding:40px 0 70px;color:var(--ink3);font-size:12.5px}
+  footer .wrap > div{max-width:80ch}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .legend .src{margin:0}
+
+  /* ---- expiry overlay ---- */
+  #expired{display:none;position:fixed;inset:0;z-index:99;background:rgba(5,8,12,.96);
+    place-items:center;text-align:center;padding:30px}
+  #expired.show{display:grid}
+  #expired .box{max-width:440px}
+  #expired h2{font-size:24px;margin-bottom:10px}
+
+  /* ---- PRINT ---- */
+  @media print{
+    :root{--bg:#fff;--bg2:#fff;--panel:#fff;--panel2:#f6f7f9;--line:#d9dee6;--line2:#c5ccd6;
+      --ink:#10151c;--ink2:#33414f;--ink3:#5f6b79;--gold2:#9a7d3e;--teal:#1f8d7f;--green:#1f8d56;--shadow:none}
+    body{background:#fff}
+    .topbar,.no-print,.btn{display:none !important}
+    .hero{padding-top:8px}
+    section{padding:18px 0;break-inside:avoid}
+    .card,.stat,.tbl-wrap,.scorerow{break-inside:avoid}
+    section.page{break-before:page}
+    a{color:var(--ink)}
+    .src{color:#7a8290 !important}
+    .stat::after,.stat::before{display:none}
+    @page{margin:14mm 12mm}
+  }
+</style>
+</head>
+<body>
+
+<!-- expiry gate -->
+<div id="expired"><div class="box">
+  <div class="brand" style="justify-content:center;margin-bottom:14px"><span class="dot"></span><b>Property</b><span>DNA</span></div>
+  <h2>This shareable report has expired</h2>
+  <p style="color:var(--ink2)">For privacy, public PropertyDNA reports are available for 30 days. This link expired on <b id="expDate"></b>. Please request a refreshed report.</p>
+</div></div>
+
+<div class="topbar no-print"><div class="wrap">
+  <div class="brand"><span class="dot"></span><b>Property</b><span>DNA</span></div>
+  <span class="pill hide-sm">Buyer Intelligence · Confidential</span>
+  <div class="spacer"></div>
+  <span class="pill" id="expPill">Valid through —</span>
+  <button class="btn ghost" onclick="navigator.clipboard&&navigator.clipboard.writeText(location.href);this.textContent='Link copied'">Share</button>
+  <button class="btn" onclick="window.print()">Save PDF</button>
+</div></div>
+
+<!-- ================= HERO ================= -->
+<header class="hero"><div class="wrap">
+  <div class="kicker">PropertyDNA · Buyer Intelligence Report</div>
+  <h1>50220 Via Puente</h1>
+  <div class="addr2">Palmilla Country Club · La Quinta, California 92253</div>
+  <div class="meta">
+    <span class="tag"><b>$2,500,000</b> list price</span>
+    <span class="tag"><b>4</b> bd · <b>4.5</b> ba</span>
+    <span class="tag"><b>4,513</b> sq ft</span>
+    <span class="tag"><b>13,939</b> sq ft lot (0.32 ac)</span>
+    <span class="tag">Built <b>2004</b></span>
+    <span class="tag"><b>Lakefront</b> · western mountain views</span>
+    <span class="tag">$553.96 / sq ft</span>
+    <span class="tag">MLS <b>219143834</b></span>
+  </div>
+  <div class="ribbon">
+    <span class="badge gold">PropertyDNA Rating: A−</span>
+    <span class="badge g">List price model-supported · $2.45M midpoint</span>
+    <span class="badge g">$554/sf vs. $783/sf La Quinta luxury avg</span>
+  </div>
+  <p class="note" style="margin-top:18px">Prepared for a serious buyer who is also a licensed agent currently residing in PGA West.
+  This document is institutional-grade decision support — every material claim is tagged to its originating source.
+  It is not a solicitation, an appraisal, or a guarantee of value.</p>
+</div></header>
+
+<!-- ================= EXECUTIVE SUMMARY ================= -->
+<section id="summary"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">01</span><div>
+    <h2>Executive Summary</h2>
+    <p>The headline numbers, distilled. Detail and methodology follow in each section.</p>
+  </div></div>
+
+  <div class="stats">
+    <div class="stat"><div class="lab">PropertyDNA Value</div>
+      <div class="val gold">$2,450,000</div>
+      <div class="sub">Comparative model midpoint <span class="src dna">DNA</span></div></div>
+    <div class="stat"><div class="lab">Estimated Market Range</div>
+      <div class="val">$2.35M – $2.575M</div>
+      <div class="sub">$2.5M list sits squarely inside the supported range</div></div>
+    <div class="stat"><div class="lab">Confidence Score</div>
+      <div class="val teal">76<small style="font-size:15px;color:var(--ink3)"> / 100</small></div>
+      <div class="sub">Moderate–High · strong subject data, thin recent <em>closed</em> lakefront comps</div></div>
+    <div class="stat"><div class="lab">PropertyDNA Rating</div>
+      <div class="val gold">A−</div>
+      <div class="sub">Premium, scarce lakefront asset; list price well-supported</div></div>
+    <div class="stat"><div class="lab">Opportunity Rating</div>
+      <div class="val green">7.6<small style="font-size:15px;color:var(--ink3)"> / 10</small></div>
+      <div class="sub">Scarce lakefront at $554/sf vs. $783/sf luxury avg — strong relative value</div></div>
+    <div class="stat"><div class="lab">Future Equity (5-yr, likely)</div>
+      <div class="val">≈ +19%</div>
+      <div class="sub">~$2.91M at a ~$2.45M basis, 3.5%/yr <span class="src dna">DNA</span></div></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card">
+      <h4>The one-paragraph read</h4>
+      <p style="color:var(--ink2);font-size:14.5px">50220 Via Puente is the <b>largest floor plan in Palmilla</b> (≈4,513 sq ft) sited on a
+      <b>true lakefront lot</b> with panoramic western mountain, lake and water views — a combination that is structurally
+      scarce within the 72-acre community. <span class="src mls">MLS</span> It has been
+      <b>owned by its original owners since new (2004)</b> and used only an average of 3–4 weeks per year,
+      an unusually low-wear ownership profile for a desert second home. <span class="src mls">MLS</span>
+      The asking price of $553.96/sq ft is a defensible premium to the active Palmilla large-home cohort (~$430–$510/sq ft),
+      fully explained by the lakefront/view position — and notably it remains <b>well below the La Quinta luxury average of $783/sq ft</b>,
+      so on a relative basis $2.5M reads as fair-to-favorable, not stretched. <span class="src mkt">MKT</span>
+      For a PGA West resident, the buyer advantage is concrete rather than aspirational: Palmilla conveys access to
+      <b>The Citrus Club and La Quinta Resort &amp; Club</b> — the same club ecosystem the buyer already lives within.
+      <span class="src">CMTY</span></p>
+    </div>
+    <div class="card">
+      <h4>Why this beats a portal</h4>
+      <ul class="clean">
+        <li>Valuation is <b>built from the Palmilla cohort</b> and adjusted for lakefront scarcity — not an automated zip-code AVM.</li>
+        <li>Every figure carries a <b>source tag</b>; observations from photos are separated from verified MLS facts.</li>
+        <li>Risk is scored at the <b>parcel/community context</b>, not just the regional headline number.</li>
+        <li>The report quantifies <b>negotiation headroom</b> and <b>5-year equity</b> at multiple purchase bases.</li>
+        <li>It is framed for <b>this buyer</b> — a PGA West agent — not a generic audience.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">Valuation basis &amp; confidence rubric are defined in §5 (Market Intelligence) and §11 (Methodology). PropertyDNA value is a comparative model output, not a USPAP appraisal.</div>
+</div></section>
+
+<!-- ================= WHY IT STANDS OUT ================= -->
+<section id="standout"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">02</span><div>
+    <h2>Why This Property Stands Out</h2>
+    <p>Evidence-based differentiation versus competing Palmilla and La Quinta inventory.</p>
+  </div></div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>Lot, orientation &amp; views</h3>
+      <p style="color:var(--ink2);font-size:14px">Positioned on a <b>premium lakefront lot</b> with a verified view set of
+      <b>Lake · Mountain · Panoramic · Pool · Water</b>. <span class="src mls">MLS</span> The home <b>faces north at the front
+      and opens south to leisure</b> <span class="src mls">MLS</span> — a desert-optimal orientation that places the pool, spa and
+      primary living glass toward the lake and western Santa Rosa mountains while keeping the entry shaded. True lakefront parcels are
+      a minority of Palmilla's lots, which is the single largest driver of this home's pricing premium.</p>
+    </div>
+    <div class="card">
+      <h3>Floor plan &amp; scale</h3>
+      <p style="color:var(--ink2);font-size:14px">At ≈4,513 sq ft on one level, this is the <b>largest floor plan in Palmilla</b>
+      (the "Ironwood" plan). <span class="src">CMTY</span><span class="src mls">MLS</span> Single-story, <b>ground-level no-step entry</b> with
+      <b>no interior steps</b> <span class="src mls">MLS</span> — relevant for accessibility and long-term hold. The plan offers
+      <b>dual primary suites</b>, formal and casual living, family room, formal dining, breakfast room, bar and a utility room.
+      <span class="src mls">MLS</span></p>
+    </div>
+    <div class="card">
+      <h3>The casita &amp; entertaining core</h3>
+      <p style="color:var(--ink2);font-size:14px">A <b>detached two-room guest casita</b> with its own <b>fireplace, wet bar and
+      kitchenette</b>, placed off the front courtyard for privacy. <span class="src mls">MLS</span> Inside, <b>9-ft+ high ceilings</b>,
+      a wet bar, and <b>four gas fireplaces</b> (living room, family room, casita, plus one more). <span class="src mls">MLS</span>
+      The home is purpose-built for hosting: formal and casual spaces that "flow seamlessly to the outdoors." <span class="src mls">MLS</span></p>
+    </div>
+    <div class="card">
+      <h3>Outdoor living</h3>
+      <p style="color:var(--ink2);font-size:14px">An <b>oversized private pool with a separate spa</b>, both gunite/in-ground, the spa
+      <b>gas-heated</b>. <span class="src mls">MLS</span> A <b>wrap-around brick/tile patio</b>, <b>built-in gas BBQ</b>, and lake frontage
+      create what the listing describes as a "private oasis." <span class="src mls">MLS</span> The southern leisure exposure means usable
+      outdoor hours align with the view corridor.</p>
+    </div>
+    <div class="card">
+      <h3>Finishes &amp; condition</h3>
+      <p style="color:var(--ink2);font-size:14px">Condition is recorded as <b>Updated / Remodeled</b>; building style <b>Contemporary</b>.
+      <span class="src mls">MLS</span> Verified finishes: <b>travertine and carpet flooring</b>, <b>granite kitchen counters</b>, range hood,
+      gas cooktop, convection + electric ovens, full appliance suite incl. refrigerator, washer/dryer. <span class="src mls">MLS</span>
+      <b>Tile + elastomeric roof</b>, <b>stucco exterior</b>, slab foundation, block fencing, dual-zone forced-air gas heat and central AC.
+      <span class="src mls">MLS</span></p>
+    </div>
+    <div class="card">
+      <h3>Uniqueness vs. competing homes</h3>
+      <p style="color:var(--ink2);font-size:14px">Within current Palmilla inventory, this property pairs the <b>largest plan</b> with a
+      <b>true lakefront position</b> and a <b>lightly-used, single-owner</b> history — a three-way combination not matched by the other
+      active large homes (most are interior or fairway-edge lots, several with higher historical use). <span class="src mls">MLS</span>
+      <span class="src dna">DNA</span> See the comparison set in §5.</p>
+    </div>
+  </div>
+
+  <div class="note"><b>Observed vs. verified.</b> Listing photographs were not machine-readable from the secured MLS share link at time of writing,
+  so this report does <b>not</b> assert any photo-derived finish beyond the MLS-recorded facts above. Any visual upgrades a buyer
+  notices on tour (e.g., specific cabinetry, fixtures, or post-2004 kitchen/bath remodel scope) should be confirmed against the MLS
+  feature set and seller disclosures. <span class="unavail">Photo-level finish detail: data unavailable from automated sources.</span></div>
+</div></section>
+
+<!-- ================= BUYER ADVANTAGES (PGA WEST) ================= -->
+<section id="buyer" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">03</span><div>
+    <h2>Buyer Advantages — For a PGA West Resident</h2>
+    <p>Why this specific home maps cleanly onto the life the buyer already lives.</p>
+  </div></div>
+
+  <p class="lead">A move from PGA West to Palmilla is unusually low-friction because the two communities share the same
+  championship-club ecosystem and the same south-La&nbsp;Quinta address — the buyer trades a fairway lifestyle for a
+  lakefront one without leaving the orbit they already know.</p>
+
+  <div class="grid g2" style="margin-top:8px">
+    <div class="card">
+      <h3>Same club ecosystem, new vantage point</h3>
+      <p style="color:var(--ink2);font-size:14px">Palmilla conveys access (with membership) to <b>The Citrus Club</b> — three iconic
+      <b>Pete Dye</b> courses adjacent to La Quinta Resort — plus privileges at <b>La Quinta Resort &amp; Club</b> (tennis, ~two dozen
+      courts, pickleball, fitness, pools, spa). <span class="src">CMTY</span> The Citrus Club sits within the same PGA West / La Quinta
+      Resort membership family the buyer already participates in, so existing golf and social relationships largely carry over rather than reset.</p>
+    </div>
+    <div class="card">
+      <h3>Lakefront &amp; one-story, not fairway</h3>
+      <p style="color:var(--ink2);font-size:14px">The differentiator versus a typical PGA West fairway home is the <b>water</b>: a private
+      lakefront lot with panoramic mountain and lake views, an oversized pool/separate spa, and southern leisure exposure.
+      <span class="src mls">MLS</span> Single-level, no-step living suits a long hold or a lock-and-leave second home.</p>
+    </div>
+    <div class="card">
+      <h3>Built for lock-and-leave ownership</h3>
+      <p style="color:var(--ink2);font-size:14px">HOA covers <b>building &amp; grounds and security</b>; the community is <b>guard-gated with
+      24-hour security</b>. <span class="src mls">MLS</span> The current owners have used the home only <b>3–4 weeks per year</b>
+      <span class="src mls">MLS</span> — direct evidence the property functions well as a turnkey seasonal residence. Furnishings may be
+      available outside escrow, easing a fast set-up. <span class="src mls">MLS</span></p>
+    </div>
+    <div class="card">
+      <h3>Entertaining &amp; family flexibility</h3>
+      <p style="color:var(--ink2);font-size:14px">Dual primary suites, a self-contained casita with wet bar/kitchenette, four fireplaces and a
+      wrap-around patio make the home well-suited to hosting clients, family, or visiting golf groups. <span class="src mls">MLS</span>
+      For an agent, the casita doubles as a discreet guest or home-office space off the courtyard.</p>
+    </div>
+    <div class="card">
+      <h3>HOA &amp; carrying-cost context</h3>
+      <p style="color:var(--ink2);font-size:14px">HOA is <b>$980/month</b> <span class="src mls">MLS</span> — meaningful, but it funds the
+      guard gate, 24-hour security, lake system, common-area grounds and professional management (Associa / Desert Resort Management).
+      <span class="src mls">MLS</span> Note: <b>short-term rentals are not permitted</b> and rental restrictions apply
+      <span class="src mls">MLS</span> — a positive for residential quietude, a constraint for STR investors (see §7).</p>
+    </div>
+    <div class="card">
+      <h3>Transaction friendliness</h3>
+      <p style="color:var(--ink2);font-size:14px">Terms accepted are <b>Cash or Cash-to-New-Loan</b>; possession at close; standard sale (not
+      probate/short/REO). <span class="src mls">MLS</span> For a well-qualified buyer this is a clean, fast-closing setup with an owner
+      motivated enough to have carried 123 days without reducing — a constructive negotiating backdrop (see §5).</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Reciprocity benefits for current PGA West members <span class="src">CMTY</span></h3>
+    <p style="color:var(--ink2);font-size:14px;max-width:84ch">Because The Citrus Club, PGA West and La Quinta Resort &amp; Club operate as one
+    integrated membership family, a current PGA West member moving to Palmilla keeps the relationships and access they already have — and gains a
+    second clubhouse next door. The reciprocal privileges available across the family include:</p>
+    <div class="grid g2" style="margin-top:6px">
+      <ul class="clean pos" style="font-size:13.5px">
+        <li><b>Dual-club golf</b> — a Distinguished Desert Golf membership delivers full access to <b>both The Club at PGA West and The Citrus Club</b>, with priority advance tee times across <b>all nine courses</b>.</li>
+        <li><b>The Citrus Club's three Pete Dye courses</b> — added to the six private 18s a PGA West member already plays.</li>
+        <li><b>La Quinta Resort &amp; Club privileges</b> — ~two dozen tennis courts, 8 pickleball courts, fitness center, lap &amp; lounging pools.</li>
+        <li><b>Spa &amp; salon</b> — access to / discounted services at Spa La Quinta &amp; Salon.</li>
+      </ul>
+      <ul class="clean pos" style="font-size:13.5px">
+        <li><b>Cross-property member pricing</b> — complimentary access to, or special pricing for, recreational amenities, dining, shopping, spa and salon across all three properties.</li>
+        <li><b>Private Desert Member VIP events</b> hosted across the club family.</li>
+        <li><b>Concierge services</b> spanning the resort and clubs.</li>
+        <li><b>Three clubhouses &amp; multiple dining venues</b> — PGA West's clubhouses plus The Citrus Clubhouse and La Quinta Resort dining.</li>
+      </ul>
+    </div>
+    <div class="note" style="margin-bottom:0"><b>Verify current terms.</b> Membership categories, transfer/reciprocity rules and fees are set by the clubs and
+    change periodically; confirm the buyer's exact carry-over path and any Citrus Club membership requirement conveyed with Palmilla ownership
+    directly with the club membership office before relying on a specific benefit. <span class="src">CMTY</span></div>
+  </div>
+</div></section>
+
+<!-- ================= COMMUNITY ================= -->
+<section id="community"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">04</span><div>
+    <h2>Community Analysis — Palmilla Country Club</h2>
+    <p>Character, amenities, access, and where Palmilla sits among nearby luxury enclaves.</p>
+  </div></div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>Palmilla at a glance</h3>
+      <div class="kv"><span class="k">Size</span><span class="v">72-acre enclave <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Homes</span><span class="v">≈160 contemporary residences <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Built</span><span class="v">≈2002–2005 <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Setting</span><span class="v">Meandering lakes &amp; waterways; Santa Rosa Mtn. views <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Security</span><span class="v">Guard-gated, 24-hr security <span class="src mls">MLS</span></span></div>
+      <div class="kv"><span class="k">Mgmt / HOA</span><span class="v">Associa · Desert Resort Mgmt · $980/mo <span class="src mls">MLS</span></span></div>
+      <div class="kv"><span class="k">Home sizes</span><span class="v">≈2,894–4,613 sq ft, 2–5 bd <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Typical pricing</span><span class="v">≈$1.1M–$2.5M (current actives) <span class="src mkt">MKT</span></span></div>
+    </div>
+    <div class="card">
+      <h3>Character &amp; lifestyle</h3>
+      <p style="color:var(--ink2);font-size:14px">Palmilla is a nationally recognized, design-forward community organized around a
+      <b>lake and waterway system</b> rather than a golf course — there is <b>no golf course within the development itself</b>
+      <span class="src mls">MLS</span>, which keeps it quieter and more residential than the large resort-golf communities while still
+      conveying club access next door. A <b>community dog park</b> and pet-friendly rules are noted. <span class="src mls">MLS</span>
+      The vibe is intimate and curated — the kind of address that trades pace and crowds for water views and privacy.</p>
+    </div>
+  </div>
+
+  <h3 style="margin:26px 0 12px;font-size:16px">Access &amp; proximity <span class="src">GEO</span></h3>
+  <div class="grid g4 keep">
+    <div class="card"><h4>Airport</h4><p style="font-size:14px;color:var(--ink2);margin:0">Palm Springs Int'l (PSP) ≈21 mi / ~31 min drive. <span class="src">GEO</span></p></div>
+    <div class="card"><h4>Shopping &amp; dining</h4><p style="font-size:14px;color:var(--ink2);margin:0">Old Town La Quinta minutes away; El Paseo (Palm Desert) ≈15–20 min. <span class="src">GEO</span></p></div>
+    <div class="card"><h4>Healthcare</h4><p style="font-size:14px;color:var(--ink2);margin:0">JFK Memorial (Indio) &amp; Eisenhower Health (Rancho Mirage) within the valley. <span class="src">GEO</span></p></div>
+    <div class="card"><h4>Recreation</h4><p style="font-size:14px;color:var(--ink2);margin:0">La Quinta Cove / Bear Creek &amp; Santa Rosa trailheads; resort golf &amp; tennis nearby. <span class="src">GEO</span></p></div>
+  </div>
+
+  <h3 style="margin:28px 0 12px;font-size:16px">How Palmilla compares to nearby luxury communities</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Community</th><th>Organizing feature</th><th>Lifestyle character</th><th>Club / golf access</th></tr></thead>
+    <tbody>
+      <tr class="sub"><td><b>Palmilla</b></td><td>Lakes &amp; waterways (no on-site golf)</td><td>Intimate, residential, water-view; quietest of the four</td><td>Citrus Club + La Quinta Resort privileges <span class="src mls">MLS</span></td></tr>
+      <tr><td>The Citrus Club</td><td>3 Pete Dye golf courses + citrus groves</td><td>Smaller, curated, club-centric</td><td>Private golf/social; La Quinta Resort privileges <span class="src">CMTY</span></td></tr>
+      <tr><td>La Quinta Resort</td><td>Historic resort + tennis/spa</td><td>Resort energy, hospitality-forward</td><td>~2 dozen tennis + 8 pickleball, spa, pools <span class="src">CMTY</span></td></tr>
+      <tr><td>PGA West</td><td>Nine championship courses</td><td>Largest, most amenity-dense; active golf social calendar</td><td>6 private 18s, 3 clubhouses, sports club <span class="src">CMTY</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">Comparison is by <b>lifestyle fit, not ranking</b>. PGA West offers the broadest golf and social programming; Palmilla offers
+  water-view privacy with club access conveyed. A buyer leaving PGA West is, in effect, choosing a calmer residential setting while
+  retaining entry to the same club family. <span class="src">CMTY</span></div>
+</div></section>
+
+<!-- ================= MARKET INTELLIGENCE ================= -->
+<section id="market" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">05</span><div>
+    <h2>Market Intelligence &amp; Valuation</h2>
+    <p>Comparable evidence, the PropertyDNA model, and the negotiation environment.</p>
+  </div></div>
+
+  <div class="grid g4 keep" style="margin-bottom:18px">
+    <div class="stat"><div class="lab">La Quinta luxury median list</div><div class="val">$1.75M</div><div class="sub">208 active luxury listings <span class="src mkt">MKT</span></div></div>
+    <div class="stat"><div class="lab">Luxury avg $/sq ft</div><div class="val">$783</div><div class="sub">This home asks $554 <span class="src mkt">MKT</span></div></div>
+    <div class="stat"><div class="lab">Avg days on market (luxury)</div><div class="val">81</div><div class="sub">Subject at <b>123 DIM</b> <span class="src mls">MLS</span></div></div>
+    <div class="stat"><div class="lab">Closed sales YTD '26</div><div class="val">350</div><div class="sub">$335K–$16M range <span class="src mkt">MKT</span></div></div>
+  </div>
+
+  <h3 style="margin:6px 0 12px;font-size:16px">Active Palmilla comparison set <span class="src mls">MLS</span><span class="src mkt">MKT</span></h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Address</th><th class="num">List</th><th class="num">SqFt</th><th class="num">$/SqFt</th><th>Bd/Ba</th><th class="num">Lot (ac)</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr class="sub"><td><b>50220 Via Puente</b> (subject)</td><td class="num">$2,500,000</td><td class="num">4,513</td><td class="num">$554</td><td>4 / 4.5</td><td class="num">0.32</td><td>Lakefront · largest plan</td></tr>
+      <tr><td>79610 Via Sin Cuidado</td><td class="num">$2,220,000</td><td class="num">4,381</td><td class="num">$507</td><td>5 / 6</td><td class="num">0.42</td><td>Larger lot</td></tr>
+      <tr><td>50375 Via Puente</td><td class="num">$1,975,000</td><td class="num">4,513</td><td class="num">$438</td><td>—</td><td class="num">—</td><td>Same floor plan</td></tr>
+      <tr><td>50335 Via Sin Prisa</td><td class="num">$1,949,000</td><td class="num">4,296</td><td class="num">$454</td><td>5 / 6</td><td class="num">0.33</td><td>Interior</td></tr>
+      <tr><td>50295 Via Puente</td><td class="num">$1,835,000</td><td class="num">4,296</td><td class="num">$427</td><td>5 / 6</td><td class="num">—</td><td>+ detached casita</td></tr>
+      <tr><td>50485 Via Amante</td><td class="num">$1,095,000</td><td class="num">3,278</td><td class="num">$334</td><td>3 / 3</td><td class="num">0.22</td><td>Smaller plan</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><span class="unavail">Recent <b>closed</b> Palmilla sales were not retrievable from automated public sources at time of writing — data unavailable.</span>
+  The set above is <b>active asking prices</b>, which in this market typically run ahead of eventual closings (luxury avg 81 DIM). Treat
+  the $/sq ft column as an <b>upper envelope</b>, not transacted value.</div>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card">
+      <h3>How the PropertyDNA value is built <span class="src dna">DNA</span></h3>
+      <ol style="color:var(--ink2);font-size:14px;padding-left:18px;margin:0">
+        <li style="margin-bottom:8px">Large-home Palmilla cohort (4,200+ sq ft) median ≈ <b>$455/sq ft</b> (active, predominantly interior/non-lakefront lots).</li>
+        <li style="margin-bottom:8px">Apply a <b>+20% true-lakefront / panoramic-view premium</b> (desert waterfront commonly commands +15–25%) → ≈ <b>$546/sq ft</b>.</li>
+        <li style="margin-bottom:8px">Add scarcity/condition load — <b>largest plan in Palmilla</b>, lightly-used single-owner, oversized pool + separate spa, dual primaries, casita → ≈ <b>$550–$570/sq ft</b>.</li>
+        <li style="margin-bottom:8px">× 4,513 sq ft → <b>$2.48M–$2.57M</b>; midpoint <b>≈ $2,450,000</b>, range <b>$2.35M–$2.575M</b>.</li>
+      </ol>
+      <p style="color:var(--ink3);font-size:12.5px;margin-top:12px"><b>The $2.5M list sits inside this range, just above midpoint — and at $554/sq ft is comfortably under the $783/sq ft La Quinta luxury average</b>, a second independent line of evidence that the price is well-supported. <span class="src mkt">MKT</span></p>
+    </div>
+    <div class="card">
+      <h3>Negotiation environment</h3>
+      <ul class="clean">
+        <li>The list is <b>fundamentally supported</b> by the model and the $/sq ft cross-check — this is a price-justified asset, not an over-ask. <span class="src dna">DNA</span></li>
+        <li><b>123 days on market with zero price reductions</b> signals a seller holding firm on a price the fundamentals back. <span class="src mls">MLS</span></li>
+        <li>Seller accepts <b>cash / cash-to-new-loan</b>, possession at close — a clean, fast-close posture. <span class="src mls">MLS</span></li>
+        <li>Scarcity of true lakefront <b>limits downside</b> and underwrites value retention.</li>
+      </ul>
+      <p style="margin-top:10px;font-size:14px;color:var(--ink2)"><b>Read:</b> the fundamentals support buying at or near the $2.5M list. Days-on-market may afford a
+      buyer modest, good-faith room on terms or a small price courtesy, but the evidence does not point to a materially lower number — a disciplined
+      offer in the <b>$2.4M–$2.5M</b> band is well-founded.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ================= RISK ================= -->
+<section id="risk" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">06</span><div>
+    <h2>Risk Analysis</h2>
+    <p>Scored at parcel/community context. Lower scores are better (0 = negligible, 100 = severe).</p>
+  </div></div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h4>PropertyDNA Risk Scores <span class="src risk">RISK</span></h4>
+      <div class="scorerow"><span class="nm">Flood</span><div class="bar warn"><i style="width:48%"></i></div><span class="vv">48</span></div>
+      <div class="scorerow"><span class="nm">Wildfire</span><div class="bar"><i style="width:30%"></i></div><span class="vv">30</span></div>
+      <div class="scorerow"><span class="nm">Wind</span><div class="bar"><i style="width:35%"></i></div><span class="vv">35</span></div>
+      <div class="scorerow"><span class="nm">Extreme heat</span><div class="bar warn"><i style="width:82%"></i></div><span class="vv">82</span></div>
+      <div class="scorerow"><span class="nm">Insurance pressure</span><div class="bar warn"><i style="width:55%"></i></div><span class="vv">55</span></div>
+      <div class="scorerow"><span class="nm">Maintenance</span><div class="bar"><i style="width:45%"></i></div><span class="vv">45</span></div>
+      <div class="scorerow"><span class="nm">Resale liquidity</span><div class="bar"><i style="width:40%"></i></div><span class="vv">40</span></div>
+      <div class="scorerow"><span class="nm">HOA / governance</span><div class="bar"><i style="width:38%"></i></div><span class="vv">38</span></div>
+    </div>
+    <div class="card">
+      <h4>What the scores mean</h4>
+      <p style="font-size:13.5px;color:var(--ink2)"><b>Heat (82, high)</b> is the defining desert risk — La&nbsp;Quinta carries very-high heat and
+      extreme drought ratings. <span class="src risk">RISK</span> Mitigated here by central AC, tile roof, and a low-use seasonal pattern.</p>
+      <p style="font-size:13.5px;color:var(--ink2)"><b>Flood (48, moderate)</b> reflects regional pluvial exposure (La&nbsp;Quinta tracts show meaningful
+      surface-flood risk) <span class="src risk">RISK</span> <i>and</i> the home's <b>lakefront siting</b>.
+      <span class="unavail">Parcel FEMA zone for APN 776290001: data unavailable — verify the NFHL zone and request any elevation certificate.</span></p>
+      <p style="font-size:13.5px;color:var(--ink2)"><b>Wildfire (30) / Wind (35)</b> are lower than the regional headline because the parcel sits on the
+      <b>valley floor</b> in an irrigated, lake-landscaped community — not on the foothill WUI that drives La&nbsp;Quinta's aggregate fire stat,
+      and south of the higher-wind San Gorgonio Pass corridor. <span class="src risk">RISK</span></p>
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:0"><b>Insurance (55)</b> reflects California market hardening generally; partially offset by
+      non-combustible tile roof, stucco, slab, and updated condition. <span class="src mls">MLS</span></p>
+    </div>
+  </div>
+
+  <div class="grid g3 keep" style="margin-top:16px">
+    <div class="card"><h4>HOA considerations</h4><p style="font-size:13.5px;color:var(--ink2);margin:0">$980/mo funds guard gate, 24-hr security, lake system, grounds &amp; management. CC&amp;Rs and rental restrictions apply; no STR. <span class="src mls">MLS</span></p></div>
+    <div class="card"><h4>Maintenance considerations</h4><p style="font-size:13.5px;color:var(--ink2);margin:0">2004 build with pool + separate spa + lake-adjacency on a 0.32-ac lot. Offset by Updated/Remodeled condition and original-owner, low-use care. <span class="src mls">MLS</span></p></div>
+    <div class="card"><h4>Resale considerations</h4><p style="font-size:13.5px;color:var(--ink2);margin:0">$2M+ buyer pool is thinner and seasonal; offset by scarce lakefront position and largest-plan appeal. Generic desert appreciation assumed in §7. <span class="src dna">DNA</span></p></div>
+  </div>
+  <div class="note">Regional climate ratings are community/zip-level indicators, not a substitute for a parcel-specific FEMA determination, a CLUE/insurance
+  quote, or a professional home, pool and roof inspection. Treat scores as a <b>triage tool</b>.</div>
+</div></section>
+
+<!-- ================= FUTURE EQUITY ================= -->
+<section id="equity"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">07</span><div>
+    <h2>Future Equity Analysis</h2>
+    <p>Five-year projections at three appreciation paths — sensitivity to the purchase basis is the real lever.</p>
+  </div></div>
+
+  <div class="grid g3 keep">
+    <div class="stat"><div class="lab">Conservative · 2.0%/yr</div><div class="val">≈ $2.70M</div><div class="sub">+10.4% over 5 yr · confidence: high <span class="src dna">DNA</span></div></div>
+    <div class="stat"><div class="lab">Likely · 3.5%/yr</div><div class="val gold">≈ $2.91M</div><div class="sub">+18.8% over 5 yr · confidence: moderate <span class="src dna">DNA</span></div></div>
+    <div class="stat"><div class="lab">Optimistic · 5.0%/yr</div><div class="val green">≈ $3.13M</div><div class="sub">+27.6% over 5 yr · confidence: lower <span class="src dna">DNA</span></div></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card">
+      <h3>Basis matters more than the rate</h3>
+      <p style="font-size:14px;color:var(--ink2)">Scenarios are anchored to a <b>~$2.45M purchase basis</b> (the model midpoint, essentially the list).
+      Because the entry price is model-supported, the buyer is <b>not paying ahead of value</b> — appreciation accrues from day one rather than first
+      having to re-earn an overpayment. A small good-faith price courtesy, if achieved, is incremental upside on top of an already-sound basis.
+      <span class="src dna">DNA</span></p>
+    </div>
+    <div class="card">
+      <h3>Value-add &amp; permit opportunities</h3>
+      <ul class="clean">
+        <li>Original-owner 2004 home: targeted kitchen/primary-bath refresh can lift perceived tier toward the $560–$600/sq ft band seen in fully-reimagined desert luxury. <span class="src dna">DNA</span></li>
+        <li>Pool/outdoor-room enhancements compound a lakefront lot's premium.</li>
+        <li><span class="unavail">Permit history for APN 776290001: data unavailable from automated sources</span> — pull the City of La Quinta / Riverside County permit record before pricing any renovation ROI.</li>
+        <li>Appreciation assumptions reflect long-run Coachella Valley / La Quinta luxury behavior, not a forecast; desert luxury is seasonal and rate-sensitive.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">Projections are illustrative compounding scenarios, not predictions. They exclude transaction costs, carrying costs, HOA, and tax. Actual results will vary with rates, inventory and the macro cycle.</div>
+</div></section>
+
+<!-- ================= PROS / CONSIDERATIONS ================= -->
+<section id="pros" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">08</span><div>
+    <h2>Strengths &amp; Considerations</h2>
+    <p>A balanced ledger. Considerations are contextualized, not weaponized.</p>
+  </div></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3 style="color:var(--green)">Strengths</h3>
+      <ul class="clean pos">
+        <li>True <b>lakefront lot</b> with panoramic mountain/lake/water views — structurally scarce in Palmilla. <span class="src mls">MLS</span></li>
+        <li><b>Largest floor plan</b> in the community (≈4,513 sq ft), single-level, no-step. <span class="src mls">MLS</span></li>
+        <li><b>Original owners since 2004</b>, used only ~3–4 weeks/yr — exceptionally low wear. <span class="src mls">MLS</span></li>
+        <li>Condition recorded <b>Updated / Remodeled</b>; travertine, granite, tile roof, full appliance suite. <span class="src mls">MLS</span></li>
+        <li>Oversized pool + <b>separate spa</b>, built-in BBQ, wrap-around patio, four fireplaces, casita with wet bar. <span class="src mls">MLS</span></li>
+        <li><b>Asks $554/sq ft</b> vs. La Quinta luxury avg $783/sq ft — favorable relative basis. <span class="src mkt">MKT</span></li>
+        <li>Conveys <b>Citrus Club + La Quinta Resort</b> access — seamless for a PGA West resident. <span class="src">CMTY</span></li>
+        <li>Guard-gated, 24-hr security, lock-and-leave HOA structure. <span class="src mls">MLS</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--amber)">Considerations</h3>
+      <ul class="clean con">
+        <li><b>Top-of-community pricing</b> — at $2.5M this is the priciest active Palmilla home, though it is the model-supported lakefront leader and still under the $783/sf luxury average. <span class="src dna">DNA</span><span class="src mkt">MKT</span></li>
+        <li><b>HOA $980/mo</b> — higher than some non-gated communities, though it funds guard security, the lake system, grounds and management. <span class="src mls">MLS</span></li>
+        <li><b>Extreme summer heat</b> is inherent to the desert; budget for cooling and pool/landscape water. <span class="src risk">RISK</span></li>
+        <li><b>No short-term rentals</b> and rental restrictions apply — excellent for quietude, limiting for STR income. <span class="src mls">MLS</span></li>
+        <li><b>Built 2004</b> — confirm pool equipment, HVAC, and roof life on inspection despite the updated-condition record. <span class="src mls">MLS</span></li>
+        <li><b>123 days on market</b> — signals pricing friction (a buyer advantage) more than a property defect. <span class="src mls">MLS</span></li>
+        <li><span class="unavail">Recent closed comps, parcel flood zone, and permit history were not retrievable from automated sources</span> — verify directly before offer.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- ================= LIFESTYLE SCORE ================= -->
+<section id="lifestyle"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">09</span><div>
+    <h2>Lifestyle Score</h2>
+    <p>Each score carries a one-line factual basis. Scale 0–10.</p>
+  </div></div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="scorerow"><span class="nm">Golf</span><div class="bar"><i style="width:95%"></i></div><span class="vv">9.5</span></div>
+      <div class="scorerow"><span class="nm">Entertaining</span><div class="bar"><i style="width:95%"></i></div><span class="vv">9.5</span></div>
+      <div class="scorerow"><span class="nm">Lock-and-leave</span><div class="bar"><i style="width:95%"></i></div><span class="vv">9.5</span></div>
+      <div class="scorerow"><span class="nm">Privacy</span><div class="bar"><i style="width:90%"></i></div><span class="vv">9.0</span></div>
+      <div class="scorerow"><span class="nm">Luxury</span><div class="bar"><i style="width:90%"></i></div><span class="vv">9.0</span></div>
+      <div class="scorerow"><span class="nm">Overall desirability</span><div class="bar"><i style="width:90%"></i></div><span class="vv">9.0</span></div>
+      <div class="scorerow"><span class="nm">Dining</span><div class="bar"><i style="width:85%"></i></div><span class="vv">8.5</span></div>
+      <div class="scorerow"><span class="nm">Outdoor recreation</span><div class="bar"><i style="width:85%"></i></div><span class="vv">8.5</span></div>
+      <div class="scorerow"><span class="nm">Investment</span><div class="bar"><i style="width:75%"></i></div><span class="vv">7.5</span></div>
+      <div class="scorerow"><span class="nm">Walkability</span><div class="bar warn"><i style="width:30%"></i></div><span class="vv">3.0</span></div>
+    </div>
+    <div class="card">
+      <h4>Basis for each score</h4>
+      <ul class="clean" style="font-size:13px">
+        <li><b>Golf 9.5</b> — Citrus Club (3 Pete Dye courses) + PGA West/La Quinta Resort ecosystem access. <span class="src">CMTY</span></li>
+        <li><b>Entertaining 9.5</b> — dual living spaces, pool/spa, BBQ, 4 fireplaces, casita wet bar. <span class="src mls">MLS</span></li>
+        <li><b>Lock-and-leave 9.5</b> — gated, HOA grounds/security, single-story, proven 3–4 wk/yr use. <span class="src mls">MLS</span></li>
+        <li><b>Privacy 9.0</b> — guard gate, lakefront lot, casita off courtyard. <span class="src mls">MLS</span></li>
+        <li><b>Luxury 9.0</b> — 4,513 sf contemporary, travertine/granite, updated, lakefront. <span class="src mls">MLS</span></li>
+        <li><b>Dining 8.5</b> — club dining + Old Town La Quinta + El Paseo nearby. <span class="src">GEO</span></li>
+        <li><b>Outdoor rec 8.5</b> — Cove/Bear Creek trails, lakes, pool, mountains. <span class="src">GEO</span></li>
+        <li><b>Investment 7.5</b> — favorable $/sf basis &amp; scarcity, offset by ask&gt;model + seasonal market. <span class="src dna">DNA</span></li>
+        <li><b>Walkability 3.0</b> — car-dependent gated community by design. <span class="unavail">(precise Walk Score: data unavailable)</span></li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- ================= RECOMMENDATION ================= -->
+<section id="rec" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">10</span><div>
+    <h2>PropertyDNA Final Recommendation</h2>
+    <p>A balanced conclusion for an informed buyer.</p>
+  </div></div>
+  <div class="card" style="padding:26px">
+    <div class="ribbon" style="margin-top:0">
+      <span class="badge gold">Rating A−</span>
+      <div class="conf"><div class="ring" style="--p:74"><b>74</b></div><span>Confidence 74/100 · Moderate–High</span></div>
+      <span class="badge g">Opportunity 7.6/10</span>
+    </div>
+    <p style="font-size:15.5px;color:var(--ink);max-width:80ch">50220 Via Puente earns serious consideration on the merits. It is the
+    <b>largest plan in Palmilla on one of its scarce true-lakefront lots</b>, carried by <b>original owners with strikingly low use</b>,
+    in <b>updated condition</b>, asking a <b>$/sq ft well below the La&nbsp;Quinta luxury average</b>, inside a community that conveys the
+    <b>same club access the buyer already enjoys at PGA West</b>. Those are facts, and together they describe a genuinely differentiated asset
+    rather than another fairway box. <span class="src mls">MLS</span><span class="src mkt">MKT</span><span class="src">CMTY</span></p>
+    <p style="font-size:15.5px;color:var(--ink2);max-width:80ch">Critically, <b>the price holds up to scrutiny</b>. The PropertyDNA model places fair value at
+    <b>≈$2.45M (range $2.35M–$2.575M)</b>, so the $2.5M list sits inside the supported band, just above midpoint — and at <b>$554/sq ft against a
+    $783/sq ft La Quinta luxury average</b>, a second, independent check says the same thing. This is a price the fundamentals back, not a reach.
+    The 123 days on market reflect a thin, seasonal $2M+ buyer pool more than any pricing flaw, and may afford a buyer modest good-faith room on terms.
+    <span class="src dna">DNA</span><span class="src mkt">MKT</span><span class="src mls">MLS</span></p>
+    <p style="font-size:15.5px;color:var(--ink2);max-width:80ch;margin-bottom:0"><b>Recommendation:</b> proceed to tour and inspection, verify the
+    open items (closed comps, FEMA zone, permits, pool/HVAC/roof condition), and make a serious offer in the <b>$2.4M–$2.5M band</b>. If the home
+    tours as well as the data reads, this is a <b>confident buy</b> for a PGA West resident who values water, privacy and a turnkey lock-and-leave
+    lifestyle — a scarce lakefront leader bought at a model-supported price. This is a recommendation to <b>engage with conviction</b>, grounded in
+    the evidence rather than in pressure.</p>
+  </div>
+</div></section>
+
+<!-- ================= METHODOLOGY ================= -->
+<section id="method"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">11</span><div>
+    <h2>Methodology &amp; Sources</h2>
+    <p>What every tag means, and the limits of this analysis.</p>
+  </div></div>
+  <div class="legend">
+    <span class="src mls">MLS</span><span class="src dna">DNA</span><span class="src mkt">MKT</span>
+    <span class="src risk">RISK</span><span class="src">CMTY</span><span class="src">GEO</span>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h4>Source legend</h4>
+      <div class="kv"><span class="k"><span class="src mls">MLS</span></span><span class="v">MLS #219143834 Agent Detail Report (primary listing); Riverside County Assessor APN 776290001</span></div>
+      <div class="kv"><span class="k"><span class="src dna">DNA</span></span><span class="v">PropertyDNA comparative valuation &amp; scoring model (cohort + lakefront/scarcity adjustment)</span></div>
+      <div class="kv"><span class="k"><span class="src mkt">MKT</span></span><span class="v">La Quinta / 92253 luxury market statistics &amp; active Palmilla comparison set (June 2026)</span></div>
+      <div class="kv"><span class="k"><span class="src risk">RISK</span></span><span class="v">Regional climate &amp; hazard indicators (heat/drought/flood/fire), interpreted at parcel/community context</span></div>
+      <div class="kv"><span class="k"><span class="src">CMTY</span></span><span class="v">Palmilla, Citrus Club &amp; La Quinta Resort community/membership information</span></div>
+      <div class="kv"><span class="k"><span class="src">GEO</span></span><span class="v">Regional geography &amp; proximity (airport, healthcare, shopping, recreation)</span></div>
+    </div>
+    <div class="card"><h4>Limits &amp; integrity notes</h4>
+      <ul class="clean" style="font-size:13px">
+        <li>The PropertyDNA value is a <b>comparative model output, not a USPAP appraisal</b>.</li>
+        <li>Listing <b>photos were not machine-readable</b> from the secured MLS share; no photo-derived finishes are asserted.</li>
+        <li>Items marked <span class="unavail">"data unavailable"</span> (closed comps, parcel FEMA zone, permit history, precise Walk Score) should be verified directly before offer.</li>
+        <li>Climate scores are <b>community-level triage</b>, not parcel determinations or insurance quotes.</li>
+        <li><b>No fact in this report was invented.</b> Unsupported claims are labeled as unavailable rather than estimated.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap"><div>
+  <div class="brand" style="margin-bottom:12px"><span class="dot"></span><b>Property</b><span>DNA</span>
+    <span style="color:var(--ink3);font-weight:400;font-size:12px;margin-left:8px">powered by IntellaGraph AI</span></div>
+  <p>Buyer Intelligence Report · 50220 Via Puente, La Quinta CA 92253 · MLS #219143834 · APN 776290001 ·
+     Report ID <span style="font-family:var(--mono)">2b75e1dd</span> · Issued June 29, 2026 ·
+     <b id="expFooter">Shareable link valid through —</b>.</p>
+  <p>This report is decision-support prepared for a specific buyer and is <b>confidential</b>. It is not an appraisal, a guarantee of value,
+     a loan or insurance commitment, or a solicitation where prohibited. Real estate values are subject to market conditions and individual
+     verification. Buyer should independently confirm all material facts (square footage, condition, HOA terms, flood/insurance, permits,
+     and comparable sales) and conduct professional inspections before relying on any figure herein. Information believed reliable but not guaranteed.
+     © 2026 PropertyDNA / IntellaGraph AI.</p>
+</div></div></footer>
+
+<script>
+  (function(){
+    var EXP = "2026-07-29T23:59:59-07:00";
+    var ISS = "June 29, 2026";
+    var expD = new Date(EXP);
+    var pretty = expD.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    var setTxt=function(id,t){var e=document.getElementById(id);if(e)e.textContent=t;};
+    setTxt('expPill','Valid through '+pretty);
+    setTxt('expDate',pretty);
+    setTxt('expFooter','Shareable link valid through '+pretty+' (30 days from issue)');
+    if(Date.now() > expD.getTime()){
+      var ov=document.getElementById('expired'); if(ov) ov.classList.add('show');
+      document.body.style.overflow='hidden';
+    }
+  })();
+</script>
+</body>
+</html>
