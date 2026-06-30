@@ -15,7 +15,7 @@ const db = require("./_supabase");
 const { ingestProperty }   = require("./property-ingest");
 const { enrichProperty }   = require("./enrich-property");
 const { rentcastEnrich }   = require("./rentcast-enrich");
-const { lookupCommunity }  = require("./_cv_luxury_index");
+const { lookupCommunity, lookupCommunityByAddress } = require("./_cv_luxury_index");
 const { rankCompsCommunityFirst } = require("./_community_comps");
 const {
   deriveLuxuryScores,
@@ -657,7 +657,16 @@ function autoDetectFeatures(reportData) {
   const subdivision = prop.subdivision || prop.neighborhood || subj.subdivision || subj.neighborhood
     || prop.community || subj.community || "";
   const lookupCity = subj.city || prop.city || "";
-  const communityPremium = lookupCommunity(subdivision, lookupCity);
+  let communityPremium = lookupCommunity(subdivision, lookupCity);
+  // Fallback: infer the community from the street address (e.g. "2466 Southridge Dr"
+  // -> Southridge) when no subdivision/neighborhood field is present — common on the
+  // RentCast-free internal path, where the subject community would otherwise be missed
+  // and the luxury pedigree premium would never fire (the cause of Southridge valuing
+  // at a city-median $530K instead of its trophy tier).
+  if (!communityPremium) {
+    const subjAddr = subj.address || prop.address || prop.formattedAddress || "";
+    if (subjAddr) communityPremium = lookupCommunityByAddress(subjAddr, lookupCity);
+  }
   if (communityPremium) features.historic_enclave = false;
 
   return { features, aduSqft, poolAddOnCost, communityPremium };
