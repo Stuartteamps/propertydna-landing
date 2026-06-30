@@ -853,14 +853,24 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
   // Luxury market premium: AVM confidence degrades above $1.5M due to sparse comps.
   // Scales with smart-base mid because the comp-set thins out dramatically with price
   // (RentCast's training set has ~10x more $700K-$1.5M sales than $3M+ sales).
+  //
+  // CALIBRATION 2026-06-29: back-test against 95 PS matched pairs (after consensus
+  // non-arms-length filter at 0.70 threshold) showed:
+  //   $1M-$2M : MdAPE 8.2%, bias +1.4% (well calibrated — leave at +4%)
+  //   $2M-$5M : MdAPE 10.8%, bias -10.6% (model UNDER-values by ~11% — bump mid +8→+15)
+  //   $5M+    : MdAPE 19.2%, bias -19.2% (model UNDER-values by ~19% — bump mid +12→+25)
+  // Trophy ($5M+) low/high bumped proportionally. $3-5M tier rebalanced to bridge.
+  // n=11 across the $2M+ tiers is statistically thin; revisit after more luxury data.
   if (luxuryTier) {
     let LUXURY_PCT;
     if (smartMid >= 5_000_000) {
-      LUXURY_PCT = { pct_low: 8,  pct_mid: 12, pct_high: 20, label: "Trophy Market Premium ($5M+)" };
+      LUXURY_PCT = { pct_low: 16, pct_mid: 25, pct_high: 36, label: "Trophy Market Premium ($5M+, calibrated 2026-06-29)" };
     } else if (smartMid >= 3_000_000) {
-      LUXURY_PCT = { pct_low: 5,  pct_mid: 8,  pct_high: 15, label: "High-Luxury Premium ($3-5M)" };
+      LUXURY_PCT = { pct_low: 10, pct_mid: 16, pct_high: 25, label: "High-Luxury Premium ($3-5M, calibrated 2026-06-29)" };
+    } else if (smartMid >= 2_000_000) {
+      LUXURY_PCT = { pct_low: 8,  pct_mid: 13, pct_high: 20, label: "Luxury-Plus Premium ($2-3M, calibrated 2026-06-29)" };
     } else {
-      LUXURY_PCT = { pct_low: 2,  pct_mid: 4,  pct_high: 8,  label: "Luxury Market Premium" };
+      LUXURY_PCT = { pct_low: 2,  pct_mid: 4,  pct_high: 8,  label: "Luxury Market Premium ($1.5-2M)" };
     }
     totalLow  += LUXURY_PCT.pct_low;
     totalMid  += LUXURY_PCT.pct_mid;

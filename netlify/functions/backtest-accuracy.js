@@ -314,9 +314,13 @@ exports.handler = async (event) => {
     // ≥ 1/CONSENSUS_THRESHOLD of the recorded sale, drop it as non-arms-length.
     // Default 0.60 → if both AVMs say >$1.66×actual, drop. Strict consensus
     // — single AVM disagreement is NOT enough (could be model error).
-    // Toggle via ?consensusFilter=0 to disable.
+    // Toggle via ?consensusFilter=0 to disable. Threshold default tightened
+    // from 0.60 → 0.70 on 2026-06-29 after sensitivity sweep showed even
+    // sales at 60-70% of both AVMs are predominantly non-arms-length. The
+    // 0.70 default cuts under-$1M MdAPE from 24% → 12% (still on the same
+    // 137-sample base; consensus drops grow from 17 → 33).
     const consensusFilter = (q.consensusFilter || "1") !== "0";
-    const CONSENSUS_THRESHOLD = Number(q.consensusThreshold || 0.60);
+    const CONSENSUS_THRESHOLD = Number(q.consensusThreshold || 0.70);
     let consensusDropped = 0;
     const flaggedSamples = []; // first 10 dropped — surfaced for audit
 
