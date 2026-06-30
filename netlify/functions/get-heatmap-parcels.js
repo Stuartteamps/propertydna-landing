@@ -243,7 +243,7 @@ async function fetchInternalListings(city, limit) {
   try {
     const rows = await db.from('property_master')
       .select('apn,address,formatted_address,city,zip,lat,lng,beds,baths,sqft,year_built,property_type,rentcast_value,tax_assessed_value')
-      .eq('city', city)
+      .eq('city', city.toUpperCase())  // property_master stores city UPPERCASE; eq uses the city index (fast)
       .limit(limit)
       .get();
     if (!Array.isArray(rows) || !rows.length) return null;
@@ -277,16 +277,6 @@ exports.handler = async (event) => {
 
   // One-shot diagnostic (?debug=1): reveal what the internal tables actually hold
   // for this city so we wire the fallback to real columns, not guesses.
-  if (params.debug) {
-    const out = { city };
-    const probe = async (label, builder) => { try { const r = await builder; out[label] = { n: Array.isArray(r) ? r.length : 'na', sample: (r && r[0]) || null }; } catch (e) { out[label] = { err: e.message }; } };
-    await probe('properties_ilike', db.from('properties').select('id,city,latitude,longitude,current_estimated_value').ilike('city', city).limit(2).get());
-    await probe('pm_city_eq', db.from('property_master').select('apn,city,lat,lng,rentcast_value,tax_assessed_value').eq('city', city).limit(2).get());
-    await probe('pm_city_upper', db.from('property_master').select('apn,city,lat,lng,rentcast_value').eq('city', city.toUpperCase()).limit(2).get());
-    await probe('pm_city_ilike', db.from('property_master').select('apn,city,lat,lng,rentcast_value').ilike('city', city).limit(2).get());
-    return { statusCode: 200, headers: CORS, body: JSON.stringify(out) };
-  }
-
   try {
     const qs = new URLSearchParams({ city, state, status: 'Active', limit: String(limit), offset: '0' });
 
