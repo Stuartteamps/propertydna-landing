@@ -214,7 +214,7 @@ function scoreParcels(listings, cityPermitActivity) {
 async function fetchInternalListings(city, limit) {
   try {
     const rows = await db.from('properties')
-      .select('id,address,city,state,zip,latitude,longitude,beds,baths,sqft,year_built,last_sale_price,last_sale_date,current_estimated_value,property_type')
+      .select('id,address,city,state,zip,latitude,longitude,beds,baths,sqft,year_built,last_sale_price,last_sale_date,current_estimated_value,property_type_normalized')
       .ilike('city', city)
       .limit(limit)
       .get();
@@ -234,7 +234,7 @@ async function fetchInternalListings(city, limit) {
         bedrooms: r.beds || 0, bathrooms: r.baths || 0,
         yearBuilt: r.year_built || 0,
         daysOnMarket: null,
-        propertyType: r.property_type || 'Single Family',
+        propertyType: r.property_type_normalized || 'Single Family',
       };
     }).filter(l => l.latitude && l.longitude && l.price > 0);
     return mapped.length ? mapped : null;
