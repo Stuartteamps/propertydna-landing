@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Analyze from "./pages/Analyze";
+import PriceCheck from "./pages/PriceCheck";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
@@ -81,6 +82,10 @@ const AppRoutes = () => (
     <Route path="/" element={<Landing />} />
     <Route path="/home" element={<Index />} />
     <Route path="/analyze" element={<Analyze />} />
+    <Route path="/price-check" element={<PriceCheck />} />
+    <Route path="/is-it-overpriced" element={<PriceCheck />} />
+    <Route path="/overpriced" element={<PriceCheck />} />
+    <Route path="/value" element={<PriceCheck />} />
     <Route path="/pricing" element={<Pricing />} />
     <Route path="/about" element={<About />} />
     <Route path="/how-it-works" element={<HowItWorks />} />
