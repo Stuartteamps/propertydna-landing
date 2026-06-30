@@ -8,10 +8,17 @@
 const db = require("./_supabase");
 
 exports.handler = async (event) => {
-  const { e: encoded, c: campaignId } = event.queryStringParameters || {};
+  const { e: encoded, email: plainEmail, c: campaignId } = event.queryStringParameters || {};
 
+  // Engagement emails (_engage.js) send a plaintext ?email= param; campaign emails
+  // send a base64 ?e= param. Accept BOTH — previously the engagement link 400'd
+  // because only ?e= was parsed (a CAN-SPAM compliance bug + churn amplifier).
   let email = "";
-  try { email = Buffer.from(encoded || "", "base64").toString("utf8").toLowerCase().trim(); } catch {}
+  if (plainEmail) {
+    email = String(plainEmail).toLowerCase().trim();
+  } else {
+    try { email = Buffer.from(encoded || "", "base64").toString("utf8").toLowerCase().trim(); } catch {}
+  }
 
   if (!email || !email.includes("@")) {
     return {
@@ -26,6 +33,19 @@ exports.handler = async (event) => {
     await db.upsert("campaign_unsubscribes", { email }, "email");
   } catch (err) {
     console.error("[unsubscribe]", err.message);
+  }
+
+  // Also suppress ENGAGEMENT emails — the engagement consent model (_engage.js
+  // shouldSend) reads notification_preferences, not campaign_unsubscribes. Without
+  // this dual-write an engagement unsubscribe would not stop future engagement
+  // sends. Best-effort (no-op if the table/constraint isn't present).
+  try {
+    await db.upsert("notification_preferences", {
+      email, agent: "all", channel: "all", enabled: false,
+      updated_at: new Date().toISOString(),
+    }, "email,agent,channel");
+  } catch (err) {
+    console.warn("[unsubscribe] notification_preferences:", err.message);
   }
 
   // Mark any pending/sent contacts for this email as unsubscribed
