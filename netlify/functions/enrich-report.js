@@ -18,6 +18,7 @@
  */
 const https = require("https");
 const db = require("./_supabase");
+const { appreciateToToday: hpiAppreciate } = require("./_hpi_index");
 
 const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").replace(/\/$/, "");
 const RENTCAST_KEY = process.env.RENTCAST_API_KEY;
@@ -376,7 +377,7 @@ async function buildInternalFallback({ address, city, state, zip, props }) {
   if (!marketValue && subj) {
     const est = pickNum(subj, ["current_estimated_value"]);
     if (est) { marketValue = est; source = "internal_fallback:properties_estimate"; spread = 0.18; }
-    else if (subjLastSale) { marketValue = appreciate(subjLastSale, subjLastSaleDate); source = "internal_fallback:properties_last_sale"; spread = 0.22; }
+    else if (subjLastSale) { const _hpi = hpiAppreciate(subjLastSale, subjLastSaleDate, { zip: subjZip, city: subjCity, state: subjState }); marketValue = _hpi.value; source = "internal_fallback:properties_last_sale+hpi"; spread = 0.22; }
   }
 
   // ── B. sold-comp $/sqft (only if A produced nothing) ─────────────────────────
@@ -401,7 +402,7 @@ async function buildInternalFallback({ address, city, state, zip, props }) {
       const lsd = crestDate(feat.LAST_SALE_DATE);
       const total = Number(feat.TOTAL_VALUE) || null;
       if (lsa && lsa > 50000) {
-        marketValue = appreciate(lsa, lsd); source = "internal_fallback:crest_sale"; spread = 0.20;
+        marketValue = hpiAppreciate(lsa, lsd, { zip: subjZip, city: subjCity, state: subjState }).value; source = "internal_fallback:crest_sale+hpi"; spread = 0.20;
         sale.lastSalePrice = lsa; sale.lastSaleDate = lsd;
       } else if (total && total > 50000) {
         marketValue = total; source = "internal_fallback:crest_assessed"; spread = 0.25;
