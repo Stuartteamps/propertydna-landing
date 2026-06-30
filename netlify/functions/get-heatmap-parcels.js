@@ -1,4 +1,5 @@
 const https = require('https');
+const db = require('./_supabase');
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -206,6 +207,42 @@ function scoreParcels(listings, cityPermitActivity) {
   });
 }
 
+// Internal sales fallback — used when RentCast is unavailable/empty (e.g. a lapsed
+// subscription) so the map still shows real properties from our own indexed sales.
+// Mapped to the same shape scoreParcels expects. The `properties` table is small
+// enough for a case-insensitive city match (ilike), unlike the 10M-row master.
+async function fetchInternalListings(city, limit) {
+  try {
+    const rows = await db.from('properties')
+      .select('id,address,city,state,zip,latitude,longitude,beds,baths,sqft,year_built,last_sale_price,last_sale_date,current_estimated_value,property_type')
+      .ilike('city', city)
+      .limit(limit)
+      .get();
+    if (!Array.isArray(rows) || !rows.length) return null;
+    const mapped = rows.map(r => {
+      const price = Number(r.current_estimated_value || r.last_sale_price || 0);
+      const sqft  = r.sqft ? Number(r.sqft) : null;
+      return {
+        id: r.id,
+        formattedAddress: r.address,
+        addressLine1: r.address,
+        city: r.city, state: r.state || 'CA', zipCode: r.zip,
+        latitude: Number(r.latitude), longitude: Number(r.longitude),
+        price,
+        squareFootage: sqft,
+        pricePerSquareFoot: (sqft && price) ? Math.round(price / sqft) : null,
+        bedrooms: r.beds || 0, bathrooms: r.baths || 0,
+        yearBuilt: r.year_built || 0,
+        daysOnMarket: null,
+        propertyType: r.property_type || 'Single Family',
+      };
+    }).filter(l => l.latitude && l.longitude && l.price > 0);
+    return mapped.length ? mapped : null;
+  } catch {
+    return null;
+  }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS, body: '' };
@@ -230,7 +267,16 @@ exports.handler = async (event) => {
       ?? CITY_PERMIT_BASELINES[city.toLowerCase()]
       ?? 50;
 
-    if (!data || !Array.isArray(data)) {
+    let valid = (Array.isArray(data) ? data : []).filter(l => l.latitude && l.longitude && l.price > 0);
+    let source = 'rentcast+census';
+
+    // RentCast unavailable/empty → serve our own indexed sales so the map is never blank.
+    if (!valid.length) {
+      const internal = await fetchInternalListings(city, limit);
+      if (internal && internal.length) { valid = internal; source = 'internal+census'; }
+    }
+
+    if (!valid.length) {
       return {
         statusCode: 200,
         headers: CORS,
@@ -238,7 +284,6 @@ exports.handler = async (event) => {
       };
     }
 
-    const valid = data.filter(l => l.latitude && l.longitude && l.price > 0);
     const parcels = scoreParcels(valid, cityPermitActivity);
 
     return {
@@ -247,7 +292,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         parcels,
         count: parcels.length,
-        source: 'rentcast+census',
+        source,
         city,
         cityPermitActivity,
         permitDataSource: livePermitScore ? 'census_live' : 'census_precomputed',
