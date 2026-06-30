@@ -203,8 +203,15 @@ exports.handler = async (event) => {
     // computeClosestCompAnchor MAPE down from ~61% to ~33% on the comp side
     // (per the inline comment in save-report.js).
     //
-    // Toggle via ?psfFilter=0 to compare unfiltered numbers.
-    const psfFilter = (q.psfFilter || "1") !== "0";
+    // Toggle via ?psfFilter=1 to enable. Default OFF as of 2026-06-29: the
+    // naive cohort-PSF filter dropped LEGITIMATE luxury sales (2M-5M went
+    // 8→2 matched; 5M+ went 3→0) because luxury homes are PSF outliers
+    // within mixed cohorts (cohort median is dragged down by regular homes).
+    // Under-$1M MdAPE was unchanged. Re-enable when the filter is rewritten
+    // to be tier-aware OR replaced with prediction-residual-based filtering
+    // (e.g. drop sales where price < 0.6x or > 1.8x of RentCast AVM —
+    // independent of cohort, catches non-arms-length without bucket bias).
+    const psfFilter = (q.psfFilter || "0") === "1";
     const filterStats = { soldsBeforeFilter: solds.length, droppedByPsf: 0, droppedNoSqft: 0, keptNoCohort: 0 };
 
     let cleanSolds = solds;
@@ -293,6 +300,26 @@ exports.handler = async (event) => {
       return '5M_plus';
     }
 
+    // ── Consensus non-arms-length filter ──────────────────────────────────
+    // Discovery 2026-06-29: top-10 under-$1M "overvaluations" all show
+    // PropertyDNA + RentCast (two independent AVMs) AGREE on ~$1-2M values
+    // while the "sale" was recorded at $145K-$650K — i.e. 25-50% of model.
+    // Example: 700 N Prescott Dr — PDNA $1.30M, RC $1.16M, "sold" $365K.
+    // Two independent AVMs do not agree by accident; the recorded transfer
+    // is almost certainly a trust deed, quit claim, probate, or foreclosure,
+    // not a market sale. Inclusion of these in ground truth corrupts the
+    // measured bias by ~25-30pp at the low end.
+    //
+    // Rule: when BOTH AVMs are populated AND BOTH say the property is worth
+    // ≥ 1/CONSENSUS_THRESHOLD of the recorded sale, drop it as non-arms-length.
+    // Default 0.60 → if both AVMs say >$1.66×actual, drop. Strict consensus
+    // — single AVM disagreement is NOT enough (could be model error).
+    // Toggle via ?consensusFilter=0 to disable.
+    const consensusFilter = (q.consensusFilter || "1") !== "0";
+    const CONSENSUS_THRESHOLD = Number(q.consensusThreshold || 0.60);
+    let consensusDropped = 0;
+    const flaggedSamples = []; // first 10 dropped — surfaced for audit
+
     for (const [hash, p] of byHash.entries()) {
       const sale = Number(p.last_sale_price);
       if (!sale || !p.last_sale_date) continue;
@@ -301,6 +328,35 @@ exports.handler = async (event) => {
       ages.push(yrs);
       const actual = appreciate > 0 ? sale * Math.pow(1 + appreciate, yrs) : sale;
       const pi = piByHash.get(hash);
+
+      // Consensus non-arms-length check: BOTH our AVM and RentCast must say
+      // the property is worth significantly more than recorded sale price.
+      // Single-AVM disagreement is NOT enough — that's a model error we
+      // WANT to measure, not hide. Two-AVM consensus = transfer is not market.
+      if (consensusFilter && pi) {
+        const pdnaMid = Number(pi.pdna_value_mid) || 0;
+        const rcMid   = Number(pi.rentcast_value) || 0;
+        if (pdnaMid > 0 && rcMid > 0) {
+          const pdnaRatio = sale / pdnaMid;
+          const rcRatio   = sale / rcMid;
+          if (pdnaRatio < CONSENSUS_THRESHOLD && rcRatio < CONSENSUS_THRESHOLD) {
+            consensusDropped++;
+            if (flaggedSamples.length < 10) {
+              flaggedSamples.push({
+                address: p.address,
+                zip:     p.zip,
+                sale,
+                pdnaMid,
+                rcMid,
+                pdnaRatio: +pdnaRatio.toFixed(2),
+                rcRatio:   +rcRatio.toFixed(2),
+              });
+            }
+            continue; // skip this sale
+          }
+        }
+      }
+
       const tier = priceTier(sale);
       // property_type not available on property_intelligence — bucketing falls
       // back to 'unknown' for the by-type breakdown. Phase 2: join to
@@ -342,9 +398,10 @@ exports.handler = async (event) => {
     const lines = [];
     lines.push(`PropertyDNA Back-Test — recorded sales since ${cutoff}`);
     if (psfFilter) {
-      lines.push(`Ground-truth PSF filter ON: pulled ${filterStats.soldsBeforeFilter} | dropped ${filterStats.droppedByPsf} non-arms-length | kept ${filterStats.kept || cleanSolds.length} (cohorts=${filterStats.cohortsBuilt || 0})`);
-    } else {
-      lines.push(`Ground-truth PSF filter OFF (?psfFilter=0) — raw ${solds.length}`);
+      lines.push(`Ground-truth PSF filter ON (?psfFilter=1): pulled ${filterStats.soldsBeforeFilter} | dropped ${filterStats.droppedByPsf} by PSF | kept ${filterStats.kept || cleanSolds.length} (cohorts=${filterStats.cohortsBuilt || 0})`);
+    }
+    if (consensusFilter) {
+      lines.push(`Consensus non-arms-length filter ON: dropped ${consensusDropped} sales where BOTH PDNA + RC AVMs > ${(1/CONSENSUS_THRESHOLD).toFixed(1)}× sale price (= trust/quit-claim/probate)`);
     }
     lines.push(`Matched to stored PropertyDNA value: ${propertydna.n || 0} (${((propertydna.n || 0) / (cleanSolds.length || 1) * 100).toFixed(0)}%)`);
     if (medianAgeYrs != null) lines.push(`Median sale age: ${medianAgeYrs} yrs${appreciate > 0 ? ` | time-adjusted forward at ${(appreciate * 100).toFixed(1)}%/yr` : ` | NOT time-adjusted (old sales inflate error — add &appreciate=6)`}`);
@@ -397,10 +454,12 @@ exports.handler = async (event) => {
         ok: true,
         ranAt: new Date().toISOString(),
         targetMdapePct: TARGET_MDAPE_PCT,
-        params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100, psfFilter },
+        params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100, psfFilter, consensusFilter, consensusThreshold: CONSENSUS_THRESHOLD },
         soldsPulled: solds.length,
         soldsAfterFilter: cleanSolds.length,
         groundTruthFilter: filterStats,
+        consensusDropped,
+        consensusFlaggedSamples: flaggedSamples,
         medianSaleAgeYrs: medianAgeYrs,
         matchRatePct: +(((propertydna.n || 0) / (cleanSolds.length || 1)) * 100).toFixed(1),
         propertydna,
