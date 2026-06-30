@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>PropertyDNA Buyer Intelligence Report — 9520 Ekwanok Drive, Desert Hot Springs</title>
+<meta name="description" content="Institutional buyer intelligence for 9520 Ekwanok Drive, Mission Lakes Country Club, Desert Hot Springs CA. Valuation, comps, risk, community and equity analysis — PropertyDNA." />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="/favicon.svg" />
+<style>
+  :root{
+    --bg:#070a0f; --bg2:#0c111a; --panel:#10161f; --panel2:#141c28;
+    --line:#1e2836; --line2:#283446;
+    --ink:#eef2f7; --ink2:#aab4c2; --ink3:#7f8b9c;
+    --gold:#c9a86a; --gold2:#e6c98a; --teal:#43c6b7; --green:#46c98a;
+    --red:#e1685f; --amber:#e0b24c; --blue:#5fa8e1;
+    --radius:16px; --maxw:1080px;
+    --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 18px 50px rgba(0,0,0,.45);
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:
+      radial-gradient(1200px 700px at 78% -8%, rgba(67,198,183,.09), transparent 55%),
+      radial-gradient(900px 600px at 8% 4%, rgba(201,168,106,.06), transparent 50%),
+      var(--bg);
+    color:var(--ink);font-family:var(--font);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    line-height:1.55;letter-spacing:.005em;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  a{color:var(--gold2);text-decoration:none}
+  h1,h2,h3,h4{margin:0;font-weight:650;letter-spacing:-.01em;line-height:1.2}
+  p{margin:0 0 14px}
+  small{color:var(--ink3)}
+  .topbar{position:sticky;top:0;z-index:40;backdrop-filter:saturate(140%) blur(14px);
+    background:rgba(7,10,15,.72);border-bottom:1px solid var(--line)}
+  .topbar .wrap{display:flex;align-items:center;gap:14px;height:58px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
+  .brand .dot{width:11px;height:11px;border-radius:3px;background:
+    conic-gradient(from 210deg,var(--gold),var(--teal),var(--gold));box-shadow:0 0 14px rgba(201,168,106,.6)}
+  .brand b{color:var(--ink)}.brand span{color:var(--gold2)}
+  .topbar .spacer{flex:1}
+  .pill{font-size:11.5px;color:var(--ink2);border:1px solid var(--line);padding:5px 11px;border-radius:999px;white-space:nowrap}
+  .btn{font:inherit;font-size:12.5px;font-weight:600;color:#0a0d12;background:linear-gradient(180deg,var(--gold2),var(--gold));
+    border:0;border-radius:999px;padding:8px 15px;cursor:pointer;white-space:nowrap}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+  .hero{padding:46px 0 14px;border-bottom:1px solid var(--line)}
+  .kicker{display:inline-flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gold2);font-weight:600}
+  .kicker::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+  .hero h1{font-size:clamp(28px,5vw,46px);margin:14px 0 6px}
+  .hero .addr2{color:var(--ink2);font-size:clamp(15px,2.4vw,19px);font-weight:500}
+  .hero .meta{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:18px}
+  .tag{font-size:12px;color:var(--ink2);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+  .tag b{color:var(--ink);font-weight:600}
+  section{padding:40px 0;border-bottom:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
+  .sec-num{font-family:var(--mono);font-size:12px;color:var(--gold2);border:1px solid var(--line2);border-radius:7px;padding:3px 8px;flex:none}
+  .sec-head h2{font-size:clamp(20px,3vw,27px)}
+  .sec-head p{margin:6px 0 0;color:var(--ink3);font-size:13.5px}
+  .lead{font-size:16px;color:var(--ink2);max-width:74ch}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+  .card h3{font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .card h4{font-size:13px;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+  .stat{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:18px;position:relative;overflow:hidden}
+  .stat::after{content:"";position:absolute;inset:0 0 auto auto;width:90px;height:90px;background:radial-gradient(circle at 80% 10%,rgba(67,198,183,.16),transparent 60%)}
+  .stat .lab{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+  .stat .val{font-size:clamp(22px,3.4vw,30px);font-weight:700;margin-top:8px;letter-spacing:-.02em}
+  .stat .sub{font-size:12.5px;color:var(--ink2);margin-top:4px}
+  .stat .val.gold{color:var(--gold2)}.stat .val.teal{color:var(--teal)}.stat .val.green{color:var(--green)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--ink3);font-weight:600;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase}
+  td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tr.sub td{background:rgba(67,198,183,.06)}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  .tbl-wrap table th,.tbl-wrap table td{padding:12px 14px}
+  .tbl-wrap table tr:last-child td{border-bottom:0}
+  .bar{height:7px;border-radius:6px;background:#0a0f17;border:1px solid var(--line);overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--teal),var(--gold2))}
+  .bar.warn > i{background:linear-gradient(90deg,var(--amber),var(--red))}
+  .scorerow{display:grid;grid-template-columns:170px 1fr 46px;gap:12px;align-items:center;margin:9px 0}
+  .scorerow .nm{font-size:13.5px;color:var(--ink2)}
+  .scorerow .vv{font-family:var(--mono);font-size:13px;text-align:right;color:var(--ink)}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .kv:last-child{border-bottom:0}.kv .k{color:var(--ink3);font-size:13px}.kv .v{color:var(--ink);font-size:13.5px;font-weight:550;text-align:right}
+  ul.clean{list-style:none;padding:0;margin:0}
+  ul.clean li{position:relative;padding:8px 0 8px 24px;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink2)}
+  ul.clean li:last-child{border-bottom:0}
+  ul.clean li::before{content:"";position:absolute;left:2px;top:14px;width:7px;height:7px;border-radius:2px;background:var(--gold2)}
+  ul.clean.pos li::before{background:var(--green)}
+  ul.clean.con li::before{background:var(--amber)}
+  .src{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--ink3);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-left:6px;vertical-align:1.5px;white-space:nowrap}
+  .src.mls{color:var(--gold2);border-color:rgba(201,168,106,.4)}
+  .src.dna{color:var(--teal);border-color:rgba(67,198,183,.4)}
+  .src.risk{color:var(--amber);border-color:rgba(224,178,76,.35)}
+  .note{font-size:12.5px;color:var(--ink3);border-left:2px solid var(--line2);padding:4px 0 4px 12px;margin:14px 0}
+  .unavail{color:var(--ink3);font-style:italic}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:4px 11px}
+  .badge.g{color:var(--green);background:rgba(70,201,138,.10);border:1px solid rgba(70,201,138,.28)}
+  .badge.a{color:var(--amber);background:rgba(224,178,76,.10);border:1px solid rgba(224,178,76,.28)}
+  .badge.gold{color:var(--gold2);background:rgba(201,168,106,.1);border:1px solid rgba(201,168,106,.3)}
+  .ribbon{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 2px}
+  .conf{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink2)}
+  .conf .ring{--p:71;width:46px;height:46px;border-radius:50%;flex:none;background:conic-gradient(var(--teal) calc(var(--p)*1%),#16202c 0);display:grid;place-items:center;position:relative}
+  .conf .ring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--bg2)}
+  .conf .ring b{position:relative;font-family:var(--mono);font-size:12px;color:var(--ink)}
+  @media (max-width:820px){
+    .g2,.g3,.g4,.stats{grid-template-columns:1fr}
+    .g3.keep,.g4.keep{grid-template-columns:1fr 1fr}
+    .scorerow{grid-template-columns:130px 1fr 40px}
+    .hide-sm{display:none}
+  }
+  footer{padding:40px 0 70px;color:var(--ink3);font-size:12.5px}
+  footer .wrap > div{max-width:80ch}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .legend .src{margin:0}
+  #expired{display:none;position:fixed;inset:0;z-index:99;background:rgba(5,8,12,.96);place-items:center;text-align:center;padding:30px}
+  #expired.show{display:grid}
+  #expired .box{max-width:440px}
+  #expired h2{font-size:24px;margin-bottom:10px}
+  @media print{
+    :root{--bg:#fff;--bg2:#fff;--panel:#fff;--panel2:#f6f7f9;--line:#d9dee6;--line2:#c5ccd6;
+      --ink:#10151c;--ink2:#33414f;--ink3:#5f6b79;--gold2:#9a7d3e;--teal:#1f8d7f;--green:#1f8d56;--shadow:none}
+    body{background:#fff}
+    .topbar,.no-print,.btn{display:none !important}
+    .hero{padding-top:8px}
+    section{padding:18px 0;break-inside:avoid}
+    .card,.stat,.tbl-wrap,.scorerow{break-inside:avoid}
+    section.page{break-before:page}
+    a{color:var(--ink)}.src{color:#7a8290 !important}
+    .stat::after,.stat::before{display:none}
+    @page{margin:14mm 12mm}
+  }
+</style>
+</head>
+<body>
+
+<div id="expired"><div class="box">
+  <div class="brand" style="justify-content:center;margin-bottom:14px"><span class="dot"></span><b>Property</b><span>DNA</span></div>
+  <h2>This shareable report has expired</h2>
+  <p style="color:var(--ink2)">For privacy, public PropertyDNA reports are available for 30 days. This link expired on <b id="expDate"></b>. Please request a refreshed report.</p>
+</div></div>
+
+<div class="topbar no-print"><div class="wrap">
+  <div class="brand"><span class="dot"></span><b>Property</b><span>DNA</span></div>
+  <span class="pill hide-sm">Buyer Intelligence · Confidential</span>
+  <div class="spacer"></div>
+  <span class="pill" id="expPill">Valid through —</span>
+  <button class="btn ghost" onclick="navigator.clipboard&&navigator.clipboard.writeText(location.href);this.textContent='Link copied'">Share</button>
+  <button class="btn" onclick="window.print()">Save PDF</button>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <div class="kicker">PropertyDNA · Buyer Intelligence Report</div>
+  <h1>9520 Ekwanok Drive</h1>
+  <div class="addr2">Mission Lakes Country Club · Desert Hot Springs, California 92240</div>
+  <div class="meta">
+    <span class="tag"><b>$395,000</b> list price</span>
+    <span class="tag"><b>3</b> bd · <b>2</b> ba</span>
+    <span class="tag"><b>2,252</b> sq ft</span>
+    <span class="tag"><b>7,841</b> sq ft lot (0.18 ac)</span>
+    <span class="tag">Built <b>1988</b></span>
+    <span class="tag">Golf community · unlimited golf in HOA</span>
+    <span class="tag">$175.40 / sq ft</span>
+    <span class="tag">MLS <b>219148408</b></span>
+  </div>
+  <div class="ribbon">
+    <span class="badge gold">PropertyDNA Rating: B+</span>
+    <span class="badge g">$175/sf vs. $221/sf DHS median — priced for value</span>
+    <span class="badge g">Unlimited golf for two included in $465 HOA</span>
+  </div>
+  <p class="note" style="margin-top:18px">Prepared for prospective buyers — owner-occupants, second-home buyers, golfers, retirees, and investors.
+  This is institutional-grade decision support: every material claim is tagged to its originating source.
+  It is not a solicitation, an appraisal, or a guarantee of value.</p>
+</div></header>
+
+<!-- 01 EXEC SUMMARY -->
+<section id="summary"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">01</span><div>
+    <h2>Executive Summary</h2>
+    <p>The headline numbers, distilled. Detail and methodology follow in each section.</p>
+  </div></div>
+  <div class="stats">
+    <div class="stat"><div class="lab">PropertyDNA Estimated Value</div><div class="val gold">$410,000</div><div class="sub">Comparative model midpoint <span class="src dna">DNA</span></div></div>
+    <div class="stat"><div class="lab">Estimated Market Range</div><div class="val">$390K – $435K</div><div class="sub">$395K list sits just below midpoint — a value entry</div></div>
+    <div class="stat"><div class="lab">Confidence Score</div><div class="val teal">71<small style="font-size:15px;color:var(--ink3)"> / 100</small></div><div class="sub">Moderate · strong subject data, limited exact <em>closed</em> comps</div></div>
+    <div class="stat"><div class="lab">PropertyDNA Rating</div><div class="val gold">B+</div><div class="sub">Strong value &amp; amenities; softer DHS macro</div></div>
+    <div class="stat"><div class="lab">Opportunity Rating</div><div class="val green">8.0<small style="font-size:15px;color:var(--ink3)"> / 10</small></div><div class="sub">Low entry, unlimited golf, motivated seller, FHA/VA/1031 eligible</div></div>
+    <div class="stat"><div class="lab">Future Equity (5-yr, expected)</div><div class="val">≈ +16%</div><div class="sub">~$469K at a ~$405K basis, 3%/yr <span class="src dna">DNA</span></div></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card">
+      <h4>The one-paragraph read</h4>
+      <p style="color:var(--ink2);font-size:14.5px">9520 Ekwanok is a <b>2,252 sq ft, single-level 3-bed / 2-bath</b> home in the
+      <b>Four Seasons neighborhood of Mission Lakes Country Club</b> — a Ted Robinson–designed golf community where the
+      <b>$465 monthly HOA includes unlimited golf for two owners on title</b> plus a full resort amenity set. <span class="src mls">MLS</span><span class="src">CMTY</span>
+      At <b>$175/sq ft it is priced below the Desert Hot Springs median of ~$221/sq ft</b> <span class="src mkt">MKT</span> and below the bottom of
+      Mission Lakes' typical $/sq ft band — a genuine value entry into country-club ownership. The kitchen is <b>remodeled (granite, island,
+      skylights)</b>, it is one of the <b>larger floor plans</b> in the community, and the seller is <b>motivated, taking all offers</b> with
+      <b>wide financing</b> (Cash, Conventional, FHA, VA, 1031). <span class="src mls">MLS</span> The honest counterweights are a <b>softer DHS
+      macro</b> (median DOM ~104 days, prices roughly flat-to-slightly-down) and property specifics — <b>septic system, 1988 vintage, no private
+      pool</b> (resort-style <em>community</em> pools/spas instead). <span class="src mls">MLS</span><span class="src mkt">MKT</span></p>
+    </div>
+    <div class="card">
+      <h4>Why this beats a portal</h4>
+      <ul class="clean">
+        <li>Valuation is <b>built from the Mission Lakes &amp; DHS cohort</b>, not an automated zip-code AVM.</li>
+        <li>Quantifies the <b>HOA value</b> — what unlimited golf + amenities are actually worth versus dues.</li>
+        <li>Risk is scored at <b>parcel/community context</b> (incl. the real San Gorgonio wind factor), not a headline.</li>
+        <li>Maps the home to <b>six distinct buyer profiles</b> and ranks <b>improvement ROI</b>.</li>
+        <li>Every figure carries a <b>source tag</b>; MLS facts are separated from interpretation.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">Valuation basis &amp; confidence rubric are defined in §6 (Market Intelligence) and §13 (Methodology). PropertyDNA value is a comparative model output, not a USPAP appraisal.</div>
+</div></section>
+
+<!-- 02 WHY IT STANDS OUT -->
+<section id="standout"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">02</span><div>
+    <h2>Why This Property Stands Out</h2>
+    <p>Evidence-based differentiation versus competing Mission Lakes and Desert Hot Springs inventory.</p>
+  </div></div>
+  <div class="grid g2">
+    <div class="card"><h3>Floor plan, light &amp; functionality</h3>
+      <p style="color:var(--ink2);font-size:14px">A <b>light-filled single-level plan</b> with <b>all bedrooms down</b>, a <b>main-floor primary suite</b> with
+      dressing area, formal dining + breakfast nook + kitchen island, family and living rooms, and a utility room. <span class="src mls">MLS</span>
+      <b>Skylights</b> in the kitchen and <b>sliding-door</b> indoor-outdoor flow support the "light and airy" character. <span class="src mls">MLS</span>
+      At <b>2,252 sq ft</b> it is among the <b>larger plans</b> in a community where homes run 1,600–2,700 sq ft. <span class="src">CMTY</span></p>
+    </div>
+    <div class="card"><h3>Remodeled kitchen &amp; baths</h3>
+      <p style="color:var(--ink2);font-size:14px">Kitchen is recorded <b>Remodeled</b> with <b>granite counters, island and skylights</b>. <span class="src mls">MLS</span>
+      Baths feature <b>double vanities, a Jack-&amp;-Jill dual entry, shower &amp; tub, tile counters and a jetted tub</b>. <span class="src mls">MLS</span>
+      Flooring is a mix of <b>wood, tile and carpet</b>; roof is <b>clay tile</b>; windows include <b>stained-glass</b> accents. <span class="src mls">MLS</span></p>
+    </div>
+    <div class="card"><h3>Golf-course lifestyle</h3>
+      <p style="color:var(--ink2);font-size:14px"><b>Golf course within the development</b> and a <b>close-to-clubhouse</b> lot location. <span class="src mls">MLS</span>
+      Mission Lakes' Ted Robinson course (18 holes, par 71, ~6,737 yds) is <b>included for two owners on title with no greens fees</b> via the HOA —
+      a rare structure in the desert. <span class="src">CMTY</span></p>
+    </div>
+    <div class="card"><h3>Outdoor living &amp; lot</h3>
+      <p style="color:var(--ink2);font-size:14px">A <b>0.18-acre lot</b> with <b>landscaped front and back yards</b>, block/stucco/wrought-iron fencing, and a
+      <b>covered concrete patio with awnings</b>. <span class="src mls">MLS</span> The lot is described as <b>hilltop/hillside, on a private road</b>,
+      reflecting Mission Lakes' elevated setting roughly <b>1,000 ft above Palm Springs</b> at the mountain base. <span class="src mls">MLS</span><span class="src">CMTY</span></p>
+    </div>
+    <div class="card"><h3>Mountain views — verify</h3>
+      <p style="color:var(--ink2);font-size:14px"><b>The MLS records "View: No."</b> <span class="src mls">MLS</span> The hilltop/hillside lot and the community's
+      elevated, mountain-base position suggest desert/mountain outlooks, and the listing references "sun rising over the mountains," but
+      <span class="unavail">a formal view is not designated — buyers should confirm sightlines on tour.</span> This report does not assert a view beyond the MLS record.</p>
+    </div>
+    <div class="card"><h3>Value relative to comparable homes</h3>
+      <p style="color:var(--ink2);font-size:14px">At <b>$175/sq ft</b>, the home prices <b>below the DHS median ($221/sq ft)</b> <span class="src mkt">MKT</span> and below the
+      typical Mission Lakes $/sq ft band — while delivering a larger plan, a remodeled kitchen, and the full HOA amenity package. <span class="src dna">DNA</span>
+      See the comparison set in §6.</p>
+    </div>
+  </div>
+  <div class="note"><b>Observed vs. verified.</b> Listing photographs were not machine-readable from the secured MLS share link, so this report makes
+  <b>no AI photo-derived claims</b> about upgrades or deferred maintenance. Property condition is recorded as <b>Additions/Alterations</b> and the home
+  is sold <b>as-is</b>; a buyer should confirm permit status for any additions, plus septic, roof and HVAC condition, on inspection. <span class="src mls">MLS</span>
+  <span class="unavail">AI computer-vision observations: data unavailable.</span></div>
+</div></section>
+
+<!-- 03 BUYER ADVANTAGES -->
+<section id="buyer" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">03</span><div>
+    <h2>Buyer Advantages — By Profile</h2>
+    <p>Who this home fits, and the specific, factual reason why.</p>
+  </div></div>
+  <div class="grid g3 keep">
+    <div class="card"><h3>Golfers</h3><p style="font-size:13.5px;color:var(--ink2);margin:0"><b>Unlimited golf for two on title, no greens fees</b>, on a Ted Robinson course — the per-round economics are exceptional for an avid player. <span class="src">CMTY</span><span class="src mls">MLS</span></p></div>
+    <div class="card"><h3>Retirees</h3><p style="font-size:13.5px;color:var(--ink2);margin:0">Single-level, <b>no-step foyer entry</b>, all bedrooms down, low-maintenance HOA grounds, full amenity slate (fitness, pools, pickleball). <span class="src mls">MLS</span></p></div>
+    <div class="card"><h3>Second-home owners</h3><p style="font-size:13.5px;color:var(--ink2);margin:0">HOA covers <b>grounds &amp; amenities</b>; vacant &amp; easy-to-show; staging furniture available outside escrow for a turnkey set-up. <span class="src mls">MLS</span></p></div>
+    <div class="card"><h3>Seasonal residents</h3><p style="font-size:13.5px;color:var(--ink2);margin:0">Lock-and-leave community living at a <b>low entry price</b>; resort pools/spas maintained by the association; minutes to Palm Springs. <span class="src mls">MLS</span><span class="src">GEO</span></p></div>
+    <div class="card"><h3>Investors</h3><p style="font-size:13.5px;color:var(--ink2);margin:0"><b>1031-eligible</b>; larger-than-typical plan at below-median $/sq ft. <b>Note: rental restrictions apply</b> — confirm long-term lease terms with the HOA before underwriting. <span class="src mls">MLS</span></p></div>
+    <div class="card"><h3>First-time country-club buyers</h3><p style="font-size:13.5px;color:var(--ink2);margin:0"><b>FHA &amp; VA financing accepted</b> — a genuinely accessible path into golf-community ownership that most desert clubs don't offer at this price. <span class="src mls">MLS</span></p></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h3>What the $465 HOA actually buys <span class="src mls">MLS</span></h3>
+    <p style="color:var(--ink2);font-size:14px;max-width:88ch">Beyond unlimited golf for two, the association amenity list is unusually deep for the price:
+    clubhouse, restaurant &amp; bar, fitness center, tennis, paddle tennis &amp; pickleball, multiple pools &amp; spas, banquet/meeting rooms,
+    billiard &amp; card rooms, sport &amp; basketball courts, greenbelt/park, lake/pond, hiking &amp; biking trails, picnic areas, playground, guest
+    parking, and grounds maintenance &amp; management. <span class="src mls">MLS</span> For a value buyer, the dues-to-amenities ratio is the headline.</p>
+  </div>
+</div></section>
+
+<!-- 04 MISSION LAKES -->
+<section id="community"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">04</span><div>
+    <h2>Mission Lakes Country Club</h2>
+    <p>Community character, the golf experience, and the surrounding desert geography.</p>
+  </div></div>
+  <div class="grid g2">
+    <div class="card"><h3>The club at a glance</h3>
+      <div class="kv"><span class="k">Golf course</span><span class="v">Ted Robinson Sr. design, opened ~1971 <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Layout</span><span class="v">18 holes · par 71 · ~6,737 yards <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Setting</span><span class="v">Mountain base, ~1,000 ft above Palm Springs <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Golf in HOA</span><span class="v">Unlimited for two owners on title <span class="src mls">MLS</span></span></div>
+      <div class="kv"><span class="k">Clubhouse</span><span class="v">Dining, bar, pro-shop, fitness, on-site hotel <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">Racquet &amp; rec</span><span class="v">Tennis, paddle, pickleball, pools/spas, trails <span class="src mls">MLS</span></span></div>
+      <div class="kv"><span class="k">Home sizes</span><span class="v">≈1,600–2,700 sq ft, 2–4 bd <span class="src">CMTY</span></span></div>
+      <div class="kv"><span class="k">HOA dues</span><span class="v">$465/mo <span class="src mls">MLS</span></span></div>
+    </div>
+    <div class="card"><h3>Character &amp; ownership experience</h3>
+      <p style="color:var(--ink2);font-size:14px">Mission Lakes is consistently positioned as one of the valley's <b>value-leading golf communities</b> — resort-style amenities
+      "without resort-level costs." <span class="src mls">MLS</span> The course's <b>final four holes</b> are regarded among the toughest finishing
+      stretches in the desert. <span class="src">CMTY</span> The community's elevation at the San Bernardino mountain base gives it a distinct,
+      slightly cooler and more open feel than the valley floor. The directions reference a <b>main community gate</b>, though the MLS does
+      <b>not</b> classify the community as fully gated — <span class="unavail">confirm gate/security specifics with the HOA.</span> <span class="src mls">MLS</span></p>
+    </div>
+  </div>
+  <h3 style="margin:26px 0 12px;font-size:16px">Access &amp; proximity <span class="src">GEO</span></h3>
+  <div class="grid g4 keep">
+    <div class="card"><h4>Palm Springs</h4><p style="font-size:14px;color:var(--ink2);margin:0">Downtown Palm Springs ≈10–15 min via Palm Dr / I-10. <span class="src">GEO</span></p></div>
+    <div class="card"><h4>Airport</h4><p style="font-size:14px;color:var(--ink2);margin:0">Palm Springs Int'l (PSP) ≈15–20 min. <span class="src">GEO</span></p></div>
+    <div class="card"><h4>Joshua Tree</h4><p style="font-size:14px;color:var(--ink2);margin:0">≈43 mi / ~1 hr to the park; west entrance ~45 min via CA-62. <span class="src">GEO</span></p></div>
+    <div class="card"><h4>Everyday</h4><p style="font-size:14px;color:var(--ink2);margin:0">Immediate I-10 access; DHS shopping/dining minutes away; mineral hot-springs spas nearby. <span class="src">GEO</span></p></div>
+  </div>
+</div></section>
+
+<!-- 05 COMMUNITY COMPARISON -->
+<section id="compare" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">05</span><div>
+    <h2>Community Comparison</h2>
+    <p>How Mission Lakes sits among nearby Desert Hot Springs / north-valley options. Balanced, not ranked.</p>
+  </div></div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Community</th><th class="num">Typical price</th><th class="num">HOA/mo</th><th>Golf included?</th><th>Character</th></tr></thead>
+    <tbody>
+      <tr class="sub"><td><b>Mission Lakes CC</b></td><td class="num">$355K–$500K</td><td class="num">$465</td><td><b>Yes — unlimited, 2 on title</b></td><td>Full 18-hole club + deep amenities; value leader <span class="src mls">MLS</span><span class="src mkt">MKT</span></td></tr>
+      <tr><td>Skyborne</td><td class="num">~$290K–$450K</td><td class="num">$118</td><td>No</td><td>Newer master-planned; low dues, no golf <span class="src mkt">MKT</span></td></tr>
+      <tr><td>Mountain View Country Estates</td><td class="num">$400K–$520K</td><td class="num">$135</td><td>No</td><td>Fee-simple, 387 homes; no golf <span class="src mkt">MKT</span></td></tr>
+      <tr><td>Hidden Springs CC</td><td class="num">$65K–$175K</td><td class="num">+ land lease</td><td>Manufactured-home golf (55+)</td><td>Lowest entry; land-lease model <span class="src mkt">MKT</span></td></tr>
+      <tr><td>Desert Dunes</td><td class="num"><span class="unavail">data unavailable</span></td><td class="num"><span class="unavail">n/a</span></td><td>Public/championship-adjacent</td><td>Robert Trent Jones Jr. public course area <span class="src">GEO</span></td></tr>
+      <tr><td>Palm Springs CC areas / Cathedral City golf</td><td class="num">Generally higher</td><td class="num">Varies</td><td>Varies</td><td>Closer to central PS; typically higher $/sq ft <span class="src mkt">MKT</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h4>Where Mission Lakes wins</h4>
+      <ul class="clean pos">
+        <li><b>Golf economics:</b> the only nearby option bundling <b>unlimited golf</b> into modest dues. <span class="src mls">MLS</span></li>
+        <li><b>Amenity depth</b> per dollar of HOA is the broadest in the set. <span class="src mls">MLS</span></li>
+        <li><b>Accessibility:</b> FHA/VA-friendly entry into a real country club. <span class="src mls">MLS</span></li>
+      </ul>
+    </div>
+    <div class="card"><h4>Where alternatives may fit better</h4>
+      <ul class="clean con">
+        <li><b>Lowest dues:</b> Skyborne/Mountain View carry far lower HOAs for buyers who don't golf. <span class="src mkt">MKT</span></li>
+        <li><b>Lowest entry price:</b> Hidden Springs (manufactured/land-lease) is cheaper but a different ownership model. <span class="src mkt">MKT</span></li>
+        <li><b>Central-PS proximity:</b> Cathedral City / Palm Springs CC areas sit closer to the urban core, usually at a higher price. <span class="src mkt">MKT</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">Comparison is by <b>fit and trade-offs, not a ranking</b>. For a buyer who values golf and amenity breadth at a low entry price,
+  Mission Lakes is hard to match; for a non-golfer prioritizing minimal dues or central-PS location, other communities may suit better.</div>
+</div></section>
+
+<!-- 06 MARKET -->
+<section id="market" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">06</span><div>
+    <h2>Market Intelligence &amp; Valuation</h2>
+    <p>Comparable evidence, the PropertyDNA model, and the negotiation environment.</p>
+  </div></div>
+  <div class="grid g4 keep" style="margin-bottom:18px">
+    <div class="stat"><div class="lab">DHS median list price</div><div class="val">$412K</div><div class="sub">May 2026 <span class="src mkt">MKT</span></div></div>
+    <div class="stat"><div class="lab">DHS median $/sq ft</div><div class="val">$221</div><div class="sub">This home asks <b>$175</b> <span class="src mkt">MKT</span></div></div>
+    <div class="stat"><div class="lab">DHS median days on market</div><div class="val">104</div><div class="sub">Subject at <b>33 DIM</b> — fresh <span class="src mls">MLS</span></div></div>
+    <div class="stat"><div class="lab">YoY price trend</div><div class="val">≈ −1 to −2%</div><div class="sub">Flat-to-slightly-soft <span class="src mkt">MKT</span></div></div>
+  </div>
+  <h3 style="margin:6px 0 12px;font-size:16px">Comparison cohort <span class="src mkt">MKT</span><span class="src">CMTY</span></h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Reference</th><th class="num">Price band</th><th class="num">Size band</th><th class="num">Implied $/sq ft</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr class="sub"><td><b>9520 Ekwanok</b> (subject)</td><td class="num">$395,000</td><td class="num">2,252 sf</td><td class="num">$175</td><td>Remodeled kitchen · larger plan · community pool</td></tr>
+      <tr><td>Mission Lakes CC cohort</td><td class="num">$355K–$500K</td><td class="num">1,600–2,700 sf</td><td class="num">~$185–$210</td><td>Golf-included community <span class="src mkt">MKT</span></td></tr>
+      <tr><td>Desert Hot Springs (all, median)</td><td class="num">~$412K list</td><td class="num">—</td><td class="num">$221</td><td>Citywide median <span class="src mkt">MKT</span></td></tr>
+      <tr><td>Mountain View Estates (no golf)</td><td class="num">$400K–$520K</td><td class="num">1,200–2,500 sf</td><td class="num">~$200+</td><td>Fee-simple, lower HOA <span class="src mkt">MKT</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><span class="unavail">Exact recent <b>closed</b> Mission Lakes comparable sales were not retrievable from automated public sources at time of writing — data unavailable.</span>
+  Bands above are active asking/listing references and community price ranges; treat implied $/sq ft as guidance, not transacted value.</div>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card"><h3>How the PropertyDNA value is built <span class="src dna">DNA</span></h3>
+      <ol style="color:var(--ink2);font-size:14px;padding-left:18px;margin:0">
+        <li style="margin-bottom:8px">Mission Lakes cohort implies ≈ <b>$185–$210/sq ft</b> for typical homes.</li>
+        <li style="margin-bottom:8px">Apply the <b>lower-middle</b> of that band to the subject — larger plan dilutes $/sq ft, no <em>private</em> pool, septic, 1988 vintage → ≈ <b>$180–$190/sq ft</b>.</li>
+        <li style="margin-bottom:8px">× 2,252 sq ft → <b>$405K–$428K</b>; midpoint <b>≈ $410,000</b>, range <b>$390K–$435K</b>.</li>
+        <li style="margin-bottom:8px">Cross-check: subject's $175/sq ft is <b>below</b> the DHS median $221/sq ft — independent value support. <span class="src mkt">MKT</span></li>
+      </ol>
+      <p style="color:var(--ink3);font-size:12.5px;margin-top:12px">The $395K list sits just <b>below</b> the model midpoint — i.e., priced as a value entry rather than a stretch, consistent with a motivated, all-offers seller.</p>
+    </div>
+    <div class="card"><h3>Negotiation environment</h3>
+      <ul class="clean">
+        <li><b>Motivated seller, "send all offers," sold as-is</b> — a constructive posture for a prepared buyer. <span class="src mls">MLS</span></li>
+        <li>Only <b>33 days on market</b> vs. a DHS median of ~104 — priced to move, so deep discounts are less likely than terms wins. <span class="src mls">MLS</span><span class="src mkt">MKT</span></li>
+        <li><b>Wide financing</b> (Cash, Conv, FHA, VA, 1031) widens the buyer pool and supports a clean close. <span class="src mls">MLS</span></li>
+        <li>Softer DHS macro tempers appreciation but also keeps entry pricing reasonable. <span class="src mkt">MKT</span></li>
+      </ul>
+      <p style="margin-top:10px;font-size:14px;color:var(--ink2)"><b>Read:</b> a <b>balanced-to-slightly-buyer</b> environment. With the list already at a value level, the strongest plays are
+      a clean, well-qualified offer near ask and asking the seller to address inspection items (septic, roof, any unpermitted additions) as credits.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- 07 RISK -->
+<section id="risk" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">07</span><div>
+    <h2>PropertyDNA Risk Analysis</h2>
+    <p>Scored at parcel/community context. Lower scores are better (0 = negligible, 100 = severe).</p>
+  </div></div>
+  <div class="grid g2">
+    <div class="card"><h4>PropertyDNA Risk Scores <span class="src risk">RISK</span></h4>
+      <div class="scorerow"><span class="nm">Flood</span><div class="bar"><i style="width:28%"></i></div><span class="vv">28</span></div>
+      <div class="scorerow"><span class="nm">Wildfire</span><div class="bar"><i style="width:35%"></i></div><span class="vv">35</span></div>
+      <div class="scorerow"><span class="nm">Wind (San Gorgonio Pass)</span><div class="bar warn"><i style="width:60%"></i></div><span class="vv">60</span></div>
+      <div class="scorerow"><span class="nm">Extreme heat</span><div class="bar warn"><i style="width:78%"></i></div><span class="vv">78</span></div>
+      <div class="scorerow"><span class="nm">Insurance pressure</span><div class="bar"><i style="width:48%"></i></div><span class="vv">48</span></div>
+      <div class="scorerow"><span class="nm">Maintenance (age + septic)</span><div class="bar"><i style="width:50%"></i></div><span class="vv">50</span></div>
+      <div class="scorerow"><span class="nm">HOA / governance</span><div class="bar"><i style="width:30%"></i></div><span class="vv">30</span></div>
+      <div class="scorerow"><span class="nm">Resale</span><div class="bar"><i style="width:50%"></i></div><span class="vv">50</span></div>
+      <div class="scorerow"><span class="nm">Market liquidity</span><div class="bar warn"><i style="width:55%"></i></div><span class="vv">55</span></div>
+    </div>
+    <div class="card"><h4>Plain-English explanation</h4>
+      <p style="font-size:13.5px;color:var(--ink2)"><b>Wind (60, moderate-high)</b> is the distinctive DHS risk — the home sits near the <b>San Gorgonio Pass</b> wind corridor.
+      Budget for wind-rated maintenance; the <b>clay-tile roof and stucco</b> help. <span class="src risk">RISK</span><span class="src mls">MLS</span></p>
+      <p style="font-size:13.5px;color:var(--ink2)"><b>Heat (78, high)</b> is inherent to the desert, modestly tempered by the community's ~1,000-ft elevation and mountain-base breezes. Central AC is in place. <span class="src mls">MLS</span></p>
+      <p style="font-size:13.5px;color:var(--ink2)"><b>Flood (28, low)</b> — DHS parcels are typically <b>FEMA Zone X</b> (outside the 100-yr floodplain). <span class="unavail">Confirm the exact zone for APN 661131009;</span> regional pluvial risk exists in storms. <span class="src risk">RISK</span></p>
+      <p style="font-size:13.5px;color:var(--ink2)"><b>Maintenance (50)</b> — 1988 build, <b>septic system</b>, and an <b>Additions/Alterations</b> condition flag: inspect septic, roof, HVAC, and verify permits for additions. <span class="src mls">MLS</span></p>
+      <p style="font-size:13.5px;color:var(--ink2);margin-bottom:0"><b>Liquidity (55) / Resale (50)</b> — DHS carries a longer ~104-day median DOM and flat-to-soft pricing; offset here by value pricing and amenity appeal. <span class="src mkt">MKT</span></p>
+    </div>
+  </div>
+  <div class="grid g3 keep" style="margin-top:16px">
+    <div class="card"><h4>Insurance considerations</h4><p style="font-size:13.5px;color:var(--ink2);margin:0">CA market hardening plus wind exposure lift premiums; non-combustible <b>clay-tile roof + stucco + slab</b> help. Get a bound quote early. <span class="src mls">MLS</span></p></div>
+    <div class="card"><h4>HOA considerations</h4><p style="font-size:13.5px;color:var(--ink2);margin:0">$465/mo is <b>low for the amenity set</b> (incl. unlimited golf), but verify reserves, any special assessments, and rental rules. <span class="src mls">MLS</span></p></div>
+    <div class="card"><h4>Resale considerations</h4><p style="font-size:13.5px;color:var(--ink2);margin:0">Value pricing + golf-included story aid resale; the DHS macro and septic/age are the offsets. Buying at/below model protects downside. <span class="src dna">DNA</span></p></div>
+  </div>
+  <div class="note">Regional climate ratings are community/zip-level indicators, not a parcel FEMA determination, a CLUE/insurance quote, or a professional inspection. Treat scores as a <b>triage tool</b>.</div>
+</div></section>
+
+<!-- 08 FUTURE EQUITY -->
+<section id="equity"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">08</span><div>
+    <h2>Future Equity Analysis</h2>
+    <p>Five-year projections at three appreciation paths, anchored to a ~$405K basis.</p>
+  </div></div>
+  <div class="grid g3 keep">
+    <div class="stat"><div class="lab">Conservative · 1.5%/yr</div><div class="val">≈ $436K</div><div class="sub">+7.7% over 5 yr · confidence: high <span class="src dna">DNA</span></div></div>
+    <div class="stat"><div class="lab">Expected · 3.0%/yr</div><div class="val gold">≈ $469K</div><div class="sub">+15.9% over 5 yr · confidence: moderate <span class="src dna">DNA</span></div></div>
+    <div class="stat"><div class="lab">Optimistic · 4.5%/yr</div><div class="val green">≈ $505K</div><div class="sub">+24.6% over 5 yr · confidence: lower <span class="src dna">DNA</span></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card"><h3>What drives the range</h3>
+      <p style="font-size:14px;color:var(--ink2)">Desert Hot Springs has recently been <b>flat-to-slightly-down</b> year-over-year <span class="src mkt">MKT</span>, so the <b>conservative</b> path
+      carries the highest confidence. Upside levers: the <b>relative affordability</b> of DHS versus the rest of the valley historically narrows in
+      up-cycles, the <b>golf-included value story</b> supports demand, and <b>buying at/below the model</b> (~$405K vs. $395K list) starts equity from a
+      sound basis rather than a premium. <span class="src dna">DNA</span></p>
+    </div>
+    <div class="card"><h3>Permit &amp; value-add note</h3>
+      <ul class="clean">
+        <li>Condition is <b>Additions/Alterations</b> — <span class="unavail">permit history for APN 661131009 is data unavailable;</span> verify before valuing any addition as living area. <span class="src mls">MLS</span></li>
+        <li>Targeted, well-permitted improvements (see §9) can lift the home toward the <b>top of the Mission Lakes band (~$500K)</b>. <span class="src dna">DNA</span></li>
+        <li>Projections exclude transaction/carrying costs, HOA and tax; they are compounding illustrations, not forecasts.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- 09 IMPROVEMENT OPPORTUNITIES -->
+<section id="improve" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">09</span><div>
+    <h2>Improvement Opportunities</h2>
+    <p>Highest-ROI moves supported by the home's current condition. Figures are planning estimates.</p>
+  </div></div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Improvement</th><th class="num">Est. cost</th><th class="num">Est. value lift</th><th class="num">Net equity</th><th class="num">Confidence</th></tr></thead>
+    <tbody>
+      <tr><td><b>Replace carpet w/ LVP / tile</b> (whole-home consistency)</td><td class="num">$8K–$14K</td><td class="num">$15K–$22K</td><td class="num">+$5K–$10K</td><td class="num">High</td></tr>
+      <tr><td><b>Primary &amp; guest bath refresh</b> (vanities, fixtures, surfaces)</td><td class="num">$12K–$22K</td><td class="num">$20K–$32K</td><td class="num">+$8K–$12K</td><td class="num">Moderate</td></tr>
+      <tr><td><b>Desert curb-appeal / xeriscape refresh</b></td><td class="num">$5K–$10K</td><td class="num">$10K–$16K</td><td class="num">+$4K–$8K</td><td class="num">High</td></tr>
+      <tr><td><b>Interior/exterior paint + lighting modernize</b></td><td class="num">$6K–$12K</td><td class="num">$12K–$18K</td><td class="num">+$5K–$8K</td><td class="num">High</td></tr>
+      <tr><td><b>Private spa / outdoor-room buildout</b> (lot supports it)</td><td class="num">$18K–$35K</td><td class="num">$15K–$30K</td><td class="num">−$3K–+$5K</td><td class="num">Lower</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">Kitchen is already <b>remodeled</b> (granite, island, skylights), so it is intentionally excluded as low incremental ROI. <span class="src mls">MLS</span>
+  Estimates are <b>planning ranges</b> for the DHS market, not bids; a private pool is generally <b>not</b> recommended for ROI here given the
+  community already provides heated resort pools/spas. Verify permits before any structural addition. <span class="src dna">DNA</span></div>
+</div></section>
+
+<!-- 10 PROS / CONS -->
+<section id="pros"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">10</span><div>
+    <h2>Strengths &amp; Considerations</h2>
+    <p>A balanced ledger. Considerations are contextualized, not weaponized.</p>
+  </div></div>
+  <div class="grid g2">
+    <div class="card"><h3 style="color:var(--green)">Strengths</h3>
+      <ul class="clean pos">
+        <li><b>Unlimited golf for two on title</b> bundled into a low $465 HOA. <span class="src mls">MLS</span><span class="src">CMTY</span></li>
+        <li><b>$175/sq ft — below the DHS median $221/sq ft</b> and the Mission Lakes band: a value entry. <span class="src mkt">MKT</span></li>
+        <li><b>Larger plan (2,252 sf)</b>, single-level, all-bedrooms-down, main-floor primary suite. <span class="src mls">MLS</span></li>
+        <li><b>Remodeled kitchen</b> (granite, island, skylights); jetted-tub baths; clay-tile roof. <span class="src mls">MLS</span></li>
+        <li><b>Deep amenity set</b> — clubhouse, fitness, tennis/pickleball, pools/spas, trails, lake. <span class="src mls">MLS</span></li>
+        <li><b>Wide financing</b> (Cash, Conv, FHA, VA, 1031) + motivated, all-offers seller. <span class="src mls">MLS</span></li>
+        <li><b>Minutes to Palm Springs &amp; PSP airport</b>; ~1 hr to Joshua Tree. <span class="src">GEO</span></li>
+      </ul>
+    </div>
+    <div class="card"><h3 style="color:var(--amber)">Considerations</h3>
+      <ul class="clean con">
+        <li><b>Desert Hot Springs location</b> — farther from central Palm Springs than some communities, <b>but offers more home for the money and a low entry into country-club living.</b> <span class="src mkt">MKT</span></li>
+        <li><b>Softer DHS macro</b> (~104-day median DOM, flat-to-slightly-down pricing) — tempers appreciation, but also keeps entry pricing reasonable. <span class="src mkt">MKT</span></li>
+        <li><b>Septic system</b> (not sewer) — budget for inspection/pumping; common and manageable in the area. <span class="src mls">MLS</span></li>
+        <li><b>Built 1988, sold as-is, Additions/Alterations</b> — inspect roof/HVAC and verify permits; reflected in the value-friendly price. <span class="src mls">MLS</span></li>
+        <li><b>No private pool</b> — offset by heated resort-style <em>community</em> pools &amp; spas maintained by the HOA. <span class="src mls">MLS</span></li>
+        <li><b>Wind exposure</b> (San Gorgonio Pass) — a regional trait; the tile roof/stucco construction is well-suited to it. <span class="src risk">RISK</span></li>
+        <li><b>Rental restrictions apply</b> — investors should confirm allowable lease terms with the HOA first. <span class="src mls">MLS</span></li>
+        <li><span class="unavail">Exact closed comps, parcel flood zone and permit history were not retrievable from automated sources</span> — verify before offer.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- 11 LIFESTYLE -->
+<section id="lifestyle"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">11</span><div>
+    <h2>Lifestyle Score</h2>
+    <p>Each score carries a one-line factual basis. Scale 0–10.</p>
+  </div></div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="scorerow"><span class="nm">Golf</span><div class="bar"><i style="width:95%"></i></div><span class="vv">9.5</span></div>
+      <div class="scorerow"><span class="nm">Value</span><div class="bar"><i style="width:92%"></i></div><span class="vv">9.2</span></div>
+      <div class="scorerow"><span class="nm">Retirement</span><div class="bar"><i style="width:88%"></i></div><span class="vv">8.8</span></div>
+      <div class="scorerow"><span class="nm">Second-home ownership</span><div class="bar"><i style="width:85%"></i></div><span class="vv">8.5</span></div>
+      <div class="scorerow"><span class="nm">Outdoor recreation</span><div class="bar"><i style="width:85%"></i></div><span class="vv">8.5</span></div>
+      <div class="scorerow"><span class="nm">Entertaining</span><div class="bar"><i style="width:80%"></i></div><span class="vv">8.0</span></div>
+      <div class="scorerow"><span class="nm">Mountain scenery</span><div class="bar"><i style="width:78%"></i></div><span class="vv">7.8</span></div>
+      <div class="scorerow"><span class="nm">Privacy</span><div class="bar"><i style="width:75%"></i></div><span class="vv">7.5</span></div>
+      <div class="scorerow"><span class="nm">Investment</span><div class="bar"><i style="width:68%"></i></div><span class="vv">6.8</span></div>
+      <div class="scorerow"><span class="nm">Overall desirability</span><div class="bar"><i style="width:84%"></i></div><span class="vv">8.4</span></div>
+    </div>
+    <div class="card"><h4>Basis for each score</h4>
+      <ul class="clean" style="font-size:13px">
+        <li><b>Golf 9.5</b> — unlimited play for two on a Ted Robinson 18 in the HOA. <span class="src mls">MLS</span><span class="src">CMTY</span></li>
+        <li><b>Value 9.2</b> — $175/sf vs. $221 median; golf included. <span class="src mkt">MKT</span></li>
+        <li><b>Retirement 8.8</b> — single-level, no-step entry, full amenities. <span class="src mls">MLS</span></li>
+        <li><b>Second-home 8.5</b> — HOA-maintained, lock-and-leave, turnkey option. <span class="src mls">MLS</span></li>
+        <li><b>Outdoor rec 8.5</b> — trails, pools, tennis/pickleball; Joshua Tree ~1 hr. <span class="src mls">MLS</span><span class="src">GEO</span></li>
+        <li><b>Entertaining 8.0</b> — open plan, island kitchen, patio + community banquet space. <span class="src mls">MLS</span></li>
+        <li><b>Mountain scenery 7.8</b> — elevated mountain-base setting (MLS lists no formal view). <span class="src mls">MLS</span></li>
+        <li><b>Privacy 7.5</b> — landscaped, fenced lot on a private road (not fully gated per MLS). <span class="src mls">MLS</span></li>
+        <li><b>Investment 6.8</b> — strong value &amp; cash-flow story, tempered by soft DHS macro + rental rules. <span class="src dna">DNA</span></li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- 12 RECOMMENDATION -->
+<section id="rec" class="page"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">12</span><div>
+    <h2>PropertyDNA Final Recommendation</h2>
+    <p>A balanced conclusion for an informed buyer.</p>
+  </div></div>
+  <div class="card" style="padding:26px">
+    <div class="ribbon" style="margin-top:0">
+      <span class="badge gold">Rating B+</span>
+      <div class="conf"><div class="ring" style="--p:71"><b>71</b></div><span>Confidence 71/100 · Moderate</span></div>
+      <span class="badge g">Opportunity 8.0/10</span>
+    </div>
+    <p style="font-size:15.5px;color:var(--ink);max-width:80ch">9520 Ekwanok earns serious consideration as a <b>value play</b>. It pairs a
+    <b>larger, single-level, remodeled-kitchen home</b> with a country-club membership structure that is genuinely rare — <b>unlimited golf for two
+    bundled into a $465 HOA</b> alongside a deep amenity set — and it asks <b>$175/sq ft, below both the Desert Hot Springs median and the Mission
+    Lakes band</b>. Those are facts, and together they make a strong affordability-plus-lifestyle case. <span class="src mls">MLS</span><span class="src mkt">MKT</span><span class="src">CMTY</span></p>
+    <p style="font-size:15.5px;color:var(--ink2);max-width:80ch">The honest counterweights are macro and mechanical, not dealbreakers: a <b>softer DHS
+    market</b>, a <b>septic system</b>, a <b>1988 as-is</b> home with an additions/alterations flag, and <b>no private pool</b> (offset by heated
+    community pools/spas). The PropertyDNA model centers value at <b>≈$410K (range $390K–$435K)</b>, so the <b>$395K list is already a value entry</b>
+    rather than a stretch, and the seller is <b>motivated and taking all offers</b> with <b>FHA/VA/1031-friendly</b> terms. <span class="src dna">DNA</span><span class="src mls">MLS</span></p>
+    <p style="font-size:15.5px;color:var(--ink2);max-width:80ch;margin-bottom:0"><b>Recommendation:</b> tour and inspect (septic, roof, HVAC, permits),
+    then make a clean, well-qualified offer <b>at or near the $395K list</b>, using inspection findings for targeted credits rather than expecting a deep
+    discount on an already value-priced home. For a golfer, retiree, seasonal owner, or value-focused investor who understands the DHS trade-offs, this
+    is a <b>confident, evidence-backed buy</b> — a lot of home, and a lot of golf, for the money. This is a recommendation to <b>decide with the facts</b>,
+    not under pressure.</p>
+  </div>
+</div></section>
+
+<!-- 13 METHOD -->
+<section id="method"><div class="wrap">
+  <div class="sec-head"><span class="sec-num">13</span><div>
+    <h2>Methodology &amp; Sources</h2>
+    <p>What every tag means, and the limits of this analysis.</p>
+  </div></div>
+  <div class="legend">
+    <span class="src mls">MLS</span><span class="src dna">DNA</span><span class="src mkt">MKT</span>
+    <span class="src risk">RISK</span><span class="src">CMTY</span><span class="src">GEO</span>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h4>Source legend</h4>
+      <div class="kv"><span class="k"><span class="src mls">MLS</span></span><span class="v">MLS #219148408 Agent Detail Report (primary listing); Riverside County Assessor APN 661131009</span></div>
+      <div class="kv"><span class="k"><span class="src dna">DNA</span></span><span class="v">PropertyDNA comparative valuation &amp; scoring model (cohort + condition/market adjustment)</span></div>
+      <div class="kv"><span class="k"><span class="src mkt">MKT</span></span><span class="v">Desert Hot Springs / 92240 market statistics &amp; community price bands (2026)</span></div>
+      <div class="kv"><span class="k"><span class="src risk">RISK</span></span><span class="v">Regional climate &amp; hazard indicators (heat/wind/flood/fire), interpreted at parcel/community context</span></div>
+      <div class="kv"><span class="k"><span class="src">CMTY</span></span><span class="v">Mission Lakes Country Club &amp; golf-course information</span></div>
+      <div class="kv"><span class="k"><span class="src">GEO</span></span><span class="v">Regional geography &amp; proximity (Palm Springs, airport, Joshua Tree, I-10)</span></div>
+    </div>
+    <div class="card"><h4>Limits &amp; integrity notes</h4>
+      <ul class="clean" style="font-size:13px">
+        <li>The PropertyDNA value is a <b>comparative model output, not a USPAP appraisal</b>.</li>
+        <li>Listing <b>photos were not machine-readable</b> from the secured MLS share; <b>no AI visual observations are asserted</b>.</li>
+        <li>Items marked <span class="unavail">"data unavailable"</span> (closed comps, parcel FEMA zone, permit history) should be verified directly before offer.</li>
+        <li><b>MLS records "View: No"</b>; mountain outlook is suggested by the lot/setting but not formally designated.</li>
+        <li>Property is sold <b>as-is</b>; buyer to independently verify square footage, permits, HOA rules and rental restrictions. <span class="src mls">MLS</span></li>
+        <li><b>No fact in this report was invented.</b> Unsupported claims are labeled as unavailable rather than estimated.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap"><div>
+  <div class="brand" style="margin-bottom:12px"><span class="dot"></span><b>Property</b><span>DNA</span>
+    <span style="color:var(--ink3);font-weight:400;font-size:12px;margin-left:8px">powered by IntellaGraph AI</span></div>
+  <p>Buyer Intelligence Report · 9520 Ekwanok Drive, Desert Hot Springs CA 92240 · MLS #219148408 · APN 661131009 ·
+     Report ID <span style="font-family:var(--mono)">4c73a043</span> · Issued June 29, 2026 ·
+     <b id="expFooter">Shareable link valid through —</b>.</p>
+  <p>This report is decision-support prepared for prospective buyers and is <b>confidential</b>. It is not an appraisal, a guarantee of value,
+     a loan or insurance commitment, or a solicitation where prohibited. The property is offered <b>as-is</b>; buyer should independently confirm all
+     material facts (square footage, condition, septic, HOA terms &amp; rental restrictions, flood/insurance, permits, and comparable sales) and conduct
+     professional inspections before relying on any figure herein. Information believed reliable but not guaranteed. © 2026 PropertyDNA / IntellaGraph AI.</p>
+</div></div></footer>
+
+<script>
+  (function(){
+    var EXP = "2026-07-29T23:59:59-07:00";
+    var expD = new Date(EXP);
+    var pretty = expD.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    var setTxt=function(id,t){var e=document.getElementById(id);if(e)e.textContent=t;};
+    setTxt('expPill','Valid through '+pretty);
+    setTxt('expDate',pretty);
+    setTxt('expFooter','Shareable link valid through '+pretty+' (30 days from issue)');
+    if(Date.now() > expD.getTime()){
+      var ov=document.getElementById('expired'); if(ov) ov.classList.add('show');
+      document.body.style.overflow='hidden';
+    }
+  })();
+</script>
+</body>
+</html>
