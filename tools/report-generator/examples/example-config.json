@@ -1,0 +1,78 @@
+{
+  "theme": "teal",
+  "meta": {
+    "title": "PropertyDNA Buyer Intelligence Report — 123 Example Dr, Anytown",
+    "description": "Institutional buyer intelligence for 123 Example Dr — valuation, comps, risk, community and equity analysis."
+  },
+  "hero": {
+    "title": "123 Example Drive",
+    "addr2": "Example Country Club · Anytown, California 90000",
+    "tags": [
+      { "b": "$450,000", "text": "list price" },
+      { "b": "3", "text": "bd · 2 ba" },
+      { "b": "2,100", "text": "sq ft" },
+      { "text": "MLS 000000000" }
+    ],
+    "badges": [
+      { "tone": "gold", "text": "PropertyDNA Rating: B+" },
+      { "tone": "g", "text": "Priced below community median" }
+    ],
+    "note": "Prepared for prospective buyers. Institutional-grade decision support — every material claim is tagged to its originating source. Not a solicitation, an appraisal, or a guarantee of value."
+  },
+  "sections": [
+    {
+      "num": "01", "id": "summary", "title": "Executive Summary",
+      "subtitle": "The headline numbers, distilled.",
+      "blocks": [
+        { "type": "stats", "tiles": [
+          { "lab": "PropertyDNA Value", "val": "$460,000", "tone": "gold", "sub": "Comparative model midpoint <span class=\"src dna\">DNA</span>" },
+          { "lab": "Estimated Market Range", "val": "$440K – $480K", "sub": "List sits below midpoint" },
+          { "lab": "Confidence Score", "val": "72<small style=\"font-size:15px;color:var(--ink3)\"> / 100</small>", "tone": "teal", "sub": "Moderate" }
+        ]},
+        { "type": "cards", "cols": 2, "cards": [
+          { "h4": "The one-paragraph read", "html": "<p style=\"color:var(--ink2);font-size:14.5px\">Replace with an evidence-based summary. Use <span class=\"src mls\">MLS</span> chips on verified facts and <span class=\"unavail\">Data unavailable.</span> for anything not retrievable.</p>" },
+          { "h4": "Why this beats a portal", "html": "<ul class=\"clean\"><li>Built from the local cohort, not an automated AVM.</li><li>Every figure carries a source tag.</li></ul>" }
+        ]},
+        { "type": "note", "html": "Valuation basis &amp; confidence rubric defined in the Market section. PropertyDNA value is a comparative model output, not a USPAP appraisal." }
+      ]
+    },
+    {
+      "num": "02", "id": "market", "title": "Market Intelligence", "page": true,
+      "subtitle": "Comparable evidence and the negotiation environment.",
+      "blocks": [
+        { "type": "table",
+          "head": ["Address", { "label": "List", "num": true }, { "label": "SqFt", "num": true }, { "label": "$/SqFt", "num": true }, "Note"],
+          "rows": [
+            { "subject": true, "cells": ["123 Example Dr (subject)", { "html": "$450,000", "num": true }, { "html": "2,100", "num": true }, { "html": "$214", "num": true }, "Remodeled"] },
+            ["456 Comp Ave", { "html": "$475,000", "num": true }, { "html": "2,200", "num": true }, { "html": "$216", "num": true }, "Interior lot"]
+          ]
+        }
+      ]
+    },
+    {
+      "num": "03", "id": "lifestyle", "title": "Lifestyle Score",
+      "subtitle": "Each score carries a one-line factual basis. Scale 0–10.",
+      "blocks": [
+        { "type": "scores", "items": [
+          { "nm": "Golf", "val": "9.0" },
+          { "nm": "Value", "val": "8.5" },
+          { "nm": "Walkability", "val": "3.0", "warn": true }
+        ]}
+      ]
+    },
+    {
+      "num": "04", "id": "method", "title": "Methodology & Sources",
+      "blocks": [
+        { "type": "legend", "tags": ["mls", "dna", "mkt", "risk", "cmty", "geo"] },
+        { "type": "kv", "title": "Source legend", "items": [
+          { "k": "<span class=\"src mls\">MLS</span>", "v": "MLS Agent Detail Report (primary listing); County Assessor (APN)" },
+          { "k": "<span class=\"src dna\">DNA</span>", "v": "PropertyDNA comparative valuation &amp; scoring model" }
+        ]}
+      ]
+    }
+  ],
+  "footer": {
+    "line": "Buyer Intelligence Report · 123 Example Dr · MLS 000000000 · Issued —.",
+    "disclaimer": "This report is decision-support and is confidential. It is not an appraisal, a guarantee of value, a loan or insurance commitment, or a solicitation where prohibited. Buyer should independently confirm all material facts and conduct professional inspections before relying on any figure herein. © 2026 PropertyDNA / IntellaGraph AI."
+  }
+}
