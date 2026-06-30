@@ -253,6 +253,23 @@ exports.handler = async (event) => {
   const state = params.state || 'CA';
   const limit = Math.min(500, parseInt(params.limit || '500', 10));
 
+  // One-shot diagnostic (?debug=1): reveal what the internal tables actually hold
+  // for this city so we wire the fallback to real columns, not guesses.
+  if (params.debug) {
+    const out = { city };
+    try {
+      const r = await db.from('properties').select('*').ilike('city', city).limit(3).get();
+      out.properties = { n: Array.isArray(r) ? r.length : 'na', keys: r && r[0] ? Object.keys(r[0]) : [],
+        sample: r && r[0] ? { city: r[0].city, lat: r[0].latitude ?? r[0].lat ?? null, lng: r[0].longitude ?? r[0].lng ?? null, lastSale: r[0].last_sale_price ?? null, est: r[0].current_estimated_value ?? null } : null };
+    } catch (e) { out.properties = { err: e.message }; }
+    try {
+      const r = await db.from('property_master').select('apn,address,city,latitude,longitude,rentcast_value,sqft').eq('city', city).limit(3).get();
+      out.property_master = { n: Array.isArray(r) ? r.length : 'na', keys: r && r[0] ? Object.keys(r[0]) : [],
+        sample: r && r[0] ? { city: r[0].city, lat: r[0].latitude ?? null, lng: r[0].longitude ?? null, val: r[0].rentcast_value ?? null } : null };
+    } catch (e) { out.property_master = { err: e.message }; }
+    return { statusCode: 200, headers: CORS, body: JSON.stringify(out) };
+  }
+
   try {
     const qs = new URLSearchParams({ city, state, status: 'Active', limit: String(limit), offset: '0' });
 
