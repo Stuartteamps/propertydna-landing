@@ -212,29 +212,51 @@ function scoreParcels(listings, cityPermitActivity) {
 // Mapped to the same shape scoreParcels expects. The `properties` table is small
 // enough for a case-insensitive city match (ilike), unlike the 10M-row master.
 async function fetchInternalListings(city, limit) {
+  // 1) Small canonical `properties` table — real sales w/ lat/lng. Best when present
+  // (mostly cities that have had reports/pull-solds runs, e.g. Palm Springs).
   try {
     const rows = await db.from('properties')
       .select('id,address,city,state,zip,latitude,longitude,beds,baths,sqft,year_built,last_sale_price,last_sale_date,current_estimated_value,property_type_normalized')
       .ilike('city', city)
       .limit(limit)
       .get();
+    if (Array.isArray(rows) && rows.length) {
+      const mapped = rows.map(r => {
+        const price = Number(r.current_estimated_value || r.last_sale_price || 0);
+        const sqft  = r.sqft ? Number(r.sqft) : null;
+        return {
+          id: r.id, formattedAddress: r.address, addressLine1: r.address,
+          city: r.city, state: r.state || 'CA', zipCode: r.zip,
+          latitude: Number(r.latitude), longitude: Number(r.longitude), price,
+          squareFootage: sqft, pricePerSquareFoot: (sqft && price) ? Math.round(price / sqft) : null,
+          bedrooms: r.beds || 0, bathrooms: r.baths || 0, yearBuilt: r.year_built || 0,
+          daysOnMarket: null, propertyType: r.property_type_normalized || 'Single Family',
+        };
+      }).filter(l => l.latitude && l.longitude && l.price > 0);
+      if (mapped.length) return mapped;
+    }
+  } catch { /* fall through to property_master */ }
+
+  // 2) The 10M-row property_master index covers every city (city is indexed; geo is
+  //    lat/lng, value is rentcast_value or tax_assessed_value). This is what makes
+  //    Palm Desert, La Quinta, Indio, etc. populate.
+  try {
+    const rows = await db.from('property_master')
+      .select('apn,address,formatted_address,city,zip,lat,lng,beds,baths,sqft,year_built,property_type,rentcast_value,tax_assessed_value')
+      .eq('city', city)
+      .limit(limit)
+      .get();
     if (!Array.isArray(rows) || !rows.length) return null;
     const mapped = rows.map(r => {
-      const price = Number(r.current_estimated_value || r.last_sale_price || 0);
+      const price = Number(r.rentcast_value || r.tax_assessed_value || 0);
       const sqft  = r.sqft ? Number(r.sqft) : null;
       return {
-        id: r.id,
-        formattedAddress: r.address,
-        addressLine1: r.address,
-        city: r.city, state: r.state || 'CA', zipCode: r.zip,
-        latitude: Number(r.latitude), longitude: Number(r.longitude),
-        price,
-        squareFootage: sqft,
-        pricePerSquareFoot: (sqft && price) ? Math.round(price / sqft) : null,
-        bedrooms: r.beds || 0, bathrooms: r.baths || 0,
-        yearBuilt: r.year_built || 0,
-        daysOnMarket: null,
-        propertyType: r.property_type_normalized || 'Single Family',
+        id: r.apn, formattedAddress: r.formatted_address || r.address, addressLine1: r.address || r.formatted_address,
+        city: r.city, state: 'CA', zipCode: r.zip,
+        latitude: Number(r.lat), longitude: Number(r.lng), price,
+        squareFootage: sqft, pricePerSquareFoot: (sqft && price) ? Math.round(price / sqft) : null,
+        bedrooms: r.beds || 0, bathrooms: r.baths || 0, yearBuilt: r.year_built || 0,
+        daysOnMarket: null, propertyType: r.property_type || 'Single Family',
       };
     }).filter(l => l.latitude && l.longitude && l.price > 0);
     return mapped.length ? mapped : null;
