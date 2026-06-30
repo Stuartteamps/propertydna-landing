@@ -279,16 +279,11 @@ exports.handler = async (event) => {
   // for this city so we wire the fallback to real columns, not guesses.
   if (params.debug) {
     const out = { city };
-    try {
-      const r = await db.from('properties').select('*').ilike('city', city).limit(3).get();
-      out.properties = { n: Array.isArray(r) ? r.length : 'na', keys: r && r[0] ? Object.keys(r[0]) : [],
-        sample: r && r[0] ? { city: r[0].city, lat: r[0].latitude ?? r[0].lat ?? null, lng: r[0].longitude ?? r[0].lng ?? null, lastSale: r[0].last_sale_price ?? null, est: r[0].current_estimated_value ?? null } : null };
-    } catch (e) { out.properties = { err: e.message }; }
-    try {
-      const r = await db.from('property_master').select('apn,address,city,latitude,longitude,rentcast_value,sqft').eq('city', city).limit(3).get();
-      out.property_master = { n: Array.isArray(r) ? r.length : 'na', keys: r && r[0] ? Object.keys(r[0]) : [],
-        sample: r && r[0] ? { city: r[0].city, lat: r[0].latitude ?? null, lng: r[0].longitude ?? null, val: r[0].rentcast_value ?? null } : null };
-    } catch (e) { out.property_master = { err: e.message }; }
+    const probe = async (label, builder) => { try { const r = await builder; out[label] = { n: Array.isArray(r) ? r.length : 'na', sample: (r && r[0]) || null }; } catch (e) { out[label] = { err: e.message }; } };
+    await probe('properties_ilike', db.from('properties').select('id,city,latitude,longitude,current_estimated_value').ilike('city', city).limit(2).get());
+    await probe('pm_city_eq', db.from('property_master').select('apn,city,lat,lng,rentcast_value,tax_assessed_value').eq('city', city).limit(2).get());
+    await probe('pm_city_upper', db.from('property_master').select('apn,city,lat,lng,rentcast_value').eq('city', city.toUpperCase()).limit(2).get());
+    await probe('pm_city_ilike', db.from('property_master').select('apn,city,lat,lng,rentcast_value').ilike('city', city).limit(2).get());
     return { statusCode: 200, headers: CORS, body: JSON.stringify(out) };
   }
 
