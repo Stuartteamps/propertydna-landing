@@ -42,28 +42,42 @@ def norm_key(addr, city):
     if not rest: return None
     return num + "|" + " ".join(rest)
 
-def fetch_city(city, max_rows=80000):
-    """Page property_master rows for a city; return {norm_key: row}."""
+def fetch_city(city, max_rows=120000):
+    """Keyset-paginate property_master rows for a city; return {norm_key: row}.
+    Keyset (apn > last) instead of offset avoids the deep-offset statement
+    timeouts that 500'd the previous run. Retries transient errors."""
     out = {}
-    off = 0
-    while off < max_rows:
+    last_apn = ""
+    pulled = 0
+    while pulled < max_rows:
         qs = urllib.parse.urlencode({
             "select": "apn,address,city,state,zip,rentcast_value",
-            "city": f"ilike.{city}", "limit": 1000, "offset": off,
+            "city": f"ilike.{city}",
+            "apn": f"gt.{last_apn}",
+            "order": "apn.asc",
+            "limit": 1000,
         })
-        req = urllib.request.Request(f"{BASE}?{qs}",
-            headers={"apikey": ANON, "Authorization": f"Bearer {ANON}"})
-        try:
-            rows = json.load(urllib.request.urlopen(req, timeout=30))
-        except Exception as e:
-            print(f"    [{city}] fetch error at off={off}: {e}"); break
-        if not rows: break
+        url = f"{BASE}?{qs}"
+        rows = None
+        for attempt in range(4):
+            req = urllib.request.Request(url, headers={"apikey": ANON, "Authorization": f"Bearer {ANON}"})
+            try:
+                rows = json.load(urllib.request.urlopen(req, timeout=40))
+                break
+            except Exception as e:
+                if attempt == 3:
+                    print(f"    [{city}] gave up after retries near apn={last_apn[:14]}: {e}")
+                    rows = []
+        if not rows:
+            break
         for r in rows:
             k = norm_key(r.get("address"), r.get("city"))
             if k and k not in out:
                 out[k] = r
-        off += 1000
-        if len(rows) < 1000: break
+        last_apn = rows[-1]["apn"]
+        pulled += len(rows)
+        if len(rows) < 1000:
+            break
     return out
 
 def main():
