@@ -70,5 +70,30 @@ Use `<span class="unavail">Data unavailable.</span>` for anything unverifiable.
 - Listing photos from secured flexmls share links are usually not machine-readable → make **no** AI photo-derived claims unless you actually have the images.
 - The PropertyDNA value is a comparative model output, **not** a USPAP appraisal — always say so.
 
+## Optional: Claude-drafted narrative (`draft-narrative.js`)
+
+The prose sections (one-paragraph read, why-it-stands-out, buyer advantages,
+strengths/considerations, final recommendation) can be drafted by Claude
+(`claude-opus-4-8`) from the **verified** data packet instead of hand-authored:
+
+```bash
+ANTHROPIC_API_KEY=… node tools/report-generator/draft-narrative.js property-data.json > narrative.json
+```
+
+`property-data.json` = the verified facts + research the agent already gathered
+(MLS fields, valuation, comps, community, risk, proximity, buyer profile, any
+pricing directive). The model returns `{ oneParagraphRead, whyItStandsOut[],
+buyerAdvantages[], strengths[], considerations[], recommendation }` as HTML
+fragments with inline source chips — slot them straight into the section blocks.
+
+**Integrity is enforced in the prompt:** uses only provided facts, never invents,
+writes `Data unavailable.` for gaps, keeps verified vs. observed separate, and
+honors a pricing directive only where the evidence supports it. It still requires
+human/agent review before publish — Claude writes the prose, the data stays the source of truth.
+
+Needs `ANTHROPIC_API_KEY`; raw `https` (no SDK) so it runs without `npm install`.
+
+## The agent
+
 The `buyer-report-builder` agent automates the full pipeline (research → config →
 generate → publish → email). See `.claude/agents/buyer-report-builder.md`.

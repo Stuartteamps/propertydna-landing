@@ -45,7 +45,12 @@ real evidence (e.g. premium position, $/sqft vs. the luxury average) — support
 accurately, never fabricate. Always label it a comparative model, **not** a USPAP appraisal.
 
 **4. Author the config.** Write `config.json` for the generator (data model in
-`tools/report-generator/README.md`). Cover the sections the prompt asks for —
+`tools/report-generator/README.md`). You may draft the prose blocks with Claude:
+`node tools/report-generator/draft-narrative.js property-data.json` (needs
+`ANTHROPIC_API_KEY`) returns institutional narrative as HTML fragments with source
+chips, built only from the verified packet — review it, then slot into the section
+blocks. Hand-authoring is equally fine; the data stays the source of truth either way.
+Cover the sections the prompt asks for —
 Executive Summary, Why It Stands Out, Buyer Advantages, Community/Club Analysis,
 Community Comparison (when relevant), Market Intelligence, Risk Analysis,
 Future Equity, Improvement Opportunities (when relevant), Pros & Considerations,
