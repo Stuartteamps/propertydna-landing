@@ -34,14 +34,23 @@ function callClaude(system, user, maxTokens = 900) {
 function resendSend({ to, from, subject, html, replyTo, bcc }) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return Promise.resolve({ status: 0, skipped: "no_resend_key" });
-  const toFirst = (Array.isArray(to) ? to[0] : to || "").toLowerCase();
+  const recips = (Array.isArray(to) ? to : [to]).filter(Boolean);
+  // HARD BLOCK: never mail internal/synthetic addresses. All test rows
+  // (backtest+NNNN, healthcheck+NNNN, etc.) live on our OWN domain, whose
+  // catch-all forwards to Dan — mailing them floods his inbox and pollutes
+  // engagement metrics. Real leads never use @thepropertydna.com.
+  if (recips.some(a => /@thepropertydna\.com$/i.test(a) || /\+(backtest|healthcheck|test)\b/i.test(a))) {
+    return Promise.resolve({ status: 0, skipped: "internal_recipient" });
+  }
+  const toFirst = (recips[0] || "").toLowerCase();
   // Always send a copy of every user-facing email to Dan (bcc), unless the
   // recipient IS Dan. Sender is always thepropertydna.com.
   const bccList = bcc || (toFirst !== OWNER.toLowerCase() ? [OWNER] : undefined);
   const payload = JSON.stringify({
     from: from || "PropertyDNA <reports@thepropertydna.com>",
     to, subject, html,
-    reply_to: replyTo || "stuartteamps@gmail.com",
+    // Reply-to stays on the PropertyDNA brand, not Dan's personal Gmail.
+    reply_to: replyTo || from || "PropertyDNA <reports@thepropertydna.com>",
     ...(bccList ? { bcc: bccList } : {}),
     headers: { "List-Unsubscribe": `<${APP_BASE}/unsubscribe?email=${encodeURIComponent(Array.isArray(to) ? to[0] : to)}>` },
   });
@@ -116,6 +125,9 @@ async function withinCapAddr(address) {
 // Single gate. No-duplication: one agent per contact AND per address per window.
 // bypassCap=true only for safety-critical agents (Advocate) — still respects opt-out.
 async function shouldSend(email, agent, { bypassCap = false, address = null } = {}) {
+  // Skip internal/synthetic addresses BEFORE generating any content (saves the
+  // Claude call). resendSend hard-blocks these too; this is the earlier gate.
+  if (/@thepropertydna\.com$/i.test(email || "") || /\+(backtest|healthcheck|test)\b/i.test(email || "")) return false;
   if (!(await consentOk(email, agent))) return false;
   if (bypassCap) return true;
   if (await withinCap(email)) return false;
