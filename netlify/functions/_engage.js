@@ -11,6 +11,7 @@
  */
 const https = require("https");
 const db = require("./_supabase");
+const { isInternalAddress } = require("./_internal_addr");
 
 const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").replace(/\/$/, "");
 const OWNER = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
@@ -35,11 +36,8 @@ function resendSend({ to, from, subject, html, replyTo, bcc }) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return Promise.resolve({ status: 0, skipped: "no_resend_key" });
   const recips = (Array.isArray(to) ? to : [to]).filter(Boolean);
-  // HARD BLOCK: never mail internal/synthetic addresses. All test rows
-  // (backtest+NNNN, healthcheck+NNNN, etc.) live on our OWN domain, whose
-  // catch-all forwards to Dan — mailing them floods his inbox and pollutes
-  // engagement metrics. Real leads never use @thepropertydna.com.
-  if (recips.some(a => /@thepropertydna\.com$/i.test(a) || /\+(backtest|healthcheck|test)\b/i.test(a))) {
+  // HARD BLOCK: never mail internal/synthetic addresses (see _internal_addr).
+  if (recips.some(isInternalAddress)) {
     return Promise.resolve({ status: 0, skipped: "internal_recipient" });
   }
   const toFirst = (recips[0] || "").toLowerCase();
@@ -127,7 +125,7 @@ async function withinCapAddr(address) {
 async function shouldSend(email, agent, { bypassCap = false, address = null } = {}) {
   // Skip internal/synthetic addresses BEFORE generating any content (saves the
   // Claude call). resendSend hard-blocks these too; this is the earlier gate.
-  if (/@thepropertydna\.com$/i.test(email || "") || /\+(backtest|healthcheck|test)\b/i.test(email || "")) return false;
+  if (isInternalAddress(email)) return false;
   if (!(await consentOk(email, agent))) return false;
   if (bypassCap) return true;
   if (await withinCap(email)) return false;

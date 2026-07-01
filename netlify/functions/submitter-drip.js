@@ -21,7 +21,8 @@ const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").repl
 const OWNER    = (process.env.OWNER_EMAIL   || "stuartteamps@gmail.com").toLowerCase();
 const SENDER   = process.env.SENDER_EMAIL || "reports@thepropertydna.com";
 const SENDER_NAME = process.env.SENDER_NAME || "PropertyDNA";
-const REPLY_TO = process.env.REPLY_TO_EMAIL || "stuartteamps@gmail.com";
+const REPLY_TO = process.env.REPLY_TO_EMAIL || "PropertyDNA <reports@thepropertydna.com>";
+const { isInternalAddress } = require("./_internal_addr");
 
 const STEPS = [
   { step: 1, ageDays: 2,  ageWindowDays: 1 },
@@ -48,6 +49,9 @@ function httpsPost(hostname, path, headers, body) {
 async function sendEmail({ to, subject, html, text }) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { status: 0, error: "no_resend_key" };
+  // Never mail internal/synthetic addresses (property_reports is seeded with
+  // backtest+*@thepropertydna.com rows that forward to Dan).
+  if (isInternalAddress(to)) return { status: 0, skipped: "internal_recipient" };
   return httpsPost("api.resend.com", "/emails",
     { Authorization: `Bearer ${key}` },
     { from: `${SENDER_NAME} <${SENDER}>`, reply_to: REPLY_TO, to, subject, html, text });

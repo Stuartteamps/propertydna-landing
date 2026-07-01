@@ -115,7 +115,7 @@ async function sendQueuedEmail({ recipientEmail, recipientName, propertyAddress,
     { Authorization: `Bearer ${key}` },
     {
       from:     `${SENDER_NAME} <${SENDER}>`,
-      reply_to: process.env.REPLY_TO_EMAIL || "stuartteamps@gmail.com",
+      reply_to: process.env.REPLY_TO_EMAIL || `${SENDER_NAME} <${SENDER}>`,
       to:       recipientEmail,
       subject:  `Your PropertyDNA report is being generated — ${propertyAddress}`,
       html,
