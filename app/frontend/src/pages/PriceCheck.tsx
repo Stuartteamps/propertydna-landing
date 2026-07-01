@@ -11,9 +11,10 @@ const GOLD = '#B89355', CREAM = '#F4F0E8', INK = '#0F0E0D';
 const usd = (n: number | null) => (n == null ? '—' : '$' + Math.round(n).toLocaleString());
 
 type Result = {
-  ok: boolean; fairValue: number | null; fairValueLow: number | null; fairValueHigh: number | null;
+  ok: boolean; avmValue: number | null; valueLow: number | null; valueHigh: number | null;
   expectedSale: number | null; confidence: number | null; compCount: number;
-  overpricedPct: number | null; verdict: string | null; compsAvailable?: number; reason?: string;
+  overpricedPct: number | null; verdict: string | null; basis?: string[]; reason?: string;
+  compsAvailable?: number; subject?: { matchedAddress?: string | null; sqft?: number | null; beds?: number | null; baths?: number | null; yearBuilt?: number | null };
 };
 
 const label: React.CSSProperties = { fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: GOLD, marginBottom: 8, display: 'block' };
@@ -34,16 +35,15 @@ export default function PriceCheck() {
 
   async function run() {
     setErr(''); setRes(null);
-    if (!f.city || !f.sqft) { setErr('City and square footage are required.'); return; }
+    if (!f.address && !f.city) { setErr('Enter an address (or at least a city).'); return; }
     setLoading(true);
     try {
-      const body: Record<string, unknown> = {
-        address: f.address, city: f.city, state: f.state,
-        sqft: Number(f.sqft) || null, beds: Number(f.beds) || null, baths: Number(f.baths) || null,
-        yearBuilt: Number(f.yearBuilt) || null, lotSqft: Number(f.lotSqft) || null,
-        listPrice: Number(f.listPrice) || null,
-      };
-      const r = await fetch('/.netlify/functions/valuation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      // AVM looks the property up in our index — sqft/beds are optional overrides.
+      const p = new URLSearchParams();
+      p.set('address', f.address); p.set('city', f.city); p.set('state', f.state);
+      if (f.listPrice) p.set('listPrice', String(Number(f.listPrice) || ''));
+      for (const k of ['sqft', 'beds', 'baths', 'yearBuilt', 'lotSqft'] as const) if (f[k]) p.set(k, String(Number(f[k]) || ''));
+      const r = await fetch(`/.netlify/functions/avm?${p.toString()}`);
       const data = await r.json();
       setRes(data);
       // keep inputs in the URL so the result is shareable
@@ -62,7 +62,7 @@ export default function PriceCheck() {
   const tone = over == null ? GOLD : over > 6 ? '#E0625E' : over < -6 ? '#6FBF8E' : GOLD;
   const headline = res?.verdict
     ? (over! > 6 ? `Overpriced by ${over}%` : over! < -6 ? `Priced ${Math.abs(over!)}% below value` : 'Fairly priced')
-    : (res?.fairValue ? 'Estimated fair value' : '');
+    : (res?.avmValue ? 'PropertyDNA AVM value' : '');
 
   return (
     <div style={{ background: INK, color: CREAM, minHeight: '100vh' }}>
@@ -81,12 +81,13 @@ export default function PriceCheck() {
 
           <FadeUp>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 16, marginBottom: 12 }}>
-              <div style={{ gridColumn: '1 / -1' }}><label style={label}>Address (optional)</label><input style={input} value={f.address} onChange={set('address')} placeholder="74535 Wren Dr" /></div>
-              <div><label style={label}>City *</label><input style={input} value={f.city} onChange={set('city')} placeholder="Indian Wells" /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label style={label}>Property address *</label><input style={input} value={f.address} onChange={set('address')} placeholder="440 Tan Oak Rd" /></div>
+              <div><label style={label}>City *</label><input style={input} value={f.city} onChange={set('city')} placeholder="Palm Springs" /></div>
               <div><label style={label}>State</label><input style={input} value={f.state} onChange={set('state')} /></div>
-              <div><label style={label}>List price *</label><input style={input} value={f.listPrice} onChange={set('listPrice')} placeholder="2,700,000" inputMode="numeric" /></div>
-              <div><label style={label}>Sq ft *</label><input style={input} value={f.sqft} onChange={set('sqft')} placeholder="4500" inputMode="numeric" /></div>
-              <div><label style={label}>Lot sq ft</label><input style={input} value={f.lotSqft} onChange={set('lotSqft')} placeholder="12000" inputMode="numeric" /></div>
+              <div><label style={label}>Asking / list price</label><input style={input} value={f.listPrice} onChange={set('listPrice')} placeholder="1,450,000" inputMode="numeric" /></div>
+              <div style={{ gridColumn: '1 / -1', fontFamily: 'Jost, sans-serif', fontSize: 11, color: '#7C766B', marginTop: 4 }}>Optional — only if we don't have the home on file (we usually do):</div>
+              <div><label style={label}>Sq ft</label><input style={input} value={f.sqft} onChange={set('sqft')} placeholder="1955" inputMode="numeric" /></div>
+              <div><label style={label}>Lot sq ft</label><input style={input} value={f.lotSqft} onChange={set('lotSqft')} placeholder="8000" inputMode="numeric" /></div>
               <div><label style={label}>Beds</label><input style={input} value={f.beds} onChange={set('beds')} inputMode="numeric" /></div>
               <div><label style={label}>Baths</label><input style={input} value={f.baths} onChange={set('baths')} inputMode="numeric" /></div>
               <div><label style={label}>Year built</label><input style={input} value={f.yearBuilt} onChange={set('yearBuilt')} inputMode="numeric" /></div>
@@ -101,20 +102,21 @@ export default function PriceCheck() {
             <FadeUp>
               <div style={{ marginTop: 40, border: `1px solid ${tone}55`, borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ background: `${tone}14`, padding: 'clamp(28px,5vw,44px)', textAlign: 'center', borderBottom: '1px solid #26241F' }}>
+                  {res.subject?.matchedAddress && <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#8A8478', marginBottom: 10 }}>Found in our index: {res.subject.matchedAddress}{res.subject.sqft ? ` · ${res.subject.sqft.toLocaleString()} sqft` : ''}{res.subject.beds ? ` · ${res.subject.beds}bd` : ''}{res.subject.baths ? `/${res.subject.baths}ba` : ''}</div>}
                   <div style={label}>{headline}</div>
                   {over != null
                     ? <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(48px,9vw,88px)', fontWeight: 300, color: tone, lineHeight: 1 }}>{over > 0 ? '+' : ''}{over}%</div>
-                    : <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(40px,7vw,72px)', fontWeight: 300, color: CREAM, lineHeight: 1 }}>{usd(res.fairValue)}</div>}
-                  {over != null && <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: '#C9C3B6', marginTop: 10 }}>vs. our fair value of {usd(res.fairValue)}</div>}
+                    : <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(40px,7vw,72px)', fontWeight: 300, color: CREAM, lineHeight: 1 }}>{usd(res.avmValue)}</div>}
+                  {over != null && <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: '#C9C3B6', marginTop: 10 }}>vs. our AVM value of {usd(res.avmValue)}</div>}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))' }}>
                   {[
-                    ['Fair value', usd(res.fairValue)],
-                    ['Value range', `${usd(res.fairValueLow)} – ${usd(res.fairValueHigh)}`],
+                    ['AVM value', usd(res.avmValue)],
+                    ['Value range', `${usd(res.valueLow)} – ${usd(res.valueHigh)}`],
                     ['Expected sale price', usd(res.expectedSale)],
                     ['Confidence', res.confidence != null ? `${Math.round(res.confidence * 100)}%` : '—'],
                     ['Comparable sales used', String(res.compCount)],
-                    ['Data source', 'Real recorded MLS sales'],
+                    ['Basis', (res.basis || []).join(' + ').replace(/_/g, ' ') || 'comps'],
                   ].map(([k, v]) => (
                     <div key={k} style={{ padding: '20px 24px', borderTop: '1px solid #26241F', borderRight: '1px solid #26241F' }}>
                       <div style={label}>{k}</div>
@@ -128,7 +130,7 @@ export default function PriceCheck() {
                 </div>
               </div>
               <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#7C766B', marginTop: 16, lineHeight: 1.6 }}>
-                Fair value is computed independently from comparable recorded sales (no asking-price anchor). Expected sale price reflects how homes in this tier typically close relative to list. Not an appraisal.
+                The AVM value is computed independently from comparable recorded sales in our own index (no asking-price anchor). Expected sale price reflects how homes in this tier typically close relative to list. Not an appraisal.
               </p>
             </FadeUp>
           )}
