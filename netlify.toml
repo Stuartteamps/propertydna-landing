@@ -42,6 +42,14 @@
 # Advocate runs FIRST (9am PT) so a safety alert claims the user's daily slot
 # before Steward/Historian — the frequency cap then blocks the lower-priority
 # agents for anyone Advocate just warned. Advocate itself bypasses the cap.
+# growth-agent — daily distribution engine. Generates ready-to-fire guerrilla
+# content (Reddit/X/IG) promoting /price-check and emails it to the owner every
+# morning (8:07 AM PT). PropertyDNA-branded, no personal name. Auto-posts once a
+# social account is connected + GROWTH_AGENT_MODE=publish.
+[functions."growth-agent"]
+  schedule = "7 15 * * *"
+  timeout = 26
+
 [functions."advocate-agent"]
   schedule = "0 16 * * *"
   timeout = 26
