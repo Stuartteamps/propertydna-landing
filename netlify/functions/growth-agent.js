@@ -46,6 +46,22 @@ function bufferPost(text, profileIds) {
   });
 }
 
+// Path B — Meta DIRECT, free (no Buffer subscription). Posts text to your own
+// Facebook Page feed via the Graph API. Needs META_PAGE_ACCESS_TOKEN + META_PAGE_ID
+// (a long-lived Page token you generate once for your OWN page — no app review).
+function metaPagePost(text) {
+  const token = process.env.META_PAGE_ACCESS_TOKEN, pageId = process.env.META_PAGE_ID;
+  if (!token || !pageId) return Promise.resolve({ status: 0, skipped: true });
+  const form = `message=${encodeURIComponent(text)}&access_token=${encodeURIComponent(token)}`;
+  const body = Buffer.from(form);
+  return new Promise((resolve) => {
+    const req = https.request({ hostname: "graph.facebook.com", path: `/v19.0/${pageId}/feed`, method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": body.length } },
+      (res) => { let r = ""; res.on("data", c => r += c); res.on("end", () => { try { resolve({ status: res.statusCode, json: JSON.parse(r) }); } catch { resolve({ status: res.statusCode }); } }); });
+    req.on("error", () => resolve({ status: 0 })); req.write(body); req.end();
+  });
+}
+
 const SYSTEM = `You are PropertyDNA's growth engine. Mission: defend home buyers from predatory pricing and asymmetric data by giving them the truth for free. The product to promote is the free, no-login tool at ${'{URL}'} — paste any home + asking price, get "overpriced by X%" judged against real recorded sales.
 
 Write TODAY's distribution kit. Rules:
@@ -111,19 +127,32 @@ exports.handler = async (event) => {
   // "email" (default) = deliver kit to owner. "publish" = auto-post via Buffer to
   // all connected platforms (needs BUFFER_ACCESS_TOKEN) AND email the owner a copy.
   const mode = body.mode || process.env.GROWTH_AGENT_MODE || "email";
-  let posted = 0, bufferResult = null;
-  if (mode === "publish" && process.env.BUFFER_ACCESS_TOKEN) {
-    const ids = await bufferProfileIds();
-    if (ids.length) {
-      const post = (kit.tweets && kit.tweets[0]) || kit.instagram || `See if any listing is overpriced — free: ${url}`;
-      const r = await bufferPost(post.includes(url) ? post : `${post} ${url}`, ids);
-      if (r.status && r.status < 300) posted = ids.length;
-      bufferResult = { status: r.status, profiles: ids.length };
+  let posted = 0; const channels = [];
+  if (mode === "publish") {
+    const post = (kit.tweets && kit.tweets[0]) || kit.instagram || `See if any listing is overpriced — free: ${url}`;
+    const text = post.includes(url) ? post : `${post} ${url}`;
+    // Path A — Buffer (all connected platforms in one call)
+    if (process.env.BUFFER_ACCESS_TOKEN) {
+      const ids = await bufferProfileIds();
+      if (ids.length) { const r = await bufferPost(text, ids); if (r.status && r.status < 300) { posted += ids.length; channels.push(`buffer:${ids.length}`); } }
+    }
+    // Path B — Meta direct (free, your own FB Page)
+    if (process.env.META_PAGE_ACCESS_TOKEN && process.env.META_PAGE_ID) {
+      const r = await metaPagePost(text); if (r.status && r.status < 300) { posted += 1; channels.push("facebook"); }
     }
   }
   // Always email the owner the full kit (record + manual channels like Reddit).
-  const r = await resendSend({ to: OWNER, from: "PropertyDNA Growth <reports@thepropertydna.com>", subject: `📈 Today's growth kit — ${kit.angle || todaysAngle}${posted ? ` (auto-posted to ${posted} profiles)` : ""}`, html });
+  const r = await resendSend({ to: OWNER, from: "PropertyDNA Growth <reports@thepropertydna.com>", subject: `📈 Today's growth kit — ${kit.angle || todaysAngle}${posted ? ` (auto-posted: ${channels.join(", ")})` : ""}`, html });
   const emailed = r.status && r.status < 300 ? 1 : 0;
-  db.kpi("growth_agent_run", null, { angle: kit.angle || todaysAngle, mode, emailed, posted });
-  return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, angle: kit.angle || todaysAngle, mode, emailed, posted, bufferResult, kit }) };
+  // INTERNAL CONTENT CHANNEL: publish today's value-post to OUR OWN on-site feed
+  // (/insights), stored in kpi_events (no external platform, no new table). This
+  // is the fully-internal distribution surface — SEO-indexed content on our own
+  // domain, growing daily, independent of any social platform.
+  const slug = `${new Date().toISOString().slice(0, 10)}-${String(kit.angle || todaysAngle).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40).replace(/^-|-$/g, "")}`;
+  db.kpi("growth_insight", null, {
+    slug, title: kit.reddit?.title || kit.angle || todaysAngle,
+    body: kit.reddit?.body || "", tweet: (kit.tweets && kit.tweets[0]) || "", url,
+  });
+  db.kpi("growth_agent_run", null, { angle: kit.angle || todaysAngle, mode, emailed, posted, channels, slug });
+  return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, angle: kit.angle || todaysAngle, mode, emailed, posted, channels, published_insight: slug, kit }) };
 };

@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Analyze from "./pages/Analyze";
 import PriceCheck from "./pages/PriceCheck";
+import Insights from "./pages/Insights";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
@@ -83,6 +84,8 @@ const AppRoutes = () => (
     <Route path="/home" element={<Index />} />
     <Route path="/analyze" element={<Analyze />} />
     <Route path="/price-check" element={<PriceCheck />} />
+    <Route path="/insights" element={<Insights />} />
+    <Route path="/market-truths" element={<Insights />} />
     <Route path="/is-it-overpriced" element={<PriceCheck />} />
     <Route path="/overpriced" element={<PriceCheck />} />
     <Route path="/value" element={<PriceCheck />} />
