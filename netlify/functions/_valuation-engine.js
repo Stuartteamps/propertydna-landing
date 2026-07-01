@@ -63,20 +63,30 @@ function compFairValue(subject, comps, { k = 10, nowYear = 2026 } = {}) {
     if ((c.pool ? 1 : 0) !== (subject.pool ? 1 : 0)) d += 0.4;
     return d;
   };
-  const near = cand.map(c => ({ c, d: dist(c) })).sort((a, b) => a.d - b.d).slice(0, k);
+  // Core kNN estimate over a candidate set.
+  const estimate = (pool) => {
+    const near = pool.map(c => ({ c, d: dist(c) })).sort((a, b) => a.d - b.d).slice(0, k);
+    if (!near.length) return null;
+    const pairs = near.map(({ c, d }) => {
+      const scale = 0.6 * (sf / c.sqft) + 0.4 * ((c.lotSqft && subject.lotSqft) ? (num(subject.lotSqft) / c.lotSqft) : (sf / c.sqft));
+      let w = 1 / (d + 0.05);
+      if (c.saleDate) { const yrs = Math.max(0, (Date.parse(`${nowYear}-06-30`) - Date.parse(c.saleDate)) / (365.25 * 864e5)); w *= Math.exp(-yrs / 3); }
+      return [c.price * scale, w];
+    });
+    return { mid: wMedian(pairs), low: wQuantile(pairs, 0.25), high: wQuantile(pairs, 0.75), n: near.length };
+  };
 
-  const pairs = near.map(({ c, d }) => {
-    const scale = 0.6 * (sf / c.sqft) + 0.4 * ((c.lotSqft && subject.lotSqft) ? (num(subject.lotSqft) / c.lotSqft) : (sf / c.sqft));
-    let w = 1 / (d + 0.05);
-    if (c.saleDate) { const yrs = Math.max(0, (Date.parse(`${nowYear}-06-30`) - Date.parse(c.saleDate)) / (365.25 * 864e5)); w *= Math.exp(-yrs / 3); } // recency half-weight ~2yr
-    return [c.price * scale, w];
-  });
+  // Pass 1: broad estimate. Pass 2 (tier-lock): re-select comps whose SALE PRICE
+  // sits in the subject's own price band, so a modest home is never valued against
+  // luxury estates (and vice-versa). This kills cross-tier $/sqft contamination.
+  let e = estimate(cand);
+  if (!e || !e.mid) return null;
+  const banded = cand.filter(c => c.price >= 0.5 * e.mid && c.price <= 2.0 * e.mid);
+  if (banded.length >= 4) { const e2 = estimate(banded); if (e2 && e2.mid) e = e2; }
 
-  const mid = wMedian(pairs), low = wQuantile(pairs, 0.25), high = wQuantile(pairs, 0.75);
-  // Confidence: more comps + tighter spread + closer matches => higher.
-  const spread = mid ? (high - low) / mid : 1;
-  const conf = Math.max(0.3, Math.min(0.95, 0.5 + 0.04 * Math.min(near.length, 10) - 0.6 * spread));
-  return { fairValue: Math.round(mid), fairValueLow: Math.round(low), fairValueHigh: Math.round(high), compCount: near.length, confidence: +conf.toFixed(2) };
+  const spread = e.mid ? (e.high - e.low) / e.mid : 1;
+  const conf = Math.max(0.3, Math.min(0.95, 0.5 + 0.04 * Math.min(e.n, 10) - 0.6 * spread));
+  return { fairValue: Math.round(e.mid), fairValueLow: Math.round(e.low), fairValueHigh: Math.round(e.high), compCount: e.n, confidence: +conf.toFixed(2) };
 }
 
 /**
