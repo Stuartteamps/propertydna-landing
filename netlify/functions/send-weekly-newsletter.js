@@ -181,6 +181,15 @@ const BATCH_SIZE = 50;
 // Manual HTTP calls pass offset to avoid 26s timeout.
 exports.handler = async (event) => {
   const params  = event?.queryStringParameters || {};
+
+  // Auth — this endpoint triggers a mass send to the entire newsletter list, so
+  // require the internal key. The weekly cloud routine passes it; nothing else
+  // should be able to fire (or repeatedly re-fire) the newsletter.
+  const internalKey = event.headers?.["x-internal-key"] || event.headers?.["X-Internal-Key"] || "";
+  if (process.env.INTERNAL_API_KEY && internalKey !== process.env.INTERNAL_API_KEY) {
+    return { statusCode: 401, body: JSON.stringify({ error: "unauthorized" }) };
+  }
+
   const isManual = !!params.offset;
   const startOffset = parseInt(params.offset || '0', 10) || 0;
 
@@ -209,8 +218,11 @@ exports.handler = async (event) => {
   const unsubs = await db.from('campaign_unsubscribes').select('email').get().catch(() => []);
   const unsubSet = new Set((unsubs || []).map(u => (u.email || '').toLowerCase()));
 
-  // 4. Send — single batch for manual, full loop for cron
-  let offset = startOffset, sent = 0, skipped = 0, failed = 0;
+  // 4. Send — single batch per call for manual pagination, full loop for cron.
+  //    Completion is detected by batch exhaustion (an empty or partial page),
+  //    NOT by campaign.total_contacts — that counter can be stale/low and would
+  //    otherwise cut the send short after a single 50-contact batch.
+  let offset = startOffset, sent = 0, skipped = 0, failed = 0, reachedEnd = false;
   const maxBatches = isManual ? 1 : 999; // cron gets all, manual gets one batch
 
   for (let b = 0; b < maxBatches; b++) {
@@ -221,7 +233,7 @@ exports.handler = async (event) => {
       .range(offset, offset + BATCH_SIZE - 1)
       .get().catch(() => null);
 
-    if (!Array.isArray(batch) || batch.length === 0) break;
+    if (!Array.isArray(batch) || batch.length === 0) { reachedEnd = true; break; }
 
     for (const c of batch) {
       if (unsubSet.has((c.email || '').toLowerCase())) { skipped++; continue; }
@@ -231,10 +243,10 @@ exports.handler = async (event) => {
     }
 
     offset += batch.length;
-    if (batch.length < BATCH_SIZE) { offset = -1; break; } // done
+    if (batch.length < BATCH_SIZE) { reachedEnd = true; break; } // last (partial) page
   }
 
-  const done = offset === -1 || offset >= (campaign.total_contacts || 0);
+  const done = reachedEnd;
   if (done) db.kpi('newsletter_sent', null, { sent, skipped, failed, week: weekLabel });
 
   console.log(`[send-weekly-newsletter] sent=${sent} skipped=${skipped} failed=${failed} done=${done} next=${offset}`);

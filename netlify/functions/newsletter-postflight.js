@@ -51,22 +51,17 @@ exports.handler = async () => {
     return { statusCode: 200, body: JSON.stringify({ status: 'critical', reason: 'no_send_event' }) };
   }
 
-  // CASE 2: fell back to Resend (junk-risk path)
+  // CASE 2: sent via Resend — this is now the INTENDED path (Constant Contact
+  // retired 2026-06-30). Healthy, no alert. The send-weekly-newsletter routine
+  // drives it; hello@mail.* is past its warmup window.
   if (!ccSent && resendSent) {
-    await alert.send({
-      level:   'warn',
-      subject: 'Newsletter sent via RESEND fallback (CC API path failed)',
-      body:    `Thursday's newsletter went out via Resend from <code>hello@mail.*</code> instead of CC.<br>
-                That subdomain is still warming — high junk-folder risk on this 734-contact list.<br><br>
-                Run preflight again or re-auth CC before next Thursday.`,
-      context: { winner, allEvents: events.slice(0, 3) },
-    });
-    db.kpi('newsletter_postflight', null, { status: 'warn', reason: 'resend_fallback', payload: winner.metadata });
-    return { statusCode: 200, body: JSON.stringify({ status: 'warn', via: 'resend' }) };
+    db.kpi('newsletter_postflight', null, { status: 'healthy', via: 'resend', payload: resendSent.metadata });
+    console.log('[newsletter-postflight] healthy — sent via Resend (internal)');
+    return { statusCode: 200, body: JSON.stringify({ status: 'healthy', via: 'resend', payload: resendSent.metadata }) };
   }
 
-  // CASE 3: CC path worked (silent success)
+  // CASE 3: a cc_newsletter_sent event exists (legacy/manual CC send) — also fine.
   db.kpi('newsletter_postflight', null, { status: 'healthy', via: 'constant_contact', payload: winner.metadata });
-  console.log('[newsletter-postflight] healthy — sent via CC');
+  console.log('[newsletter-postflight] healthy — sent via CC (legacy)');
   return { statusCode: 200, body: JSON.stringify({ status: 'healthy', via: 'constant_contact', payload: winner.metadata }) };
 };

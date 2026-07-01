@@ -147,32 +147,38 @@
   schedule = "45 11 * * *"
   timeout = 26
 
-# send-weekly-newsletter was firing on the same Thursday schedule as
-# send-cc-newsletter, causing every contact to receive 2 identical emails
-# 30s apart — a strong spam-folder signal. Schedule removed; the function
-# remains callable manually via HTTP POST.
+# WEEKLY NEWSLETTER — now sent via our own Resend infra (send-weekly-newsletter),
+# NOT Constant Contact (CC subscription cancelled 2026-06-30).
+#
+# It is NOT scheduled here as a Netlify cron because a single invocation cannot
+# send the whole list within the function timeout (734 contacts × sequential
+# Resend calls > 60s). Instead the cloud routine "Weekly Newsletter — Internal
+# Resend Send" (trig_01AsA7hwhQd8mDebcCuoGPSU) drives it every Thursday 4:20 PM PT,
+# paginating ?offset= (50/batch) until done, passing x-internal-key. The function
+# is auth-gated, so a header-less Netlify cron could not call it anyway.
 # [functions."send-weekly-newsletter"]
 #   schedule = "20 23 * * 4"
 
-# Auto-send PAUSED 2026-05-28 per Dan: newsletter must be previewed to
-# stuartteamps@gmail.com and explicitly approved before each full-list send.
-# Re-enable by uncommenting the schedule. Function stays callable via HTTP
-# (manual send on approval) and in ccTest preview mode.
-[functions."send-cc-newsletter"]
-  schedule = "20 23 * * 4"
-  timeout = 60
+# send-cc-newsletter (Constant Contact) RETIRED 2026-06-30 — CC subscription
+# cancelled. Superseded by the internal Resend send above. Left disabled for
+# reference only; do not re-enable.
+# [functions."send-cc-newsletter"]
+#   schedule = "20 23 * * 4"
+#   timeout = 60
 
-[functions."auto-refresh-cc-token"]
-  schedule = "59 7 * * 4"
+# auto-refresh-cc-token RETIRED 2026-06-30 — CC cancelled, no OAuth token to refresh.
+# [functions."auto-refresh-cc-token"]
+#   schedule = "59 7 * * 4"
 
-# Wed 14:00 UTC = 7 AM PDT — 33h before Thursday's 4:20 PM PT newsletter send.
-# Checks CC OAuth token freshness, refreshes if <40h to expiry, alerts Dan
-# if refresh fails or token is missing entirely.
-[functions."newsletter-preflight"]
-  schedule = "0 14 * * 3"
+# newsletter-preflight RETIRED 2026-06-30 — it only checked CC OAuth token
+# freshness, which is moot now that CC is cancelled (it would false-alert
+# "token missing"). The internal Resend send has no token to pre-warm.
+# [functions."newsletter-preflight"]
+#   schedule = "0 14 * * 3"
 
-# Fri 16:00 UTC = 9 AM PDT — verifies Thursday's send actually happened
-# (CC API path preferred, Resend fallback flagged as warning).
+# Fri 16:00 UTC = 9 AM PDT — verifies Thursday's send actually happened. Reads
+# the newsletter_sent KPI that send-weekly-newsletter writes (Resend path), so
+# it still confirms the internal send. CC-specific checks are now no-ops.
 [functions."newsletter-postflight"]
   schedule = "0 16 * * 5"
 
