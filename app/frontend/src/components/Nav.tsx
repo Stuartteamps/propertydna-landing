@@ -16,6 +16,7 @@ const linkStyle: React.CSSProperties = {
 //   Network  → "Show me what you know"    — NPIN rollup (heatmap, dossiers, ticker, IntellaGraph AI)
 //   Owners   → "I own a home"             — Owner Portal claim + watchlist
 const navLinks = [
+  { label: 'Price Check', href: '/price-check' },
   { label: 'Analyze', href: '/analyze' },
   { label: 'Network', href: '/network'  },
   { label: 'Owners',  href: '/owner-portal' },
