@@ -1,8 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
+
+// SEO + social-share meta — targets high-intent buyer searches and makes every
+// shared /price-check link render a rich preview (the viral loop).
+function setMeta(attr: 'name' | 'property', value: string, content: string) {
+  let tag = document.head.querySelector(`meta[${attr}="${value}"]`) as HTMLMetaElement | null;
+  if (!tag) { tag = document.createElement('meta'); tag.setAttribute(attr, value); document.head.appendChild(tag); }
+  tag.content = content;
+}
+function useSeo() {
+  useEffect(() => {
+    const title = 'Is This Listing Overpriced? Free Home Value Check | PropertyDNA';
+    const desc = 'Paste any home and its asking price. PropertyDNA values it against real recorded sales — free, no login — and tells you in one line if you\'re being overpriced. The data agents hoped you\'d never see.';
+    document.title = title;
+    setMeta('name', 'description', desc);
+    setMeta('property', 'og:title', title);
+    setMeta('property', 'og:description', desc);
+    setMeta('property', 'og:type', 'website');
+    setMeta('name', 'twitter:card', 'summary_large_image');
+    setMeta('name', 'twitter:title', title);
+    setMeta('name', 'twitter:description', desc);
+  }, []);
+}
 
 // The front door: paste a listing, get the truth. Runs PropertyDNA's own
 // RentCast-free valuation engine (/.netlify/functions/valuation) and shows the
@@ -21,6 +43,7 @@ const label: React.CSSProperties = { fontFamily: 'Jost, sans-serif', fontSize: 1
 const input: React.CSSProperties = { width: '100%', padding: '14px 16px', background: '#1A1815', border: '1px solid #33302A', color: CREAM, fontSize: 16, fontFamily: 'Jost, sans-serif', borderRadius: 2, boxSizing: 'border-box' };
 
 export default function PriceCheck() {
+  useSeo();
   const [sp, setSp] = useSearchParams();
   const [f, setF] = useState({
     address: sp.get('address') || '', city: sp.get('city') || '', state: sp.get('state') || 'CA',

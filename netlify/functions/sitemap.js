@@ -42,6 +42,8 @@ function url(loc, opts = {}) {
 // Static, evergreen pages — the spine of the site.
 const STATIC_PAGES = [
   { loc: '/',                  freq: 'daily',   pri: 1.0  },
+  { loc: '/price-check',       freq: 'daily',   pri: 0.98 },
+  { loc: '/is-it-overpriced',  freq: 'weekly',  pri: 0.9  },
   { loc: '/dossiers',          freq: 'daily',   pri: 0.95 },
   { loc: '/pedigree-index',    freq: 'weekly',  pri: 0.95 },
   { loc: '/luxury-inventory',  freq: 'daily',   pri: 0.95 },
