@@ -13,8 +13,38 @@
  *
  * Scheduled daily (netlify.toml). Also callable via HTTP with x-internal-key.
  */
+const https = require("https");
 const { callClaude, resendSend, OWNER, APP_BASE, db } = require("./_engage");
 const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, x-internal-key" };
+
+// Buffer bridge — posts to ALL your Buffer-connected platforms (X/FB/LinkedIn/IG)
+// in one call, no Meta app review. Set BUFFER_ACCESS_TOKEN (+ optional
+// BUFFER_PROFILE_IDS comma-list; if omitted we auto-fetch all your profiles).
+function bufferGet(path) {
+  const token = process.env.BUFFER_ACCESS_TOKEN;
+  return new Promise((resolve) => {
+    https.get({ hostname: "api.bufferapp.com", path: `${path}${path.includes("?") ? "&" : "?"}access_token=${token}` }, (res) => {
+      let r = ""; res.on("data", c => r += c); res.on("end", () => { try { resolve(JSON.parse(r)); } catch { resolve(null); } });
+    }).on("error", () => resolve(null));
+  });
+}
+async function bufferProfileIds() {
+  if (process.env.BUFFER_PROFILE_IDS) return process.env.BUFFER_PROFILE_IDS.split(",").map(s => s.trim()).filter(Boolean);
+  const profiles = await bufferGet("/1/profiles.json");
+  return Array.isArray(profiles) ? profiles.map(p => p.id) : [];
+}
+function bufferPost(text, profileIds) {
+  const token = process.env.BUFFER_ACCESS_TOKEN;
+  const form = `access_token=${encodeURIComponent(token)}&text=${encodeURIComponent(text)}&now=true&` +
+    profileIds.map(id => `profile_ids[]=${encodeURIComponent(id)}`).join("&");
+  const body = Buffer.from(form);
+  return new Promise((resolve) => {
+    const req = https.request({ hostname: "api.bufferapp.com", path: "/1/updates/create.json", method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": body.length } },
+      (res) => { let r = ""; res.on("data", c => r += c); res.on("end", () => { try { resolve({ status: res.statusCode, json: JSON.parse(r) }); } catch { resolve({ status: res.statusCode }); } }); });
+    req.on("error", () => resolve({ status: 0 })); req.write(body); req.end();
+  });
+}
 
 const SYSTEM = `You are PropertyDNA's growth engine. Mission: defend home buyers from predatory pricing and asymmetric data by giving them the truth for free. The product to promote is the free, no-login tool at ${'{URL}'} — paste any home + asking price, get "overpriced by X%" judged against real recorded sales.
 
@@ -78,12 +108,22 @@ exports.handler = async (event) => {
   <p style="font-size:12px;color:#888;">Tool: <a href="${url}">${url}</a> · Connect a social account at ${APP_BASE}/admin/oauth to auto-post this daily.</p>
   </div>`;
 
-  const mode = body.mode || process.env.GROWTH_AGENT_MODE || "email"; // "email" (default) | future: "publish"
-  let sent = 0;
-  if (mode === "email") {
-    const r = await resendSend({ to: OWNER, from: "PropertyDNA Growth <reports@thepropertydna.com>", subject: `📈 Today's growth kit — ${kit.angle || todaysAngle}`, html });
-    if (r.status && r.status < 300) sent = 1;
+  // "email" (default) = deliver kit to owner. "publish" = auto-post via Buffer to
+  // all connected platforms (needs BUFFER_ACCESS_TOKEN) AND email the owner a copy.
+  const mode = body.mode || process.env.GROWTH_AGENT_MODE || "email";
+  let posted = 0, bufferResult = null;
+  if (mode === "publish" && process.env.BUFFER_ACCESS_TOKEN) {
+    const ids = await bufferProfileIds();
+    if (ids.length) {
+      const post = (kit.tweets && kit.tweets[0]) || kit.instagram || `See if any listing is overpriced — free: ${url}`;
+      const r = await bufferPost(post.includes(url) ? post : `${post} ${url}`, ids);
+      if (r.status && r.status < 300) posted = ids.length;
+      bufferResult = { status: r.status, profiles: ids.length };
+    }
   }
-  db.kpi("growth_agent_run", null, { angle: kit.angle || todaysAngle, mode, delivered: sent });
-  return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, angle: kit.angle || todaysAngle, mode, delivered: sent, kit }) };
+  // Always email the owner the full kit (record + manual channels like Reddit).
+  const r = await resendSend({ to: OWNER, from: "PropertyDNA Growth <reports@thepropertydna.com>", subject: `📈 Today's growth kit — ${kit.angle || todaysAngle}${posted ? ` (auto-posted to ${posted} profiles)` : ""}`, html });
+  const emailed = r.status && r.status < 300 ? 1 : 0;
+  db.kpi("growth_agent_run", null, { angle: kit.angle || todaysAngle, mode, emailed, posted });
+  return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, angle: kit.angle || todaysAngle, mode, emailed, posted, bufferResult, kit }) };
 };
