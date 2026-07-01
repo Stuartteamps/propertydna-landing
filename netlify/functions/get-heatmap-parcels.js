@@ -118,13 +118,15 @@ function genPolygon(lat, lon) {
   ];
 }
 
+// Deterministic 30-point trend from the real YoY signal (no Math.random — the
+// map must never show fabricated movement). A gentle fixed oscillation renders a
+// natural line while the slope reflects the actual year-over-year direction.
 function genSparkline(baseYoy) {
   const vals = [];
-  let v = 100;
   const dailyDrift = (baseYoy / 365) * 0.3;
   for (let i = 0; i < 30; i++) {
-    v += dailyDrift + (Math.random() - 0.5) * 1.8;
-    vals.push(Math.round(v * 10) / 10);
+    const wave = Math.sin(i / 4.5) * 0.8;   // fixed, reproducible micro-variation
+    vals.push(Math.round((100 + dailyDrift * i + wave) * 10) / 10);
   }
   return vals;
 }
