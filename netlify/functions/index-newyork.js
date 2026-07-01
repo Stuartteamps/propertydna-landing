@@ -244,7 +244,12 @@ exports.handler = async (event) => {
     if (!dryRun && master.length > 0) writeErrors = await bulkWrite(master, history);
 
     const newOffset  = offset + rows.length;
-    const countyDone = rows.length < runSize || newOffset >= total;
+    // When the upstream FeatureServer can't return a count (`total=0`), the
+    // `newOffset >= 0` test would always be true and prematurely mark every
+    // page as "done" — the same first 500 rows would get re-upserted forever
+    // (the bug that froze NY at 87,012 with the same Westchester batch
+    // looping). Only trust the offset-vs-total check when total is known.
+    const countyDone = rows.length < runSize || (total > 0 && newOffset >= total);
     const pct        = total > 0 ? Math.round((newOffset / total) * 100) : null;
     const nextCounty = countyDone ? (COUNTY_QUEUE[COUNTY_QUEUE.indexOf(countyDef) + 1]?.name || null) : null;
 
