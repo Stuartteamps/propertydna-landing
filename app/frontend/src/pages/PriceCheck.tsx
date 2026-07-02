@@ -81,6 +81,10 @@ export default function PriceCheck() {
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   }
 
+  // Auto-run when arriving pre-filled (e.g. from the browser extension on a
+  // Zillow/Redfin/MLS listing) so it's a one-click verdict end-to-end.
+  useEffect(() => { if (sp.get('address') && sp.get('city')) { const t = setTimeout(() => run(), 150); return () => clearTimeout(t); } /* eslint-disable-next-line */ }, []);
+
   const over = res?.overpricedPct ?? null;
   const tone = over == null ? GOLD : over > 6 ? '#E0625E' : over < -6 ? '#6FBF8E' : GOLD;
   const headline = res?.verdict

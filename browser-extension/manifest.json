@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "PropertyDNA — Is this listing overpriced?",
+  "version": "1.0.0",
+  "description": "On any listing you're viewing (Zillow, Redfin, Realtor.com, FlexMLS), instantly see PropertyDNA's verdict: is it overpriced, and by how much — from real recorded sales.",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": [
+    "https://*.zillow.com/*",
+    "https://*.redfin.com/*",
+    "https://*.realtor.com/*",
+    "https://*.flexmls.com/*",
+    "https://*.homes.com/*"
+  ],
+  "action": { "default_title": "Check this listing with PropertyDNA" },
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.zillow.com/*",
+        "https://*.redfin.com/*",
+        "https://*.realtor.com/*",
+        "https://*.flexmls.com/*",
+        "https://*.homes.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {}
+}
