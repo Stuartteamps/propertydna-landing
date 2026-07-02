@@ -149,11 +149,14 @@ exports.handler = async (event) => {
   // is the fully-internal distribution surface — SEO-indexed content on our own
   // domain, growing daily, independent of any social platform.
   const slug = `${new Date().toISOString().slice(0, 10)}-${String(kit.angle || todaysAngle).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40).replace(/^-|-$/g, "")}`;
-  // AWAITED — the Lambda freezes on return, so a fire-and-forget write can be lost.
-  await db.kpi("growth_insight", null, {
-    slug, title: kit.reddit?.title || kit.angle || todaysAngle,
-    body: kit.reddit?.body || "", tweet: (kit.tweets && kit.tweets[0]) || "", url,
-  }).catch(() => {});
+  // AWAITED insert — the Lambda freezes on return, so the fire-and-forget db.kpi
+  // write was lost. db.insert returns a real promise we can await + flush.
+  try {
+    await db.insert("kpi_events", {
+      event_type: "growth_insight", email: null, value: 1,
+      metadata: { slug, title: kit.reddit?.title || kit.angle || todaysAngle, body: kit.reddit?.body || "", tweet: (kit.tweets && kit.tweets[0]) || "", url },
+    });
+  } catch (e) { /* non-fatal */ }
   db.kpi("growth_agent_run", null, { angle: kit.angle || todaysAngle, mode, emailed, posted, channels, slug });
   return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, angle: kit.angle || todaysAngle, mode, emailed, posted, channels, published_insight: slug, kit }) };
 };
