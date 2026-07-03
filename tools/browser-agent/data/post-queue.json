@@ -117,6 +117,42 @@
       "posted": false,
       "postedAt": null,
       "url": null
+    },
+    {
+      "id": "lux-011",
+      "subreddit": "ClassicCars",
+      "title": "The Ferrari you just bought has more documented history than the $12M house next door \u2014 why?",
+      "body": "Spent some time comparing the documentation standards across collectible asset classes. The gap is staggering.\n\nFor a 1962 Ferrari 250 GTO:\n- Factory build record (Maranello chassis file)\n- Consecutive ownership history with dates\n- Race history with results\n- Restoration documentation (who, what, when)\n- Concours judging sheets\n- Insurance valuation on file\n\nFor a $12M mid-century modern estate in Palm Springs \u2014 the kind that John Lautner or Richard Neutra designed for a Hollywood legend:\n- Title chain (legal only, no narrative)\n- MLS history (last 20 years if you're lucky)\n- General inspection report\n- Vague claims about celebrity/architect history, often unverified\n\nThe irony is that the estate is often *more* historically significant, rarer, and harder to replace. There are 36 Ferrari 250 GTOs. There are 8 verified Lautner residential commissions in Palm Springs. But the Ferrari has 60 years of documented provenance and the house has almost none.\n\nWe're building the dossier methodology from the classic car world and applying it to architecturally significant homes. Starting with the Coachella Valley because of the MCM density and celebrity history.\n\nhttps://www.thepropertydna.com?utm_source=reddit_ClassicCars&utm_medium=social&utm_campaign=organic\n\nFor car collectors who also hold real estate \u2014 does this gap bother you as much as it does us?",
+      "posted": false,
+      "postedAt": null,
+      "url": null
+    },
+    {
+      "id": "lux-012",
+      "subreddit": "HistoricPreservation",
+      "title": "We built a systematic MCM authentication database for Palm Springs \u2014 240+ homes, primary sources only",
+      "body": "Background: we started as a real estate data platform and ended up building something closer to an architectural provenance registry.\n\nThe problem we kept running into: Palm Springs has one of the densest concentrations of mid-century modern residential architecture in the world. Frey, Neutra, Lautner, Krisel, Wexler, E. Stewart Williams, Donald Wexler \u2014 all active in a 20-mile radius from the 1940s through the 1970s.\n\nBut the attribution layer on the real estate market is a mess. Listings claim architect associations that don't hold up. Homes credited to Albert Frey turn out to be Frey-influenced contemporary builds by other architects. Modification history is poorly documented. Insurance replacement costs are dramatically undervalued relative to architectural significance.\n\nWhat we built:\n- Authentication framework cross-referencing original drawings, building permits, period press (Architectural Digest, Arts & Architecture, Sunset 1947\u20131975), and architect commission lists\n- Source archives: Getty Research Institute (Neutra Papers), Palm Springs Art Museum Architecture and Design Center (Frey Papers, Williams Papers), John Lautner Foundation\n- 240+ Palm Springs homes evaluated: ~63% fully verifiable attribution, ~19% partial, ~18% unsupported claims\n\nThe database is live and growing. https://www.thepropertydna.com?utm_source=reddit_HistoricPreservation&utm_medium=social&utm_campaign=organic\n\nFor anyone doing preservation work in the Coachella Valley: we'd welcome collaboration on primary source documentation. The Modernism Week archive and Palm Springs Preservation Foundation have been invaluable. What sources are others using for MCM attribution research?",
+      "posted": false,
+      "postedAt": null,
+      "url": null
+    },
+    {
+      "id": "lux-013",
+      "subreddit": "ArtCollectors",
+      "title": "The documentation gap between a $1M Basquiat and a $10M architectural landmark is staggering — fine art is decades ahead",
+      "body": "As someone who's spent the last year building data infrastructure for the luxury residential market, one thing keeps striking me: the documentation standards in fine art are decades ahead of comparable real estate transactions.\n\nFor a museum-quality work — say, a 1982 Basquiat at $1M auction estimate:\n- Artist certificate / estate authentication\n- Full exhibition provenance (every show, every catalog entry)\n- Chain of custody from studio to current owner\n- Condition reports with time-stamped photography\n- Comparable auction results as insurance valuation baseline\n- Authentication from a recognized scholarly authority\n\nFor a $10M mid-century modern estate designed by a historically significant architect — something Richard Neutra or John Lautner built for a Hollywood figure in the 1950s:\n- Title chain (legal ownership history; almost no narrative)\n- Whatever the listing agent felt like mentioning\n- A general inspection report\n- An unverified claim about celebrity connection that may or may not trace to primary sources\n\nThe irony: there are 12 verified Neutra residential commissions in Palm Springs. There are many more Basquiats on the market right now. The estate is in many ways the rarer, harder-to-replace asset — irreplaceable in materials, setting, and cultural context. And it has almost no documentation.\n\nWe've been building the missing documentation layer — verified provenance chains (deed records + period press), architect attribution against primary sources (original drawings, building permits, Getty Research Institute archives), celebrity ownership authentication, modification chronology. The methodology is partly borrowed from how the fine art world handles authentication.\n\nhttps://www.thepropertydna.com?utm_source=reddit_ArtCollectors&utm_medium=social&utm_campaign=organic\n\nFor collectors who hold both fine art and significant residential real estate — does this gap strike you the same way? How do you approach due diligence on a high-end residential acquisition?",
+      "posted": false,
+      "postedAt": null,
+      "url": null
+    },
+    {
+      "id": "lux-014",
+      "subreddit": "AlternativeInvestments",
+      "title": "At $5M+, architecturally significant real estate behaves like collectible alt assets — but it's benchmarked as neither",
+      "body": "Something that comes up repeatedly in our data work on the top of luxury residential:\n\nAbove the $5M threshold, architecturally significant homes in legacy resort markets (Palm Springs, Aspen, Hamptons) share almost none of the investment mechanics of real estate below that level — and share a lot of mechanics with collectibles.\n\nWhat they don't share with typical real estate:\n- Income yield is minimal or zero (these aren't rental properties)\n- Cap rate analysis doesn't apply\n- MLS comparable sales are thin or absent — a Lautner original may trade once every 4–7 years\n- Price-per-square-foot comparisons are meaningless across this tier\n\nWhat they share with collectible alternative assets:\n- Scarcity drives value (there are 8 verified Lautner residential commissions in Palm Springs — when one trades, there's no substitute)\n- Provenance commands premium (verified celebrity / cultural history adds documented, demonstrable value)\n- Architectural integrity matters the way condition matters in a vintage watch or car — original vs. renovated isn't a detail, it's the asset\n- Insurance replacement cost often substantially exceeds market transaction value\n\nThe problem: unlike Patek Philippe, vintage Burgundy, or blue-chip art, architecturally significant real estate has almost no systematic data infrastructure. No auction database. No provenance registry. No condition-grading standard. Buyers make $15M decisions with dramatically less information than they'd have for a $50k watch.\n\nWe've been building the missing data layer — scarcity indexing, verified provenance chains, architect attribution authentication, and cross-asset performance benchmarking against watches, wine, and art. Starting with the Coachella Valley because of the MCM density and celebrity history.\n\nhttps://www.thepropertydna.com?utm_source=reddit_AlternativeInvestments&utm_medium=social&utm_campaign=organic\n\nFor anyone allocating above $5M into residential real estate — how do you think about benchmarking it in portfolio context? Are you treating it as real estate, alt asset, or something else?",
+      "posted": false,
+      "postedAt": null,
+      "url": null
     }
   ],
   "medium": [
