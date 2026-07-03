@@ -20,8 +20,8 @@
  *   "medium":      { "token": "", "userId": "" },
  *   "buffer":      { "token": "" },
  *   "googleAnalytics": { "propertyId": "", "serviceAccountKey": "" },
- *   "perplexity":  { "apiKey": "pplx-..." }
  * }
+ * Provenance researcher needs no credentials — uses Wikipedia + Wikidata (free, public).
  *
  * Manual run: node tools/browser-agent/daily-runner.js
  * Skip an agent: node tools/browser-agent/daily-runner.js --skip reddit,medium
