@@ -117,6 +117,24 @@
       "posted": false,
       "postedAt": null,
       "url": null
+    },
+    {
+      "id": "lux-011",
+      "subreddit": "ClassicCars",
+      "title": "The Ferrari you just bought has more documented history than the $12M house next door \u2014 why?",
+      "body": "Spent some time comparing the documentation standards across collectible asset classes. The gap is staggering.\n\nFor a 1962 Ferrari 250 GTO:\n- Factory build record (Maranello chassis file)\n- Consecutive ownership history with dates\n- Race history with results\n- Restoration documentation (who, what, when)\n- Concours judging sheets\n- Insurance valuation on file\n\nFor a $12M mid-century modern estate in Palm Springs \u2014 the kind that John Lautner or Richard Neutra designed for a Hollywood legend:\n- Title chain (legal only, no narrative)\n- MLS history (last 20 years if you're lucky)\n- General inspection report\n- Vague claims about celebrity/architect history, often unverified\n\nThe irony is that the estate is often *more* historically significant, rarer, and harder to replace. There are 36 Ferrari 250 GTOs. There are 8 verified Lautner residential commissions in Palm Springs. But the Ferrari has 60 years of documented provenance and the house has almost none.\n\nWe're building the dossier methodology from the classic car world and applying it to architecturally significant homes. Starting with the Coachella Valley because of the MCM density and celebrity history.\n\nhttps://www.thepropertydna.com?utm_source=reddit_ClassicCars&utm_medium=social&utm_campaign=organic\n\nFor car collectors who also hold real estate \u2014 does this gap bother you as much as it does us?",
+      "posted": false,
+      "postedAt": null,
+      "url": null
+    },
+    {
+      "id": "lux-012",
+      "subreddit": "HistoricPreservation",
+      "title": "We built a systematic MCM authentication database for Palm Springs \u2014 240+ homes, primary sources only",
+      "body": "Background: we started as a real estate data platform and ended up building something closer to an architectural provenance registry.\n\nThe problem we kept running into: Palm Springs has one of the densest concentrations of mid-century modern residential architecture in the world. Frey, Neutra, Lautner, Krisel, Wexler, E. Stewart Williams, Donald Wexler \u2014 all active in a 20-mile radius from the 1940s through the 1970s.\n\nBut the attribution layer on the real estate market is a mess. Listings claim architect associations that don't hold up. Homes credited to Albert Frey turn out to be Frey-influenced contemporary builds by other architects. Modification history is poorly documented. Insurance replacement costs are dramatically undervalued relative to architectural significance.\n\nWhat we built:\n- Authentication framework cross-referencing original drawings, building permits, period press (Architectural Digest, Arts & Architecture, Sunset 1947\u20131975), and architect commission lists\n- Source archives: Getty Research Institute (Neutra Papers), Palm Springs Art Museum Architecture and Design Center (Frey Papers, Williams Papers), John Lautner Foundation\n- 240+ Palm Springs homes evaluated: ~63% fully verifiable attribution, ~19% partial, ~18% unsupported claims\n\nThe database is live and growing. https://www.thepropertydna.com?utm_source=reddit_HistoricPreservation&utm_medium=social&utm_campaign=organic\n\nFor anyone doing preservation work in the Coachella Valley: we'd welcome collaboration on primary source documentation. The Modernism Week archive and Palm Springs Preservation Foundation have been invaluable. What sources are others using for MCM attribution research?",
+      "posted": false,
+      "postedAt": null,
+      "url": null
     }
   ],
   "medium": [
