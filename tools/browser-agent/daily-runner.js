@@ -10,18 +10,23 @@
  *   3. Cross-post one article to Medium
  *   4. Schedule a social post via Buffer
  *   5. Pull Google Analytics summary
+ *   6. Provenance research (Tuesday + Friday only) — Perplexity multi-query
+ *      verification of notable_owners + architect_commissions; drafts Reddit posts
+ *      for newly-verified properties
  *
  * Credentials live in .daily-creds.json (chmod 600):
  * {
- *   "reddit":  { "clientId": "", "clientSecret": "", "username": "", "password": "" },
- *   "medium":  { "token": "", "userId": "" },
- *   "buffer":  { "token": "" },
- *   "googleAnalytics": { "propertyId": "", "serviceAccountKey": "" }
+ *   "reddit":      { "clientId": "", "clientSecret": "", "username": "", "password": "" },
+ *   "medium":      { "token": "", "userId": "" },
+ *   "buffer":      { "token": "" },
+ *   "googleAnalytics": { "propertyId": "", "serviceAccountKey": "" },
+ *   "perplexity":  { "apiKey": "pplx-..." }
  * }
  *
  * Manual run: node tools/browser-agent/daily-runner.js
  * Skip an agent: node tools/browser-agent/daily-runner.js --skip reddit,medium
  * Dry run:  node tools/browser-agent/daily-runner.js --dry-run
+ * Force research today: node tools/browser-agent/daily-runner.js --force-research
  */
 
 const { execSync } = require('child_process');
@@ -31,10 +36,18 @@ const fs           = require('fs');
 const LOG_FILE     = path.join(__dirname, 'daily-runner.log');
 const CREDS_FILE   = path.join(__dirname, '.daily-creds.json');
 
-const args    = process.argv.slice(2);
-const DRY_RUN = args.includes('--dry-run');
-const SKIP    = (args.find(a => a.startsWith('--skip=')) || args[args.indexOf('--skip') + 1] || '')
-                  .replace('--skip=', '').split(',').filter(Boolean);
+const args           = process.argv.slice(2);
+const DRY_RUN        = args.includes('--dry-run');
+const FORCE_RESEARCH = args.includes('--force-research');
+const SKIP           = (args.find(a => a.startsWith('--skip=')) || args[args.indexOf('--skip') + 1] || '')
+                         .replace('--skip=', '').split(',').filter(Boolean);
+
+// Provenance research runs Tuesday (2) and Friday (5) to manage API costs.
+// Override any day with --force-research.
+const RESEARCH_DAYS = new Set([2, 5]);
+function researchScheduledToday() {
+  return FORCE_RESEARCH || RESEARCH_DAYS.has(new Date().getDay());
+}
 
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
@@ -92,28 +105,43 @@ async function runCCRefresh() {
   const results = {};
 
   // 1. Constant Contact token refresh
-  log('\n[1/5] Constant Contact token refresh');
+  log('\n[1/6] Constant Contact token refresh');
   results.cc = await runCCRefresh();
 
   // 2. Reddit posting — re-enabled 2026-05-13. Agent auto-skips BANNED_SUBS
   // (r/realtors, r/realtor, r/RealEstate). Queue targets luxury/HENRY/architecture
   // /investing subs which tolerate brand mentions when content is informative.
-  log('\n[2/5] Reddit posting');
+  log('\n[2/6] Reddit posting');
   results.reddit = await runAgent('reddit', path.join(__dirname, 'agents/reddit.js'));
 
   // 3. Medium cross-post — DISABLED. Medium killed integration tokens for accounts
   // post-2023 (verified in browser 2026-05-10). Cross-post via Buffer's Medium
   // channel instead — connect at buffer.com/manage/channels.
-  log('\n[3/5] Medium cross-posting — SKIPPED (use Buffer Medium channel instead)');
+  log('\n[3/6] Medium cross-posting — SKIPPED (use Buffer Medium channel instead)');
   results.medium = { status: 'disabled', reason: 'use_buffer_channel_instead' };
 
   // 4. Buffer social post
-  log('\n[4/5] Buffer social posting');
+  log('\n[4/6] Buffer social posting');
   results.buffer = await runAgent('buffer', path.join(__dirname, 'agents/buffer.js'));
 
   // 5. Google Analytics pull
-  log('\n[5/5] Google Analytics daily summary');
+  log('\n[5/6] Google Analytics daily summary');
   results.ga = await runAgent('ga', path.join(__dirname, 'agents/google-analytics.js'));
+
+  // 6. Provenance research — Tuesday + Friday only (or --force-research)
+  if (researchScheduledToday()) {
+    log('\n[6/6] Provenance research (Perplexity verify + draft)');
+    // Pass --mode=both so a single run verifies unverified rows AND drafts posts
+    // for anything that gets upgraded to verified in the same pass.
+    process.argv.push('--mode=both');
+    results.research = await runAgent('research', path.join(__dirname, 'agents/provenance-researcher.js'));
+    process.argv.pop();
+  } else {
+    const nextDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const next = [2, 5].map(d => nextDay[d]).join('/');
+    log(`\n[6/6] Provenance research — SKIPPED (runs ${next} only; use --force-research to override)`);
+    results.research = { status: 'skipped', reason: 'off_schedule' };
+  }
 
   separator();
   log('Daily runner complete. Summary:');
