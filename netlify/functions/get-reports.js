@@ -24,22 +24,33 @@ exports.handler = async (event) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
+  // Owner (site operator) gets a god-view: the dashboard shows EVERY report
+  // ever generated, not just reports tied to their own email. Regular users
+  // only ever see reports whose email matches theirs. Safe because this runs
+  // server-side with the service key (RLS bypassed) — the email filter, not
+  // RLS, is what scopes a normal user's results.
+  const OWNER_EMAIL = (process.env.OWNER_EMAIL || "stuartteamps@gmail.com").toLowerCase().trim();
+  const isOwner = normalizedEmail === OWNER_EMAIL;
+  const ROW_LIMIT = isOwner ? 500 : 50;
+
   try {
     // ── Fetch from property_reports (new schema, has view_token) ──────
-    const newReports = await db.from("property_reports")
-      .select("id,email,address,city,state,zip,view_token,report_url,report_pdf_url,status,created_at")
-      .eq("email", normalizedEmail)
+    let newQ = db.from("property_reports")
+      .select("id,email,address,city,state,zip,view_token,report_url,report_pdf_url,status,created_at");
+    if (!isOwner) newQ = newQ.eq("email", normalizedEmail);
+    const newReports = await newQ
       .order("created_at", { ascending: false })
-      .limit(50)
+      .limit(ROW_LIMIT)
       .get()
       .catch(() => []);
 
     // ── Fetch from legacy reports table (has property_dna, view_token may exist) ──
-    const legacyReports = await db.from("reports")
-      .select("id,address,email,property_dna,view_token,created_at")
-      .eq("email", normalizedEmail)
+    let legacyQ = db.from("reports")
+      .select("id,address,email,property_dna,view_token,created_at");
+    if (!isOwner) legacyQ = legacyQ.eq("email", normalizedEmail);
+    const legacyReports = await legacyQ
       .order("created_at", { ascending: false })
-      .limit(50)
+      .limit(ROW_LIMIT)
       .get()
       .catch(() => []);
 
@@ -57,8 +68,7 @@ exports.handler = async (event) => {
     let plan = null;
 
     // Owner always has enterprise access — no charge
-    const OWNER_EMAIL = process.env.OWNER_EMAIL || "stuartteamps@gmail.com";
-    if (normalizedEmail === OWNER_EMAIL) {
+    if (isOwner) {
       isSubscribed = true;
       plan = "enterprise";
     }
