@@ -47,15 +47,10 @@ function CopyLinkButton({ url }: { url: string }) {
 }
 
 export default function Dashboard() {
-  // iOS has no concept of user accounts — redirect to home (Apple Guideline
-  // 3.1.1 + 2.1(a)). Saved reports live in the Home tab via SavedReportsStore.
-  if (isNative()) {
-    if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-      window.history.replaceState({}, '', '/');
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }
-    return null;
-  }
+  // iOS has no concept of user accounts. The redirect (Apple Guideline 3.1.1 +
+  // 2.1(a)) is handled in an effect below and the early return happens *after*
+  // every hook has run — hooks must be called unconditionally (rules-of-hooks).
+  const native = isNative();
 
   const { user, signOut } = useAuth();
   const [loadStatus, setLoadStatus]   = useState<LoadStatus>('idle');
@@ -97,10 +92,24 @@ export default function Dashboard() {
     }
   }, []);
 
+  // iOS redirect to home — Saved reports live in the Home tab via
+  // SavedReportsStore. Runs as an effect so all hooks are called first.
+  useEffect(() => {
+    if (!native) return;
+    if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+      window.history.replaceState({}, '', '/');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  }, [native]);
+
   // Auto-load when signed in
   useEffect(() => {
+    if (native) return;
     if (user?.email && loadStatus === 'idle') loadReports(user.email);
-  }, [user, loadStatus, loadReports]);
+  }, [user, loadStatus, loadReports, native]);
+
+  // All hooks have run — safe to bail out for native (rules-of-hooks).
+  if (native) return null;
 
   const fmt = (iso: string) => {
     try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }

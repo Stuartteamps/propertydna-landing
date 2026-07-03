@@ -173,7 +173,7 @@ function sendEmail(to, subject, html) {
   });
 }
 
-const BATCH_SIZE = 50;
+const BATCH_SIZE = 25; // 50 overran the 26s fn timeout on sequential Resend sends -> silent no-send (fixed 2026-07-03)
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 // Accepts ?offset=N for manual pagination. Returns { sent, skipped, failed, done, next_offset }.
@@ -239,7 +239,7 @@ exports.handler = async (event) => {
       if (unsubSet.has((c.email || '').toLowerCase())) { skipped++; continue; }
       const html   = buildHtml(c.email, c.first_name, weatherText, marketNarrative, weekLabel);
       const result = await sendEmail(c.email, subject, html);
-      if (result.ok) { sent++; } else { failed++; }
+      if (result.ok) { sent++; } else { failed++; console.error(`[send-weekly-newsletter] send failed to ${c.email} status=${result.status}`); }
     }
 
     offset += batch.length;

@@ -54,16 +54,8 @@ function NumField({ label, value, onChange, prefix, suffix, step = 1 }: {
 
 export default function InvestmentAnalysis({ propertyType, marketValue, arvFromComps, sqft, monthlyRentEstimate, units }: Props) {
   const cls = classifyProperty(propertyType);
-  if (cls === 'land') {
-    return (
-      <Wrapper cls={cls} propertyType={propertyType}>
-        <div style={{ fontFamily: UI, fontSize: 13, color: MUTE, lineHeight: 1.7 }}>
-          This parcel is classified as land. An income or fix-and-flip ROI model doesn't apply — value is driven by entitlement, zoning, and development potential. Run a comp-based valuation above for market value.
-        </div>
-      </Wrapper>
-    );
-  }
 
+  // All hooks run unconditionally before any early return (rules-of-hooks).
   const arv = marketValue || arvFromComps || 0;
   const [mode, setMode] = useState<'flip' | 'hold'>(cls === 'residential' ? 'flip' : 'hold');
   const [flip, setFlip] = useState<FlipAssumptions>(DEFAULT_FLIP);
@@ -76,6 +68,16 @@ export default function InvestmentAnalysis({ propertyType, marketValue, arvFromC
 
   const flipResult = useMemo(() => analyzeFlip(arv, sqft, flip, purchaseOverride ?? undefined), [arv, sqft, flip, purchaseOverride]);
   const rentalResult = useMemo(() => analyzeRental(arv, rental), [arv, rental]);
+
+  if (cls === 'land') {
+    return (
+      <Wrapper cls={cls} propertyType={propertyType}>
+        <div style={{ fontFamily: UI, fontSize: 13, color: MUTE, lineHeight: 1.7 }}>
+          This parcel is classified as land. An income or fix-and-flip ROI model doesn't apply — value is driven by entitlement, zoning, and development potential. Run a comp-based valuation above for market value.
+        </div>
+      </Wrapper>
+    );
+  }
 
   const roiColor = (n: number) => (n >= 20 ? '#52B788' : n >= 10 ? GOLD : '#C94C4C');
 

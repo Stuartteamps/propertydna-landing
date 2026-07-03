@@ -16,7 +16,14 @@ export interface DNAScoreResult {
 }
 
 function clamp(v: number, min = 0, max = 100) {
+  if (!Number.isFinite(v)) return min;
   return Math.max(min, Math.min(max, v));
+}
+
+/** Coerce a possibly-undefined/NaN value to a finite number, else the fallback. */
+function num(v: any, fallback: number): number {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 function scoreToGrade(score: number): string {
@@ -62,7 +69,7 @@ export function computeDNAScore(dna: any): DNAScoreResult {
   let loc = 45;
   let locConf = 0;
   if (hasV3 && cats.locationQuality != null) {
-    loc     = cats.locationQuality;
+    loc     = num(cats.locationQuality, loc);
     locConf = cats.locationConfidence ?? 0;
   } else {
     if (sub.lat && sub.lat !== '—') loc += 20;
@@ -75,7 +82,7 @@ export function computeDNAScore(dna: any): DNAScoreResult {
   let mva = 40;
   let mvaConf = 0;
   if (hasV3 && cats.marketValueAccuracy != null) {
-    mva     = cats.marketValueAccuracy;
+    mva     = num(cats.marketValueAccuracy, mva);
     mvaConf = cats.marketConfidence ?? 0;
   } else {
     const cc = comps.length;
@@ -95,7 +102,7 @@ export function computeDNAScore(dna: any): DNAScoreResult {
   let risk = 62;
   let riskConf = 0;
   if (hasV3 && cats.riskScore != null) {
-    risk     = cats.riskScore;
+    risk     = num(cats.riskScore, risk);
     riskConf = cats.riskConfidence ?? 0;
   } else {
     const fz = enr?.hazardEnrichment?.femaFlood?.zone || flood.zone;
@@ -109,7 +116,7 @@ export function computeDNAScore(dna: any): DNAScoreResult {
   let rental = 55;
   let rentalConf = 0;
   if (hasV3 && cats.rentalYieldPotential != null) {
-    rental     = cats.rentalYieldPotential;
+    rental     = num(cats.rentalYieldPotential, rental);
     rentalConf = cats.rentalConfidence ?? 0;
   } else {
     const medInc  = Number(demo.medianIncome || demo.median_income || 0);
@@ -131,7 +138,7 @@ export function computeDNAScore(dna: any): DNAScoreResult {
   let traj = 55;
   let trajConf = 0;
   if (hasV3 && cats.neighborhoodTrajectory != null) {
-    traj     = cats.neighborhoodTrajectory;
+    traj     = num(cats.neighborhoodTrajectory, traj);
     trajConf = cats.trajectoryConfidence ?? 0;
   } else {
     const popG = Number(demo.populationGrowth || demo.population_growth || 0);

@@ -54,8 +54,9 @@ const TIERS = [
 
 export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: PricingModalProps) {
   // Apple Guideline 3.1.1: the iOS app exposes no subscription or paid tier
-  // surfaces. PricingModal is a no-op on native.
-  if (isNative()) return null;
+  // surfaces. PricingModal is a no-op on native — the early return happens
+  // after all hooks so hooks stay unconditional (rules-of-hooks).
+  const native = isNative();
 
   const { user } = useAuth();
   const [email, setEmail] = useState(() => {
@@ -68,6 +69,7 @@ export default function PricingModal({ isOpen, onClose, prefillEmail = '' }: Pri
     if (user?.email && !email) setEmail(user.email);
   }, [user?.email]);
 
+  if (native) return null;
   if (!isOpen) return null;
 
   const handleSelect = async (tier: typeof TIERS[0]) => {

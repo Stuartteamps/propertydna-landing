@@ -47,10 +47,11 @@ const FacebookIcon = () => (
 export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: AuthModalProps) {
   // iOS app has no concept of user accounts (Apple Guideline 3.1.1 — no
   // access to externally-purchased content; Guideline 2.1(a) — Apple
-  // Sign-In bug on iPad). The entire auth modal is removed from native.
-  if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-    return null;
-  }
+  // Sign-In bug on iPad). The entire auth modal is removed from native. The
+  // early return happens after all hooks so hooks stay unconditional
+  // (rules-of-hooks).
+  const isNativeApp = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.();
+
   const { user, signInWithGoogle, signInWithApple, signInWithFacebook, signInWithEmail, signOut, tier } = useAuth();
 
   const [view, setView]                 = useState<'signin' | 'pricing'>(initialView);
@@ -60,6 +61,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signin' }: A
   const [errorMsg, setErrorMsg]         = useState('');
   const [checkoutLoading, setCheckout]  = useState<string | null>(null);
 
+  if (isNativeApp) return null;
   if (!isOpen) return null;
 
   const isSignedIn  = !!user;

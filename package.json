@@ -1,0 +1,21 @@
+{
+  "name": "propertydna-ops",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PropertyDNA operating-platform orchestration layer. Zero-dependency Node scripts that drive the real deployed API (Netlify functions + Supabase). Delegates app tasks to app/frontend.",
+  "scripts": {
+    "dev": "cd app/frontend && npm run dev",
+    "build": "cd app/frontend && npm run build",
+    "lint": "cd app/frontend && npm run lint",
+    "typecheck": "cd app/frontend && npm run typecheck",
+    "test": "cd app/frontend && npm run test",
+    "supabase:check": "node scripts/ops/supabase-check.js",
+    "agents:status": "node scripts/ops/agents-status.js",
+    "agents:health": "node scripts/ops/agents-health.js",
+    "data:quality": "node scripts/ops/data-quality.js",
+    "indexes:build": "node scripts/ops/indexes-build.js",
+    "indexes:refresh": "node scripts/ops/indexes-refresh.js",
+    "agents:run": "node scripts/ops/agents-run.js",
+    "agents:loop": "node scripts/ops/agents-loop.js"
+  }
+}

@@ -76,7 +76,7 @@ export default function KpiDashboard() {
         setCampaigns(d.campaigns || []);
         setLastRefresh(new Date());
       }
-    } catch {}
+    } catch { /* noop: keep last-known campaigns on transient fetch failure */ }
     setLoading(false);
   };
 

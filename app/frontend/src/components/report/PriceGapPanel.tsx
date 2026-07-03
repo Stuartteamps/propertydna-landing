@@ -73,7 +73,12 @@ export default function PriceGapPanel({
   // ── Mode 1: explicit list price → over/under verdict ──────────────────────
   if (list) {
     const gap = list - dnaValue;
-    const gapPct = (gap / dnaValue) * 100;
+    // dnaValue is guaranteed > 0 by the guard above, but stay defensive so a
+    // bad reference price can never render "NaN%".
+    const gapPct = dnaValue ? (gap / dnaValue) * 100 : NaN;
+    const gapPctOk = Number.isFinite(gapPct);
+    const gapPctStr = gapPctOk ? `${gapPct > 0 ? '+' : ''}${gapPct.toFixed(1)}%` : 'Data pending';
+    const gapAbsPctStr = gapPctOk ? `${Math.abs(gapPct).toFixed(1)}%` : 'Data pending';
     const over = gapPct > 4;
     const under = gapPct < -4;
     const verdict = over ? 'Priced Above Value' : under ? 'Priced Below Value — Buyer Opportunity' : 'Priced In Line With Value';
@@ -90,10 +95,10 @@ export default function PriceGapPanel({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 32px', marginBottom: 18 }}>
             <div><div style={label}>List / Asking Price</div><div style={figure}>{money(list)}</div></div>
             <div><div style={label}>PropertyDNA Adjusted Value</div><div style={{ ...figure, color: '#C9A84C' }}>{money(dnaValue)}</div></div>
-            <div><div style={label}>Gap</div><div style={{ ...figure, color }}>{gap > 0 ? '+' : ''}{money(gap)} <span style={{ fontSize: 14 }}>({gapPct > 0 ? '+' : ''}{gapPct.toFixed(1)}%)</span></div></div>
+            <div><div style={label}>Gap</div><div style={{ ...figure, color }}>{gap > 0 ? '+' : ''}{money(gap)} <span style={{ fontSize: 14 }}>({gapPctStr})</span></div></div>
           </div>
           <p style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, fontWeight: 300, color: '#F0EBE0', lineHeight: 1.8, margin: 0 }}>
-            At {money(list)}, this home is listed <strong style={{ color }}>{Math.abs(gapPct).toFixed(1)}% ({money(Math.abs(gap))}) {dirWord}</strong> its PropertyDNA-adjusted value of {money(dnaValue)}
+            At {money(list)}, this home is listed <strong style={{ color }}>{gapAbsPctStr} ({money(Math.abs(gap))}) {dirWord}</strong> its PropertyDNA-adjusted value of {money(dnaValue)}
             {over ? ' — a gap that typically lengthens days-on-market until the price meets the data.' :
              under ? ' — a genuine opening for a prepared buyer.' :
              ' — well-supported by the comparable and feature-adjusted data.'}

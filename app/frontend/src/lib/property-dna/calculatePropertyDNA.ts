@@ -233,11 +233,13 @@ export function calcOpportunity(cost: number, valueAdded: number): { netGain: nu
 
 /** Full currency, no cents: $1,485,000. */
 export function fmtUSD(n: number): string {
+  if (!Number.isFinite(n)) return '—';
   return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 }
 
 /** Compact currency: $1.49M / $925K / $0. */
 export function fmtCompactUSD(n: number): string {
+  if (!Number.isFinite(n)) return '—';
   const sign = n < 0 ? '-' : '';
   const abs = Math.abs(n);
   if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(2)}M`;
@@ -247,9 +249,11 @@ export function fmtCompactUSD(n: number): string {
 
 /** Signed percent: +9.4% / -1.2%. */
 export function fmtPct(n: number, digits = 1): string {
+  if (!Number.isFinite(n)) return '—';
   return `${n >= 0 ? '+' : ''}${n.toFixed(digits)}%`;
 }
 
 export function fmtSqft(n: number): string {
+  if (!Number.isFinite(n)) return '—';
   return `${n.toLocaleString('en-US')} sq ft`;
 }

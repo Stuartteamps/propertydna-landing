@@ -77,6 +77,7 @@ export default function ReportView() {
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<'signin' | 'pricing'>('signin');
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   // Tier state
   const [userTier, setUserTier] = useState<Tier>('free');
@@ -471,8 +472,8 @@ export default function ReportView() {
                   >
                     <Popup>
                       <div style={{ fontFamily: 'sans-serif', fontSize: 13 }}>
-                        <strong>{comp.address}</strong><br />
-                        {comp.price} · {comp.sqft} · {comp.distance}
+                        <strong>{fmt(comp.address)}</strong><br />
+                        {fmt(comp.price)} · {fmt(comp.sqft)} · {fmt(comp.distance)}
                       </div>
                     </Popup>
                   </CircleMarker>
@@ -490,7 +491,11 @@ export default function ReportView() {
                 </CircleMarker>
               </MapContainer>
             </div>
-            {comps.length > 0 && (
+            {comps.length === 0 ? (
+              <div style={{ marginTop: 24, fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#6B6252' }}>
+                No comparable sales yet — data pending.
+              </div>
+            ) : (
               <div style={{ marginTop: 24 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
@@ -503,11 +508,11 @@ export default function ReportView() {
                   <tbody>
                     {comps.map((c: any, i: number) => (
                       <tr key={i}>
-                        <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.address}</td>
-                        <td style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 15, color: '#C9A84C', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.price}</td>
-                        <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.sqft}</td>
-                        <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.beds}</td>
-                        <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.distance}</td>
+                        <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{fmt(c.address)}</td>
+                        <td style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 15, color: '#C9A84C', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{fmt(c.price)}</td>
+                        <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{fmt(c.sqft)}</td>
+                        <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{fmt(c.beds)}</td>
+                        <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{fmt(c.distance)}</td>
                       </tr>
                     ))}
                   </tbody>
