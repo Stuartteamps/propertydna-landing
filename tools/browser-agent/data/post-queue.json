@@ -146,6 +146,24 @@
       "url": null
     },
     {
+      "id": "lux-015",
+      "subreddit": "wine",
+      "title": "For cross-asset luxury collectors — provenance documentation in Burgundy is decades ahead of comparable real estate",
+      "body": "As someone who works in luxury real estate data, one thing keeps striking me: the documentation infrastructure for fine wine is vastly better than for comparably-valued architectural homes.\n\nFor a single bottle of 1945 Domaine Romanée-Conti:\n- Estate bottling and labeling records\n- Auction provenance trail (every major sale since release)\n- Storage and condition history\n- Comparable sales database (Christie's, Sotheby's, Acker results)\n- Authentication protocol for disputed provenance\n\nFor a $20M estate designed by John Lautner or Richard Neutra in the 1950s:\n- Title chain (legal, minimal narrative)\n- A general inspection report\n- Whatever the listing agent mentioned about the architect and celebrity history\n- Often no primary-source verification of the provenance claims at all\n\nThe irony is that the estate is in many ways rarer and harder to replace. There are 8 verified Lautner residential commissions in Palm Springs. The wine world built its documentation infrastructure over a century. Luxury real estate hasn't.\n\nWe've been building the provenance layer the top of the residential market is missing — verified ownership chains, architect attribution against primary sources (Getty Research Institute, John Lautner Foundation, original building permits), modification chronology with permits, comparable scarcity indexing.\n\nStarting with Palm Springs because of the MCM density and celebrity history (Sinatra, Elvis, Bob Hope, JFK, Brando — many with documented ownership, some with claimed provenance that doesn't survive primary-source review).\n\nhttps://www.thepropertydna.com?utm_source=reddit_wine&utm_medium=social&utm_campaign=organic\n\nFor wine collectors who also hold significant residential real estate — does this gap strike you the same way? How do you approach provenance due diligence on a high-end acquisition?",
+      "posted": false,
+      "postedAt": null,
+      "url": null
+    },
+    {
+      "id": "lux-016",
+      "subreddit": "PalmSprings",
+      "title": "We built a verified MCM attribution database for Palm Springs — 240+ homes, primary sources only. Here's what we found.",
+      "body": "Started this about 18 months ago as a data project for our real estate platform and it turned into something closer to an architectural research archive.\n\nThe problem: Palm Springs has one of the densest concentrations of mid-century modern residential architecture anywhere in the world. Frey, Neutra, Lautner, Krisel, Wexler, E. Stewart Williams — all active in a 20-mile radius from the 1940s through the 1970s.\n\nThe attribution layer in the real estate market is a mess. Listings claim architect associations that don't hold up. Homes credited to Albert Frey turn out to be Frey-influenced contemporaries by other architects. Modification history is rarely documented. The cultural significance is real; the data layer isn't.\n\nWhat we built:\n- Cross-referenced original drawings, building permits, period press (Architectural Digest, Arts & Architecture, Sunset Magazine 1947–1975), and architect commission lists\n- Source archives: Getty Research Institute (Richard and Dion Neutra Papers), Palm Springs Art Museum Architecture and Design Center (Frey Papers, Williams Papers), John Lautner Foundation\n- 240+ Palm Springs homes evaluated against primary sources\n\nWhat we found:\n- ~63% fully verifiable attribution (drawings, permits, and press all consistent)\n- ~19% partial documentation (strong circumstantial, one primary source missing)\n- ~18% unsupported claims in real estate marketing\n\nA few findings that surprised us: several homes marketed as Frey originals are Frey-influenced Krisel contemporaries from the same period. A couple of Wexler attributions don't survive the permit review. And a surprising number of celebrity provenance claims circulate without a single deed record or period press source to support them.\n\nThe full database is live: https://www.thepropertydna.com?utm_source=reddit_PalmSprings&utm_medium=social&utm_campaign=organic\n\nHappy to answer questions from anyone doing MCM research, preservation work, or just curious about the valley's architectural history. What primary sources are people finding most useful for attribution research here?",
+      "posted": false,
+      "postedAt": null,
+      "url": null
+    },
+    {
       "id": "lux-014",
       "subreddit": "AlternativeInvestments",
       "title": "At $5M+, architecturally significant real estate behaves like collectible alt assets — but it's benchmarked as neither",
