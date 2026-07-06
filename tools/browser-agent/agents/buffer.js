@@ -200,8 +200,8 @@ async function run() {
       "The Kaufmann Desert House dossier — Richard Neutra 1946, Julius Shulman 'Poolside Gossip' (Getty Museum collection), Barry Manilow ownership 1992–2016. Live provenance file: https://www.thepropertydna.com/dossier/504292010",
       "The Elrod House (John Lautner, 1968) appeared as the villain's desert compound in Diamonds Are Forever (1971). Film location provenance on top of architectural pedigree — both documentable, both affecting what a sophisticated buyer will pay. https://www.thepropertydna.com/dossier/510190025",
       "Albert Frey designed 47 documented Palm Springs commissions. We've pedigree-classified every one against original drawings, permits, and period press. https://www.thepropertydna.com/architect/albert-frey",
-      "13 named Palm Springs luxury neighborhoods systematically indexed — Movie Colony, Old Las Palmas, Vista Las Palmas, Thunderbird Heights, Smoke Tree Ranch, more. https://www.thepropertydna.com/pedigree-index",
-      "For a Patek 1518, you get verified provenance papers. For a $50M architectural estate, you typically don't. PropertyDNA builds the dossier the auction houses charge 15% for. https://www.thepropertydna.com/press",
+      "Bob Hope commissioned John Lautner's largest residential project — the 1973 tent-roof compound at 2466 Southridge Drive in Palm Springs. Frank Gehry consulted on the 1990s restoration. National Register of Historic Places 2016. PropertyDNA documents the full architectural lineage before any transaction. https://www.thepropertydna.com",
+      "Barrett-Jackson runs 250-point inspections, chassis histories, and consecutive ownership records for six-figure cars. The $15M architectural estate next door gets a general inspection and unverified agent notes. PropertyDNA builds the dossier the top of the market deserves. https://www.thepropertydna.com/pedigree-index",
     ];
     const idx = ((tracker.lastIndex ?? -1) + 1) % FALLBACK.length;
     text = FALLBACK[idx];
