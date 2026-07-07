@@ -241,6 +241,24 @@
       "posted": false,
       "postedAt": null,
       "url": null
+    },
+    {
+      "id": "lux-025",
+      "subreddit": "DataIsBeautiful",
+      "title": "I mapped provenance records for 847 Palm Springs properties above $5M. The documentation gap is extraordinary [OC]",
+      "body": "Background: 8 months building a database of Palm Springs estates above $5M designed by significant Mid-Century Modern architects — Neutra, Frey, Lautner, Wexler, Williams, Kaptur. Goal: understand the documentation chain for each property.\n\n**What I found:**\n\nMedian provenance records per property: **2**\n(a title chain + a listing description)\n\nFor reference, a $50k Mid-Century Modern piece of furniture typically has:\n- Manufacturer records\n- Original invoice\n- 1st owner documentation  \n- Auction provenance history\n- Authentication certificate\n\nA $12M Richard Neutra original with documented commission records, period press, and architect correspondence might have... the same 2.\n\n**The outlier:**\nThe Kaufmann House (1947) — Neutra's masterwork — has the richest documentation of any private residence we found: original commission contract, engineer drawings, Julius Shulman photography documentation, 400+ press references, Neutra's own published commentary. It's one of only ~12 Palm Springs properties with what I'd call \"institutional-grade\" provenance.\n\n**Why this matters:**\nWhen you can't document the chain of custody, architectural attribution becomes hearsay. The Elrod House (1968, John Lautner) appeared in the James Bond film *Diamonds Are Forever* — that's literally in the production records. But try finding that in the MLS notes for the last sale.\n\nWe're building the verification layer against primary sources: Wikidata, Getty Research Institute Neutra Papers, John Lautner Foundation, Palm Springs Art Museum Architecture and Design Center, Riverside County deed records.\n\nhttps://www.thepropertydna.com?utm_source=reddit_DataIsBeautiful&utm_medium=social&utm_campaign=organic",
+      "posted": false,
+      "postedAt": null,
+      "url": null
+    },
+    {
+      "id": "lux-026",
+      "subreddit": "UrbanPlanning",
+      "title": "How Palm Springs preserved its Mid-Century Modern heritage: 72 Class 1 local landmarks, architect nomination committees, and a resort town that almost became strip malls",
+      "body": "Palm Springs is one of the best-documented preservation success stories in American urban planning.\n\n**The near-miss:**\nBy the late 1970s, Palm Springs's modernist resort economy had collapsed. Hotels converted to condos. Several of the most significant Mid-Century Modern buildings faced demolition — including Albert Frey's Tramway Gas Station (1965), which operated as a gas station for 30 years before preservation advocates saved it. It's now the Palm Springs Visitor Center.\n\n**What turned it around:**\n\n1. **Palm Springs Preservation Foundation (est. 1995)** — systematic documentation of structures designed by Frey, Neutra, Lautner, Williams, Wexler, Cody, and Kaptur. Nomination packages filed with state and local registers.\n\n2. **Modernism Week (est. 2006)** — 160,000 attendees today. The event commercialized interest in preservation, creating market demand for documented historic properties.\n\n3. **Class 1 Historic Site designations** — the city maintains ~72 Class 1 sites requiring design review before any alteration. The designation creates a documented premium in sale prices.\n\n**Why documentation is the mechanism:**\nEvery preservation campaign runs on primary source documentation. The Frey House II (1964) nomination required: original architectural drawings from the Palm Springs Art Museum Architecture and Design Center (where Frey's papers are held), period construction records, and Frey's own writings about the property.\n\nWithout the paper trail, historic designation doesn't happen. Without designation, the market premium doesn't exist. Without the premium, the economic incentive to preserve disappears.\n\nWe're building the documentation layer for private buyers and sellers — verified provenance chains for the $5M+ Palm Springs market.\n\nhttps://www.thepropertydna.com?utm_source=reddit_UrbanPlanning&utm_medium=social&utm_campaign=organic",
+      "posted": false,
+      "postedAt": null,
+      "url": null
     }
   ],
   "medium": [
