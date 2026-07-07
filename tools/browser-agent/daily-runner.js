@@ -10,7 +10,7 @@
  *   3. Cross-post one article to Medium
  *   4. Schedule a social post via Buffer
  *   5. Pull Google Analytics summary
- *   6. Provenance research (Tuesday + Friday only) — Perplexity multi-query
+ *   6. Provenance research (Tuesday + Friday only) — Wikipedia + Wikidata
  *      verification of notable_owners + architect_commissions; drafts Reddit posts
  *      for newly-verified properties
  *
@@ -130,7 +130,7 @@ async function runCCRefresh() {
 
   // 6. Provenance research — Tuesday + Friday only (or --force-research)
   if (researchScheduledToday()) {
-    log('\n[6/6] Provenance research (Perplexity verify + draft)');
+    log('\n[6/6] Provenance research (Wikipedia + Wikidata verify + draft)');
     // Pass --mode=both so a single run verifies unverified rows AND drafts posts
     // for anything that gets upgraded to verified in the same pass.
     process.argv.push('--mode=both');
