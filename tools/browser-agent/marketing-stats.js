@@ -165,16 +165,100 @@ async function ga4Stats() {
   return { totals, bySource };
 }
 
+// ─── Luxury Provenance Pipeline Stats ─────────────────────────────────────
+async function provenanceStats() {
+  const SUPABASE_URL = process.env.SUPABASE_URL || 'https://neccpdfhmfnvyjgyrysy.supabase.co';
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+  if (!SUPABASE_KEY) return { error: 'no_supabase_key' };
+
+  function sbReq(resource) {
+    return httpsReq('GET', `${SUPABASE_URL}/rest/v1/${resource}`, null, {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      Prefer: 'count=exact',
+      Range: '0-0',
+    });
+  }
+
+  function parseCount(res) {
+    const cr = res.status === 206 || res.status === 200
+      ? String(res.data?.['content-range'] || '')
+      : '';
+    if (cr.includes('/')) return parseInt(cr.split('/')[1], 10) || 0;
+    // PostgREST returns Content-Range in headers, not body — use HEAD trick
+    return null;
+  }
+
+  // Use HEAD + Prefer:count=exact for accurate counts
+  function countRows(table, filter = '') {
+    return new Promise((resolve) => {
+      const u = new URL(`${SUPABASE_URL}/rest/v1/${table}?select=*${filter}`);
+      const req = require('https').request({
+        hostname: u.hostname, path: u.pathname + u.search,
+        method: 'HEAD',
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          Prefer: 'count=exact', Range: '0-0',
+        },
+      }, res => {
+        const cr = res.headers['content-range'] || '';
+        const total = cr.includes('/') ? parseInt(cr.split('/')[1], 10) : null;
+        res.on('data', () => {});
+        res.on('end', () => resolve(total));
+      });
+      req.on('error', () => resolve(null));
+      req.setTimeout(8000, () => { req.destroy(); resolve(null); });
+      req.end();
+    });
+  }
+
+  const [
+    ownersTotal, ownersVerified, ownersPartial, ownersClaimed,
+    commissionsTotal, commissionsVerified,
+    eventsTotal,
+    architectsTotal,
+    luxuryTierTotal, hasDossierTotal,
+  ] = await Promise.all([
+    countRows('notable_owners'),
+    countRows('notable_owners', '&verification_status=eq.verified'),
+    countRows('notable_owners', '&verification_status=eq.partial'),
+    countRows('notable_owners', '&verification_status=eq.claimed_unverified'),
+    countRows('architect_commissions'),
+    countRows('architect_commissions', '&attribution_strength=eq.verified'),
+    countRows('provenance_events'),
+    countRows('architects'),
+    countRows('property_master', '&luxury_tier=not.is.null'),
+    countRows('property_master', '&has_provenance_dossier=eq.true'),
+  ]);
+
+  // Post queue stats (local file)
+  const queue = JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8'));
+  const luxPosts = queue.reddit.filter(p => p.id.startsWith('lux-'));
+  const queuePending = luxPosts.filter(p => !p.posted).length;
+  const queuePosted  = luxPosts.filter(p =>  p.posted).length;
+
+  return {
+    notable_owners: { total: ownersTotal, verified: ownersVerified, partial: ownersPartial, claimed: ownersClaimed },
+    architect_commissions: { total: commissionsTotal, verified: commissionsVerified },
+    provenance_events: eventsTotal,
+    architects: architectsTotal,
+    property_master: { luxury_tier_set: luxuryTierTotal, has_dossier: hasDossierTotal },
+    post_queue: { luxury_total: luxPosts.length, pending: queuePending, posted: queuePosted },
+  };
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────
 (async () => {
-  const [buffer, reddit, ga4] = await Promise.all([
+  const [buffer, reddit, ga4, provenance] = await Promise.all([
     bufferStats().catch(e => ({ error: e.message })),
     redditStats().catch(e => ({ error: e.message })),
     ga4Stats().catch(e => ({ error: e.message })),
+    provenanceStats().catch(e => ({ error: e.message })),
   ]);
 
   if (JSON_OUT) {
-    console.log(JSON.stringify({ generatedAt: new Date().toISOString(), buffer, reddit, ga4 }, null, 2));
+    console.log(JSON.stringify({ generatedAt: new Date().toISOString(), buffer, reddit, ga4, provenance }, null, 2));
     return;
   }
 
@@ -209,6 +293,22 @@ async function ga4Stats() {
     reddit.posts.forEach(p => {
       log(`    r/${p.subreddit.padEnd(22)} ↑${String(p.upvotes).padStart(4)} 💬${String(p.comments).padStart(3)} (${Math.round(p.upvoteRatio * 100)}%) — ${p.title}`);
     });
+  }
+
+  log('\n🏛  Luxury Provenance Pipeline');
+  if (provenance.error) {
+    log(`  ⚠ ${provenance.error} — set SUPABASE_SERVICE_KEY to enable`);
+  } else {
+    const o = provenance.notable_owners;
+    const c = provenance.architect_commissions;
+    const pm = provenance.property_master;
+    const pq = provenance.post_queue;
+    log(`  Notable owners   : ${o.total ?? '–'} total | ${o.verified ?? '–'} verified | ${o.partial ?? '–'} partial | ${o.claimed ?? '–'} claimed_unverified`);
+    log(`  Arch commissions : ${c.total ?? '–'} total | ${c.verified ?? '–'} verified`);
+    log(`  Provenance events: ${provenance.provenance_events ?? '–'}`);
+    log(`  Architects seeded: ${provenance.architects ?? '–'}`);
+    log(`  Luxury tier set  : ${pm.luxury_tier_set ?? '–'} properties | ${pm.has_dossier ?? '–'} with full dossier`);
+    log(`  Reddit queue     : ${pq.luxury_total} luxury posts | ${pq.pending} pending | ${pq.posted} posted`);
   }
 
   log('\n' + '─'.repeat(60));
