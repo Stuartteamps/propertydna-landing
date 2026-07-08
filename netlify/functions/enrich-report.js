@@ -19,6 +19,10 @@
 const https = require("https");
 const db = require("./_supabase");
 const { appreciateToToday: hpiAppreciate } = require("./_hpi_index");
+// ── PropertyDNA's OWN valuation stack (source of truth; RentCast-free) ──
+const { computeValuation } = require("./_valuation-engine");
+const { rankCompsCommunityFirst } = require("./_community_comps");
+const { lookupCommunity, lookupCommunityByAddress } = require("./_cv_luxury_index");
 
 const APP_BASE = (process.env.APP_BASE_URL || "https://thepropertydna.com").replace(/\/$/, "");
 const RENTCAST_KEY = process.env.RENTCAST_API_KEY;
@@ -52,73 +56,17 @@ function postJSON(hostname, path, headers, body, timeoutMs = 20000) {
 
 const num = (v) => { if (v == null) return null; const n = Number(v); return isNaN(n) ? null : n; };
 
-// Build the normalized object that save-report consumes, from RentCast AVM data.
-function buildNormalized({ address, city, state, zip }, avm, props) {
-  const subj = (avm && avm.subjectProperty) || (Array.isArray(props) ? props[0] : props) || {};
-  const lat = num(avm?.latitude) ?? num(subj.latitude);
-  const lon = num(avm?.longitude) ?? num(subj.longitude);
-  const detail = (Array.isArray(props) && props[0]) || subj || {};
-
-  const comps = (avm?.comparables || []).map((c) => ({
-    rawPrice: num(c.price),
-    price: num(c.price) != null ? "$" + Number(c.price).toLocaleString() : null,
-    distance: c.distance,
-    correlation: c.correlation,
-    sqft: num(c.squareFootage),
-    lat: num(c.latitude), lon: num(c.longitude),
-    address: c.formattedAddress || c.addressLine1 || "",
-    propertyType: c.propertyType || null,
-    // ── added for community-first comp ranking (Agent 3 / Patch B) ──
-    // RentCast AVM comparables already carry these; we were discarding them.
-    beds: num(c.bedrooms),
-    baths: num(c.bathrooms),
-    lotSize: num(c.lotSize),
-    yearBuilt: num(c.yearBuilt),
-    city: c.city || null,
-    // RentCast surfaces sale recency under several keys depending on listingType.
-    saleDate: c.removedDate || c.lastSeenDate || c.listedDate || null,
-  }));
-
-  return {
-    subject: {
-      address, city: city || subj.city || null, state: state || subj.state || null,
-      zip: zip || subj.zipCode || null, lat, lon,
-      lastSalePrice: detail.lastSalePrice ?? null, lastSaleDate: detail.lastSaleDate ?? null,
-    },
-    valuation: { low: num(avm?.priceRangeLow), marketValue: num(avm?.price), high: num(avm?.priceRangeHigh) },
-    property: {
-      beds: detail.bedrooms ?? subj.bedrooms ?? null,
-      baths: detail.bathrooms ?? subj.bathrooms ?? null,
-      sqft: detail.squareFootage ?? subj.squareFootage ?? null,
-      lotSize: detail.lotSize ?? subj.lotSize ?? null,
-      yearBuilt: detail.yearBuilt ?? subj.yearBuilt ?? null,
-      propertyType: detail.propertyType ?? subj.propertyType ?? null,
-    },
-    sale: { lastSalePrice: detail.lastSalePrice ?? null, lastSaleDate: detail.lastSaleDate ?? null },
-    comps,
-    listing: { remarks: "" },
-    source: "enrich-report (in-house, n8n-free)",
-  };
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
-// INTERNAL FALLBACK VALUATION (RentCast-independent)
+// PROPERTYDNA VALUATION DATA SOURCES (all owned; NO third-party AVM dependency)
 //
-// When RentCast is down (403 billing, timeout, network, or no-valuation) we must
-// NOT leave the report stuck "pending". We assemble a valuation SEED from data we
-// already own, in priority order, and hand it to save-report in the SAME shape
-// the RentCast path produces — flagged `valuationSource: 'internal_fallback:*'`
-// with a deliberately WIDER low/high range so save-report's accuracy/confidence
-// math reports lower certainty than a live AVM.
+//   • CREST (Riverside County assessor) — subject beds/baths/sqft/yearBuilt/lat/lon/
+//     last-sale + APN. Fetched FIRST for CA/CV addresses (facts backfill).
+//   • property_master — cached facts (resolved by APN, else normalized ilike prefix).
+//   • `properties`    — our recorded/CMA solds (city+sqft+price together).
+//   • property_master city cohort — broad comp coverage.
 //
-//   A. property_master by address  — cached rentcast_value(+range) → tax_assessed
-//   B. sold comps ($/sqft)         — `properties` recorded sales (pull-solds-rivco
-//                                    writes these in lockstep with property_history
-//                                    sale events; `properties` is the only place
-//                                    with city+sqft+price together) then a
-//                                    property_master city cohort for broad coverage
-//   C. Riverside County CREST      — assessor last-sale (appreciated) / TOTAL_VALUE
-//                                    for Coachella Valley addresses
+// These feed _valuation-engine.computeValuation() (headline) after _community_comps
+// ranking. RentCast is NOT used here — only an optional labeled cross-check field.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CREST_HOST = "gis.countyofriverside.us";
@@ -185,11 +133,12 @@ function toCompShape(c) {
     lat: c.lat || null, lon: c.lon || null,
     address: c.address || "",
     propertyType: c.propertyType || null,
-    // Keep the comp shape consistent with buildNormalized so the community-first
-    // ranker (Agent 3) can read these. distance/correlation stay null on purpose.
-    beds: null, baths: null, lotSize: null, yearBuilt: null,
+    // Carry through whatever comp facts we have (real values or null).
+    beds: c.beds ?? null, baths: c.baths ?? null,
+    lotSize: c.lotSize ?? null, yearBuilt: c.yearBuilt ?? null,
     city: c.city || null,
-    saleDate: c.date || null,
+    // Accept either `saleDate` (ranked comps) or `date` (raw sold comps).
+    saleDate: c.saleDate ?? c.date ?? null,
   };
 }
 
@@ -216,19 +165,32 @@ async function lookupSubjectProperty({ address, city }) {
   }
 }
 
-// A2. Best-effort cached AVM from property_master via EXACT address equality
-// (fast indexed lookup; ilike would time out). Often misses on address-format
-// differences, but when it hits it yields the richest cached seed + range.
-async function lookupPropertyMasterAvm({ address }) {
+// A2. Resolve the property_master row for the subject — the richest cached record
+// (facts + last sale + any cached range). Prior code used EXACT `.eq("address")`
+// which missed almost every row (address-format drift). We now resolve by APN when
+// CREST gives us one (indexed, exact, format-proof), then fall back to a normalized
+// `ilike` address-prefix match. Both are null-safe and time-bounded.
+const MASTER_COLS = "apn,address,city,state,zip,lat,lng,property_type,beds,baths,sqft,lot_sqft,year_built,rentcast_value,rentcast_value_low,rentcast_value_high,tax_assessed_value";
+async function lookupPropertyMaster({ address, city, apn }) {
+  // (1) APN — the strongest key when CREST resolved one.
+  if (apn) {
+    try {
+      const rows = await db.from("property_master").select(MASTER_COLS)
+        .eq("apn", String(apn)).limit(1).get();
+      if (Array.isArray(rows) && rows.length) return rows[0];
+    } catch (e) { console.warn("[enrich-report:property_master apn]", e.message); }
+  }
+  // (2) Normalized address-prefix ilike on the indexed street fragment.
   const frag = streetFragment(address);
   if (!frag) return null;
   try {
-    const rows = await db.from("property_master")
-      .select("apn,address,city,state,zip,lat,lng,property_type,beds,baths,sqft,lot_sqft,year_built,rentcast_value,rentcast_value_low,rentcast_value_high,tax_assessed_value")
-      .eq("address", frag).limit(1).get();
-    return Array.isArray(rows) && rows.length ? rows[0] : null;
+    const rows = await db.from("property_master").select(MASTER_COLS)
+      .ilike("address", `${frag}%`).limit(5).get();
+    if (!Array.isArray(rows) || !rows.length) return null;
+    const cityLc = String(city || "").toLowerCase();
+    return rows.find((r) => cityLc && String(r.city || "").toLowerCase().includes(cityLc)) || rows[0];
   } catch (e) {
-    console.warn("[enrich-report:property_master avm]", e.message);
+    console.warn("[enrich-report:property_master ilike]", e.message);
     return null;
   }
 }
@@ -240,7 +202,7 @@ async function lookupSoldComps({ city, zip }) {
   const out = [];
   try {
     let q = db.from("properties")
-      .select("address,city,zip,sqft,last_sale_price,current_estimated_value,last_sale_date,latitude,longitude,property_type_normalized")
+      .select("address,city,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,current_estimated_value,last_sale_date,latitude,longitude,property_type_normalized,listing_source")
       .gte("last_sale_price", 50000).limit(250);
     if (city) q = q.ilike("city", city);
     else if (zip) q = q.eq("zip", zip);
@@ -248,10 +210,16 @@ async function lookupSoldComps({ city, zip }) {
     if (Array.isArray(rows)) for (const r of rows) {
       const price = Number(r.last_sale_price) || Number(r.current_estimated_value) || null;
       const sqft = Number(r.sqft) || null;
+      // Tag MLS/CMA solds (pull-solds / flexmls_cma) as our highest-trust comps.
+      const isCma = /flexmls|cma|mls/i.test(String(r.listing_source || ""));
       if (price && price > 50000) out.push({
         price, sqft: sqft && sqft > 200 ? sqft : null,
-        address: r.address || null, lat: r.latitude ? Number(r.latitude) : null, lon: r.longitude ? Number(r.longitude) : null,
-        date: r.last_sale_date || null, propertyType: r.property_type_normalized || null, src: "properties_sold",
+        beds: Number(r.beds) || null, baths: Number(r.baths) || null,
+        lotSize: Number(r.lot_sqft) || null, yearBuilt: Number(r.year_built) || null,
+        address: r.address || null, city: r.city || null,
+        lat: r.latitude ? Number(r.latitude) : null, lon: r.longitude ? Number(r.longitude) : null,
+        date: r.last_sale_date || null, propertyType: r.property_type_normalized || null,
+        src: isCma ? "properties_cma_sold" : "properties_sold",
       });
     }
   } catch (e) { console.warn("[enrich-report:properties comps]", e.message); }
@@ -272,7 +240,9 @@ async function lookupSoldComps({ city, zip }) {
             const sqft = Number(r.sqft) || null;
             if (price && price > 50000) out.push({
               price, sqft: sqft && sqft > 200 ? sqft : null,
-              address: r.address || null, lat: r.lat ? Number(r.lat) : null, lon: r.lng ? Number(r.lng) : null,
+              beds: null, baths: null, lotSize: null, yearBuilt: null,
+              address: r.address || null, city: r.city || cv || null,
+              lat: r.lat ? Number(r.lat) : null, lon: r.lng ? Number(r.lng) : null,
               date: null, propertyType: null, src: "property_master_cohort",
             });
           }
@@ -300,8 +270,10 @@ function medianPrice(comps) {
 }
 
 // C. Riverside County CREST assessor lookup (free, no key) — CV addresses only.
+// returnGeometry:true (in WGS84) so we can backfill subject lat/lon when our own
+// tables miss it. Geometry is parsed best-effort by crestLatLon().
 function crestGet(where, timeoutMs = 15000) {
-  const qs = new URLSearchParams({ f: "json", outFields: "*", returnGeometry: "false", where, resultRecordCount: "10" }).toString();
+  const qs = new URLSearchParams({ f: "json", outFields: "*", returnGeometry: "true", outSR: "4326", where, resultRecordCount: "10" }).toString();
   return new Promise((resolve) => {
     const req = https.request(
       { hostname: CREST_HOST, path: `${CREST_PATH}?${qs}`, method: "GET", headers: { "User-Agent": "PropertyDNA/3.0 (thepropertydna.com)" } },
@@ -312,133 +284,173 @@ function crestGet(where, timeoutMs = 15000) {
     req.end();
   });
 }
+// Derive {lat,lon} from an Esri geometry (point or polygon ring centroid), WGS84.
+function crestLatLon(geom) {
+  if (!geom) return { lat: null, lon: null };
+  if (typeof geom.y === "number" && typeof geom.x === "number") return { lat: geom.y, lon: geom.x };
+  const ring = Array.isArray(geom.rings) && geom.rings[0];
+  if (Array.isArray(ring) && ring.length) {
+    let sx = 0, sy = 0, n = 0;
+    for (const p of ring) { if (Array.isArray(p) && p.length >= 2) { sx += p[0]; sy += p[1]; n++; } }
+    if (n) return { lat: sy / n, lon: sx / n };
+  }
+  return { lat: null, lon: null };
+}
 async function lookupCrest({ address, city }) {
   const frag = streetFragment(address).toUpperCase().replace(/'/g, "''");
   if (!frag) return null;
   const cityClause = city ? ` AND UPPER(SITUS_CITY) = '${String(city).toUpperCase().replace(/'/g, "''")}'` : "";
   let data = await crestGet(`UPPER(SITUS_ADDR) LIKE '${frag}%'${cityClause}`);
-  let feat = data?.features?.[0]?.attributes;
-  if (!feat && cityClause) { // retry without the city constraint
+  let f = data?.features?.[0];
+  if (!f && cityClause) { // retry without the city constraint
     data = await crestGet(`UPPER(SITUS_ADDR) LIKE '${frag}%'`);
-    feat = data?.features?.[0]?.attributes;
+    f = data?.features?.[0];
   }
-  return feat || null;
+  if (!f?.attributes) return null;
+  // Merge geometry-derived lat/lon in under private keys pickNum/pickStr ignore.
+  const ll = crestLatLon(f.geometry);
+  return { ...f.attributes, __lat: ll.lat, __lon: ll.lon };
 }
 
-// Assemble the normalized seed. Returns { normalized, valuationSource } or null
-// when no source can produce even a rough estimate (→ caller marks the report
-// 'failed', never 'pending').
-async function buildInternalFallback({ address, city, state, zip, props }) {
-  const rcDetail = (Array.isArray(props) && props[0]) || null; // RentCast property detail may survive an AVM-only failure
-  // Resolve the subject + a best-effort cached AVM in parallel (both fast/indexed).
-  const [subj, master] = await Promise.all([
+// ─────────────────────────────────────────────────────────────────────────────
+// PRIMARY VALUATION — PropertyDNA's OWN engine is the source of truth.
+//
+// Flow (RentCast-independent):
+//   1. CREST assessor FIRST (CA/CV addresses) → subject beds/baths/sqft/yearBuilt/
+//      lat/lon/last-sale + APN (used to resolve property_master exactly).
+//   2. Resolve subject from OUR tables (property_master by APN|ilike, `properties`).
+//   3. Pull comps from OUR data (`properties` solds incl. flexmls_cma + master cohort).
+//   4. Rank comps community-first (_community_comps) and run computeValuation
+//      (_valuation-engine) for the headline value.
+//   5. GATE confidence honestly: a confident, 'completed' number requires REAL
+//      subject facts (sqft) AND >=3 usable comps — otherwise 'insufficient_data'.
+//
+// Returns { normalized, valuationSource, status, hasSubjectData, hasValue }.
+// Never returns null and never fabricates a subject fact or a confident number.
+// ─────────────────────────────────────────────────────────────────────────────
+async function buildEngineValuation({ address, city, state, zip }) {
+  // ── 1. CREST assessor FIRST — facts + APN + lat/lon for Riverside/CV/CA ──
+  let crest = null;
+  if (isCoachellaValley(city, state) || (state && String(state).toUpperCase() === "CA") || !state) {
+    crest = await lookupCrest({ address, city }).catch(() => null);
+  }
+  const crestApn = crest ? pickStr(crest, ["APN", "PARCEL_APN", "ASSESSMENT_NO", "ASMT"]) : null;
+  const crestN = (keys) => (crest ? pickNum(crest, keys) : null);
+
+  // ── 2. Resolve the subject from OUR OWN data (property_master + properties) ──
+  const [subj, master, soldComps] = await Promise.all([
     lookupSubjectProperty({ address, city }),
-    lookupPropertyMasterAvm({ address }),
+    lookupPropertyMaster({ address, city, apn: crestApn }),
+    lookupSoldComps({ city: city || pickStr(subj, ["city"]) || null, zip }),
   ]);
 
-  // Best-available subject characteristics (mutable — CREST can backfill later).
-  let subjSqft = pickNum(rcDetail, ["squareFootage"]) || pickNum(master, ["sqft"]) || pickNum(subj, ["sqft"]);
-  let subjBeds = pickNum(rcDetail, ["bedrooms"]) || pickNum(master, ["beds"]) || pickNum(subj, ["beds"]);
-  let subjBaths = pickNum(rcDetail, ["bathrooms"]) || pickNum(master, ["baths"]) || pickNum(subj, ["baths"]);
-  let subjLot = pickNum(rcDetail, ["lotSize"]) || pickNum(master, ["lot_sqft"]) || pickNum(subj, ["lot_sqft"]);
-  let subjYear = pickNum(rcDetail, ["yearBuilt"]) || pickNum(master, ["year_built"]) || pickNum(subj, ["year_built"]);
-  let subjType = pickStr(rcDetail, ["propertyType"]) || pickStr(master, ["property_type"]) || pickStr(subj, ["property_type_normalized"]);
-  let lat = pickNum(rcDetail, ["latitude"]) || pickNum(master, ["lat"]) || pickNum(subj, ["latitude"]);
-  let lon = pickNum(rcDetail, ["longitude"]) || pickNum(master, ["lng"]) || pickNum(subj, ["longitude"]);
-  const subjCity = city || pickStr(master, ["city"]) || pickStr(subj, ["city"]) || null;
+  // ── 3. Subject facts — REAL values only, priority CREST > property_master >
+  //       `properties`. Nothing is fabricated: a missing fact stays null. ──
+  const subjSqft  = crestN(["SQ_FT", "BLDG_SQFT", "SQFT"])      ?? pickNum(master, ["sqft"])       ?? pickNum(subj, ["sqft"]);
+  const subjBeds  = crestN(["BEDROOMS", "BEDS"])                ?? pickNum(master, ["beds"])       ?? pickNum(subj, ["beds"]);
+  const subjBaths = crestN(["BATHROOMS", "BATHS"])              ?? pickNum(master, ["baths"])      ?? pickNum(subj, ["baths"]);
+  const subjLot   = crestN(["LOT_SQFT", "LOT_SIZE", "NET_AC"])  ?? pickNum(master, ["lot_sqft"])   ?? pickNum(subj, ["lot_sqft"]);
+  const subjYear  = crestN(["YEAR_BUILT", "YR_BLT", "EFF_YR"])  ?? pickNum(master, ["year_built"]) ?? pickNum(subj, ["year_built"]);
+  const subjType  = pickStr(master, ["property_type"])          ?? pickStr(subj, ["property_type_normalized"]);
+  const lat = crestN(["__lat"]) ?? pickNum(master, ["lat"]) ?? pickNum(subj, ["latitude"]);
+  const lon = crestN(["__lon"]) ?? pickNum(master, ["lng"]) ?? pickNum(subj, ["longitude"]);
+  const subjCity  = city || pickStr(master, ["city"])  || pickStr(subj, ["city"])  || null;
   const subjState = state || pickStr(master, ["state"]) || pickStr(subj, ["state"]) || null;
-  const subjZip = zip || pickStr(master, ["zip"]) || pickStr(subj, ["zip"]) || null;
+  const subjZip   = zip   || pickStr(master, ["zip"])   || pickStr(subj, ["zip"])   || null;
 
-  let marketValue = null, low = null, high = null, source = null, spread = 0.20;
-  const sale = { lastSalePrice: null, lastSaleDate: null };
-  // Carry the subject's last recorded sale (anchors save-report's valuation math).
-  const subjLastSale = pickNum(subj, ["last_sale_price"]);
-  const subjLastSaleDate = pickStr(subj, ["last_sale_date"]);
-  if (subjLastSale) { sale.lastSalePrice = subjLastSale; sale.lastSaleDate = subjLastSaleDate; }
-
-  // Fetch comps once — used for the $/sqft seed and always passed through for the map.
-  const soldComps = await lookupSoldComps({ city: subjCity, zip: subjZip });
-
-  // ── A. property_master cached AVM, then our own `properties` cached estimate ──
-  if (master) {
-    const rcVal = pickNum(master, ["rentcast_value"]);
-    const rcLow = pickNum(master, ["rentcast_value_low"]);
-    const rcHigh = pickNum(master, ["rentcast_value_high"]);
-    const assessed = pickNum(master, ["tax_assessed_value"]);
-    if (rcVal) {
-      marketValue = rcVal; source = "internal_fallback:property_master_avm";
-      low = rcLow && rcLow < rcVal ? rcLow : null;   // honor cached range if present
-      high = rcHigh && rcHigh > rcVal ? rcHigh : null;
-      spread = 0.16;
-    } else if (assessed) {
-      marketValue = assessed; source = "internal_fallback:property_master_assessed"; spread = 0.25;
-    }
-  }
-  if (!marketValue && subj) {
-    const est = pickNum(subj, ["current_estimated_value"]);
-    if (est) { marketValue = est; source = "internal_fallback:properties_estimate"; spread = 0.18; }
-    else if (subjLastSale) { const _hpi = hpiAppreciate(subjLastSale, subjLastSaleDate, { zip: subjZip, city: subjCity, state: subjState }); marketValue = _hpi.value; source = "internal_fallback:properties_last_sale+hpi"; spread = 0.22; }
+  // Subject's last recorded sale (real, from OUR data or CREST assessor).
+  let lastSalePrice = pickNum(subj, ["last_sale_price"]);
+  let lastSaleDate  = pickStr(subj, ["last_sale_date"]);
+  if (!lastSalePrice) {
+    const crestSale = crestN(["LAST_SALE_AMOUNT", "SALE_AMOUNT"]);
+    if (crestSale && crestSale > 10000) { lastSalePrice = crestSale; lastSaleDate = crestDate(crest?.LAST_SALE_DATE ?? crest?.SALE_DATE); }
   }
 
-  // ── B. sold-comp $/sqft (only if A produced nothing) ─────────────────────────
-  if (!marketValue) {
-    const realSold = soldComps.filter((c) => c.src === "properties_sold");
-    const pool = realSold.length >= 3 ? realSold : soldComps;
-    const psf = medianPsf(pool);
-    if (psf && subjSqft) {
-      marketValue = Math.round(psf.psf * subjSqft);
-      source = `internal_fallback:comps_psf_n${psf.n}`; spread = 0.22;
-    } else {
-      const mp = medianPrice(pool);
-      if (mp) { marketValue = mp.price; source = `internal_fallback:comps_median_n${mp.n}`; spread = 0.28; }
-    }
+  // ── 4. Rank comps community-first, then run OUR engine for the headline ──
+  const subjectCommunity =
+    lookupCommunity(pickStr(subj, ["subdivision", "neighborhood"]) || "", subjCity) ||
+    lookupCommunityByAddress(address, subjCity);
+  const rankSubject = { propertyType: subjType, sqft: subjSqft, lotSize: subjLot, city: subjCity };
+  const rankerComps = soldComps.map((c) => ({
+    address: c.address, city: c.city || subjCity, distance: null,
+    lotSize: c.lotSize ?? null, saleDate: c.date ?? null,
+    propertyType: c.propertyType ?? null, sqft: c.sqft ?? null,
+    price: c.price, beds: c.beds ?? null, baths: c.baths ?? null,
+    yearBuilt: c.yearBuilt ?? null, lat: c.lat ?? null, lon: c.lon ?? null, src: c.src,
+  }));
+  const ranked = rankCompsCommunityFirst(rankSubject, subjectCommunity, rankerComps);
+
+  // Engine input shape { price, sqft, lotSqft, beds, baths, yearBuilt, saleDate }.
+  const engineComps = ranked.map((c) => ({
+    price: c.price, sqft: c.sqft, lotSqft: c.lotSize ?? null,
+    beds: c.beds ?? null, baths: c.baths ?? null, yearBuilt: c.yearBuilt ?? null,
+    saleDate: c.saleDate ?? null,
+  }));
+  const usableCompCount = engineComps.filter((c) => num(c.price) && num(c.sqft) && num(c.sqft) > 400).length;
+
+  const engineSubject = { sqft: subjSqft, lotSqft: subjLot, beds: subjBeds, baths: subjBaths, yearBuilt: subjYear };
+  // computeValuation returns fairValue=null unless subject.sqft AND >=3 usable comps.
+  const val = computeValuation(engineSubject, engineComps);
+
+  // ── 5. Honest confidence gate ──
+  const hasSubjectData = subjSqft != null;                       // real subject facts (sqft is the engine's anchor)
+  const engineValue    = val.fairValue;                          // headline — never fabricated
+  const hasValue       = engineValue != null && usableCompCount >= 3;
+
+  let low = val.fairValueLow, high = val.fairValueHigh, marketValue = engineValue;
+  if (marketValue != null) {
+    if (low == null)  low  = Math.round(marketValue * 0.90);
+    if (high == null) high = Math.round(marketValue * 1.10);
   }
 
-  // ── C. Riverside County CREST assessor (CV addresses only) ───────────────────
-  if (!marketValue && isCoachellaValley(subjCity, subjState)) {
-    const feat = await lookupCrest({ address, city: subjCity });
-    if (feat) {
-      const lsa = Number(feat.LAST_SALE_AMOUNT) || null;
-      const lsd = crestDate(feat.LAST_SALE_DATE);
-      const total = Number(feat.TOTAL_VALUE) || null;
-      if (lsa && lsa > 50000) {
-        marketValue = hpiAppreciate(lsa, lsd, { zip: subjZip, city: subjCity, state: subjState }).value; source = "internal_fallback:crest_sale+hpi"; spread = 0.20;
-        sale.lastSalePrice = lsa; sale.lastSaleDate = lsd;
-      } else if (total && total > 50000) {
-        marketValue = total; source = "internal_fallback:crest_assessed"; spread = 0.25;
-      }
-      subjSqft = subjSqft || Number(feat.SQ_FT) || null;
-      subjBeds = subjBeds || Number(feat.BEDROOMS) || null;
-      subjBaths = subjBaths || Number(feat.BATHROOMS) || null;
-      subjYear = subjYear || Number(feat.YEAR_BUILT) || null;
-    }
+  // Map engine confidence (0.30–0.95) → label; gate overrides to 'insufficient'.
+  let valuationConfidence, confidenceNote, status;
+  if (hasSubjectData && hasValue) {
+    const c = val.confidence ?? 0.5;
+    valuationConfidence = c >= 0.7 ? "high" : c >= 0.5 ? "medium" : "low";
+    confidenceNote = `Valued by PropertyDNA's comp engine from ${usableCompCount} community-ranked sold comparables against verified subject facts (${subjSqft} sqft${subjBeds ? `, ${subjBeds} bd` : ""}${subjBaths ? `, ${subjBaths} ba` : ""}).`;
+    status = "completed";
+  } else {
+    valuationConfidence = "insufficient";
+    const missing = [];
+    if (!hasSubjectData) missing.push("verified subject property facts (bed/bath/sqft)");
+    if (usableCompCount < 3) missing.push(`enough comparable sales (found ${usableCompCount}, need 3)`);
+    confidenceNote = `Insufficient data to publish a confident valuation — missing ${missing.join(" and ")}. No estimate was fabricated. We are gathering more data for this address.`;
+    status = "insufficient_data";
+    // Never present an unverified number as if it were real.
+    marketValue = null; low = null; high = null;
   }
-
-  if (!marketValue || marketValue < 10000) return null; // nothing usable → caller marks 'failed'
-
-  if (low == null) low = Math.round(marketValue * (1 - spread));
-  if (high == null) high = Math.round(marketValue * (1 + spread));
 
   const normalized = {
     subject: {
       address, city: subjCity, state: subjState, zip: subjZip, lat, lon,
-      lastSalePrice: sale.lastSalePrice, lastSaleDate: sale.lastSaleDate,
+      // Output contract — real values or null, never fabricated.
+      beds: subjBeds ?? null, baths: subjBaths ?? null, sqft: subjSqft ?? null, yearBuilt: subjYear ?? null,
+      lastSalePrice: lastSalePrice ?? null, lastSaleDate: lastSaleDate ?? null,
     },
-    valuation: { low, marketValue, high },
+    valuation: {
+      marketValue, low, high,
+      valuationSource: "propertydna_engine",
+      valuationConfidence,
+      confidenceNote,
+      // engine internals (for transparency / debugging; never the headline requirement)
+      compCount: usableCompCount,
+      engineMethod: val.method,
+    },
     property: {
-      beds: subjBeds, baths: subjBaths, sqft: subjSqft, lotSize: subjLot,
-      yearBuilt: subjYear, propertyType: subjType,
+      beds: subjBeds ?? null, baths: subjBaths ?? null, sqft: subjSqft ?? null,
+      lotSize: subjLot ?? null, yearBuilt: subjYear ?? null, propertyType: subjType ?? null,
     },
-    sale,
-    comps: soldComps.slice(0, 12).map(toCompShape),
+    sale: { lastSalePrice: lastSalePrice ?? null, lastSaleDate: lastSaleDate ?? null },
+    comps: ranked.slice(0, 12).map(toCompShape),
     listing: { remarks: "" },
-    // Flags consumed by the UI + persisted in report_data for transparency.
-    valuationSource: source,
-    valuationConfidence: "low",
-    confidenceNote: "Estimate generated from PropertyDNA's internal property index because the live AVM provider was temporarily unavailable. The wider value range reflects lower certainty than a standard report.",
-    source: `enrich-report internal fallback (${source})`,
+    // Top-level mirrors (kept for existing UI transparency flags).
+    valuationSource: "propertydna_engine",
+    valuationConfidence,
+    confidenceNote,
+    source: "enrich-report (PropertyDNA engine — RentCast-free source of truth)",
   };
-  return { normalized, valuationSource: source };
+  return { normalized, valuationSource: "propertydna_engine", status, hasSubjectData, hasValue };
 }
 
 // Flip the pre-created pending row to 'failed' (NEVER leave it 'pending') with a
@@ -468,53 +480,56 @@ exports.handler = async (event) => {
   const full = [address, city, state, zip].filter(Boolean).join(", ");
   const q = encodeURIComponent(full);
 
-  // ── PRIMARY: RentCast valuation+comps (only attempted when a key is present) ──
-  let avm = null, props = null, avmStatus = 0;
+  // ── PRIMARY (source of truth): PropertyDNA's OWN engine, for EVERY report. ──
+  let engine;
+  try {
+    engine = await buildEngineValuation({ address, city, state, zip });
+  } catch (e) {
+    console.warn("[enrich-report:engine]", e.message);
+    // Only a hard, unexpected error reaches here — never fabricate; mark failed.
+    const reason = "We hit an error assembling this valuation from PropertyDNA's data. Our team has been notified. Please try again shortly.";
+    await markFailed({ email, address, city, state, zip, viewToken, reportId }, reason).catch((er) => console.warn("[enrich-report:markFailed]", er.message));
+    db.kpi("report_engine_error", email, { address, error: e.message });
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: false, status: "failed", valuationSource: "none", reason }) };
+  }
+  const { normalized, valuationSource, status, hasSubjectData, hasValue } = engine;
+
+  // ── OPTIONAL secondary cross-check ONLY: RentCast third-party estimate. Never
+  // the headline, never required, never gates status. Disabled by default (the
+  // provider is being retired); attempted only if a key is explicitly present. ──
   if (RENTCAST_KEY) {
-    const rcHeaders = { "X-Api-Key": RENTCAST_KEY, "Accept": "application/json" };
-    const [avmRes, propRes] = await Promise.all([
-      getJSON("api.rentcast.io", `/v1/avm/value?address=${q}&compCount=8`, rcHeaders),
-      getJSON("api.rentcast.io", `/v1/properties?address=${q}`, rcHeaders),
-    ]);
-    avmStatus = avmRes.status;
-    avm = avmRes.json && !avmRes.json.error ? avmRes.json : null;
-    props = Array.isArray(propRes.json) ? propRes.json : null;
+    try {
+      const rcHeaders = { "X-Api-Key": RENTCAST_KEY, "Accept": "application/json" };
+      const avmRes = await getJSON("api.rentcast.io", `/v1/avm/value?address=${q}&compCount=8`, rcHeaders, 8000);
+      const price = avmRes?.json && !avmRes.json.error ? num(avmRes.json.price) : null;
+      if (price != null) normalized.valuation.thirdPartyEstimate = price; // labeled cross-check field only
+    } catch (e) { console.warn("[enrich-report:rentcast crosscheck]", e.message); }
   }
 
-  // ── FALLBACK: when RentCast yields no valuation (403 billing, timeout, network,
-  // no-valuation, or no key) build an INTERNAL seed so the report never hangs. ──
-  let normalized, valuationSource;
-  if (avm && avm.price != null) {
-    normalized = buildNormalized({ address, city, state, zip }, avm, props);
-    valuationSource = "rentcast";
-  } else {
-    console.warn(`[enrich-report] RentCast unavailable (avmStatus=${avmStatus}) — internal fallback for "${full}"`);
-    const fb = await buildInternalFallback({ address, city, state, zip, props });
-    if (!fb) {
-      // No source produced even a rough seed → mark FAILED (never 'pending').
-      const reason = "Valuation data is temporarily unavailable for this address. We couldn't generate an estimate from our internal property index, and our team has been notified. Please try again later.";
-      await markFailed({ email, address, city, state, zip, viewToken, reportId }, reason).catch((e) => console.warn("[enrich-report:markFailed]", e.message));
-      db.kpi("report_fallback_failed", email, { address, avmStatus });
-      return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: false, status: "failed", valuationSource: "none", reason }) };
-    }
-    normalized = fb.normalized;
-    valuationSource = fb.valuationSource;
-    db.kpi("report_internal_fallback", email, { address, valuationSource, avmStatus, marketValue: normalized.valuation.marketValue });
-  }
+  db.kpi(status === "completed" ? "report_engine_completed" : "report_insufficient_data", email, {
+    address, valuationSource, marketValue: normalized.valuation.marketValue,
+    confidence: normalized.valuation.valuationConfidence, comps: normalized.comps.length,
+    hasSubjectData, hasValue,
+  });
 
-  // Hand off to save-report (does Census/FEMA/USGS/CalFire/DNA/ingest + completion).
+  // Hand off to save-report (Census/FEMA/USGS/CalFire/DNA/ingest + completion).
+  // status is GATED: 'completed' only when real subject facts AND a real value exist.
   const save = await postJSON("thepropertydna.com", "/.netlify/functions/save-report",
     { "x-internal-key": INTERNAL_KEY || "" },
     {
       email, address, city: city || "", state: state || "", zip: zip || "",
       reportData: { normalized },
-      status: "completed",
+      status: (hasSubjectData && hasValue) ? "completed" : "insufficient_data",
       viewToken: viewToken || null, reportId: reportId || null,
       features: {},
     }, 25000);
 
   return {
     statusCode: 200, headers: CORS,
-    body: JSON.stringify({ ok: save.status === 200, saveStatus: save.status, valuationSource, valuation: normalized.valuation, comps: normalized.comps.length, viewToken: save.json?.viewToken || viewToken }),
+    body: JSON.stringify({
+      ok: save.status === 200, saveStatus: save.status, status,
+      valuationSource, valuation: normalized.valuation, comps: normalized.comps.length,
+      viewToken: save.json?.viewToken || viewToken,
+    }),
   };
 };

@@ -58,7 +58,19 @@ const Stat = ({ label, value, wide }: { label: string; value: string; wide?: boo
   </div>
 );
 
-const money = (v: number | null) => v ? `$${v.toLocaleString()}` : '—';
+// Currency formatter — coerces numbers OR pre-formatted strings ("$1,200,000")
+// to a clean "$1,200,000". Never emits NaN/undefined/blank; missing → em-dash.
+const money = (v: any): string => {
+  const n = typeof v === 'number' ? v : Number(String(v ?? '').replace(/[^0-9.-]/g, ''));
+  return isFinite(n) && n !== 0 ? `$${Math.round(n).toLocaleString()}` : '—';
+};
+
+// Truthy real value (rejects null/undefined/''/em-dash placeholder).
+const hasVal = (v: any) => v != null && v !== '' && v !== '—';
+
+// Property-vital display — real value or explicit "Data pending" (never blank).
+const DATA_PENDING = 'Data pending';
+const vital = (v: any) => (hasVal(v) ? v : DATA_PENDING);
 
 const ConfidenceBadge = ({ pct }: { pct?: number }) => {
   if (pct == null) return null;
@@ -133,6 +145,39 @@ export default function ReportViewByToken() {
   const weather = n.weather ?? {};
   const dnaAdj = dna.dnaAdjusted ?? null;
 
+  // ── Property vitals: prefer the new `subject` contract, fall back to legacy
+  // `property`/`sale` shapes so older reports still render real values. ──
+  const vitals = {
+    propertyType:  prop.propertyType,
+    yearBuilt:     sub.yearBuilt ?? prop.yearBuilt,
+    beds:          sub.beds ?? prop.beds,
+    baths:         sub.baths ?? prop.baths,
+    sqft:          sub.sqft ?? prop.sqft,
+    lotSize:       prop.lotSize,
+    lastSaleDate:  sub.lastSaleDate ?? sale.lastSaleDate,
+    lastSalePrice: sub.lastSalePrice ?? sale.lastSalePrice,
+  };
+  // If every core vital is missing, we have no real property data — treat the
+  // whole valuation as low-confidence rather than showing a confident number.
+  const vitalsAllMissing =
+    !hasVal(vitals.beds) && !hasVal(vitals.baths) && !hasVal(vitals.sqft) &&
+    !hasVal(vitals.yearBuilt) && !hasVal(vitals.lastSalePrice);
+
+  // ── Valuation confidence gating ──
+  const valConfidence: string = val.valuationConfidence ?? '';
+  const isFallbackSource = typeof val.valuationSource === 'string' && val.valuationSource.startsWith('internal_fallback');
+  // Never present a value as definitive when confidence is low, the source is an
+  // internal fallback, there's no market value, or we have no vitals at all.
+  const lowConfidence =
+    valConfidence === 'low' || valConfidence === 'insufficient' ||
+    isFallbackSource || vitalsAllMissing || !hasVal(val.marketValue);
+  const confidenceNote = val.confidenceNote ||
+    'This estimate is based on limited verified data and should be treated as preliminary.';
+
+  // ── Report-level status gating ──
+  const reportStatus: string = report?.status ?? '';
+  const isInsufficient = reportStatus === 'insufficient_data' || reportStatus === 'failed';
+
   // Handle both n8n key naming conventions (old: buyerAngle; new: buyerNarrative)
   const sellerAngle    = dna.sellerAngle    || dna.sellerNarrative    || '';
   const buyerAngle     = dna.buyerAngle     || dna.buyerNarrative     || '';
@@ -205,6 +250,30 @@ export default function ReportViewByToken() {
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>My Dashboard →</a>
           <a href="/" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: 2, textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>New Report</a>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Guard: backend flagged the report as insufficient/failed — show a clear,
+  // friendly state rather than a blank page or a fabricated value.
+  if (isInsufficient) return (
+    <div style={{ minHeight: '100vh', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', maxWidth: 480, padding: '0 24px' }}>
+        <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 32, color: '#F0EBE0', marginBottom: 12 }}>
+          Still Gathering Data
+        </div>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 14, color: 'rgba(244,240,232,0.55)', lineHeight: 1.7, marginBottom: 8 }}>
+          We couldn't get enough verified data for this address yet — we're working on it.
+        </div>
+        <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: 'rgba(201,168,76,0.55)', marginBottom: 28 }}>
+          We'll email your report the moment there's enough to stand behind. No confident numbers until then.
+        </div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => { setLoading(true); setPollCount(0); fetchReport(); }} style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '3px', textTransform: 'uppercase', color: '#000', background: '#C9A84C', padding: '12px 24px', border: 'none', cursor: 'pointer' }}>
+            Check Now →
+          </button>
+          <a href="/dashboard" style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase', color: '#F0EBE0', border: '1px solid rgba(255,255,255,0.15)', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }}>My Dashboard</a>
         </div>
       </div>
     </div>
@@ -318,23 +387,40 @@ export default function ReportViewByToken() {
 
         <Section title="Property Vitals">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0 40px' }}>
-            <Stat label="Property Type" value={fmt(prop.propertyType)} />
-            <Stat label="Year Built"    value={fmt(prop.yearBuilt)} />
-            <Stat label="Beds / Baths"  value={`${fmt(prop.beds)} bd / ${fmt(prop.baths)} ba`} />
-            <Stat label="Square Footage" value={prop.sqft && prop.sqft !== '—' ? `${Number(prop.sqft).toLocaleString()} sqft` : '—'} />
-            <Stat label="Lot Size"       value={prop.lotSize && prop.lotSize !== '—' ? `${Number(prop.lotSize).toLocaleString()} sqft` : '—'} />
-            <Stat label="Last Sale"      value={sale.lastSaleDate ? sale.lastSaleDate.slice(0, 10) : '—'} />
-            <Stat label="Last Sale Price" value={fmt(sale.lastSalePrice)} />
+            <Stat label="Property Type" value={vital(vitals.propertyType)} />
+            <Stat label="Year Built"    value={vital(vitals.yearBuilt)} />
+            <Stat label="Beds / Baths"  value={hasVal(vitals.beds) || hasVal(vitals.baths) ? `${vital(vitals.beds)} bd / ${vital(vitals.baths)} ba` : DATA_PENDING} />
+            <Stat label="Square Footage" value={hasVal(vitals.sqft) ? `${Number(vitals.sqft).toLocaleString()} sqft` : DATA_PENDING} />
+            <Stat label="Lot Size"       value={hasVal(vitals.lotSize) ? `${Number(vitals.lotSize).toLocaleString()} sqft` : DATA_PENDING} />
+            <Stat label="Last Sale"      value={hasVal(vitals.lastSaleDate) ? String(vitals.lastSaleDate).slice(0, 10) : DATA_PENDING} />
+            <Stat label="Last Sale Price" value={hasVal(vitals.lastSalePrice) ? money(vitals.lastSalePrice) : DATA_PENDING} />
           </div>
         </Section>
 
         {/* Valuation — Raw Comp Range */}
         <Section title="Valuation">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 40px' }}>
-            <Stat label="Market Value" value={fmt(val.marketValue)} />
-            <Stat label="Range Low"    value={fmt(val.low)} />
-            <Stat label="Range High"   value={fmt(val.high)} />
-          </div>
+          {lowConfidence && (
+            <div style={{ background: 'rgba(184,82,69,0.07)', border: '1px solid rgba(184,82,69,0.35)', borderLeft: '3px solid #B85245', padding: '14px 18px', marginBottom: 20 }}>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#B85245', marginBottom: 6 }}>
+                Preliminary estimate — low confidence
+              </div>
+              <div style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', lineHeight: 1.6 }}>
+                {confidenceNote}
+              </div>
+            </div>
+          )}
+          {lowConfidence ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0 40px' }}>
+              <Stat label="Estimated Range" value={hasVal(val.low) || hasVal(val.high) ? `${money(val.low)} – ${money(val.high)}` : DATA_PENDING} />
+              <Stat label="Preliminary Midpoint" value={hasVal(val.marketValue) ? money(val.marketValue) : DATA_PENDING} />
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 40px' }}>
+              <Stat label="Market Value" value={money(val.marketValue)} />
+              <Stat label="Range Low"    value={money(val.low)} />
+              <Stat label="Range High"   value={money(val.high)} />
+            </div>
+          )}
         </Section>
 
         {/* DNA Adjusted Valuation */}
@@ -451,7 +537,7 @@ export default function ReportViewByToken() {
                     {comps.map((c: any, i: number) => (
                       <tr key={i}>
                         <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 13, color: '#F0EBE0', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.address}</td>
-                        <td style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 15, color: '#C9A84C', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.price}</td>
+                        <td style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 15, color: '#C9A84C', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{hasVal(c.rawPrice) ? money(c.rawPrice) : (hasVal(c.price) ? c.price : '—')}</td>
                         <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.sqft}</td>
                         <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 16px 10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.beds}</td>
                         <td style={{ fontFamily: 'Jost, sans-serif', fontSize: 12, color: '#6B6252', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{c.distance}</td>
