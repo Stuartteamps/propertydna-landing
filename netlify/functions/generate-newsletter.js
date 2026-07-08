@@ -126,9 +126,14 @@ function getWeekLabel() {
 }
 
 // ── Build HTML ────────────────────────────────────────────────────────────────
-function buildHtml({ weatherText, marketNarrative, weekLabel }) {
+function buildHtml({ weatherText, marketNarrative, weekLabel, links }) {
   const weatherUrl = 'https://weather.com/weather/weekend/l/Palm+Springs+California+92264?canonicalCityId=687a20d28ab0947fa17b65cfdd26e2e9';
   const eventsUrl  = 'https://visitpalmsprings.com/events/this-weekend/';
+  // Weekly FlexMLS share links from newsletter_links (row id=1); fall back to
+  // our own listing pages so the preview matches exactly what gets sent.
+  const wvLink   = links?.west_valley_new || `${SITE}/listings/west-valley`;
+  const evLink   = links?.east_valley_new || `${SITE}/listings/east-valley`;
+  const soldLink = links?.recently_sold   || `${SITE}/listings/recently-sold`;
 
   return `<!DOCTYPE html>
 <html>
@@ -323,7 +328,10 @@ exports.handler = async (event) => {
   const marketNarrative  = buildMarketNarrative(markets);
   const weekLabel        = getWeekLabel();
 
-  const html    = buildHtml({ weatherText, marketNarrative, weekLabel });
+  const linksRows = await db.from('newsletter_links').select('*').eq('id', 1).limit(1).get().catch(() => []);
+  const links     = (linksRows || [])[0] || null;
+
+  const html    = buildHtml({ weatherText, marketNarrative, weekLabel, links });
   const subject = `The Stuart Team Weekly — ${weekLabel}`;
 
   // Browser preview

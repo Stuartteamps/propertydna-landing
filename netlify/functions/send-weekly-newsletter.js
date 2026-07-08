@@ -218,6 +218,13 @@ exports.handler = async (event) => {
   const unsubs = await db.from('campaign_unsubscribes').select('email').get().catch(() => []);
   const unsubSet = new Set((unsubs || []).map(u => (u.email || '').toLowerCase()));
 
+  // 3b. Load this week's FlexMLS share links ONCE per run (row id=1). Without
+  //     this, buildHtml falls back to generic site URLs and the weekly listing
+  //     buttons never carry the curated FlexMLS shares.
+  const linksRows = await db.from('newsletter_links').select('*').eq('id', 1).limit(1).get()
+    .catch((e) => { console.error('[newsletter] links query failed:', e.message); return []; });
+  const links = (linksRows || [])[0] || null;
+
   // 4. Send — single batch per call for manual pagination, full loop for cron.
   //    Completion is detected by batch exhaustion (an empty or partial page),
   //    NOT by campaign.total_contacts — that counter can be stale/low and would
@@ -235,11 +242,27 @@ exports.handler = async (event) => {
 
     if (!Array.isArray(batch) || batch.length === 0) { reachedEnd = true; break; }
 
-    for (const c of batch) {
-      if (unsubSet.has((c.email || '').toLowerCase())) { skipped++; continue; }
-      const html   = buildHtml(c.email, c.first_name, weatherText, marketNarrative, weekLabel);
-      const result = await sendEmail(c.email, subject, html);
-      if (result.ok) { sent++; } else { failed++; console.error(`[send-weekly-newsletter] send failed to ${c.email} status=${result.status}`); }
+    // Skip unsubscribed contacts, then send the rest CONCURRENTLY in small
+    // chunks. Sequential sends of a 25-contact batch (~0.3-0.4s each) plus the
+    // weather/market/query setup overran the default synchronous fn timeout,
+    // so the invocation was killed mid-loop — no `done`, no KPI, no blast.
+    // Resend allows 10 req/s; CONCURRENCY=5 with a small inter-chunk pace keeps
+    // us safely under that while finishing a full batch in a few seconds.
+    const recipients = batch.filter(c => !unsubSet.has((c.email || '').toLowerCase()));
+    skipped += batch.length - recipients.length;
+
+    const CONCURRENCY = 5;
+    for (let i = 0; i < recipients.length; i += CONCURRENCY) {
+      const chunk   = recipients.slice(i, i + CONCURRENCY);
+      const results = await Promise.all(chunk.map(async (c) => {
+        const html = buildHtml(c.email, c.first_name, weatherText, marketNarrative, weekLabel, links);
+        return { c, result: await sendEmail(c.email, subject, html) };
+      }));
+      for (const { c, result } of results) {
+        if (result.ok) { sent++; }
+        else { failed++; console.error(`[send-weekly-newsletter] send failed to ${c.email} status=${result.status}`); }
+      }
+      if (i + CONCURRENCY < recipients.length) await new Promise(r => setTimeout(r, 550));
     }
 
     offset += batch.length;
