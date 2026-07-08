@@ -17,6 +17,7 @@ const { enrichProperty }   = require("./enrich-property");
 const { rentcastEnrich }   = require("./rentcast-enrich");
 const { lookupCommunity, lookupCommunityByAddress } = require("./_cv_luxury_index");
 const { rankCompsCommunityFirst } = require("./_community_comps");
+const { appreciateToToday } = require("./_hpi_index");
 const {
   deriveLuxuryScores,
   isLuxuryMode,
@@ -703,8 +704,17 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
     const ageCap = luxuryTier ? 84 : 42;
     if (months !== null && months < ageCap) {
       const yearsFrac = months / 12;
-      const appreciated = Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac));
-      const gap = (avmMid - appreciated) / appreciated; // negative means AVM is below
+      // Appreciate the last sale with the FHFA Riverside MSA house-price index
+      // (real, citation-grade). Falls back to the flat annualRate only if the HPI
+      // helper can't resolve. The prior flat 4.8%/yr systematically over-shot in a
+      // near-flat market (2022→2026), inflating the anchor and the value with it.
+      let appreciated;
+      try {
+        const hpi = appreciateToToday(lastSalePrice, lastSaleDate,
+          { zip: subject?.zip, city: subject?.city, state: subject?.state });
+        appreciated = hpi && hpi.value ? hpi.value : Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac));
+      } catch { appreciated = Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac)); }
+      const gap = (avmMid - appreciated) / appreciated; // negative → AVM below sale; positive → above
 
       // Sale weight declines as the sale gets older
       let saleWeight;
@@ -718,7 +728,7 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
       const avmWeight = 1 - saleWeight;
 
       if (gap < -0.10) {
-        // AVM is >10% below appreciated sale — apply sale-anchored blend
+        // AVM is >10% below appreciated sale — apply sale-anchored blend UP
         const blendMid = Math.round(appreciated * saleWeight + avmMid * avmWeight);
         const scale = blendMid / avmMid;
         smartMid  = blendMid;
@@ -750,8 +760,29 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
           gapPct: Math.round(gap * 100),
           label: `Soft blend: AVM + $${(lastSalePrice / 1e6).toFixed(2)}M sale`,
         };
+      } else if (gap > 0.12) {
+        // AVM runs FAR ABOVE what this exact home just traded for (appreciated).
+        // SYMMETRIC downward anchor: pull the base back toward the recent sale so a
+        // broad/pricey comp pool can't over-value a modest home. Weighted by sale
+        // recency; bounded so we never cut below the appreciated sale itself.
+        const downWeight = saleWeight * 0.6;   // gentler than the up-anchor
+        const blendMid = Math.max(appreciated, Math.round(appreciated * downWeight + avmMid * (1 - downWeight)));
+        const scale = blendMid / avmMid;
+        smartMid  = blendMid;
+        smartLow  = avmLow  ? Math.round(avmLow  * scale) : Math.round(blendMid * 0.90);
+        smartHigh = avmHigh ? Math.round(avmHigh * scale) : Math.round(blendMid * 1.10);
+        baseAdjustment = {
+          type: "sale_anchor_down",
+          lastSalePrice,
+          lastSaleDate,
+          appreciated,
+          months: Math.round(months),
+          gapPct: Math.round(gap * 100),
+          saleWeight: Math.round(downWeight * 100),
+          label: `Sale anchor (down): comps ${Math.round(gap * 100)}% over $${(appreciated / 1e6).toFixed(2)}M recent sale`,
+        };
       }
-      // If gap >= 0 (AVM already above appreciated sale), no adjustment needed
+      // If 0 <= gap <= 0.12 (AVM modestly above appreciated sale), no adjustment.
     }
   }
 
@@ -825,6 +856,8 @@ function computeDnaAdjustment(rawLow, rawMid, rawHigh, features = {}, {
       sqft:    propertyHints.sqft,
       lotSize: propertyHints.lot_sqft,
       city:    propertyHints.city || null,
+      zip:     propertyHints.zip || null,
+      state:   propertyHints.state || null,
     },
   });
   const { smartLow, smartMid, smartHigh, baseAdjustment } = base;
@@ -1458,6 +1491,9 @@ exports.handler = async (event) => {
         lot_sqft:reportData?.normalized?.property?.lotSize ?? reportData?.normalized?.subject?.lotSize,
         // city: feeds the Agent-3 community-comp ranker (ignored by classifyPropertyType).
         city:    city || reportData?.normalized?.subject?.city || reportData?.normalized?.property?.city || null,
+        // zip/state feed the HPI region pick for the sale anchor (ignored by classifyPropertyType).
+        zip:     zip || reportData?.normalized?.subject?.zip || null,
+        state:   state || reportData?.normalized?.subject?.state || null,
       };
 
       // ── Agent 6: read permits persisted by a prior enrich pass (read-back) ──

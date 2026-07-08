@@ -40,17 +40,50 @@ const median = (a) => { if (!a.length) return null; const s = [...a].sort((x, y)
 /**
  * compFairValue — independent comp-based value (Model A).
  * subject/comps fields: { price?, sqft, lotSqft, beds, baths, yearBuilt, pool, saleDate }
+ *
+ * VALUES OFF A SMALL SET OF GENUINELY-COMPARABLE SOLDS — never a whole city.
+ * A hard comparability gate (sqft ±25%, beds ±1, recent) precedes the kNN, and a
+ * tight $/sqft band (0.7×–1.4× of the comparable-set median) drops dissimilar
+ * homes. When the subject's own recent arm's-length sale is known (anchorValue,
+ * HPI-appreciated by the caller), we pull the estimate toward it — so a broad or
+ * pricier comp pool can never blow the number up far above what this exact home
+ * last traded for.
  */
-function compFairValue(subject, comps, { k = 10, nowYear = 2026 } = {}) {
+function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = null } = {}) {
   const sf = num(subject.sqft); if (!sf) return null;
-  const usable = comps.map(c => ({ ...c, price: num(c.price), sqft: num(c.sqft), lotSqft: num(c.lotSqft) }))
+  const sBeds = num(subject.beds);
+  const usable = comps.map(c => ({ ...c, price: num(c.price), sqft: num(c.sqft), lotSqft: num(c.lotSqft), beds: num(c.beds) }))
                       .filter(c => c.price && c.sqft && c.sqft > 400);
   if (usable.length < 3) return null;
 
-  // Non-arms-length / bad-comp filter: drop $/sqft far from the neighborhood median.
-  const med = median(usable.map(c => c.price / c.sqft));
-  let cand = usable.filter(c => { const p = c.price / c.sqft; return p >= 0.4 * med && p <= 2.5 * med; });
-  if (cand.length < 3) cand = usable;
+  // (0) Comparability gate — only similar homes. Widen gracefully so we never
+  // starve the estimate, but NEVER default to the whole-city pool when similar
+  // comps exist. sqft within band AND beds within ±1 (when both known).
+  const withinSqft = (band) => usable.filter(c =>
+    c.sqft >= sf * (1 - band) && c.sqft <= sf * (1 + band) &&
+    (!sBeds || !c.beds || Math.abs(c.beds - sBeds) <= 1));
+  let cand = withinSqft(0.25);
+  if (cand.length < 6) cand = withinSqft(0.40);
+  if (cand.length < 4) cand = withinSqft(0.60);
+  if (cand.length < 3) cand = usable;                       // last resort — keep the report alive
+
+  // (0b) Recency preference — a genuine recent sale beats a stale one. If enough
+  // comps sold within ~30 months, value off THOSE; otherwise keep the full set
+  // (the kNN recency weight still down-weights older sales).
+  const recent = cand.filter(c => {
+    if (!c.saleDate) return false;
+    const t = Date.parse(c.saleDate); if (isNaN(t)) return false;
+    return (Date.now() - t) / (365.25 * 864e5) <= 2.5;
+  });
+  if (recent.length >= 6) cand = recent;
+
+  // (1) Non-arms-length / dissimilar filter: TIGHT $/sqft band around the
+  // comparable-set median (0.7×–1.4×). Kills the cross-segment contamination a
+  // whole-city pool introduces (was 0.4×–2.5×, far too loose).
+  const med = median(cand.map(c => c.price / c.sqft));
+  let tight = cand.filter(c => { const p = c.price / c.sqft; return p >= 0.7 * med && p <= 1.4 * med; });
+  if (tight.length < 3) tight = cand;
+  cand = tight;
 
   const subjAge = subject.yearBuilt ? Math.max(1, nowYear - num(subject.yearBuilt)) : null;
   const dist = (c) => {
@@ -73,7 +106,7 @@ function compFairValue(subject, comps, { k = 10, nowYear = 2026 } = {}) {
       if (c.saleDate) { const yrs = Math.max(0, (Date.parse(`${nowYear}-06-30`) - Date.parse(c.saleDate)) / (365.25 * 864e5)); w *= Math.exp(-yrs / 3); }
       return [c.price * scale, w];
     });
-    return { mid: wMedian(pairs), low: wQuantile(pairs, 0.25), high: wQuantile(pairs, 0.75), n: near.length };
+    return { mid: wMedian(pairs), q25: wQuantile(pairs, 0.25), q75: wQuantile(pairs, 0.75), n: near.length };
   };
 
   // Pass 1: broad estimate. Pass 2 (tier-lock): re-select comps whose SALE PRICE
@@ -81,12 +114,42 @@ function compFairValue(subject, comps, { k = 10, nowYear = 2026 } = {}) {
   // luxury estates (and vice-versa). This kills cross-tier $/sqft contamination.
   let e = estimate(cand);
   if (!e || !e.mid) return null;
-  const banded = cand.filter(c => c.price >= 0.5 * e.mid && c.price <= 2.0 * e.mid);
+  const banded = cand.filter(c => c.price >= 0.6 * e.mid && c.price <= 1.6 * e.mid);
   if (banded.length >= 4) { const e2 = estimate(banded); if (e2 && e2.mid) e = e2; }
 
-  const spread = e.mid ? (e.high - e.low) / e.mid : 1;
-  const conf = Math.max(0.3, Math.min(0.95, 0.5 + 0.04 * Math.min(e.n, 10) - 0.6 * spread));
-  return { fairValue: Math.round(e.mid), fairValueLow: Math.round(e.low), fairValueHigh: Math.round(e.high), compCount: e.n, confidence: +conf.toFixed(2) };
+  let mid = e.mid;
+
+  // (2) SALE ANCHOR — the subject's own recent arm's-length sale (HPI-appreciated
+  // by the caller). It BOUNDS the estimate: when the comp pool runs hot above (or
+  // cold below) what this exact home last traded for, pull back toward the sale
+  // and lower confidence rather than printing a runaway number. Symmetric.
+  let anchorPull = 0;
+  const anchor = num(anchorValue);
+  if (anchor) {
+    const dev = (mid - anchor) / anchor;
+    if      (dev >  0.20) anchorPull = 0.55;      // comps far hot — lean hard on the sale
+    else if (dev >  0.10) anchorPull = 0.40;
+    else if (dev >  0.05) anchorPull = 0.25;
+    else if (dev < -0.20) anchorPull = 0.45;      // comps far cold — also pull toward the sale
+    else if (dev < -0.10) anchorPull = 0.30;
+    if (anchorPull > 0) mid = Math.round(anchorPull * anchor + (1 - anchorPull) * mid);
+  }
+
+  // (3) BAND — symmetric, dispersion-driven, clamped to ±15%. Keyed off the
+  // relative interquartile spread of the comps (tighter when many comps agree,
+  // wider when few/scattered) so a single high outlier in the top quartile can no
+  // longer blow out the high. Guarantees low < mid < high, spread ≈ ±5–15%.
+  const relIqr = e.mid > 0 ? Math.max(0, e.q75 - e.q25) / e.mid : 0.30;
+  let bandK = 0.5 * relIqr;
+  if (e.n >= 8) bandK *= 0.85; else if (e.n < 5) bandK *= 1.2;
+  if (anchorPull >= 0.4) bandK = Math.max(bandK, 0.10);       // wider when we leaned on the anchor
+  bandK = Math.max(0.05, Math.min(0.15, bandK));
+  const low  = Math.round(mid * (1 - bandK));
+  const high = Math.round(mid * (1 + bandK));
+
+  const conf = Math.max(0.3, Math.min(0.95,
+    0.55 + 0.035 * Math.min(e.n, 10) - 2 * bandK - (anchorPull >= 0.4 ? 0.10 : 0)));
+  return { fairValue: Math.round(mid), fairValueLow: low, fairValueHigh: high, compCount: e.n, confidence: +conf.toFixed(2) };
 }
 
 /**
@@ -94,7 +157,9 @@ function compFairValue(subject, comps, { k = 10, nowYear = 2026 } = {}) {
  * price), the ensemble, and the buyer-defense verdict.
  */
 function computeValuation(subject, comps, opts = {}) {
-  const A = compFairValue(subject, comps, opts);
+  // Pass the subject's HPI-appreciated last sale (if any) as the anchor.
+  const anchorValue = opts.anchorValue ?? num(subject.anchorValue) ?? null;
+  const A = compFairValue(subject, comps, { ...opts, anchorValue });
   const listPrice = num(subject.listPrice);
   let expectedSale = null, tier = null;
   if (A) tier = tierOf(A.fairValue);

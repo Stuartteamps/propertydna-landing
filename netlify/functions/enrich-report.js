@@ -111,6 +111,41 @@ function streetFragment(address) {
   return String(address || "").split(",")[0].trim().replace(/[%']/g, " ").slice(0, 40);
 }
 
+// ── Robust address normalization ──────────────────────────────────────────────
+// Parse "2719 N Junipero Rd" → { houseNumber:2719, core:"JUNIPERO", pre:"N", type:"RD" }.
+// Directionals and street-type suffixes are STRIPPED from `core` so a subject
+// entered as "2719 N Junipero" matches an assessor/DB record stored as
+// "2719 JUNIPERO AVE" (no directional, different suffix). This was the exact
+// cause of the 2719 N Junipero null-facts miss.
+const DIRECTIONALS = new Set(["N", "S", "E", "W", "NE", "NW", "SE", "SW", "NORTH", "SOUTH", "EAST", "WEST"]);
+const SUFFIXES = new Set(["RD", "ROAD", "DR", "DRIVE", "WAY", "AVE", "AV", "AVENUE", "ST", "STREET", "BLVD",
+  "BOULEVARD", "LN", "LANE", "CT", "COURT", "PL", "PLACE", "CIR", "CIRCLE", "TER", "TERRACE", "TRL", "TRAIL",
+  "PKWY", "PARKWAY", "HWY", "LOOP", "RUN", "PATH", "WALK", "ROW", "BEND", "PASS", "CV", "COVE", "SQ", "SQUARE"]);
+function parseStreet(address) {
+  const seg = String(address || "").split(",")[0].toUpperCase().replace(/[^A-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  if (!seg) return null;
+  const parts = seg.split(" ");
+  let i = 0;
+  const houseNumber = /^\d+$/.test(parts[0]) ? parseInt(parts[i++], 10) : null;
+  const pre = parts[i] && DIRECTIONALS.has(parts[i]) ? parts[i++] : null;
+  let rest = parts.slice(i);
+  let type = null;
+  if (rest.length > 1 && SUFFIXES.has(rest[rest.length - 1])) type = rest.pop();
+  if (rest.length > 1 && DIRECTIONALS.has(rest[rest.length - 1])) rest.pop(); // trailing directional
+  const core = rest.join(" ").trim();
+  return { houseNumber, core, pre, type };
+}
+
+// ilike patterns to try, most-precise → loosest. Robust to directional/suffix drift.
+function addrPatterns(address) {
+  const ps = parseStreet(address);
+  const frag = streetFragment(address);
+  const pats = [];
+  if (ps && ps.houseNumber != null && ps.core) pats.push(`${ps.houseNumber} %${ps.core}%`); // house# + core street (dir/suffix-agnostic)
+  if (frag) pats.push(`${frag}%`);                                                            // legacy prefix
+  return [...new Set(pats)];
+}
+
 function crestDate(val) {
   if (val == null || val === "") return null;
   if (typeof val === "number") { const d = new Date(val); return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10); }
@@ -150,19 +185,22 @@ const titleCase = (s) => String(s || "").toLowerCase().replace(/\b\w/g, (c) => c
 // property_master table has no text-pattern index, so address ilike there times
 // out; we use it only via the indexed `city` path for the comp cohort below).
 async function lookupSubjectProperty({ address, city }) {
-  const frag = streetFragment(address);
-  if (!frag) return null;
-  try {
-    const rows = await db.from("properties")
-      .select("address,city,state,zip,sqft,beds,baths,lot_sqft,year_built,property_type_normalized,last_sale_price,last_sale_date,current_estimated_value,latitude,longitude")
-      .ilike("address", `${frag}%`).limit(5).get();
-    if (!Array.isArray(rows) || !rows.length) return null;
-    const cityLc = String(city || "").toLowerCase();
-    return rows.find((r) => cityLc && String(r.city || "").toLowerCase().includes(cityLc)) || rows[0];
-  } catch (e) {
-    console.warn("[enrich-report:properties subject]", e.message);
-    return null;
+  const pats = addrPatterns(address);
+  if (!pats.length) return null;
+  const cityLc = String(city || "").toLowerCase();
+  for (const pat of pats) {
+    try {
+      const rows = await db.from("properties")
+        .select("address,city,state,zip,sqft,beds,baths,lot_sqft,year_built,property_type_normalized,last_sale_price,last_sale_date,current_estimated_value,latitude,longitude")
+        .ilike("address", pat).limit(5).get();
+      if (Array.isArray(rows) && rows.length) {
+        return rows.find((r) => cityLc && String(r.city || "").toLowerCase().includes(cityLc)) || rows[0];
+      }
+    } catch (e) {
+      console.warn("[enrich-report:properties subject]", e.message);
+    }
   }
+  return null;
 }
 
 // A2. Resolve the property_master row for the subject — the richest cached record
@@ -172,27 +210,36 @@ async function lookupSubjectProperty({ address, city }) {
 // `ilike` address-prefix match. Both are null-safe and time-bounded.
 const MASTER_COLS = "apn,address,city,state,zip,lat,lng,property_type,beds,baths,sqft,lot_sqft,year_built,rentcast_value,rentcast_value_low,rentcast_value_high,tax_assessed_value";
 async function lookupPropertyMaster({ address, city, apn }) {
-  // (1) APN — the strongest key when CREST resolved one.
+  // (1) APN — the strongest key when CREST resolved one. property_master may store
+  // it as raw digits ("504054002") or dash-formatted ("504-054-002"); try both.
   if (apn) {
+    const raw = String(apn).replace(/[^0-9]/g, "");
+    const variants = [...new Set([String(apn), raw, raw.length === 9 ? `${raw.slice(0,3)}-${raw.slice(3,6)}-${raw.slice(6)}` : null].filter(Boolean))];
+    for (const v of variants) {
+      try {
+        const rows = await db.from("property_master").select(MASTER_COLS)
+          .eq("apn", v).limit(1).get();
+        if (Array.isArray(rows) && rows.length) return rows[0];
+      } catch (e) { console.warn("[enrich-report:property_master apn]", e.message); }
+    }
+  }
+  // (2) Normalized address match — house# + core street (directional/suffix-agnostic),
+  // then legacy prefix. Each leads with a literal so the address index still helps.
+  const pats = addrPatterns(address);
+  if (!pats.length) return null;
+  const cityLc = String(city || "").toLowerCase();
+  for (const pat of pats) {
     try {
       const rows = await db.from("property_master").select(MASTER_COLS)
-        .eq("apn", String(apn)).limit(1).get();
-      if (Array.isArray(rows) && rows.length) return rows[0];
-    } catch (e) { console.warn("[enrich-report:property_master apn]", e.message); }
+        .ilike("address", pat).limit(5).get();
+      if (Array.isArray(rows) && rows.length) {
+        return rows.find((r) => cityLc && String(r.city || "").toLowerCase().includes(cityLc)) || rows[0];
+      }
+    } catch (e) {
+      console.warn("[enrich-report:property_master ilike]", e.message);
+    }
   }
-  // (2) Normalized address-prefix ilike on the indexed street fragment.
-  const frag = streetFragment(address);
-  if (!frag) return null;
-  try {
-    const rows = await db.from("property_master").select(MASTER_COLS)
-      .ilike("address", `${frag}%`).limit(5).get();
-    if (!Array.isArray(rows) || !rows.length) return null;
-    const cityLc = String(city || "").toLowerCase();
-    return rows.find((r) => cityLc && String(r.city || "").toLowerCase().includes(cityLc)) || rows[0];
-  } catch (e) {
-    console.warn("[enrich-report:property_master ilike]", e.message);
-    return null;
-  }
+  return null;
 }
 
 // B. Sold comps with sqft, scoped to the subject's city (fallback zip), from:
@@ -223,6 +270,13 @@ async function lookupSoldComps({ city, zip }) {
       });
     }
   } catch (e) { console.warn("[enrich-report:properties comps]", e.message); }
+
+  // PREFER REAL SOLDS. The property_master cohort holds RentCast AVM *estimates*
+  // (rentcast_value) for a whole city — broad, but noisier and prone to inflate a
+  // modest home when the city skews pricey. Only fall back to the cohort when we
+  // don't already have enough real recorded sales WITH sqft to value against.
+  const realWithSqft = out.filter((c) => c.sqft && c.sqft > 200).length;
+  if (realWithSqft >= 12) return out;
 
   // property_master cohort — MUST use eq("city") (indexed/fast); ilike on the
   // 10M-row table sequential-scans and hits the statement timeout. city casing
@@ -296,20 +350,34 @@ function crestLatLon(geom) {
   }
   return { lat: null, lon: null };
 }
+// CREST layer 50 (PARCELS_CREST) is a PARCEL layer: it exposes APN, situs,
+// SUBDIVISION_NAME, ACREAGE and geometry — but NO building characteristics
+// (no beds/baths/sqft/year) and NO `SITUS_ADDR` field. The prior query hit the
+// non-existent SITUS_ADDR and 400'd on every address (CREST silently contributed
+// nothing). We now query the real, indexed fields: STREET_NUMBER (integer) +
+// STREET_NAME LIKE (directional/suffix-agnostic), optionally city. Returns APN
+// (to resolve property_master exactly), lat/lon, subdivision and lot acreage.
 async function lookupCrest({ address, city }) {
-  const frag = streetFragment(address).toUpperCase().replace(/'/g, "''");
-  if (!frag) return null;
-  const cityClause = city ? ` AND UPPER(SITUS_CITY) = '${String(city).toUpperCase().replace(/'/g, "''")}'` : "";
-  let data = await crestGet(`UPPER(SITUS_ADDR) LIKE '${frag}%'${cityClause}`);
+  const ps = parseStreet(address);
+  if (!ps || ps.houseNumber == null || !ps.core) return null;
+  const core = ps.core.replace(/'/g, "''");
+  const cityUp = city ? String(city).toUpperCase().replace(/'/g, "''") : null;
+  // SITUS_CITY is stored like "PALM SPRINGS  CA 92262" → match with LIKE prefix.
+  const cityClause = cityUp ? ` AND UPPER(SITUS_CITY) LIKE '${cityUp}%'` : "";
+  const base = `STREET_NUMBER=${ps.houseNumber} AND UPPER(STREET_NAME) LIKE '%${core}%'`;
+  let data = await crestGet(`${base}${cityClause}`);
   let f = data?.features?.[0];
-  if (!f && cityClause) { // retry without the city constraint
-    data = await crestGet(`UPPER(SITUS_ADDR) LIKE '${frag}%'`);
+  if (!f && cityClause) { // retry without city constraint (situs city can be blank/variant)
+    data = await crestGet(base);
     f = data?.features?.[0];
   }
   if (!f?.attributes) return null;
-  // Merge geometry-derived lat/lon in under private keys pickNum/pickStr ignore.
+  // Compose a display street from the parsed parts; merge geometry lat/lon +
+  // acreage-derived lot sqft under private keys pickNum/pickStr use downstream.
+  const a = f.attributes;
   const ll = crestLatLon(f.geometry);
-  return { ...f.attributes, __lat: ll.lat, __lon: ll.lon };
+  const lotSqft = a.ACREAGE != null && !isNaN(Number(a.ACREAGE)) ? Math.round(Number(a.ACREAGE) * 43560) : null;
+  return { ...a, __lat: ll.lat, __lon: ll.lon, __lot_sqft: lotSqft };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -344,13 +412,15 @@ async function buildEngineValuation({ address, city, state, zip }) {
     lookupSoldComps({ city: city || pickStr(subj, ["city"]) || null, zip }),
   ]);
 
-  // ── 3. Subject facts — REAL values only, priority CREST > property_master >
-  //       `properties`. Nothing is fabricated: a missing fact stays null. ──
-  const subjSqft  = crestN(["SQ_FT", "BLDG_SQFT", "SQFT"])      ?? pickNum(master, ["sqft"])       ?? pickNum(subj, ["sqft"]);
-  const subjBeds  = crestN(["BEDROOMS", "BEDS"])                ?? pickNum(master, ["beds"])       ?? pickNum(subj, ["beds"]);
-  const subjBaths = crestN(["BATHROOMS", "BATHS"])              ?? pickNum(master, ["baths"])      ?? pickNum(subj, ["baths"]);
-  const subjLot   = crestN(["LOT_SQFT", "LOT_SIZE", "NET_AC"])  ?? pickNum(master, ["lot_sqft"])   ?? pickNum(subj, ["lot_sqft"]);
-  const subjYear  = crestN(["YEAR_BUILT", "YR_BLT", "EFF_YR"])  ?? pickNum(master, ["year_built"]) ?? pickNum(subj, ["year_built"]);
+  // ── 3. Subject facts — REAL values only. CREST layer 50 is a PARCEL layer with
+  //       NO building characteristics, so beds/baths/sqft/yearBuilt come from
+  //       property_master (resolved by CREST's APN) then `properties`. CREST does
+  //       supply lot size (ACREAGE→__lot_sqft). Nothing is fabricated; missing → null.
+  const subjSqft  = pickNum(master, ["sqft"])       ?? pickNum(subj, ["sqft"]);
+  const subjBeds  = pickNum(master, ["beds"])       ?? pickNum(subj, ["beds"]);
+  const subjBaths = pickNum(master, ["baths"])      ?? pickNum(subj, ["baths"]);
+  const subjLot   = pickNum(master, ["lot_sqft"])   ?? pickNum(subj, ["lot_sqft"]) ?? crestN(["__lot_sqft"]);
+  const subjYear  = pickNum(master, ["year_built"]) ?? pickNum(subj, ["year_built"]);
   const subjType  = pickStr(master, ["property_type"])          ?? pickStr(subj, ["property_type_normalized"]);
   const lat = crestN(["__lat"]) ?? pickNum(master, ["lat"]) ?? pickNum(subj, ["latitude"]);
   const lon = crestN(["__lon"]) ?? pickNum(master, ["lng"]) ?? pickNum(subj, ["longitude"]);
@@ -368,7 +438,7 @@ async function buildEngineValuation({ address, city, state, zip }) {
 
   // ── 4. Rank comps community-first, then run OUR engine for the headline ──
   const subjectCommunity =
-    lookupCommunity(pickStr(subj, ["subdivision", "neighborhood"]) || "", subjCity) ||
+    lookupCommunity(pickStr(subj, ["subdivision", "neighborhood"]) || pickStr(crest, ["SUBDIVISION_NAME"]) || "", subjCity) ||
     lookupCommunityByAddress(address, subjCity);
   const rankSubject = { propertyType: subjType, sqft: subjSqft, lotSize: subjLot, city: subjCity };
   const rankerComps = soldComps.map((c) => ({
@@ -388,9 +458,21 @@ async function buildEngineValuation({ address, city, state, zip }) {
   }));
   const usableCompCount = engineComps.filter((c) => num(c.price) && num(c.sqft) && num(c.sqft) > 400).length;
 
+  // Anchor: the subject's own last arm's-length sale, appreciated to today with
+  // the FHFA Riverside MSA house-price index (real, citation-grade — not a flat
+  // guess). This BOUNDS the comp estimate so a broad/pricey comp pool can't value
+  // this exact home far above what it just traded for.
+  let anchorValue = null;
+  if (lastSalePrice && lastSalePrice > 10000 && lastSaleDate) {
+    try {
+      const appr = hpiAppreciate(lastSalePrice, lastSaleDate, { zip: subjZip, city: subjCity, state: subjState });
+      anchorValue = appr && appr.value ? appr.value : appreciate(lastSalePrice, lastSaleDate);
+    } catch { anchorValue = appreciate(lastSalePrice, lastSaleDate); }
+  }
+
   const engineSubject = { sqft: subjSqft, lotSqft: subjLot, beds: subjBeds, baths: subjBaths, yearBuilt: subjYear };
   // computeValuation returns fairValue=null unless subject.sqft AND >=3 usable comps.
-  const val = computeValuation(engineSubject, engineComps);
+  const val = computeValuation(engineSubject, engineComps, { anchorValue });
 
   // ── 5. Honest confidence gate ──
   const hasSubjectData = subjSqft != null;                       // real subject facts (sqft is the engine's anchor)
