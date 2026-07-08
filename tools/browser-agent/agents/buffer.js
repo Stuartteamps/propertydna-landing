@@ -195,13 +195,13 @@ async function run() {
   if (!text) {
     // Luxury home provenance + investment intelligence positioning
     const FALLBACK = [
-      "52 verified pedigree dossiers across Palm Springs and the Coachella Valley. Verified celebrity ownership, verified architect attribution, primary-source documentation. https://www.thepropertydna.com/pedigree-index",
-      "16,787 Coachella Valley properties pedigree-classified into A/B/C/D tiers. The first systematic index of architectural and cultural pedigree at the top of luxury real estate. https://www.thepropertydna.com/pedigree-index",
-      "The Kaufmann Desert House dossier — Richard Neutra 1946, Slim Aarons 'Poolside Gossip', Barry Manilow ownership. Live provenance file: https://www.thepropertydna.com/dossier/504292010",
-      "The Bob Hope House dossier — John Lautner 1973, rebuilt after the original burned. Architecture meets Hollywood provenance: https://www.thepropertydna.com/dossier/510260033",
-      "Albert Frey designed 47 documented Palm Springs commissions. We've pedigree-classified every one. https://www.thepropertydna.com/architect/albert-frey",
-      "13 named Palm Springs luxury neighborhoods systematically indexed — Movie Colony, Old Las Palmas, Vista Las Palmas, Thunderbird Heights, Smoke Tree Ranch, more. https://www.thepropertydna.com/pedigree-index",
-      "For a Patek 1518, you get verified provenance papers. For a $50M architectural estate, you typically don't. PropertyDNA builds the dossier the auction houses charge 15% for. https://www.thepropertydna.com/press",
+      "Donald Wexler designed 8 experimental steel-framed houses in Palm Springs in 1961 — commissioned by Alexander Construction as a prefabricated prototype program. All 8 are still standing. One of the most precisely documented residential sub-collections in American architectural history: original Alexander commission records, Riverside County permits, period press. PropertyDNA has all 8 in the verified attribution database. https://www.thepropertydna.com/architect/donald-wexler",
+      "A Patek Philippe 5711 comes with factory extract, consecutive ownership chain, and full service records. A $12M Richard Neutra original in Palm Springs comes with a title chain and a listing agent's notes. The watch is worth $100k. The estate is worth $12M. The Patek has better documentation. We're fixing that for the top of luxury residential. https://www.thepropertydna.com",
+      "The Kaufmann Desert House dossier — Richard Neutra 1946, Julius Shulman 'Poolside Gossip' (Getty Museum collection), Barry Manilow ownership 1992–2016. Live provenance file: https://www.thepropertydna.com/dossier/504292010",
+      "The Elrod House (John Lautner, 1968) appeared as the villain's desert compound in Diamonds Are Forever (1971). Film location provenance on top of architectural pedigree — both documentable, both affecting what a sophisticated buyer will pay. https://www.thepropertydna.com/dossier/510190025",
+      "Albert Frey designed 47 documented Palm Springs commissions. We've pedigree-classified every one against original drawings, permits, and period press. https://www.thepropertydna.com/architect/albert-frey",
+      "Bob Hope commissioned John Lautner's largest residential project — the 1973 tent-roof compound at 2466 Southridge Drive in Palm Springs. Frank Gehry consulted on the 1990s restoration. National Register of Historic Places 2016. PropertyDNA documents the full architectural lineage before any transaction. https://www.thepropertydna.com",
+      "Barrett-Jackson runs 250-point inspections, chassis histories, and consecutive ownership records for six-figure cars. The $15M architectural estate next door gets a general inspection and unverified agent notes. PropertyDNA builds the dossier the top of the market deserves. https://www.thepropertydna.com/pedigree-index",
     ];
     const idx = ((tracker.lastIndex ?? -1) + 1) % FALLBACK.length;
     text = FALLBACK[idx];

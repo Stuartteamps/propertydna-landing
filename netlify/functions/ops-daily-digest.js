@@ -64,12 +64,27 @@ exports.handler = async () => {
   }
 
   // Pull metrics
-  const [activity, leadsAll, leadsNew, aTier, classified] = await Promise.all([
+  const [
+    activity, leadsAll, leadsNew, aTier, classified,
+    ownersTotal, ownersVerified, ownersPartial, ownersClaimed,
+    commissionsTotal, commissionsVerified,
+    eventsTotal,
+    luxTierTotal, hasDossierTotal,
+  ] = await Promise.all([
     sbGet(`/rest/v1/ops_activity_log?created_at=gte.${since}&select=*&order=created_at.desc&limit=100`),
     sbGet(`/rest/v1/dossier_requests?select=id&limit=1`),
     sbGet(`/rest/v1/dossier_requests?status=eq.new&select=*`),
     sbGet(`/rest/v1/property_master?pedigree_tier=eq.A&select=apn&limit=1`),
     sbGet(`/rest/v1/property_master?pedigree_tier=not.is.null&select=apn&limit=1`),
+    sbGet(`/rest/v1/notable_owners?select=id&limit=1`),
+    sbGet(`/rest/v1/notable_owners?verification_status=eq.verified&select=id&limit=1`),
+    sbGet(`/rest/v1/notable_owners?verification_status=eq.partial&select=id&limit=1`),
+    sbGet(`/rest/v1/notable_owners?verification_status=eq.claimed_unverified&select=id&limit=1`),
+    sbGet(`/rest/v1/architect_commissions?select=id&limit=1`),
+    sbGet(`/rest/v1/architect_commissions?attribution_strength=eq.verified&select=id&limit=1`),
+    sbGet(`/rest/v1/provenance_events?select=id&limit=1`),
+    sbGet(`/rest/v1/property_master?luxury_tier=not.is.null&select=apn&limit=1`),
+    sbGet(`/rest/v1/property_master?has_provenance_dossier=eq.true&select=apn&limit=1`),
   ]);
 
   const activities = activity.data || [];
@@ -136,6 +151,34 @@ exports.handler = async () => {
         ${errors.slice(0, 5).map(e => `<div style="padding:10px 14px;background:#fef2f2;border-left:3px solid #dc2626;margin-bottom:6px;font-size:12px;color:#7f1d1d;font-family:-apple-system,sans-serif;"><strong>${e.agent}:</strong> ${e.error_message || e.summary}</div>`).join('')}
         ` : ''}
 
+        <h3 style="color:#0a0a0a;font-family:Georgia,serif;margin-top:28px;">Luxury provenance pipeline</h3>
+        <table cellpadding="0" cellspacing="0" style="width:100%;font-family:-apple-system,sans-serif;font-size:13px;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #e5e7eb;">
+            <td style="padding:8px 0;color:#475569;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Notable owners</td>
+            <td style="padding:8px 0;text-align:right;"><strong style="font-family:Georgia,serif;font-size:15px;">${ownersTotal.count ?? '—'}</strong> total</td>
+            <td style="padding:8px 8px;text-align:right;color:#15803d;">${ownersVerified.count ?? '—'} verified</td>
+            <td style="padding:8px 8px;text-align:right;color:#b45309;">${ownersPartial.count ?? '—'} partial</td>
+            <td style="padding:8px 0;text-align:right;color:#64748b;">${ownersClaimed.count ?? '—'} claimed</td>
+          </tr>
+          <tr style="border-bottom:1px solid #e5e7eb;">
+            <td style="padding:8px 0;color:#475569;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Arch commissions</td>
+            <td style="padding:8px 0;text-align:right;"><strong style="font-family:Georgia,serif;font-size:15px;">${commissionsTotal.count ?? '—'}</strong> total</td>
+            <td style="padding:8px 8px;text-align:right;color:#15803d;">${commissionsVerified.count ?? '—'} verified</td>
+            <td></td><td></td>
+          </tr>
+          <tr style="border-bottom:1px solid #e5e7eb;">
+            <td style="padding:8px 0;color:#475569;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Provenance events</td>
+            <td style="padding:8px 0;text-align:right;"><strong style="font-family:Georgia,serif;font-size:15px;">${eventsTotal.count ?? '—'}</strong> total</td>
+            <td colspan="3"></td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#475569;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Properties</td>
+            <td style="padding:8px 0;text-align:right;"><strong style="font-family:Georgia,serif;font-size:15px;">${luxTierTotal.count ?? '—'}</strong> luxury tier set</td>
+            <td style="padding:8px 8px;text-align:right;color:#15803d;">${hasDossierTotal.count ?? '—'} full dossier</td>
+            <td colspan="2"></td>
+          </tr>
+        </table>
+
         <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e5e7eb;text-align:center;">
           <a href="https://www.thepropertydna.com/admin/ops" style="display:inline-block;padding:12px 24px;background:#fbbf24;color:#0a0a0a;text-decoration:none;border-radius:4px;font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Open Ops Dashboard</a>
         </div>
@@ -147,7 +190,16 @@ exports.handler = async () => {
   await sbPost('/rest/v1/daily_digest_runs', {
     digest_date: todayDate,
     delivery_id: r.d?.id || null,
-    metrics: { activities: activities.length, new_leads: newLeads.length, a_tier: aTier.count, classified: classified.count, errors: errors.length },
+    metrics: {
+      activities: activities.length, new_leads: newLeads.length,
+      a_tier: aTier.count, classified: classified.count, errors: errors.length,
+      luxury: {
+        owners_total: ownersTotal.count, owners_verified: ownersVerified.count,
+        commissions_total: commissionsTotal.count, commissions_verified: commissionsVerified.count,
+        events_total: eventsTotal.count,
+        luxury_tier_set: luxTierTotal.count, has_dossier: hasDossierTotal.count,
+      },
+    },
   });
 
   return { statusCode: 200, body: JSON.stringify({ sent: r.s < 300, subject, activities: activities.length, new_leads: newLeads.length }) };

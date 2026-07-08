@@ -9,6 +9,10 @@ import { heatScoreToRgb } from '@/lib/colorScaleHeatmap';
 import { makeHeatValue, metricLabel, METRIC_META, type HeatMetric } from '@/lib/heatMetric';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+// Build-time token. If it's missing (e.g. the native app build shipped without
+// VITE_MAPBOX_TOKEN), Mapbox 401s every tile and the map renders as a silent
+// blank rectangle. Guard on it so we show a diagnostic instead of nothing.
+const HAS_MAPBOX_TOKEN = !!(import.meta.env.VITE_MAPBOX_TOKEN as string | undefined);
 
 const COLOR_RANGE: [number,number,number,number][] = [
   [68,1,84,220],[72,35,116,220],[52,94,141,220],
@@ -111,7 +115,7 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
   }, [onHover, onSelect, onCityClick, metric]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !HAS_MAPBOX_TOKEN) return;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -221,6 +225,21 @@ export default function HeatMapCanvas({ parcels, cityMarkets, weights, loading, 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+
+      {!HAS_MAPBOX_TOKEN && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 20, display: 'flex',
+          flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          textAlign: 'center', padding: 24, background: '#0A0908',
+          fontFamily: 'Jost, sans-serif', color: '#B89355',
+        }}>
+          <div style={{ fontSize: 14, marginBottom: 8 }}>Map unavailable</div>
+          <div style={{ fontSize: 12, color: '#6B6252', maxWidth: 320, lineHeight: 1.6 }}>
+            The map couldn’t load because <code>VITE_MAPBOX_TOKEN</code> isn’t set
+            in this build. Set it in the build environment to enable the live map.
+          </div>
+        </div>
+      )}
 
       {/* Heat-metric toggle */}
       <div style={{

@@ -70,24 +70,53 @@ function countRows(table, filterQS = "") {
 (async () => {
   console.log(`[data-quality] counting against ${SUPABASE_URL}/rest/v1\n`);
 
+  const S1 = "Core property tables";
+  const S2 = "Luxury tier coverage";
+  const S3 = "Luxury provenance pipeline";
   const checks = [
-    { label: "property_master total",             table: "property_master", filter: "" },
-    { label: "property_master tax_assessed_value NULL", table: "property_master", filter: "&tax_assessed_value=is.null" },
-    { label: "property_master latitude NULL",     table: "property_master", filter: "&latitude=is.null" },
-    { label: "property_reports total",            table: "property_reports", filter: "" },
-    { label: "property_reports report_data NULL", table: "property_reports", filter: "&report_data=is.null" },
+    // ── Core property tables ─────────────────────────────────────────────
+    { label: "property_master total",                    table: "property_master",        filter: "",                                             section: S1 },
+    { label: "property_master tax_assessed_value NULL",  table: "property_master",        filter: "&tax_assessed_value=is.null",                  section: S1 },
+    { label: "property_master latitude NULL",            table: "property_master",        filter: "&latitude=is.null",                            section: S1 },
+    { label: "property_reports total",                   table: "property_reports",       filter: "",                                             section: S1 },
+    { label: "property_reports report_data NULL",        table: "property_reports",       filter: "&report_data=is.null",                         section: S1 },
+    // ── Luxury tier coverage ─────────────────────────────────────────────
+    { label: "property_master luxury_tier set",          table: "property_master",        filter: "&luxury_tier=not.is.null",                     section: S2 },
+    { label: "property_master trophy/ultra tier",        table: "property_master",        filter: "&luxury_tier=in.(trophy,ultra_luxury)",         section: S2 },
+    { label: "property_master has_provenance_dossier",   table: "property_master",        filter: "&has_provenance_dossier=eq.true",               section: S2 },
+    { label: "property_master architect_verified",       table: "property_master",        filter: "&architect_verified=eq.true",                   section: S2 },
+    // ── Luxury provenance pipeline ───────────────────────────────────────
+    { label: "architects seeded",                        table: "architects",             filter: "",                                             section: S3 },
+    { label: "notable_owners total",                     table: "notable_owners",         filter: "",                                             section: S3 },
+    { label: "notable_owners verified",                  table: "notable_owners",         filter: "&verification_status=eq.verified",              section: S3 },
+    { label: "notable_owners partial",                   table: "notable_owners",         filter: "&verification_status=eq.partial",               section: S3 },
+    { label: "notable_owners claimed_unverified",        table: "notable_owners",         filter: "&verification_status=eq.claimed_unverified",    section: S3 },
+    { label: "notable_owners refuted",                   table: "notable_owners",         filter: "&verification_status=eq.refuted",               section: S3 },
+    { label: "architect_commissions total",              table: "architect_commissions",  filter: "",                                             section: S3 },
+    { label: "architect_commissions verified",           table: "architect_commissions",  filter: "&attribution_strength=eq.verified",             section: S3 },
+    { label: "architect_commissions partial",            table: "architect_commissions",  filter: "&attribution_strength=eq.partial",              section: S3 },
+    { label: "provenance_events total",                  table: "provenance_events",      filter: "",                                             section: S3 },
+    { label: "provenance_events verified",               table: "provenance_events",      filter: "&verification_status=eq.verified",              section: S3 },
   ];
 
   let hadError = false;
   const rows = [];
   for (const c of checks) {
     const r = await countRows(c.table, c.filter);
-    if (r.error) { hadError = true; rows.push([c.label, `ERROR (${r.error})`]); }
-    else rows.push([c.label, r.count == null ? "n/a" : Number(r.count).toLocaleString()]);
+    const section = c.section || null;
+    if (r.error) { hadError = true; rows.push([c.label, `ERROR (${r.error})`, section]); }
+    else rows.push([c.label, r.count == null ? "n/a" : Number(r.count).toLocaleString(), section]);
   }
 
   const w = Math.max(...rows.map((r) => r[0].length));
-  for (const [label, val] of rows) console.log(`  ${label.padEnd(w)}  ${String(val).padStart(12)}`);
+  let lastSection = null;
+  for (const [label, val, section] of rows) {
+    if (section && section !== lastSection) {
+      console.log(`\n  ── ${section} ──`);
+      lastSection = section;
+    }
+    console.log(`  ${label.padEnd(w)}  ${String(val).padStart(12)}`);
+  }
 
   if (hadError) {
     console.error("\nFAIL: one or more count queries errored (see above). Not fabricating numbers.");
