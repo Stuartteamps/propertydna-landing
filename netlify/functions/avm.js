@@ -29,16 +29,37 @@ const ASSESSED_MULT = Number(process.env.AVM_ASSESSED_MULT || 1.6);
 
 async function lookupSubject(address, city) {
   const a = key(address);
-  // Exact-ish address match in our parcel index (property_master), city-scoped.
-  let rows = await db.from("property_master")
-    .select("apn,address,city,sqft,beds,baths,lot_sqft,year_built,tax_assessed_value,property_type")
-    .ilike("address", a).limit(5).get().catch(() => []);
+  // Subject match in our parcel index (property_master). property_master.address
+  // is a PLAIN b-tree index (default collation): equality uses it and is fast on
+  // the 10M-row table, but `ilike` (even without wildcards) cannot use it and
+  // sequential-scans → statement timeout. So probe a few INDEXED EQUALITY case
+  // variants of the street line first (assessor feeds store UPPERCASE SITUS lines
+  // like "123 MAIN ST"; user input arrives mixed-case). Only fall back to the
+  // city-scoped prefix query (bounded by the city index) if none hit.
+  const streetLine = a.split(",")[0].trim();
+  // Case variants of the STREET LINE only (assessor SITUS is UPPERCASE; some
+  // indexers store Title- or raw-case). The 3rd variant is the raw-case street
+  // line — NOT the full address string, which would never match street-line
+  // storage and just wastes a probe.
+  const rawStreet = norm(address).split(",")[0].trim();
+  const variants = [...new Set([streetLine, streetLine.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()), rawStreet])].filter(Boolean);
+  let rows = [];
+  for (const v of variants) {
+    rows = await db.from("property_master")
+      .select("apn,address,city,sqft,beds,baths,lot_sqft,year_built,tax_assessed_value,property_type")
+      .eq("address", v).limit(5).get().catch(() => []);
+    if (Array.isArray(rows) && rows.length) break;
+  }
   if ((!rows || !rows.length) && city) {
     rows = await db.from("property_master")
       .select("apn,address,city,sqft,beds,baths,lot_sqft,year_built,tax_assessed_value,property_type")
       .ilike("city", norm(city)).ilike("address", a.split(" ").slice(0, 2).join(" ") + "%").limit(5).get().catch(() => []);
   }
-  const r = (rows || [])[0];
+  // Disambiguate same-street-line collisions across cities: a street line can
+  // exist in Palm Springs AND Palm Desert. Prefer the row whose city matches the
+  // requested city so we never feed a wrong parcel's assessed value into the AVM.
+  const cityLc = String(city || "").toLowerCase().trim();
+  const r = (rows || []).find((x) => cityLc && String(x.city || "").toLowerCase().includes(cityLc)) || (rows || [])[0];
   if (!r) return null;
   return {
     apn: r.apn, matchedAddress: r.address, city: r.city,
