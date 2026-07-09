@@ -346,6 +346,38 @@
     Content-Type = "application/json"
     Cache-Control = "public, max-age=300"
 
+# Public property bundle (non-PII) — what the frontend fetchPublicProperty() calls.
+[[redirects]]
+  from = "/api/property/*"
+  to = "/.netlify/functions/public-property/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/property"
+  to = "/.netlify/functions/public-property"
+  status = 200
+  force = true
+
+# Developer / AI-tool JSON API (comps, valuation, scores)
+[[redirects]]
+  from = "/api/v1/property/*"
+  to = "/.netlify/functions/api-property/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/v1/market/*"
+  to = "/.netlify/functions/api-market/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/v1/search"
+  to = "/.netlify/functions/api-search"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

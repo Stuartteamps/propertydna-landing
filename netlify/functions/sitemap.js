@@ -117,15 +117,40 @@ const CITY_SLUGS = [
 ];
 const CITY_TOPICS = ['fema-flood-zones', 'insurance-crisis', 'permit-history'];
 
+// Market intelligence pages (Worker 2). High SEO/AEO value — real market data.
+const MARKET_SLUGS = [
+  'palm-springs-ca', 'la-quinta-ca', 'rancho-mirage-ca',
+  'palm-desert-ca', 'indian-wells-ca', 'desert-hot-springs-ca',
+];
+
+// Research articles (Worker 3). Evergreen, citation-worthy long-form.
+const RESEARCH_SLUGS = [
+  'palm-springs-market-report', 'golf-course-home-premium', 'mountain-view-home-value',
+  'pool-roi-analysis', 'short-term-rental-risk', 'hoa-impact-on-home-values',
+  'luxury-home-value-drivers',
+];
+
 function slugify(s) {
   return String(s).toLowerCase().replace(/\./g, '').replace(/\s+/g, '-');
 }
 
+// Public property pages — indexable, non-PII summary pages driven by public_slug.
+// Guarded: if the public_slug column doesn't exist yet the query returns [] and
+// the sitemap still builds cleanly.
+async function getPublicProperties() {
+  try {
+    return (await get('/rest/v1/property_reports?select=public_slug,updated_at,created_at,status&public_slug=not.is.null&status=not.in.(pending,generating,failed)&order=created_at.desc&limit=5000')) || [];
+  } catch {
+    return [];
+  }
+}
+
 exports.handler = async () => {
-  const [dossiers, tickers, architects] = await Promise.all([
+  const [dossiers, tickers, architects, publicProps] = await Promise.all([
     getDossiers(),
     getTickerCandidates(),
     getArchitects(),
+    getPublicProperties(),
   ]);
   const blogSlugs = await getBlogSlugs();
 
@@ -166,6 +191,23 @@ exports.handler = async () => {
   // Property ticker URLs (A + B tier indexable)
   tickers.forEach(t => {
     urls.push(url(`${SITE}/ticker/${t.apn}`, { changefreq: 'monthly', priority: 0.7, lastmod: t.last_updated }));
+  });
+
+  // Market intelligence pages
+  MARKET_SLUGS.forEach(s => {
+    urls.push(url(`${SITE}/market/${s}`, { changefreq: 'weekly', priority: 0.9 }));
+  });
+
+  // Research hub + articles
+  urls.push(url(`${SITE}/research`, { changefreq: 'weekly', priority: 0.85 }));
+  RESEARCH_SLUGS.forEach(s => {
+    urls.push(url(`${SITE}/research/${s}`, { changefreq: 'monthly', priority: 0.8 }));
+  });
+
+  // Public property pages (non-PII summary pages)
+  publicProps.forEach(p => {
+    if (!p.public_slug) return;
+    urls.push(url(`${SITE}/property/${p.public_slug}`, { changefreq: 'weekly', priority: 0.85, lastmod: p.updated_at || p.created_at }));
   });
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

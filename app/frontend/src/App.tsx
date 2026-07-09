@@ -75,6 +75,10 @@ import OwnerPortalClaim from "./pages/OwnerPortalClaim";
 import DataIntegrity from "./pages/DataIntegrity";
 import { DIOMethodology, DIODataStandards, DIOOwnerRights, DIOAuditTrail, DIOReportError } from "./pages/DataIntegrityPages";
 import Network from "./pages/Network";
+import PublicProperty from "./pages/PublicProperty";
+import MarketPage from "./pages/MarketPage";
+import ResearchIndex from "./pages/ResearchIndex";
+import ResearchArticle from "./pages/ResearchArticle";
 
 const queryClient = new QueryClient();
 
@@ -176,6 +180,11 @@ const AppRoutes = () => (
     <Route path="/data-integrity/report-error" element={<DIOReportError />} />
     {/* National Property Intelligence Network landing (replaces "NHSE" working name) */}
     <Route path="/network" element={<Network />} />
+    {/* SEO / AI-discoverability layer — public property, market & research pages */}
+    <Route path="/property/:slug" element={<PublicProperty />} />
+    <Route path="/market/:slug" element={<MarketPage />} />
+    <Route path="/research" element={<ResearchIndex />} />
+    <Route path="/research/:slug" element={<ResearchArticle />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
