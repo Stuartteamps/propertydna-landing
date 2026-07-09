@@ -1,8 +1,10 @@
 import { createRoot } from 'react-dom/client';
 import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import App from './App.tsx';
 import './index.css';
 import { loadRuntimeConfig } from './lib/config.ts';
+import { supabase } from './lib/supabase.ts';
 
 // Capture an Ambassador referral code (?ref=CODE) on first load so it can be
 // attributed when this visitor eventually runs a report. Persists across nav.
@@ -59,6 +61,51 @@ if (Capacitor.isNativePlatform()) {
     }
     return originalFetch(input, init);
   };
+
+  // ── Universal Link / deep-link handler ──────────────────────────────────────
+  // When the app is opened via a https://thepropertydna.com/... Universal Link
+  // (Associated Domains + AASA already configured), iOS hands us the URL here
+  // instead of opening Safari. This is what makes EMAIL sign-in work with NO
+  // 6-digit code: the user taps the magic link in their inbox, it reopens the
+  // app, and we finish the session in-app. Also routes other deep links
+  // (/report/view/*, /dashboard, etc.) into the WebView.
+  CapApp.addListener('appUrlOpen', async ({ url }) => {
+    try {
+      const u = new URL(url);
+      const p = u.searchParams;
+      const hash = new URLSearchParams((u.hash || '').replace(/^#/, ''));
+
+      const errDesc = p.get('error_description') || hash.get('error_description');
+      if (errDesc) { window.location.assign('/auth/error?msg=' + encodeURIComponent(errDesc)); return; }
+
+      // PKCE magic link → exchange the code for a session (verifier is in this
+      // WebView's storage from when sign-in was requested → same-app, so it works).
+      const code = p.get('code');
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        window.location.assign(error ? '/auth/error?msg=' + encodeURIComponent(error.message) : '/dashboard');
+        return;
+      }
+      // token_hash-style magic link (older template).
+      const tokenHash = p.get('token_hash');
+      if (tokenHash) {
+        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: (p.get('type') as any) || 'email' });
+        window.location.assign(error ? '/auth/error?msg=' + encodeURIComponent(error.message) : '/dashboard');
+        return;
+      }
+      // Implicit-flow tokens in the hash.
+      if (hash.get('access_token')) {
+        const { error } = await supabase.auth.setSession({
+          access_token: hash.get('access_token') as string,
+          refresh_token: hash.get('refresh_token') || '',
+        });
+        window.location.assign(error ? '/auth/error' : '/dashboard');
+        return;
+      }
+      // Non-auth deep link — route the WebView to that path.
+      if (u.pathname && u.pathname !== '/') window.location.assign(u.pathname + u.search);
+    } catch { /* malformed deep link — ignore, never crash the app */ }
+  });
 
   // Marks the document for native-specific styling — currently used to add
   // bottom padding so the fixed NativeBottomNav doesn't cover page content.
