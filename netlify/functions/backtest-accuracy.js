@@ -147,7 +147,7 @@ async function runLiveBacktest({ months, limit, floor, cutoff }) {
   const BUDGET_MS = 22000; // wall-clock guard (function timeout is 26s)
   const COMP_MIN_PRICE = 50000; // junk guard, mirrors enrich-report's comp filter
   const COMP_CAP = 250;         // mirrors enrich-report lookupSoldComps .limit(250)
-  const COLS = "address,unit,city,state,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,last_sale_date,property_type_normalized,assessed_value";
+  const COLS = "address,unit,city,state,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,last_sale_date,property_type_normalized";
 
   // ── Pull the CV sold universe ONCE (windowed, paginated). It serves as BOTH
   //    the ground-truth subject set AND the comp pool; each subject only ever
@@ -397,7 +397,7 @@ exports.handler = async (event) => {
     // model error.
     const solds = await db
       .from("properties")
-      .select("address,unit,city,state,zip,sqft,last_sale_price,last_sale_date,current_estimated_value,assessed_value")
+      .select("address,unit,city,state,zip,sqft,last_sale_price,last_sale_date,current_estimated_value")
       .gte("last_sale_date", cutoff)
       .gte("last_sale_price", floor)
       .order("last_sale_date", { ascending: false })

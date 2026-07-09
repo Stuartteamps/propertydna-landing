@@ -249,7 +249,7 @@ async function lookupSoldComps({ city, zip }) {
   const out = [];
   try {
     let q = db.from("properties")
-      .select("address,city,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,current_estimated_value,last_sale_date,latitude,longitude,property_type_normalized,listing_source,assessed_value")
+      .select("address,city,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,current_estimated_value,last_sale_date,latitude,longitude,property_type_normalized,listing_source")
       .gte("last_sale_price", 50000).limit(250);
     if (city) q = q.ilike("city", city);
     else if (zip) q = q.eq("zip", zip);
@@ -266,7 +266,7 @@ async function lookupSoldComps({ city, zip }) {
         address: r.address || null, city: r.city || null,
         lat: r.latitude ? Number(r.latitude) : null, lon: r.longitude ? Number(r.longitude) : null,
         date: r.last_sale_date || null, propertyType: r.property_type_normalized || null,
-        assessedValue: Number(r.assessed_value) || null, listing_source: r.listing_source || null,
+        listing_source: r.listing_source || null,
         src: isCma ? "properties_cma_sold" : "properties_sold",
       });
     }
