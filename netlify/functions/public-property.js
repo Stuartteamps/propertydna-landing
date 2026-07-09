@@ -18,6 +18,9 @@
  * Wired in netlify.toml: /api/property/* -> /.netlify/functions/public-property.
  */
 const https = require('https');
+// Single source of truth for scores + valuation — the SAME engine api-property
+// and the frontend consume, so the page and the developer API can never disagree.
+const { computeProprietaryScores, buildValuationExplanation } = require('./_intelligence');
 
 const SUPA_URL = process.env.SUPABASE_URL || 'https://neccpdfhmfnvyjgyrysy.supabase.co';
 const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY || '';
@@ -94,6 +97,16 @@ function bundleFromReport(row) {
   const sub = (dna && dna.normalized && dna.normalized.subject) || {};
   const fullAddress =
     row.full_address || [row.address, row.city, row.state].filter(Boolean).join(', ') || sub.address || '';
+  const lastUpdated = row.updated_at || row.created_at || null;
+  // Compute scores + valuation HERE with the canonical engine and ship them in
+  // the bundle. The page renders these directly (it does not recompute), so the
+  // /property page and the /api/v1 developer endpoints are byte-for-byte in sync.
+  let scores = null;
+  let valuation = null;
+  if (dna) {
+    try { scores = computeProprietaryScores(dna); } catch { scores = null; }
+    try { valuation = buildValuationExplanation(dna, lastUpdated); } catch { valuation = null; }
+  }
   return {
     ok: true,
     slug: row.public_slug || slugify(fullAddress),
@@ -105,8 +118,10 @@ function bundleFromReport(row) {
     lat: num(sub.lat) ?? num(sub.latitude),
     lon: num(sub.lon) ?? num(sub.lng) ?? num(sub.longitude),
     report_data: dna,
+    scores,
+    valuation,
     status: row.status || 'completed',
-    lastUpdated: row.updated_at || row.created_at || null,
+    lastUpdated,
     isPublic: row.is_public !== false,
     source: 'report',
   };
@@ -125,6 +140,8 @@ function bundleFromParcel(p, slug) {
     lat: num(p.lat),
     lon: num(p.lng),
     report_data: null,
+    scores: null,
+    valuation: null,
     status: 'parcel',
     lastUpdated: p.last_updated || null,
     isPublic: true,

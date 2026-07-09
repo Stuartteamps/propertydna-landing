@@ -10,9 +10,27 @@
 // and set `insufficientData = true`, which drives a `noindex` + "Data unavailable"
 // treatment on the page.
 // ─────────────────────────────────────────────────────────────────────────────
-import { computePropertyScores, type PropertyScores } from './scores';
-import { buildValuationExplanation, type ValuationExplanation } from './valuationExplanation';
+import type { PropertyScores } from './scores';
+import type { ValuationExplanation } from './valuationExplanation';
 import { SITE_ORIGIN } from '@/lib/seo/head';
+
+// Empty valuation shell for thin parcel bundles that carry no report_data.
+// The numbers themselves are NEVER computed on the client — they arrive
+// pre-computed in the bundle from the canonical engine (netlify/functions/
+// _intelligence.js), so the page can never disagree with the developer API.
+const EMPTY_VALUATION: ValuationExplanation = {
+  estimatedValue: null,
+  lowRange: null,
+  highRange: null,
+  confidenceScore: null,
+  keyDrivers: [],
+  positiveAdjustments: [],
+  negativeAdjustments: [],
+  comparableSalesUsed: [],
+  dataLimitations: ['No report data is available for this address yet.'],
+  lastUpdated: null,
+  method: null,
+};
 
 // ── Slug helpers ─────────────────────────────────────────────────────────────
 // "50220 Via Puente, La Quinta, CA 92253" → "50220-via-puente-la-quinta-ca-92253"
@@ -43,6 +61,10 @@ export interface PublicPropertyBundle {
   lon: number | null;
   /** Raw report_data (dna) — same shape ReportView consumes. May be partial. */
   report_data: any | null;
+  /** Proprietary scores computed server-side by the canonical engine. */
+  scores: PropertyScores | null;
+  /** Explainable valuation computed server-side by the canonical engine. */
+  valuation: ValuationExplanation | null;
   status: string | null;
   lastUpdated: string | null;
   isPublic: boolean;
@@ -134,8 +156,11 @@ export function buildPublicProperty(bundle: PublicPropertyBundle): PublicPropert
   const enr = dna?.enrichment ?? {};
   const hazE = enr?.hazardEnrichment ?? {};
 
-  const valuation = buildValuationExplanation(dna, bundle.lastUpdated);
-  const scores = bundle.report_data ? safeScores(dna) : null;
+  // Numbers are authoritative from the server engine — the page renders them,
+  // it does not recompute. This is what keeps the page and the /api/v1 developer
+  // endpoints byte-for-byte in sync.
+  const valuation = bundle.valuation ?? EMPTY_VALUATION;
+  const scores = bundle.scores ?? null;
 
   const sqft = numOf(sub.sqft ?? prop.sqft);
   const estimatedValue = valuation.estimatedValue;
@@ -238,14 +263,6 @@ export function buildPublicProperty(bundle: PublicPropertyBundle): PublicPropert
 
     insufficientData,
   };
-}
-
-function safeScores(dna: any): PropertyScores | null {
-  try {
-    return computePropertyScores(dna);
-  } catch {
-    return null;
-  }
 }
 
 function buildDataSources(dna: any, bundle: PublicPropertyBundle): DataSourceGroup[] {
