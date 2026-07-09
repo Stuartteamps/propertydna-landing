@@ -24,7 +24,7 @@ const db = require("./_supabase");
 // ── LIVE-mode reuse: the CURRENT valuation stack (same modules enrich-report.js
 // runs). We import the math — we do NOT fork or duplicate it — so ?live=1 scores
 // the exact engine that ships today, not stale stored pdna values. ──
-const { computeValuation } = require("./_valuation-engine");
+const { computeValuation, filterArmsLength } = require("./_valuation-engine");
 const { rankCompsCommunityFirst } = require("./_community_comps");
 const { lookupCommunityByAddress } = require("./_cv_luxury_index");
 
@@ -147,7 +147,7 @@ async function runLiveBacktest({ months, limit, floor, cutoff }) {
   const BUDGET_MS = 22000; // wall-clock guard (function timeout is 26s)
   const COMP_MIN_PRICE = 50000; // junk guard, mirrors enrich-report's comp filter
   const COMP_CAP = 250;         // mirrors enrich-report lookupSoldComps .limit(250)
-  const COLS = "address,unit,city,state,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,last_sale_date,property_type_normalized";
+  const COLS = "address,unit,city,state,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,last_sale_date,property_type_normalized,assessed_value";
 
   // ── Pull the CV sold universe ONCE (windowed, paginated). It serves as BOTH
   //    the ground-truth subject set AND the comp pool; each subject only ever
@@ -175,16 +175,27 @@ async function runLiveBacktest({ months, limit, floor, cutoff }) {
     if (Date.now() - startMs > BUDGET_MS) break;
   }
 
+  // ── Arms-length filter (shared with the engine). Drops CLEAR non-market
+  //    transfers — trust deeds, quitclaims, probate, nominal/intra-family, and
+  //    same-week re-recordings — from the universe. Because the universe is BOTH
+  //    the ground-truth subject set AND the comp pool, this single pass cleans
+  //    (a) the comps each subject values from and (b) the solds we score against.
+  //    Junk "sales" are the source of the 2,566% MAPE (a $1.3M home "sold" $145K). ──
+  const alUniverse = filterArmsLength(universe, { cohortKey: (r) => normCity(r.city) });
+  const universeRaw = universe.length;
+  const armsLengthStats = alUniverse.stats;
+  const cleanUniverse = alUniverse.kept;
+
   // Universe is already last_sale_date DESC. Group by city for fast per-subject
   // comp selection (each city list stays DESC → newest comps first).
   const byCity = new Map();
-  for (const r of universe) {
+  for (const r of cleanUniverse) {
     const k = normCity(r.city);
     if (!byCity.has(k)) byCity.set(k, []);
     byCity.get(k).push(r);
   }
 
-  const subjects = universe.slice(0, limit);
+  const subjects = cleanUniverse.slice(0, limit);
   const pairs = [];
   const diag = { no_sqft: 0, no_sale: 0, few_comps: 0, few_usable: 0, no_value: 0, valued: 0, budget_stopped: 0 };
   let compCountSum = 0;
@@ -257,7 +268,7 @@ async function runLiveBacktest({ months, limit, floor, cutoff }) {
   const lines = [];
   lines.push(`PropertyDNA LIVE Back-Test — CURRENT engine, as-of each sale date (recorded CV sales since ${cutoff})`);
   lines.push(`Leakage-safe: comps SOLD BEFORE the subject's sale date, same city, subject excluded; anchorValue=null (blind comp fair value); nowYear=sale year.`);
-  lines.push(`CV solds pulled: ${universe.length} (scanned ${rowsScanned} rows / ${pages} pages) | subjects considered: ${subjects.length} | VALUED (n): ${overall.n || 0}` + (diag.budget_stopped ? ` | budget-stopped ${diag.budget_stopped}` : ""));
+  lines.push(`CV solds pulled: ${universeRaw} (scanned ${rowsScanned} rows / ${pages} pages) | arms-length filter dropped ${armsLengthStats.dropped} non-market transfers (${JSON.stringify(armsLengthStats.reasons)}) → ${cleanUniverse.length} clean | subjects considered: ${subjects.length} | VALUED (n): ${overall.n || 0}` + (diag.budget_stopped ? ` | budget-stopped ${diag.budget_stopped}` : ""));
   lines.push(`Skips → no_sqft ${diag.no_sqft} | no/late comps ${diag.few_comps + diag.few_usable} | no_value ${diag.no_value} | no_sale ${diag.no_sale}`);
   if (overall.n) {
     lines.push("");
@@ -288,7 +299,9 @@ async function runLiveBacktest({ months, limit, floor, cutoff }) {
         recency: "computeValuation nowYear = subject sale year (as-of dating)",
         engine: "computeValuation + rankCompsCommunityFirst imported from _valuation-engine.js / _community_comps.js (no fork)",
       },
-      universeSize: universe.length,
+      universeSize: cleanUniverse.length,
+      universeRaw,
+      armsLengthFilter: armsLengthStats,
       rowsScanned, pages,
       subjectsConsidered: subjects.length,
       valued: overall.n || 0,
@@ -384,7 +397,7 @@ exports.handler = async (event) => {
     // model error.
     const solds = await db
       .from("properties")
-      .select("address,unit,city,state,zip,sqft,last_sale_price,last_sale_date,current_estimated_value")
+      .select("address,unit,city,state,zip,sqft,last_sale_price,last_sale_date,current_estimated_value,assessed_value")
       .gte("last_sale_date", cutoff)
       .gte("last_sale_price", floor)
       .order("last_sale_date", { ascending: false })
@@ -425,15 +438,26 @@ exports.handler = async (event) => {
     // to be tier-aware OR replaced with prediction-residual-based filtering
     // (e.g. drop sales where price < 0.6x or > 1.8x of RentCast AVM —
     // independent of cohort, catches non-arms-length without bucket bias).
-    const psfFilter = (q.psfFilter || "0") === "1";
-    const filterStats = { soldsBeforeFilter: solds.length, droppedByPsf: 0, droppedNoSqft: 0, keptNoCohort: 0 };
+    // ── Shared arms-length pre-filter (same helper the engine + live path use) ──
+    // Drops CLEAR non-market transfers from ground truth (trust deeds, quitclaims,
+    // probate, nominal/intra-family, same-week re-recordings) before the legacy
+    // PSF / consensus filters. Conservative — keeps real sales. Toggle ?armsLength=0.
+    const armsLengthOn = (q.armsLength || "1") !== "0";
+    let solds1 = solds, armsLengthStats = { total: solds.length, kept: solds.length, dropped: 0, reasons: {} };
+    if (armsLengthOn) {
+      const al = filterArmsLength(solds, { cohortKey: (r) => `${(r.zip || "").trim()}|${(r.city || "").toLowerCase().trim()}` });
+      solds1 = al.kept; armsLengthStats = al.stats;
+    }
 
-    let cleanSolds = solds;
+    const psfFilter = (q.psfFilter || "0") === "1";
+    const filterStats = { soldsBeforeFilter: solds.length, droppedByArmsLength: armsLengthStats.dropped, droppedByPsf: 0, droppedNoSqft: 0, keptNoCohort: 0 };
+
+    let cleanSolds = solds1;
     if (psfFilter) {
       // Group by (zip OR city) and compute median PSF for each cohort
       const cohorts = new Map();   // key → [psf values]
       const cohortKey = (p) => `${(p.zip || "").trim()}|${(p.city || "").toLowerCase().trim()}|${(p.state || "").toUpperCase().trim()}`;
-      for (const p of solds) {
+      for (const p of solds1) {
         const sqft = Number(p.sqft);
         const sale = Number(p.last_sale_price);
         if (!sqft || sqft < 200 || !sale) continue;
@@ -448,7 +472,7 @@ exports.handler = async (event) => {
         if (vals.length >= 3) cohortMedians.set(k, median(vals));
       }
 
-      cleanSolds = solds.filter((p) => {
+      cleanSolds = solds1.filter((p) => {
         const sqft = Number(p.sqft);
         const sale = Number(p.last_sale_price);
         if (!sqft || sqft < 200) { filterStats.droppedNoSqft++; return true; } // can't judge — keep (counted)
@@ -615,6 +639,9 @@ exports.handler = async (event) => {
 
     const lines = [];
     lines.push(`PropertyDNA Back-Test — recorded sales since ${cutoff}`);
+    if (armsLengthOn) {
+      lines.push(`Arms-length filter ON: dropped ${armsLengthStats.dropped}/${armsLengthStats.total} non-market transfers (${JSON.stringify(armsLengthStats.reasons)}) → ${solds1.length} clean solds`);
+    }
     if (psfFilter) {
       lines.push(`Ground-truth PSF filter ON (?psfFilter=1): pulled ${filterStats.soldsBeforeFilter} | dropped ${filterStats.droppedByPsf} by PSF | kept ${filterStats.kept || cleanSolds.length} (cohorts=${filterStats.cohortsBuilt || 0})`);
     }
@@ -672,8 +699,10 @@ exports.handler = async (event) => {
         ok: true,
         ranAt: new Date().toISOString(),
         targetMdapePct: TARGET_MDAPE_PCT,
-        params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100, psfFilter, consensusFilter, consensusThreshold: CONSENSUS_THRESHOLD },
+        params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100, armsLength: armsLengthOn, psfFilter, consensusFilter, consensusThreshold: CONSENSUS_THRESHOLD },
         soldsPulled: solds.length,
+        soldsAfterArmsLength: solds1.length,
+        armsLengthFilter: armsLengthStats,
         soldsAfterFilter: cleanSolds.length,
         groundTruthFilter: filterStats,
         consensusDropped,

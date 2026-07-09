@@ -37,6 +37,132 @@ function wQuantile(pairs, q) {
 }
 const median = (a) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ARMS-LENGTH / MARKET-SALE FILTER (shared)
+//
+// Non-arms-length transfers — trust deeds, quitclaims, probate, intra-family /
+// nominal conveyances, tax/foreclosure re-recordings — are logged in the county
+// feed as "sales" but do NOT represent market value. They pollute BOTH:
+//   (a) backtest ground truth (a $1.3M home "sold" for $145K → huge false error), and
+//   (b) comp sets (a nominal transfer used as a comp drags the prediction down).
+//
+// This is ONE conservative filter used everywhere. It drops only CLEAR
+// non-market transfers and keeps genuine sales — even legitimately below-median
+// ones. Every threshold is deliberately generous so real sales survive; the goal
+// is to remove the junk that produces >1000% MAPE, not to trim the low tail.
+//
+// Signals (combined; any one CLEAR hit drops the row):
+//   1. Explicit non-arms-length deed/sale/document type, when such a column
+//      exists on the row (future-proof; no-op when absent).
+//   2. Price below an absolute nominal floor (< $50K).
+//   3. Price grossly below the tax-assessed value (< 0.40×). In CA (Prop-13)
+//      assessed value lags market and resets to purchase price on a real sale,
+//      so an arm's-length resale is at/above assessed; price far BELOW assessed
+//      is the nominal / intra-family transfer signature.
+//   4. Price grossly below cohort market rate (< 0.40× cohort median $/sqft ×
+//      subject sqft), computed over the same batch (≥3 usable rows per cohort).
+//   5. Same-property same-week re-recordings/dupes — keep the max-price record
+//      in each ≤7-day cluster, drop the rest.
+// ═══════════════════════════════════════════════════════════════════════════
+const AL_NON_ARMS_TYPE_RE = /quit\s*claim|quitclaim|deed of trust|trust transfer|inter.?vivos|probate|estate|foreclos|sheriff|trustee'?s? (deed|sale)|tax (deed|sale)|nominal|gift deed|intra.?family|affidavit|correction deed|non.?arm/i;
+const AL_ABS_MIN_PRICE = 50000;      // below this a "sale" is a nominal transfer
+const AL_ASSESSED_FRACTION = 0.40;   // price < 0.40× tax-assessed → nominal/intra-family
+const AL_COHORT_PSF_FRACTION = 0.40; // price < 0.40× cohort $/sqft rate → non-market
+const AL_DUP_WINDOW_MS = 7 * 864e5;  // same-property re-recording window (7 days)
+
+const _alNum = (v) => { const n = Number(String(v ?? "").replace(/[^0-9.\-]/g, "")); return isNaN(n) || n === 0 ? null : n; };
+const _alAddrKey = (a) => String(a || "").toLowerCase().replace(/[.,]/g, "").replace(/\s+/g, " ").trim();
+
+// Pull normalized fields out of a heterogeneous sale record (comps use `price`/
+// `saleDate`; raw `properties` rows use `last_sale_price`/`last_sale_date`).
+function _alFields(r) {
+  return {
+    price:    _alNum(r.price ?? r.last_sale_price ?? r.salePrice ?? r.rawPrice),
+    sqft:     _alNum(r.sqft),
+    assessed: _alNum(r.assessedValue ?? r.assessed_value ?? r.tax_assessed_value ?? r.assessed),
+    date:     r.saleDate ?? r.last_sale_date ?? r.date ?? null,
+    address:  r.address ?? null,
+    typeStr:  [r.deedType, r.deed_type, r.saleType, r.sale_type, r.documentType, r.document_type, r.listing_source]
+                .filter(Boolean).join(" "),
+  };
+}
+
+// Judge ONE sale record. ctx.cohortMedianPsf optional. Returns { ok, reason }.
+// Unknown-price rows are KEPT (we can't judge them — never invent a drop).
+function armsLengthVerdict(rec, ctx = {}) {
+  const f = rec.__alFields || _alFields(rec);
+  if (f.price == null) return { ok: true, reason: "no_price" };
+  if (f.typeStr && AL_NON_ARMS_TYPE_RE.test(f.typeStr)) return { ok: false, reason: "non_arms_type" };
+  if (f.price < AL_ABS_MIN_PRICE) return { ok: false, reason: "below_floor" };
+  if (f.assessed && f.price < AL_ASSESSED_FRACTION * f.assessed) return { ok: false, reason: "below_assessed" };
+  if (f.sqft && ctx.cohortMedianPsf && f.price < AL_COHORT_PSF_FRACTION * ctx.cohortMedianPsf * f.sqft) {
+    return { ok: false, reason: "below_cohort_psf" };
+  }
+  return { ok: true, reason: "ok" };
+}
+
+// Batch filter. Computes per-cohort median $/sqft over the SAME set, dedupes
+// same-property same-week re-recordings, then applies armsLengthVerdict.
+// opts.cohortKey(rec) → grouping key for the $/sqft rate (default: lowercased city).
+// Returns { kept, dropped, stats } where stats.reasons tallies each drop cause.
+function filterArmsLength(records, opts = {}) {
+  const rows = Array.isArray(records) ? records : [];
+  const cohortKey = opts.cohortKey || ((r) => String(r.city || "").toLowerCase().trim());
+
+  // Pre-compute normalized fields once; cache on the record for reuse downstream.
+  const fields = rows.map((r) => { const f = _alFields(r); r.__alFields = f; return f; });
+
+  // 1) Cohort median $/sqft over the same batch (≥3 sane rows per cohort).
+  const psfAcc = new Map();
+  rows.forEach((r, i) => {
+    const f = fields[i];
+    if (!f.price || !f.sqft || f.sqft < 200) return;
+    const psf = f.price / f.sqft;
+    if (psf < 20 || psf > 20000) return; // obvious junk excluded from the rate itself
+    const k = cohortKey(r);
+    (psfAcc.get(k) || psfAcc.set(k, []).get(k)).push(psf);
+  });
+  const psfByCohort = new Map();
+  for (const [k, arr] of psfAcc) if (arr.length >= 3) psfByCohort.set(k, median(arr));
+
+  // 2) Same-property same-week dedupe → indices to drop (keep max-price/cluster).
+  const dupDrop = new Set();
+  const byAddr = new Map();
+  rows.forEach((r, i) => {
+    const ak = _alAddrKey(fields[i].address);
+    if (!ak) return;
+    (byAddr.get(ak) || byAddr.set(ak, []).get(ak)).push(i);
+  });
+  for (const idxs of byAddr.values()) {
+    if (idxs.length < 2) continue;
+    const dated = idxs.map((i) => ({ i, t: Date.parse(fields[i].date || ""), p: fields[i].price || 0 }))
+                      .filter((x) => !isNaN(x.t))
+                      .sort((a, b) => a.t - b.t);
+    for (let a = 0; a < dated.length; a++) {
+      if (dupDrop.has(dated[a].i)) continue;
+      let best = dated[a];
+      for (let b = a + 1; b < dated.length && dated[b].t - dated[a].t <= AL_DUP_WINDOW_MS; b++) {
+        if (dupDrop.has(dated[b].i)) continue;
+        const loser = dated[b].p > best.p ? best : dated[b];
+        best = dated[b].p > best.p ? dated[b] : best;
+        dupDrop.add(loser.i);
+      }
+    }
+  }
+
+  // 3) Verdict pass.
+  const kept = [], dropped = [];
+  const stats = { total: rows.length, kept: 0, dropped: 0, reasons: {} };
+  const bump = (why) => { stats.reasons[why] = (stats.reasons[why] || 0) + 1; };
+  rows.forEach((r, i) => {
+    if (dupDrop.has(i)) { dropped.push(r); stats.dropped++; bump("dup_rerecord"); return; }
+    const v = armsLengthVerdict(r, { cohortMedianPsf: psfByCohort.get(cohortKey(r)) || null });
+    if (v.ok) { kept.push(r); stats.kept++; }
+    else { dropped.push(r); stats.dropped++; bump(v.reason); }
+  });
+  return { kept, dropped, stats };
+}
+
 /**
  * compFairValue — independent comp-based value (Model A).
  * subject/comps fields: { price?, sqft, lotSqft, beds, baths, yearBuilt, pool, saleDate }
@@ -205,4 +331,4 @@ function computeValuation(subject, comps, opts = {}) {
   };
 }
 
-module.exports = { computeValuation, compFairValue, TIER_SP_LP, tierOf };
+module.exports = { computeValuation, compFairValue, TIER_SP_LP, tierOf, filterArmsLength, armsLengthVerdict };

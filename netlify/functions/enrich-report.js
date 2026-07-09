@@ -20,7 +20,7 @@ const https = require("https");
 const db = require("./_supabase");
 const { appreciateToToday: hpiAppreciate } = require("./_hpi_index");
 // ── PropertyDNA's OWN valuation stack (source of truth; RentCast-free) ──
-const { computeValuation } = require("./_valuation-engine");
+const { computeValuation, filterArmsLength } = require("./_valuation-engine");
 const { rankCompsCommunityFirst } = require("./_community_comps");
 const { lookupCommunity, lookupCommunityByAddress } = require("./_cv_luxury_index");
 
@@ -249,7 +249,7 @@ async function lookupSoldComps({ city, zip }) {
   const out = [];
   try {
     let q = db.from("properties")
-      .select("address,city,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,current_estimated_value,last_sale_date,latitude,longitude,property_type_normalized,listing_source")
+      .select("address,city,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,current_estimated_value,last_sale_date,latitude,longitude,property_type_normalized,listing_source,assessed_value")
       .gte("last_sale_price", 50000).limit(250);
     if (city) q = q.ilike("city", city);
     else if (zip) q = q.eq("zip", zip);
@@ -266,6 +266,7 @@ async function lookupSoldComps({ city, zip }) {
         address: r.address || null, city: r.city || null,
         lat: r.latitude ? Number(r.latitude) : null, lon: r.longitude ? Number(r.longitude) : null,
         date: r.last_sale_date || null, propertyType: r.property_type_normalized || null,
+        assessedValue: Number(r.assessed_value) || null, listing_source: r.listing_source || null,
         src: isCma ? "properties_cma_sold" : "properties_sold",
       });
     }
@@ -441,7 +442,13 @@ async function buildEngineValuation({ address, city, state, zip }) {
     lookupCommunity(pickStr(subj, ["subdivision", "neighborhood"]) || pickStr(crest, ["SUBDIVISION_NAME"]) || "", subjCity) ||
     lookupCommunityByAddress(address, subjCity);
   const rankSubject = { propertyType: subjType, sqft: subjSqft, lotSize: subjLot, city: subjCity };
-  const rankerComps = soldComps.map((c) => ({
+  // ── Arms-length guard: drop CLEAR non-market transfers (trust deeds, quitclaims,
+  //    probate, nominal/intra-family, same-week re-recordings) BEFORE they can be
+  //    ranked as comps and drag the valuation down. Conservative — keeps real
+  //    sales, even below-median ones. Cohort $/sqft rate computed over this pool. ──
+  const alComps = filterArmsLength(soldComps, { cohortKey: (c) => String(c.city || subjCity || "").toLowerCase().trim() });
+  const cleanSoldComps = alComps.kept;
+  const rankerComps = cleanSoldComps.map((c) => ({
     address: c.address, city: c.city || subjCity, distance: null,
     lotSize: c.lotSize ?? null, saleDate: c.date ?? null,
     propertyType: c.propertyType ?? null, sqft: c.sqft ?? null,
