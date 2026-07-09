@@ -438,7 +438,9 @@ function detectADU(reportData) {
 function computeClosestCompAnchor(avmMid, comps = [], compRules = null, luxuryTier = false, ctx = {}) {
   if (!avmMid || !Array.isArray(comps) || comps.length === 0) return null;
   // Optional community context (Agent 3). Absent → falls back to old behavior.
-  const { subject = null, subjectCommunity = null } = ctx || {};
+  // saleAnchor (subject's own HPI-appreciated sale) TIER-LOCKS + CAPS the anchor so
+  // a broad/luxury comp pool can't push a modest home far above its own recent sale.
+  const { subject = null, subjectCommunity = null, saleAnchor = null } = ctx || {};
   // Per-property-type comp rules. Default = SFR tier-1 (current behavior).
   const RULES = compRules || { radiusMi: 0.30, corrPct: 95, minComps: 2, fallbackTopN: 3, fallbackCorrPct: 90 };
 
@@ -466,6 +468,14 @@ function computeClosestCompAnchor(avmMid, comps = [], compRules = null, luxuryTi
       sqft:  parseNum(c.sqft),
     }))
     .filter(c => c.price && c.price > 50000);
+
+  // TIER LOCK: when we know the subject's own recent sale, drop comps priced far
+  // outside its band (0.5×–1.8×) BEFORE averaging, so luxury/dissimilar sales can't
+  // drag the comp anchor up. Only applied if it leaves enough comps to be useful.
+  if (saleAnchor) {
+    const inTier = enriched.filter(c => c.price >= 0.5 * saleAnchor && c.price <= 1.8 * saleAnchor);
+    if (inTier.length >= (RULES.minComps || 2)) enriched = inTier;
+  }
 
   // Compute price-per-sqft and DROP non-arms-length outliers.
   // Validated against back-test of Palm Springs comps (May 2026):
@@ -541,7 +551,12 @@ function computeClosestCompAnchor(avmMid, comps = [], compRules = null, luxuryTi
     : luxuryTier
       ? Math.min(0.75, 0.35 + qualifying.length * 0.10)
       : Math.min(0.45, 0.30 + qualifying.length * 0.05);
-  const blendMid = Math.round(avmMid * (1 - compWeight) + avgComp * compWeight);
+  let blendMid = Math.round(avmMid * (1 - compWeight) + avgComp * compWeight);
+  // CAP: never let the comp anchor push the value more than 15% above the subject's
+  // own appreciated sale (unless real same-enclave comps justify it). Guards against
+  // a broad pool over-valuing a modest home even after the tier-lock above.
+  if (saleAnchor && communityHits < 2) blendMid = Math.min(blendMid, Math.round(saleAnchor * 1.15));
+  if (blendMid <= avmMid) return null;   // nothing to add after the cap
 
   return {
     blendMid,
@@ -696,28 +711,32 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
   let smartLow = avmLow, smartMid = avmMid, smartHigh = avmHigh;
   let baseAdjustment = null;
 
+  // ── SALE ANCHOR VALUE — computed up-front (independent of the age gate below) so
+  // it can also TIER-LOCK and CAP the comp anchor. The subject's own sale, HPI-
+  // appreciated then tempered toward the raw price, is the truest single signal of
+  // what THIS home is worth; a broad comp pool must never anchor it far above that.
+  const saleMonths = (lastSalePrice && lastSaleDate) ? monthsBetween(lastSaleDate) : null;
+  let saleAnchor = null;
+  if (lastSalePrice && lastSaleDate && saleMonths !== null && saleMonths < 120) {
+    const yf = saleMonths / 12;
+    let appr;
+    try {
+      const hpi = appreciateToToday(lastSalePrice, lastSaleDate,
+        { zip: subject?.zip, city: subject?.city, state: subject?.state });
+      appr = hpi && hpi.value ? hpi.value : Math.round(lastSalePrice * Math.pow(1 + annualRate, yf));
+    } catch { appr = Math.round(lastSalePrice * Math.pow(1 + annualRate, yf)); }
+    const wIdx = Math.min(0.7, 0.15 + 0.08 * yf);
+    saleAnchor = Math.round((1 - wIdx) * lastSalePrice + wIdx * appr);
+  }
+
   if (lastSalePrice && lastSaleDate) {
-    const months = monthsBetween(lastSaleDate);
+    const months = saleMonths;
     // Standard: 42 months. Luxury (>$1.5M): extend to 84 months because comp-set
     // is sparse enough that even a 5-7 year old same-property sale anchors better
     // than the AVM. Older sales get lower weight (see saleWeight curve below).
-    const ageCap = luxuryTier ? 84 : 42;
-    if (months !== null && months < ageCap) {
-      const yearsFrac = months / 12;
-      // Appreciate the last sale with the FHFA Riverside MSA house-price index
-      // (real, citation-grade). Falls back to the flat annualRate only if the HPI
-      // helper can't resolve. The prior flat 4.8%/yr systematically over-shot in a
-      // near-flat market (2022→2026), inflating the anchor and the value with it.
-      let appreciated;
-      try {
-        const hpi = appreciateToToday(lastSalePrice, lastSaleDate,
-          { zip: subject?.zip, city: subject?.city, state: subject?.state });
-        appreciated = hpi && hpi.value ? hpi.value : Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac));
-      } catch { appreciated = Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac)); }
-      // Temper the MSA-wide index toward the home's own sale (see enrich-report):
-      // recent sales trust the raw price more; older sales lean on the index.
-      const wIdx = Math.min(0.7, 0.15 + 0.08 * yearsFrac);
-      appreciated = Math.round((1 - wIdx) * lastSalePrice + wIdx * appreciated);
+    const ageCap = luxuryTier ? 84 : 60;
+    if (months !== null && months < ageCap && saleAnchor) {
+      const appreciated = saleAnchor;
       const gap = (avmMid - appreciated) / appreciated; // negative → AVM below sale; positive → above
 
       // Sale weight declines as the sale gets older
@@ -794,7 +813,7 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
   // Take the HIGHER of sale anchor vs comp anchor — both protect against undervaluation.
   if (Array.isArray(comps) && comps.length > 0) {
     const compAnchor = computeClosestCompAnchor(smartMid, comps, compRules, luxuryTier,
-                                                { subject, subjectCommunity });
+                                                { subject, subjectCommunity, saleAnchor });
     if (compAnchor && compAnchor.blendMid > smartMid) {
       const scale = compAnchor.blendMid / smartMid;
       smartMid  = compAnchor.blendMid;
