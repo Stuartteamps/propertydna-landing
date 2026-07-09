@@ -464,10 +464,19 @@ async function buildEngineValuation({ address, city, state, zip }) {
   // this exact home far above what it just traded for.
   let anchorValue = null;
   if (lastSalePrice && lastSalePrice > 10000 && lastSaleDate) {
+    let appreciated = null;
     try {
       const appr = hpiAppreciate(lastSalePrice, lastSaleDate, { zip: subjZip, city: subjCity, state: subjState });
-      anchorValue = appr && appr.value ? appr.value : appreciate(lastSalePrice, lastSaleDate);
-    } catch { anchorValue = appreciate(lastSalePrice, lastSaleDate); }
+      appreciated = appr && appr.value ? appr.value : appreciate(lastSalePrice, lastSaleDate);
+    } catch { appreciated = appreciate(lastSalePrice, lastSaleDate); }
+    // Temper the MSA-wide FHFA index toward the home's OWN sale price. The index
+    // covers all of Riverside-SB-Ontario and over-states specific flat submarkets;
+    // the actual last sale is the truer local signal. Recent sales trust the raw
+    // price more (less time to diverge); older sales lean on the index.
+    const t = Date.parse(lastSaleDate);
+    const yrs = isNaN(t) ? 3 : Math.max(0, (Date.now() - t) / (365.25 * 864e5));
+    const wIdx = Math.min(0.7, 0.15 + 0.08 * yrs);
+    anchorValue = Math.round((1 - wIdx) * lastSalePrice + wIdx * appreciated);
   }
 
   const engineSubject = { sqft: subjSqft, lotSqft: subjLot, beds: subjBeds, baths: subjBaths, yearBuilt: subjYear };

@@ -714,6 +714,10 @@ function computeSmartBase(avmLow, avmMid, avmHigh, {
           { zip: subject?.zip, city: subject?.city, state: subject?.state });
         appreciated = hpi && hpi.value ? hpi.value : Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac));
       } catch { appreciated = Math.round(lastSalePrice * Math.pow(1 + annualRate, yearsFrac)); }
+      // Temper the MSA-wide index toward the home's own sale (see enrich-report):
+      // recent sales trust the raw price more; older sales lean on the index.
+      const wIdx = Math.min(0.7, 0.15 + 0.08 * yearsFrac);
+      appreciated = Math.round((1 - wIdx) * lastSalePrice + wIdx * appreciated);
       const gap = (avmMid - appreciated) / appreciated; // negative → AVM below sale; positive → above
 
       // Sale weight declines as the sale gets older

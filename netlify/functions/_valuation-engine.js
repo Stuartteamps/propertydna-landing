@@ -52,11 +52,28 @@ const median = (a) => { if (!a.length) return null; const s = [...a].sort((x, y)
 function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = null } = {}) {
   const sf = num(subject.sqft); if (!sf) return null;
   const sBeds = num(subject.beds);
-  const usable = comps.map(c => ({ ...c, price: num(c.price), sqft: num(c.sqft), lotSqft: num(c.lotSqft), beds: num(c.beds) }))
-                      .filter(c => c.price && c.sqft && c.sqft > 400);
+  const anchor = num(anchorValue);
+  const anchorPsf = anchor && sf ? anchor / sf : null;
+  let usable = comps.map(c => ({ ...c, price: num(c.price), sqft: num(c.sqft), lotSqft: num(c.lotSqft), beds: num(c.beds) }))
+                    .filter(c => c.price && c.sqft && c.sqft > 400);
   if (usable.length < 3) return null;
 
-  // (0) Comparability gate — only similar homes. Widen gracefully so we never
+  // (0) TIER LOCK to the subject's OWN market. A city comp pool mixes modest homes
+  // with luxury estates of similar size; naively centering on the pool's median
+  // $/sqft would KEEP the luxury cluster and drop the genuinely-comparable homes.
+  // So when we know what THIS home is worth (its own recent sale → anchor), drop
+  // comps priced — or $/sqft'd — far outside the subject's own band FIRST. This is
+  // the single biggest guard against over-valuing a modest home off pricey comps.
+  if (anchor) {
+    const inTier = usable.filter(c => {
+      if (c.price < 0.5 * anchor || c.price > 1.8 * anchor) return false;
+      if (anchorPsf) { const p = c.price / c.sqft; if (p < 0.6 * anchorPsf || p > 1.6 * anchorPsf) return false; }
+      return true;
+    });
+    if (inTier.length >= 3) usable = inTier;
+  }
+
+  // (1) Comparability gate — only similar homes. Widen gracefully so we never
   // starve the estimate, but NEVER default to the whole-city pool when similar
   // comps exist. sqft within band AND beds within ±1 (when both known).
   const withinSqft = (band) => usable.filter(c =>
@@ -67,7 +84,7 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
   if (cand.length < 4) cand = withinSqft(0.60);
   if (cand.length < 3) cand = usable;                       // last resort — keep the report alive
 
-  // (0b) Recency preference — a genuine recent sale beats a stale one. If enough
+  // (2) Recency preference — a genuine recent sale beats a stale one. If enough
   // comps sold within ~30 months, value off THOSE; otherwise keep the full set
   // (the kNN recency weight still down-weights older sales).
   const recent = cand.filter(c => {
@@ -77,11 +94,12 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
   });
   if (recent.length >= 6) cand = recent;
 
-  // (1) Non-arms-length / dissimilar filter: TIGHT $/sqft band around the
-  // comparable-set median (0.7×–1.4×). Kills the cross-segment contamination a
-  // whole-city pool introduces (was 0.4×–2.5×, far too loose).
-  const med = median(cand.map(c => c.price / c.sqft));
-  let tight = cand.filter(c => { const p = c.price / c.sqft; return p >= 0.7 * med && p <= 1.4 * med; });
+  // (3) $/sqft dissimilar filter. Centre on the SUBJECT's own $/sqft when known
+  // (anchorPsf) — not the pool median, which a luxury cluster would drag up and
+  // thereby retain the wrong homes. Falls back to the pool median only when we
+  // have no anchor. Kills cross-segment contamination the whole-city pool adds.
+  const psfCenter = anchorPsf || median(cand.map(c => c.price / c.sqft));
+  let tight = cand.filter(c => { const p = c.price / c.sqft; return p >= 0.65 * psfCenter && p <= 1.5 * psfCenter; });
   if (tight.length < 3) tight = cand;
   cand = tight;
 
@@ -124,13 +142,13 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
   // cold below) what this exact home last traded for, pull back toward the sale
   // and lower confidence rather than printing a runaway number. Symmetric.
   let anchorPull = 0;
-  const anchor = num(anchorValue);
   if (anchor) {
     const dev = (mid - anchor) / anchor;
-    if      (dev >  0.20) anchorPull = 0.55;      // comps far hot — lean hard on the sale
-    else if (dev >  0.10) anchorPull = 0.40;
+    if      (dev >  0.35) anchorPull = 0.72;      // comps WAY hot — the sale dominates
+    else if (dev >  0.20) anchorPull = 0.60;
+    else if (dev >  0.10) anchorPull = 0.42;
     else if (dev >  0.05) anchorPull = 0.25;
-    else if (dev < -0.20) anchorPull = 0.45;      // comps far cold — also pull toward the sale
+    else if (dev < -0.20) anchorPull = 0.50;      // comps far cold — also pull toward the sale
     else if (dev < -0.10) anchorPull = 0.30;
     if (anchorPull > 0) mid = Math.round(anchorPull * anchor + (1 - anchorPull) * mid);
   }
