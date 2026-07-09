@@ -4,6 +4,7 @@ import path from 'path';
 import { vitePrerenderPlugin } from 'vite-prerender-plugin';
 import Sitemap from 'vite-plugin-sitemap';
 import { getBlogRoutes } from './prerender/blog-routes.js';
+import { getSeoRoutes } from './prerender/seo-routes.js';
 import { getSitemapLastmod } from './prerender/blog-sitemap.js';
 
 function escapeHtmlAttr(str: string): string {
@@ -23,7 +24,8 @@ process.env.VITE_APP_LOGO_URL ??= process.env.OVERVIEW_LOGO_URL ?? 'https://publ
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
-  const blogPrerenderRoutes = command === 'build' ? getBlogRoutes() : [];
+  const prerenderRoutes =
+    command === 'build' ? [...getBlogRoutes(), ...getSeoRoutes()] : [];
 
   return {
     plugins: [
@@ -32,13 +34,17 @@ export default defineConfig(({ command }) => {
         hostname: 'https://thepropertydna.com',
         lastmod: getSitemapLastmod(),
         readable: true,
-        generateRobotsTxt: true,
+        // We ship our own hand-tuned robots.txt (public/robots.txt) with an
+        // explicit AI-crawler allowlist; don't let the plugin overwrite it.
+        generateRobotsTxt: false,
       }),
-      ...(blogPrerenderRoutes.length > 0
+      ...(prerenderRoutes.length > 0
         ? vitePrerenderPlugin({
             renderTarget: '#root',
-            prerenderScript: path.resolve(__dirname, 'prerender/blog.js'),
-            additionalPrerenderRoutes: blogPrerenderRoutes,
+            // Unified entry: delegates /blog to blog.js, prerenders /research
+            // and /market SEO bodies, and re-mounts the full app on the client.
+            prerenderScript: path.resolve(__dirname, 'prerender/pages.js'),
+            additionalPrerenderRoutes: prerenderRoutes,
           })
         : []),
     ],
