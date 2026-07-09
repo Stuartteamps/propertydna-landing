@@ -255,8 +255,15 @@ async function runLiveBacktest({ months, limit, floor, cutoff }) {
     if (!predicted) { diag.no_value++; continue; }
     diag.valued++;
     compCountSum += val.compCount || usable;
-    pairs.push({ predicted, actual, tier: liveTier(actual) });
+    pairs.push({ predicted, actual, tier: liveTier(actual),
+      _dbg: { address: s.address, city: s.city, sqft: subjSqft, psf: +(actual / subjSqft).toFixed(0),
+        ape: +Math.abs((predicted - actual) / actual).toFixed(2) } });
   }
+  // Diagnostic: the worst over/under predictions drive MAPE — surface them so the
+  // arms-length thresholds can be calibrated against real offenders (temporary).
+  const worstOffenders = q._dbg
+    ? [...pairs].sort((a, b) => b._dbg.ape - a._dbg.ape).slice(0, 25).map((p) => ({ ...p._dbg, predicted: p.predicted, actual: p.actual }))
+    : undefined;
 
   // ── Aggregate: overall + by price tier (reusing score()). ──
   const overall = score(pairs);
@@ -307,6 +314,7 @@ async function runLiveBacktest({ months, limit, floor, cutoff }) {
       valued: overall.n || 0,
       avgCompCount: overall.n ? +(compCountSum / overall.n).toFixed(1) : null,
       diagnostics: diag,
+      worstOffenders,
       overall,
       byTier,
       report: lines.join("\n"),
