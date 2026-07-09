@@ -118,8 +118,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Native iOS/Android: only use Firebase Auth. Never fall through to Safari —
       // Apple rejects apps that open Safari for sign-in and never return (Guideline 2.1(a)).
       const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithGoogle();
-      const idToken = result.credential?.idToken;
+      // The native Google flow can silently HANG if its web-auth session never
+      // returns to the app (a known failure mode in custom-root Capacitor shells:
+      // the account picker shows, you tap, and the completion handler never fires).
+      // Race it against a timeout so the UI shows an actionable error instead of
+      // spinning forever — Apple and the email code flow remain available.
+      const result: any = await Promise.race([
+        FirebaseAuthentication.signInWithGoogle(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Google sign-in didn’t complete. Please use Apple or email to continue.')), 45000)),
+      ]);
+      const idToken = result?.credential?.idToken;
       if (!idToken) throw new Error('Google sign-in did not return a token. Please try email.');
       const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
       if (error) throw new Error(`Google sign-in failed: ${error.message}. Please try email.`);
