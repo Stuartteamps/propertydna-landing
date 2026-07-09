@@ -84,22 +84,29 @@ function fireEnrichment(payload) {
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
-  if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: "Method Not Allowed" };
+  if (event.httpMethod !== "POST" && event.httpMethod !== "GET") return { statusCode: 405, headers: CORS, body: "Method Not Allowed" };
+
+  // Params come from the JSON body (POST) or the query string (GET, so the owner
+  // can trigger it straight from a phone browser like the backtest endpoint).
+  let body = {};
+  try { body = JSON.parse(event.body || "{}"); } catch { /* defaults */ }
+  const q = event.queryStringParameters || {};
+  const pick = (k) => (body[k] !== undefined ? body[k] : q[k]);
 
   // Auth — this endpoint TRIGGERS re-enrichment, so enforce the internal key.
-  const internalKey = event.headers["x-internal-key"] || event.headers["X-Internal-Key"];
+  // Accept it via header OR ?key= (GET convenience).
+  const internalKey = event.headers["x-internal-key"] || event.headers["X-Internal-Key"] || q.key;
   const expectedKey = process.env.INTERNAL_API_KEY;
   if (!expectedKey) return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "INTERNAL_API_KEY not configured" }) };
   if (internalKey !== expectedKey) return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: "unauthorized" }) };
 
-  let body = {};
-  try { body = JSON.parse(event.body || "{}"); } catch { /* defaults */ }
-
-  const scanLimit  = Math.min(Number(body.scanLimit ?? 100), 500);  // rows examined per call
-  const scanOffset = Math.max(Number(body.scanOffset ?? 0), 0);     // pagination cursor
-  const limit      = Math.min(Number(body.limit ?? 10), 25);        // max re-fires per call (no burst)
-  const spaceMs    = Number(body.spaceMs ?? 1500);                  // spacing between re-fires
-  const dryRun     = body.dryRun === undefined ? true : !!body.dryRun; // SAFE default: count only
+  const scanLimit  = Math.min(Number(pick("scanLimit") ?? 100), 500);  // rows examined per call
+  const scanOffset = Math.max(Number(pick("scanOffset") ?? 0), 0);     // pagination cursor
+  const limit      = Math.min(Number(pick("limit") ?? 10), 25);        // max re-fires per call (no burst)
+  const spaceMs    = Number(pick("spaceMs") ?? 1500);                  // spacing between re-fires
+  // SAFE default: count only. Must pass dryRun=false (or 0/no) to actually re-fire.
+  const dryRunRaw  = pick("dryRun");
+  const dryRun     = dryRunRaw === undefined ? true : !(dryRunRaw === false || dryRunRaw === "false" || dryRunRaw === "0" || dryRunRaw === "no");
 
   let rows;
   try {
