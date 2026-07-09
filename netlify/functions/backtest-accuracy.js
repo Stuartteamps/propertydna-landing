@@ -21,6 +21,12 @@
 const crypto = require("crypto");
 const https = require("https");
 const db = require("./_supabase");
+// ── LIVE-mode reuse: the CURRENT valuation stack (same modules enrich-report.js
+// runs). We import the math — we do NOT fork or duplicate it — so ?live=1 scores
+// the exact engine that ships today, not stale stored pdna values. ──
+const { computeValuation } = require("./_valuation-engine");
+const { rankCompsCommunityFirst } = require("./_community_comps");
+const { lookupCommunityByAddress } = require("./_cv_luxury_index");
 
 const CORS = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 
@@ -92,6 +98,209 @@ function isoMonthsAgo(months) {
   return d.toISOString().slice(0, 10);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// LIVE BACK-TEST (?live=1) — measures the CURRENT engine, not stored pdna values.
+//
+// For every Coachella-Valley ground-truth sold (rows in `properties` with a real
+// last_sale_price in the window), we recompute a valuation with TODAY's engine
+// AS-OF that sale date and compare the predicted comp fair value to the actual
+// recorded sale price.
+//
+// LEAKAGE SAFETY (two independent guards):
+//   1. Comp set: for each subject we use ONLY sales that closed STRICTLY BEFORE
+//      the subject's own sale date, in the subject's city, and we EXCLUDE the
+//      subject address itself (any sale of it). No future comp can inform the
+//      prediction; the subject can't be its own comp.
+//   2. Anchor: computeValuation's "sale anchor" is the subject's OWN last sale —
+//      which in a back-test IS the ground-truth answer. Feeding it back would be
+//      circular, so we pass anchorValue=null and measure the BLIND comp fair
+//      value. nowYear is set to the sale year so the engine's recency weighting
+//      is dated as-of the sale, not today.
+//
+// The comp pull + community ranking + computeValuation mirror enrich-report.js's
+// buildEngineValuation() (same modules, same shapes), minus the subject-sale
+// anchor and with the before-date comp filter. READ-ONLY: SELECT only, never
+// writes a pdna value.
+// ═══════════════════════════════════════════════════════════════════════════
+const numOr = (v) => { if (v == null) return null; const n = Number(v); return isNaN(n) || n === 0 ? null : n; };
+const normCity = (c) => String(c || "").toLowerCase().trim().replace(/\s+/g, " ");
+const normAddr = (a) => String(a || "").toLowerCase().trim().replace(/[.,]/g, "").replace(/\s+/g, " ");
+
+const CV_CITIES = ["palm springs", "palm desert", "indio", "la quinta", "rancho mirage",
+  "indian wells", "cathedral city", "desert hot springs", "coachella", "thousand palms", "bermuda dunes"];
+function isCoachellaValley(city, state) {
+  const st = String(state || "").trim();
+  if (st && st.toUpperCase() !== "CA" && st.toLowerCase() !== "california") return false;
+  const c = String(city || "").toLowerCase();
+  return CV_CITIES.some((x) => c.includes(x));
+}
+// Reuse the existing back-test price-tier buckets.
+function liveTier(sale) {
+  if (sale < 1_000_000) return "under_1M";
+  if (sale < 2_000_000) return "1M_to_2M";
+  if (sale < 5_000_000) return "2M_to_5M";
+  return "5M_plus";
+}
+
+async function runLiveBacktest({ months, limit, floor, cutoff }) {
+  const startMs = Date.now();
+  const BUDGET_MS = 22000; // wall-clock guard (function timeout is 26s)
+  const COMP_MIN_PRICE = 50000; // junk guard, mirrors enrich-report's comp filter
+  const COMP_CAP = 250;         // mirrors enrich-report lookupSoldComps .limit(250)
+  const COLS = "address,unit,city,state,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,last_sale_date,property_type_normalized";
+
+  // ── Pull the CV sold universe ONCE (windowed, paginated). It serves as BOTH
+  //    the ground-truth subject set AND the comp pool; each subject only ever
+  //    sees earlier-dated members of the same city. ──
+  const universeCap = Math.min(Math.max(limit, 1000) + 7000, 25000);
+  const PAGE = 1000;
+  const universe = [];
+  let rowsScanned = 0, pages = 0;
+  for (let off = 0; off < universeCap; off += PAGE) {
+    const rows = await db.from("properties")
+      .select(COLS)
+      .gte("last_sale_price", floor)
+      .gte("last_sale_date", cutoff)
+      .order("last_sale_date", { ascending: false })
+      .range(off, off + PAGE - 1)
+      .get().catch(() => []);
+    pages++;
+    if (!Array.isArray(rows) || rows.length === 0) break;
+    rowsScanned += rows.length;
+    for (const r of rows) {
+      if (!r.last_sale_date || !isCoachellaValley(r.city, r.state)) continue;
+      universe.push(r);
+    }
+    if (rows.length < PAGE) break;
+    if (Date.now() - startMs > BUDGET_MS) break;
+  }
+
+  // Universe is already last_sale_date DESC. Group by city for fast per-subject
+  // comp selection (each city list stays DESC → newest comps first).
+  const byCity = new Map();
+  for (const r of universe) {
+    const k = normCity(r.city);
+    if (!byCity.has(k)) byCity.set(k, []);
+    byCity.get(k).push(r);
+  }
+
+  const subjects = universe.slice(0, limit);
+  const pairs = [];
+  const diag = { no_sqft: 0, no_sale: 0, few_comps: 0, few_usable: 0, no_value: 0, valued: 0, budget_stopped: 0 };
+  let compCountSum = 0;
+
+  for (let i = 0; i < subjects.length; i++) {
+    if (Date.now() - startMs > BUDGET_MS) { diag.budget_stopped = subjects.length - i; break; }
+    const s = subjects[i];
+    const actual = numOr(s.last_sale_price);
+    const saleT = Date.parse(s.last_sale_date);
+    if (!actual || isNaN(saleT)) { diag.no_sale++; continue; }
+    const subjSqft = numOr(s.sqft);
+    if (!subjSqft) { diag.no_sqft++; continue; }
+
+    const cityLc = normCity(s.city);
+    const subjAddr = normAddr(s.address);
+    const cohort = byCity.get(cityLc) || [];
+
+    // Leakage-safe comps: same city, SOLD STRICTLY BEFORE the subject's sale
+    // date, and NOT the subject itself. Cohort is DESC, so we naturally collect
+    // the most-recent-before-sale comps first, capped at COMP_CAP.
+    const rawComps = [];
+    for (const c of cohort) {
+      if (rawComps.length >= COMP_CAP) break;
+      const ct = Date.parse(c.last_sale_date);
+      if (isNaN(ct) || ct >= saleT) continue;          // must have closed BEFORE the subject
+      if (normAddr(c.address) === subjAddr) continue;   // exclude the subject itself
+      const price = numOr(c.last_sale_price);
+      if (!price || price < COMP_MIN_PRICE) continue;
+      rawComps.push({
+        address: c.address, city: c.city, distance: null,
+        lotSize: numOr(c.lot_sqft), saleDate: c.last_sale_date,
+        propertyType: c.property_type_normalized || null,
+        sqft: numOr(c.sqft), price,
+        beds: numOr(c.beds), baths: numOr(c.baths),
+        yearBuilt: numOr(c.year_built), lat: null, lon: null,
+      });
+    }
+    if (rawComps.length < 3) { diag.few_comps++; continue; }
+
+    // Community-first ranking (identical to enrich-report.js), then computeValuation.
+    const subjectCommunity = lookupCommunityByAddress(s.address, s.city) || null;
+    const rankSubject = { propertyType: s.property_type_normalized, sqft: subjSqft, lotSize: numOr(s.lot_sqft), city: s.city };
+    const ranked = rankCompsCommunityFirst(rankSubject, subjectCommunity, rawComps);
+    const engineComps = ranked.map((c) => ({
+      price: c.price, sqft: c.sqft, lotSqft: c.lotSize ?? null,
+      beds: c.beds ?? null, baths: c.baths ?? null, yearBuilt: c.yearBuilt ?? null,
+      saleDate: c.saleDate ?? null,
+    }));
+    const usable = engineComps.filter((c) => numOr(c.price) && numOr(c.sqft) && numOr(c.sqft) > 400).length;
+    if (usable < 3) { diag.few_usable++; continue; }
+
+    const engineSubject = { sqft: subjSqft, lotSqft: numOr(s.lot_sqft), beds: numOr(s.beds), baths: numOr(s.baths), yearBuilt: numOr(s.year_built) };
+    const saleYear = new Date(saleT).getUTCFullYear();
+    // anchorValue=null → BLIND comp fair value (subject's own sale is the target).
+    const val = computeValuation(engineSubject, engineComps, { anchorValue: null, nowYear: saleYear });
+    const predicted = val.fairValue;
+    if (!predicted) { diag.no_value++; continue; }
+    diag.valued++;
+    compCountSum += val.compCount || usable;
+    pairs.push({ predicted, actual, tier: liveTier(actual) });
+  }
+
+  // ── Aggregate: overall + by price tier (reusing score()). ──
+  const overall = score(pairs);
+  const TIER_ORDER = ["under_1M", "1M_to_2M", "2M_to_5M", "5M_plus"];
+  const byTier = {};
+  for (const t of TIER_ORDER) byTier[t] = score(pairs.filter((p) => p.tier === t));
+
+  const dir = overall.n ? (overall.biasPct > 0 ? "OVER-values" : overall.biasPct < 0 ? "UNDER-values" : "is centered") : "n/a";
+  const lines = [];
+  lines.push(`PropertyDNA LIVE Back-Test — CURRENT engine, as-of each sale date (recorded CV sales since ${cutoff})`);
+  lines.push(`Leakage-safe: comps SOLD BEFORE the subject's sale date, same city, subject excluded; anchorValue=null (blind comp fair value); nowYear=sale year.`);
+  lines.push(`CV solds pulled: ${universe.length} (scanned ${rowsScanned} rows / ${pages} pages) | subjects considered: ${subjects.length} | VALUED (n): ${overall.n || 0}` + (diag.budget_stopped ? ` | budget-stopped ${diag.budget_stopped}` : ""));
+  lines.push(`Skips → no_sqft ${diag.no_sqft} | no/late comps ${diag.few_comps + diag.few_usable} | no_value ${diag.no_value} | no_sale ${diag.no_sale}`);
+  if (overall.n) {
+    lines.push("");
+    lines.push(`OVERALL → MdAPE ${overall.mdapePct}% | MAPE ${overall.mapePct}% | within5 ${overall.within5Pct}% | within10 ${overall.within10Pct}% | within20 ${overall.within20Pct}% | bias ${overall.biasPct > 0 ? "+" : ""}${overall.biasPct}% (engine ${dir}) | n=${overall.n}`);
+    lines.push("");
+    lines.push(`── LIVE accuracy by PRICE TIER ──`);
+    for (const t of TIER_ORDER) {
+      const s = byTier[t];
+      if (!s || !s.n) { lines.push(`  ${t.padEnd(10)} (no samples)`); continue; }
+      lines.push(`  ${t.padEnd(10)} n=${String(s.n).padStart(4)} | MdAPE ${String(s.mdapePct).padStart(6)}% | within10 ${String(s.within10Pct).padStart(5)}% | bias ${s.biasPct > 0 ? "+" : ""}${s.biasPct}% (${s.biasPct > 0 ? "over" : s.biasPct < 0 ? "under" : "flat"})`);
+    }
+  } else {
+    lines.push("");
+    lines.push("No CV solds could be valued (n=0). Widen 'months' or check the properties sold feed.");
+  }
+  if ((overall.n || 0) < 50) lines.push(`\n⚠ ${overall.n || 0} valued samples — below 50; directional only.`);
+
+  return {
+    statusCode: 200, headers: CORS,
+    body: JSON.stringify({
+      ok: true, live: true, usingServiceKey: USING_SERVICE_KEY,
+      ranAt: new Date().toISOString(),
+      runtimeMs: Date.now() - startMs,
+      params: { months, limit, floor, cutoff, mode: "live_current_engine_as_of_sale_date" },
+      leakageSafety: {
+        compRule: "same city; last_sale_date STRICTLY < subject last_sale_date; subject address excluded; capped at 250 most-recent-before-sale; price >= $50k",
+        anchor: "anchorValue=null (subject's own sale is the ground-truth target — never fed back)",
+        recency: "computeValuation nowYear = subject sale year (as-of dating)",
+        engine: "computeValuation + rankCompsCommunityFirst imported from _valuation-engine.js / _community_comps.js (no fork)",
+      },
+      universeSize: universe.length,
+      rowsScanned, pages,
+      subjectsConsidered: subjects.length,
+      valued: overall.n || 0,
+      avgCompCount: overall.n ? +(compCountSum / overall.n).toFixed(1) : null,
+      diagnostics: diag,
+      overall,
+      byTier,
+      report: lines.join("\n"),
+    }, null, 2),
+  };
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: CORS, body: "" };
 
@@ -113,6 +322,11 @@ exports.handler = async (event) => {
   const nowMs = Date.now();
 
   try {
+    // LIVE mode — recompute with the CURRENT engine as-of each sale date.
+    if (q.live) {
+      return await runLiveBacktest({ months, limit, floor, cutoff });
+    }
+
     // Count mode — definitive row counts to tell RLS-limited from sparse data.
     if (q.count) {
       const [pmTotal, pmRentcast, phTotal, phSales, piTotal, piValued, prTotal, propsTotal] = await Promise.all([

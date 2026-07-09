@@ -28,6 +28,12 @@
 [functions."enrich-report"]
   timeout = 26
 
+# backtest-accuracy — ?live=1 recomputes the CURRENT engine as-of each sale date
+# over thousands of CV solds (paginated DB pull + per-subject computeValuation).
+# Needs headroom beyond the 10s default; internal wall-clock guard stops at ~22s.
+[functions."backtest-accuracy"]
+  timeout = 26
+
 # Social Publisher agent — generates a mission-driven daily post via Claude and
 # (in publish mode) hands it to social-poster. Daily 10am PT (17:00 UTC).
 # Default mode = draft (emails Dan the post). After /admin/oauth is granted,
