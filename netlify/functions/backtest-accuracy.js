@@ -142,7 +142,7 @@ function liveTier(sale) {
   return "5M_plus";
 }
 
-async function runLiveBacktest({ months, limit, floor, cutoff }) {
+async function runLiveBacktest({ months, limit, floor, cutoff, dbg }) {
   const startMs = Date.now();
   const BUDGET_MS = 22000; // wall-clock guard (function timeout is 26s)
   const COMP_MIN_PRICE = 50000; // junk guard, mirrors enrich-report's comp filter
@@ -261,7 +261,7 @@ async function runLiveBacktest({ months, limit, floor, cutoff }) {
   }
   // Diagnostic: the worst over/under predictions drive MAPE — surface them so the
   // arms-length thresholds can be calibrated against real offenders (temporary).
-  const worstOffenders = q._dbg
+  const worstOffenders = dbg
     ? [...pairs].sort((a, b) => b._dbg.ape - a._dbg.ape).slice(0, 25).map((p) => ({ ...p._dbg, predicted: p.predicted, actual: p.actual }))
     : undefined;
 
@@ -345,7 +345,7 @@ exports.handler = async (event) => {
   try {
     // LIVE mode — recompute with the CURRENT engine as-of each sale date.
     if (q.live) {
-      return await runLiveBacktest({ months, limit, floor, cutoff });
+      return await runLiveBacktest({ months, limit, floor, cutoff, dbg: !!q._dbg });
     }
 
     // Count mode — definitive row counts to tell RLS-limited from sparse data.
