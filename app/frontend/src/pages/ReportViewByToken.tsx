@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, lazy, Suspense, Component, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, Component, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
+import { track } from '@/lib/track';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import AuthModal from '@/components/AuthModal';
@@ -131,6 +132,21 @@ export default function ReportViewByToken() {
     }, 20_000);
     return () => clearTimeout(t);
   }, [pending, pollCount, fetchReport]);
+
+  // ── Activation event: fire once when a real report resolves. This is the
+  // payoff of the whole address→report journey and the entry point to the
+  // viral share loop, and was previously untracked (the funnel was blind from
+  // form_submitted onward). Coarse, non-PII params only. ──
+  const viewTrackedRef = useRef(false);
+  useEffect(() => {
+    if (viewTrackedRef.current) return;
+    if (report && !pending && !error) {
+      viewTrackedRef.current = true;
+      const status = report?.status ?? 'unknown';
+      const hasValue = !!report?.property_dna?.normalized?.valuation?.marketValue;
+      track('report_viewed', { status, has_value: hasValue });
+    }
+  }, [report, pending, error]);
 
   const dna      = report?.property_dna ?? {};
   const dnaScore = computeDNAScore(dna);

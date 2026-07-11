@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import FadeUp from '@/components/FadeUp';
+import { track } from '@/lib/track';
 
 // SEO + social-share meta — targets high-intent buyer searches and makes every
 // shared /price-check link render a rich preview (the viral loop).
@@ -69,10 +70,21 @@ export default function PriceCheck() {
       const r = await fetch(`/.netlify/functions/avm?${p.toString()}`);
       const data = await r.json();
       setRes(data);
+      // Instrument the lead-magnet result (was previously untracked). Coarse,
+      // non-PII signals only — no address/email.
+      track('avm_result', {
+        matched: !!data?.avmValue,
+        has_verdict: !!data?.verdict,
+        reason: data?.reason ?? null,
+        state: f.state || null,
+      });
       // keep inputs in the URL so the result is shareable
       const q = new URLSearchParams(Object.entries(f).filter(([, v]) => v) as [string, string][]);
       setSp(q, { replace: true });
-    } catch { setErr('Could not reach the valuation engine. Try again.'); }
+    } catch {
+      track('avm_result', { matched: false, error: true, state: f.state || null });
+      setErr('Could not reach the valuation engine. Try again.');
+    }
     setLoading(false);
   }
 
