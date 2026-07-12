@@ -14,3 +14,9 @@
 2. **Approve the C3 coordinated change** (get-reports JWT + Dashboard bearer).
 3. **Confirm data licensing** for MLS/assessor **display + redistribution** per jurisdiction before scaling display or publishing accuracy (D5).
 4. **Confirm** whether validated demand/WTP/conversion data exists outside the repo (affects stage confidence).
+
+## Cycle 2 — 2026-07-11 (founder responded to decisions)
+- **Founder APPROVED decision 1 (migration 039) and decision 2 (C3).** Recorded.
+- **DL-7 — Executed C3 + safely-reversible backlog (B-03/B-09/B-13) via orchestrated Workflow.** Multiple agents on disjoint files, adversarial verify per item, bounded auto-fix. Conductor independently re-verified diffs (hazard backend, auth event no-PII, all-clear gating) + ran tsc/tests/build.
+- **DL-8 — Did NOT run migration 039 or rotate tokens.** The agent has no production Supabase/Constant Contact/Google credentials and must not hold them. Approval clears the gate; execution is a founder action (runbook in the migration file). Not claiming it as done.
+- **DL-9 — Did NOT merge to `main` / deploy to production.** Branch-scope rule + prod deploy is outward-facing. Changes pushed to `claude/propertydna-founder-os-j79t5r` only. Recommend running 039 first, then promoting the branch so C3 auth + closed RLS land together.

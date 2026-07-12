@@ -31,9 +31,11 @@ interface ReportData {
   estimate_low?: number;
   estimate_high?: number;
   flood_zone?: string;
+  flood_status?: string;
   in_sfha?: boolean;
   unfinaled_permits?: number;
   hazard_rating?: string;
+  hazard_status?: string;
   verdict?: string;
   comp_count_used?: number;
   comp_count_available?: number;
@@ -118,8 +120,10 @@ export default function BuyerProtection() {
           estimate: v.estimate ?? p.current_estimated_value,
           estimate_low: v.low, estimate_high: v.high,
           flood_zone: r.flood_zone, in_sfha: r.in_sfha,
+          flood_status: r.flood_status ?? r.flood?.status,
           unfinaled_permits: r.unfinaled_permits,
           hazard_rating: r.hazard_rating,
+          hazard_status: r.hazard_status,
           verdict: v.verdict,
           comp_count_used: comps.cma_count,
           comp_count_available: comps.algo_count,
@@ -134,6 +138,14 @@ export default function BuyerProtection() {
   const handlePrint = () => window.print();
 
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // A hazard whose data was never actually looked up must be shown as
+  // "Not assessed", NOT rolled into an affirmative all-clear.
+  const isUnavailable = (status?: string, label?: string) =>
+    status === 'unavailable' || /not assessed/i.test(label || '');
+  const floodUnavailable = isUnavailable(data?.flood_status, data?.flood_zone);
+  const hazardUnavailable = isUnavailable(data?.hazard_status, data?.hazard_rating);
+  const anyHazardUnavailable = floodUnavailable || hazardUnavailable;
 
   return (
     <>
@@ -249,6 +261,18 @@ export default function BuyerProtection() {
               </div>
             )}
 
+            {anyHazardUnavailable && (
+              <div className="pdna-issue">
+                <strong>Environmental hazard: Not assessed — data unavailable for this area</strong><br />
+                {floodUnavailable && hazardUnavailable
+                  ? 'Flood and composite hazard data could not be retrieved for this location, so no determination has been made either way. '
+                  : floodUnavailable
+                    ? 'Flood-zone data could not be retrieved for this location, so no determination has been made either way. '
+                    : 'Composite hazard data could not be retrieved for this location, so no determination has been made either way. '}
+                This is not an all-clear. Buyer requests the seller's most recent flood/hazard determination, elevation certificate (if any), and current insurance carrier + premium so the exposure can be independently verified.
+              </div>
+            )}
+
             {data?.comp_spread_pct != null && Math.abs(data.comp_spread_pct) > 8 && (
               <div className="pdna-issue">
                 <strong>Comparable analysis: {data.comp_count_used ?? '—'} comps used, {data.comp_count_available ?? '—'} available within 0.5 mi</strong><br />
@@ -263,15 +287,15 @@ export default function BuyerProtection() {
               </div>
             )}
 
-            {(!data || (
+            {data && !anyHazardUnavailable && (
               (!data.unfinaled_permits || data.unfinaled_permits === 0) &&
               !(data.flood_zone && data.in_sfha) &&
               !(data.hazard_rating && /high|severe/i.test(data.hazard_rating)) &&
               !(data.comp_spread_pct != null && Math.abs(data.comp_spread_pct) > 8) &&
               !(data.dna_score != null && data.dna_score < 70)
-            )) && (
+            ) && (
               <div style={{ background: '#f0f9ee', border: '1px solid #c8e6c9', padding: '10px 12px', fontSize: 11, color: '#2e5b2e' }}>
-                <strong>No material findings to address.</strong> The algorithm's verdict, comp set, flood-zone, permit history, and hazard composite are all within acceptable bands. Buyer is comfortable proceeding subject to standard contingencies.
+                <strong>No material findings to address.</strong> The algorithm's verdict, comp set, flood-zone, permit history, and hazard composite were all assessed and fall within acceptable bands. Buyer is comfortable proceeding subject to standard contingencies.
               </div>
             )}
           </div>

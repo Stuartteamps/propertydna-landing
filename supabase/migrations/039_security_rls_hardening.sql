@@ -2,9 +2,20 @@
 -- 039 — SECURITY: RLS hardening for PII / secret tables
 -- ============================================================
 --
--- STATUS: DRAFT — REQUIRES FOUNDER REVIEW + MANUAL RUN. NOT auto-applied.
--- Migrations in this repo are run by hand against Supabase; adding this file
--- does NOT execute it. Do not run in prod until the checklist below passes.
+-- STATUS: APPROVED by founder 2026-07-11 — RUN MANUALLY in the Supabase SQL
+-- editor (this agent has no production DB credentials and cannot execute it).
+-- Migrations in this repo are applied by hand; committing this file does NOT
+-- execute it. Run order below.
+--
+-- HOW TO APPLY (founder, ~2 min):
+--   1. Supabase dashboard → SQL Editor → paste this file → Run.
+--   2. Immediately ROTATE the stored OAuth tokens (they were exposed while
+--      oauth_tokens had RLS off): reconnect Constant Contact via
+--      /admin/oauth (cc-oauth-start) and re-auth Google; this overwrites the
+--      rows the migration now protects.
+--   3. Smoke test: load /dashboard (reports still list), send a test via the
+--      newsletter preview, and confirm the CC token refresh cron still runs.
+-- ROLLBACK is at the bottom of this file.
 --
 -- WHY (found in Founder-OS audit 2026-07-11, see docs/founder-os/03-risk-register.md):
 --   C1  property_reports + profiles grant `anon` SELECT on ALL rows

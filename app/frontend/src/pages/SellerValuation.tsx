@@ -30,7 +30,7 @@ export default function SellerValuation() {
     if (!form.homeAddress.trim()) { setError('Property address required.'); setStatus('error'); return; }
     setStatus('loading'); setError('');
     const result = await submitLead('SELLER_VALUATION', { ...form, leadSource: 'seller_valuation_form' });
-    if (result.success) setStatus('success');
+    if (result.success === true) setStatus('success');
     else { setError(result.error); setStatus('error'); }
   };
 

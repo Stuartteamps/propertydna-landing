@@ -55,7 +55,9 @@ export default function PropertyTicker() {
           );
         }
       })
-      .catch(() => {});
+      // Supabase's builder resolves to PromiseLike<void>, which has no `.catch`;
+      // `.then(undefined, fn)` is the equivalent rejection handler.
+      .then(undefined, () => {});
   }, []);
 
   const doubled = [...items, ...items];

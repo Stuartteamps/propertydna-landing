@@ -26,7 +26,7 @@ export default function Contact() {
     if (!form.email.includes('@')) { setError('Valid email required.'); setStatus('error'); return; }
     setStatus('loading'); setError('');
     const result = await submitLead('CONTACT', { ...form, leadSource: 'contact_form' });
-    if (result.success) setStatus('success');
+    if (result.success === true) setStatus('success');
     else { setError(result.error); setStatus('error'); }
   };
 

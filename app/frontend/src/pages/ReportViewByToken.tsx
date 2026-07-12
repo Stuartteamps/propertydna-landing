@@ -39,6 +39,7 @@ interface ReportData {
   property_dna: any;
   created_at: string;
   status: string;
+  apn?: string;
 }
 
 const fmt = (v: any) => (v && v !== '—' ? v : '—');

@@ -32,5 +32,48 @@ npm run build            → exit 0
 ### Rollback
 Revert the 4 frontend files + delete `track.ts`; the events are additive with no dependents. Migration 039 was never executed.
 
-### Security review of the change
+### Security review of the change (cycle 1)
 - `track.ts` swallows all errors, never throws, no-ops when `__pdnaSkipGA`. No secrets. No PII forwarded (verified each call site passes only status/matched/plan/state booleans+enums). No new network endpoints. No auth surface touched.
+
+---
+
+## Cycle 2 — 2026-07-11 — Founder-approved fixes via multi-agent orchestration
+**Branch:** `claude/propertydna-founder-os-j79t5r`
+
+Founder approved decisions 1 (migration 039) and 2 (C3). Executed the safely-reversible
+code items through an orchestrated Workflow (3 implement agents on disjoint files →
+adversarial verify per item → bounded auto-fix), plus C3 by hand.
+
+### Changes shipped
+- **C3 (IDOR fix)** — `get-reports.js` now requires a Supabase bearer, verifies it via
+  `/auth/v1/user`, derives the email from the token, ignores `body.email`, and gates the
+  owner god-view on the verified identity. `Dashboard.tsx` sends the session token.
+- **B-03 (hazard trust, D1)** — `save-report.js`: non-CA seismic/wildfire and absent FEMA
+  zones now return explicit `{score:null,label:'Not assessed',status:'unavailable',source:null}`
+  instead of a fake "Low"/"Minimal Hazard" mislabeled USGS/CalFire/FEMA. `buildRiskProfile`
+  averages only assessed hazards (no NaN). `BuyerProtection.tsx` gates the "No material
+  findings" all-clear behind `!anyHazardUnavailable` and adds an explicit "Not assessed —
+  not an all-clear" block. Genuine CA/real-data logic preserved exactly.
+- **B-09 (funnel stage 7)** — `auth.tsx` fires `sign_up`/`sign_in` on SIGNED_IN (once per
+  transition), non-PII (`method` provider only).
+- **B-13 (tech debt R2)** — all 14 pre-existing TypeScript errors fixed; `tsc` now 0 project-wide.
+- **Migration 039** — marked APPROVED with apply + token-rotation runbook. NOT executed by
+  the agent (no prod DB credentials); founder runs it in the Supabase SQL editor.
+
+### Validation
+```
+node --check get-reports.js / save-report.js → OK
+npx tsc --noEmit  → 0 errors  (was 14)
+npx vitest run    → 61 passed
+npm run build     → exit 0
+```
+Workflow: 6 agents, 0 errors, all 3 items CONFIRMED_GOOD by adversarial verify.
+
+### Not done (still founder-gated / out of scope)
+- Running migration 039 + rotating CC/Google tokens (founder action in Supabase/consoles).
+- Merge to `main` / production deploy (not authorized — everything stays on the feature branch).
+- H3/M1–M5 hardening, D3/D4 remain in backlog.
+
+### Rollback
+Revert the cycle-2 files; all changes are additive or behavior-preserving except the
+intended C3 auth requirement (which is matched by the Dashboard token send in the same commit).

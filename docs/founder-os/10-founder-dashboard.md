@@ -29,10 +29,14 @@ landing → address search → valid match → report generated → **report vie
 ## Current baseline
 61 tests pass · build passes · 14 pre-existing TS errors · 161 functions · 39 migrations. All conversion/revenue/retention baselines: **UNKNOWN** (now instrumented; pull after deploy).
 
-## Completed this cycle
+## Completed (cycles 1–2)
 - Full discovery + stage assessment + risk/product/data/metrics registers.
-- **Conversion funnel instrumented** (`report_viewed`, `purchase`, `avm_result`) via new centralized `lib/track.ts` — additive, tested, build-clean.
-- **Security remediation migration 039 drafted** (ready to run, not applied).
+- **Conversion funnel instrumented** — `report_viewed`, `purchase`, `avm_result` (cycle 1) + `sign_up`/`sign_in` (cycle 2) via centralized `lib/track.ts`.
+- **C3 IDOR fixed** — `get-reports.js` requires a verified Supabase bearer; `Dashboard.tsx` sends it.
+- **Hazard-trust fixed (D1)** — no more fake "Low/Minimal Hazard" for 49 states; explicit "Not assessed" states; false all-clear removed.
+- **Tech debt** — all 14 TypeScript errors fixed; `tsc` 0 project-wide.
+- **Migration 039 APPROVED** with apply + token-rotation runbook (founder to run in Supabase — agent has no prod DB access).
+- Delivered via orchestrated multi-agent Workflow (6 agents, adversarial verify, all CONFIRMED_GOOD). Validation: tsc 0 · 61 tests · build clean.
 
 ## Evidence
 `vitest` 61/61 · `npm run build` exit 0 · `eslint` clean on touched files · no new type errors. Findings cross-verified by 3 independent audits.
@@ -41,10 +45,11 @@ landing → address search → valid match → report generated → **report vie
 None yet (no live funnel data pre-deploy). First: B-11 free-summary vs paid-full (after funnel data lands).
 
 ## Decisions required from founder
-1. **Approve running migration 039** + rotate Constant Contact/Google OAuth tokens right after. *(Critical, fastest high-value risk kill.)*
-2. Approve the **C3** coordinated change (get-reports JWT + Dashboard bearer).
-3. Confirm **MLS/assessor display+redistribution licensing** per jurisdiction (D5).
-4. Do you hold **demand/WTP/conversion data** outside the repo? (sets stage confidence).
+1. **RUN migration 039 in Supabase SQL editor + rotate Constant Contact/Google OAuth tokens** (approved; agent cannot execute prod SQL — this is a 2-min manual step per the runbook in the migration file). *(Critical, fastest high-value risk kill — still open until you run it.)*
+2. ✅ **C3 approved + implemented** (get-reports JWT + Dashboard bearer) — on the feature branch, awaiting your deploy.
+3. **Approve promoting this branch to production** (merge to `main`) — the agent deliberately did not deploy to prod. Do this only AFTER migration 039 is run, so the C3 auth change and the closed RLS land together.
+4. Confirm **MLS/assessor display+redistribution licensing** per jurisdiction (D5).
+5. Do you hold **demand/WTP/conversion data** outside the repo? (sets stage confidence).
 
 ## Blockers
 Security criticals are a trust precondition for driving real users into the funnel. Hazard trust defect (D1) blocks the buyer/risk value prop.
