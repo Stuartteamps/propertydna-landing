@@ -38,6 +38,72 @@ function wQuantile(pairs, q) {
 const median = (a) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// TIER CONTEXT — gate comp selection by the SUBJECT's price tier BEFORE the
+// $/sqft step. A city comp pool is dominated by the cheapest (sub-$1M) sales;
+// left ungated they drag every mid/luxury valuation down (the 1M–2M −32% bias).
+//
+// We (a) GUESS the subject's value size-adjusted from its own comps (robust — a
+// large mid home's size-matched comps are the pricier ones, so this lands in the
+// right tier without needing the anchor), (b) map to a tier, (c) expose a PRICE
+// BAND centered on the tier MIDPOINT (never the subject's own stale sale, so a
+// cold last-sale can't veto a well-supported higher comp set), and (d) a
+// TIER-MEDIAN $/sqft so luxury anchors on luxury $/sqft, not the sub-luxury pool.
+// ═══════════════════════════════════════════════════════════════════════════
+const TIER_MID     = { under_1M: 550e3, "1M_2M": 1.45e6, "2M_5M": 3.2e6, "5M_plus": 7.5e6 };
+const TIER_BAND_LO = 0.55, TIER_BAND_HI = 1.9;
+
+// Median $/sqft of the pool, grouped by each comp's OWN price tier.
+function tierMedianPsf(comps) {
+  const by = {};
+  for (const c of comps || []) {
+    const p = num(c.price), s = num(c.sqft);
+    if (!p || !s || s < 200) continue;
+    const psf = p / s;
+    if (psf < 20 || psf > 20000) continue;
+    (by[tierOf(p)] ||= []).push(psf);
+  }
+  const out = {};
+  for (const t in by) out[t] = median(by[t]);
+  return out;
+}
+
+// Size-adjusted value guess from the comp pool (size-matched comps first, so a
+// large home is judged against similarly-large — hence pricier — sales, not the
+// cheap volume). Used only to pick the tier bucket, never as the headline.
+function sizeAdjustedGuess(sf, comps) {
+  if (!sf) return null;
+  const u = (comps || []).map((c) => ({ price: num(c.price), sqft: num(c.sqft) }))
+                         .filter((c) => c.price && c.sqft && c.sqft > 200);
+  if (!u.length) return null;
+  const sim = u.filter((c) => c.sqft >= sf * 0.6 && c.sqft <= sf * 1.4);
+  const pool = sim.length >= 5 ? sim : u;
+  return median(pool.map((c) => c.price * (sf / c.sqft)));
+}
+
+// Returns { tier, tierMidpoint, bandLo, bandHi, tierMedPsf, estimate } or null.
+// bandHi is Infinity for 5M_plus (trophy comps have no natural ceiling).
+function deriveTierContext(subject, comps, { anchorValue = null, listPrice = null } = {}) {
+  const sf = num(subject && subject.sqft);
+  const anchor = num(anchorValue), list = num(listPrice);
+  const guess = sizeAdjustedGuess(sf, comps);
+  // Task order: anchor ?? (sqft × tier-median $/sqft, via size-adjusted guess) ?? list.
+  const est = anchor ?? guess ?? list ?? null;
+  if (!est) return null;
+  const tier = tierOf(est);
+  const mid = TIER_MID[tier];
+  const psfByTier = tierMedianPsf(comps);
+  const tierMedPsf = psfByTier[tier]
+    ?? (sf && guess ? guess / sf : null)
+    ?? (() => { const all = (comps || []).map((c) => (num(c.price) && num(c.sqft) > 200) ? num(c.price) / num(c.sqft) : null).filter(Boolean); return all.length ? median(all) : null; })();
+  return {
+    tier, tierMidpoint: mid,
+    bandLo: Math.round(TIER_BAND_LO * mid),
+    bandHi: tier === "5M_plus" ? Infinity : Math.round(TIER_BAND_HI * mid),
+    tierMedPsf, estimate: est,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // ARMS-LENGTH / MARKET-SALE FILTER (shared)
 //
 // Non-arms-length transfers — trust deeds, quitclaims, probate, intra-family /
@@ -175,7 +241,7 @@ function filterArmsLength(records, opts = {}) {
  * pricier comp pool can never blow the number up far above what this exact home
  * last traded for.
  */
-function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = null } = {}) {
+function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = null, tierCtx = null } = {}) {
   const sf = num(subject.sqft); if (!sf) return null;
   const sBeds = num(subject.beds);
   const anchor = num(anchorValue);
@@ -184,19 +250,18 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
                     .filter(c => c.price && c.sqft && c.sqft > 400);
   if (usable.length < 3) return null;
 
-  // (0) TIER LOCK to the subject's OWN market. A city comp pool mixes modest homes
-  // with luxury estates of similar size; naively centering on the pool's median
-  // $/sqft would KEEP the luxury cluster and drop the genuinely-comparable homes.
-  // So when we know what THIS home is worth (its own recent sale → anchor), drop
-  // comps priced — or $/sqft'd — far outside the subject's own band FIRST. This is
-  // the single biggest guard against over-valuing a modest home off pricey comps.
-  if (anchor) {
-    const inTier = usable.filter(c => {
-      if (c.price < 0.5 * anchor || c.price > 1.8 * anchor) return false;
-      if (anchorPsf) { const p = c.price / c.sqft; if (p < 0.6 * anchorPsf || p > 1.6 * anchorPsf) return false; }
-      return true;
-    });
-    if (inTier.length >= 3) usable = inTier;
+  // (0) TIER PRE-BAND — the single biggest fix for the mid/luxury under-valuation.
+  // A city comp pool is dominated by the cheapest (sub-$1M) sales; ungated they
+  // drag every mid/luxury valuation down. We drop comps whose PRICE falls outside
+  // the subject tier's band — centered on the tier MIDPOINT, NOT the subject's own
+  // (possibly stale-low) last sale, so a cold anchor can't veto a well-supported
+  // higher comp set. Skipped when it would starve the estimate (<3 survive) so a
+  // sparse luxury pool never voids the report (geography/time widening upstream
+  // supplies real in-tier luxury comps before we ever get here).
+  const ctx = tierCtx || deriveTierContext(subject, usable, { anchorValue: anchor, listPrice: num(subject.listPrice) });
+  if (ctx) {
+    const banded = usable.filter(c => c.price >= ctx.bandLo && (ctx.bandHi === Infinity || c.price <= ctx.bandHi));
+    if (banded.length >= 3) usable = banded;
   }
 
   // (1) Comparability gate — only similar homes. Widen gracefully so we never
@@ -221,11 +286,14 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
   if (recent.length >= 6) cand = recent;
 
   // (3) $/sqft dissimilar filter. Centre on the SUBJECT's own $/sqft when known
-  // (anchorPsf) — not the pool median, which a luxury cluster would drag up and
-  // thereby retain the wrong homes. Falls back to the pool median only when we
-  // have no anchor. Kills cross-segment contamination the whole-city pool adds.
-  const psfCenter = anchorPsf || median(cand.map(c => c.price / c.sqft));
-  let tight = cand.filter(c => { const p = c.price / c.sqft; return p >= 0.65 * psfCenter && p <= 1.5 * psfCenter; });
+  // (anchorPsf), else the TIER-median $/sqft — so luxury anchors on luxury $/sqft,
+  // not the sub-luxury pool median (which a cheap-volume city pool drags down and
+  // which keeps the wrong homes). Falls back to the candidate median only when we
+  // have neither. At $5M+ the high bound opens to 2.5× so real trophy comps (whose
+  // $/sqft legitimately runs well above the pool) survive the outlier filter.
+  const psfCenter = anchorPsf || (ctx && ctx.tierMedPsf) || median(cand.map(c => c.price / c.sqft));
+  const psfHiMul = ctx && ctx.tier === "5M_plus" ? 2.5 : 1.5;
+  let tight = cand.filter(c => { const p = c.price / c.sqft; return p >= 0.65 * psfCenter && p <= psfHiMul * psfCenter; });
   if (tight.length < 3) tight = cand;
   cand = tight;
 
@@ -280,11 +348,16 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
   let anchorPull = 0;
   if (anchor) {
     const dev = (mid - anchor) / anchor;
-    if      (dev >  0.35) anchorPull = 0.72;      // comps WAY hot — the sale dominates
-    else if (dev >  0.20) anchorPull = 0.60;
-    else if (dev >  0.10) anchorPull = 0.42;
-    else if (dev >  0.05) anchorPull = 0.25;
-    else if (dev < -0.20) anchorPull = 0.50;      // comps far cold — also pull toward the sale
+    // ASYMMETRIC: the DOWNWARD pull (comps ABOVE a stale-low last sale, dev>0) is
+    // HALVED versus the upward pull. A single old sale must not veto a well-
+    // supported higher comp set — that stale anchor was the mid/luxury under-value
+    // driver. The upward pull (comps far BELOW the sale, dev<0) stays strong: a
+    // genuine recent sale still rescues a cold/under-supplied comp set.
+    if      (dev >  0.35) anchorPull = 0.36;      // comps hot above the sale — pull GENTLY back
+    else if (dev >  0.20) anchorPull = 0.30;
+    else if (dev >  0.10) anchorPull = 0.21;
+    else if (dev >  0.05) anchorPull = 0.12;
+    else if (dev < -0.20) anchorPull = 0.50;      // comps far below the sale — pull UP toward it
     else if (dev < -0.10) anchorPull = 0.30;
     if (anchorPull > 0) mid = Math.round(anchorPull * anchor + (1 - anchorPull) * mid);
   }
@@ -313,8 +386,12 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
 function computeValuation(subject, comps, opts = {}) {
   // Pass the subject's HPI-appreciated last sale (if any) as the anchor.
   const anchorValue = opts.anchorValue ?? num(subject.anchorValue) ?? null;
-  const A = compFairValue(subject, comps, { ...opts, anchorValue });
   const listPrice = num(subject.listPrice);
+  // Derive the subject tier from its INPUTS (anchor/comps/list) so it can PRE-BAND
+  // the comp pool — tier is no longer merely read off the output. Passed into
+  // compFairValue so the same context gates comp selection and the $/sqft center.
+  const tierCtx = opts.tierCtx || deriveTierContext(subject, comps, { anchorValue, listPrice });
+  const A = compFairValue(subject, comps, { ...opts, anchorValue, tierCtx });
   let expectedSale = null, tier = null;
   if (A) tier = tierOf(A.fairValue);
   if (listPrice) {
@@ -341,4 +418,4 @@ function computeValuation(subject, comps, opts = {}) {
   };
 }
 
-module.exports = { computeValuation, compFairValue, TIER_SP_LP, tierOf, filterArmsLength, armsLengthVerdict };
+module.exports = { computeValuation, compFairValue, deriveTierContext, TIER_SP_LP, tierOf, filterArmsLength, armsLengthVerdict };

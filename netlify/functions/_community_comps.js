@@ -46,10 +46,20 @@ function commKey(matched) {
  * @param subjectCommunity result of lookupCommunity() for the subject (or null)
  * @param comp             normalized comp ({ address, city, distance, lotSize, saleDate, propertyType, sqft })
  */
-function affinityFor(subject, subjectCommunity, comp) {
-  const a = { sameCommunity: 0, sameTier: 0, sameType: 0, viewTier: 0, lotBand: 0, recency: 0, dist: Infinity, reasons: [] };
+function affinityFor(subject, subjectCommunity, comp, tierBand = null) {
+  const a = { sameCommunity: 0, sameTier: 0, priceBand: 0, sameType: 0, viewTier: 0, lotBand: 0, recency: 0, dist: Infinity, reasons: [] };
   subject = subject || {};
   comp = comp || {};
+
+  // (0) TIER PRICE BAND — when the caller supplies the subject tier's price band,
+  // rank comps whose sale price sits INSIDE it above out-of-band ones. This lifts
+  // in-tier comps into the top-k the engine actually values from, so the dominant
+  // cheap sub-$1M sales don't crowd out the genuinely-comparable mid/luxury comps.
+  // Null-safe: no band → this rung stays 0 and ranking is unchanged.
+  if (tierBand && num(comp.price) != null) {
+    const p = num(comp.price);
+    if (p >= tierBand.lo && (tierBand.hi == null || p <= tierBand.hi)) { a.priceBand = 1; a.reasons.push("in_tier_band"); }
+  }
 
   // (1) Same community — strongest. Infer comp community from street anchors.
   const compComm = lookupCommunityByAddress(comp.address, comp.city || subject.city);
@@ -107,6 +117,7 @@ function compareByHierarchy(x, y) {
   return (
     (y.sameCommunity - x.sameCommunity) ||
     (y.sameTier      - x.sameTier)      ||
+    (y.priceBand     - x.priceBand)     ||
     (y.sameType      - x.sameType)      ||
     (y.viewTier      - x.viewTier)      ||
     (y.lotBand       - x.lotBand)       ||
@@ -119,9 +130,10 @@ function compareByHierarchy(x, y) {
  * rankCompsCommunityFirst — returns comps sorted best->worst with `.affinity`.
  * Does NOT filter; caller applies PSF outlier drop + count gate. Stable + null-safe.
  */
-function rankCompsCommunityFirst(subject, subjectCommunity, comps = []) {
+function rankCompsCommunityFirst(subject, subjectCommunity, comps = [], opts = {}) {
+  const tierBand = opts.tierBand || null;
   return (comps || [])
-    .map((c) => ({ ...c, affinity: affinityFor(subject, subjectCommunity, c) }))
+    .map((c) => ({ ...c, affinity: affinityFor(subject, subjectCommunity, c, tierBand) }))
     .sort((x, y) => compareByHierarchy(x.affinity, y.affinity));
 }
 

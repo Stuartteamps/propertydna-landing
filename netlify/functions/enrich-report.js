@@ -20,7 +20,7 @@ const https = require("https");
 const db = require("./_supabase");
 const { appreciateToToday: hpiAppreciate } = require("./_hpi_index");
 // ── PropertyDNA's OWN valuation stack (source of truth; RentCast-free) ──
-const { computeValuation, filterArmsLength } = require("./_valuation-engine");
+const { computeValuation, filterArmsLength, deriveTierContext } = require("./_valuation-engine");
 const { rankCompsCommunityFirst } = require("./_community_comps");
 const { lookupCommunity, lookupCommunityByAddress } = require("./_cv_luxury_index");
 
@@ -309,6 +309,42 @@ async function lookupSoldComps({ city, zip }) {
   return out;
 }
 
+// B2. LUXURY GEOGRAPHY + TIME WIDENING — for a $5M+ subject, same-city trophy
+// sales are too sparse to value against (often <3). Rather than fall back to the
+// cheap sub-tier comps that under-value luxury, we widen GEOGRAPHY to the whole
+// Coachella Valley and TIME to ~48 months, keeping only real high-end sales at/
+// above the tier band floor. Returned in lookupSoldComps' shape; the caller merges
+// these into the pool BEFORE arms-length + ranking, so they compete as real comps.
+async function lookupLuxuryCompsCV({ minPrice = 3e6, monthsBack = 48 }) {
+  const out = [];
+  const cutoff = new Date(Date.now() - monthsBack * 30.44 * 864e5).toISOString().slice(0, 10);
+  try {
+    const rows = await db.from("properties")
+      .select("address,city,zip,sqft,beds,baths,lot_sqft,year_built,last_sale_price,current_estimated_value,last_sale_date,latitude,longitude,property_type_normalized,listing_source")
+      .gte("last_sale_price", Math.round(minPrice))
+      .gte("last_sale_date", cutoff)
+      .order("last_sale_date", { ascending: false })
+      .limit(300).get();
+    if (Array.isArray(rows)) for (const r of rows) {
+      if (!isCoachellaValley(r.city, "CA")) continue; // whole-CV, still same market
+      const price = Number(r.last_sale_price) || Number(r.current_estimated_value) || null;
+      const sqft = Number(r.sqft) || null;
+      const isCma = /flexmls|cma|mls/i.test(String(r.listing_source || ""));
+      if (price && price > minPrice * 0.5) out.push({
+        price, sqft: sqft && sqft > 200 ? sqft : null,
+        beds: Number(r.beds) || null, baths: Number(r.baths) || null,
+        lotSize: Number(r.lot_sqft) || null, yearBuilt: Number(r.year_built) || null,
+        address: r.address || null, city: r.city || null,
+        lat: r.latitude ? Number(r.latitude) : null, lon: r.longitude ? Number(r.longitude) : null,
+        date: r.last_sale_date || null, propertyType: r.property_type_normalized || null,
+        listing_source: r.listing_source || null,
+        src: isCma ? "properties_cma_lux" : "properties_lux",
+      });
+    }
+  } catch (e) { console.warn("[enrich-report:luxury comps]", e.message); }
+  return out;
+}
+
 // Median $/sqft from a comp pool (outlier-trimmed to a sane $40–$5,000 band).
 function medianPsf(comps) {
   const psfs = comps
@@ -442,33 +478,12 @@ async function buildEngineValuation({ address, city, state, zip }) {
     lookupCommunity(pickStr(subj, ["subdivision", "neighborhood"]) || pickStr(crest, ["SUBDIVISION_NAME"]) || "", subjCity) ||
     lookupCommunityByAddress(address, subjCity);
   const rankSubject = { propertyType: subjType, sqft: subjSqft, lotSize: subjLot, city: subjCity };
-  // ── Arms-length guard: drop CLEAR non-market transfers (trust deeds, quitclaims,
-  //    probate, nominal/intra-family, same-week re-recordings) BEFORE they can be
-  //    ranked as comps and drag the valuation down. Conservative — keeps real
-  //    sales, even below-median ones. Cohort $/sqft rate computed over this pool. ──
-  const alComps = filterArmsLength(soldComps, { cohortKey: (c) => String(c.city || subjCity || "").toLowerCase().trim() });
-  const cleanSoldComps = alComps.kept;
-  const rankerComps = cleanSoldComps.map((c) => ({
-    address: c.address, city: c.city || subjCity, distance: null,
-    lotSize: c.lotSize ?? null, saleDate: c.date ?? null,
-    propertyType: c.propertyType ?? null, sqft: c.sqft ?? null,
-    price: c.price, beds: c.beds ?? null, baths: c.baths ?? null,
-    yearBuilt: c.yearBuilt ?? null, lat: c.lat ?? null, lon: c.lon ?? null, src: c.src,
-  }));
-  const ranked = rankCompsCommunityFirst(rankSubject, subjectCommunity, rankerComps);
-
-  // Engine input shape { price, sqft, lotSqft, beds, baths, yearBuilt, saleDate }.
-  const engineComps = ranked.map((c) => ({
-    price: c.price, sqft: c.sqft, lotSqft: c.lotSize ?? null,
-    beds: c.beds ?? null, baths: c.baths ?? null, yearBuilt: c.yearBuilt ?? null,
-    saleDate: c.saleDate ?? null,
-  }));
-  const usableCompCount = engineComps.filter((c) => num(c.price) && num(c.sqft) && num(c.sqft) > 400).length;
 
   // Anchor: the subject's own last arm's-length sale, appreciated to today with
   // the FHFA Riverside MSA house-price index (real, citation-grade — not a flat
   // guess). This BOUNDS the comp estimate so a broad/pricey comp pool can't value
-  // this exact home far above what it just traded for.
+  // this exact home far above what it just traded for. Computed BEFORE ranking so
+  // it can seed the subject tier used to pre-band and widen the comp pool.
   let anchorValue = null;
   if (lastSalePrice && lastSalePrice > 10000 && lastSaleDate) {
     let appreciated = null;
@@ -479,12 +494,63 @@ async function buildEngineValuation({ address, city, state, zip }) {
     // Temper the MSA-wide FHFA index toward the home's OWN sale price. The index
     // covers all of Riverside-SB-Ontario and over-states specific flat submarkets;
     // the actual last sale is the truer local signal. Recent sales trust the raw
-    // price more (less time to diverge); older sales lean on the index.
+    // price more (less time to diverge); older sales lean on the index. Cap raised
+    // to 0.85 so an OLDER sale tracks appreciation and doesn't anchor the value
+    // stale-low (a driver of the mid/luxury under-valuation).
     const t = Date.parse(lastSaleDate);
     const yrs = isNaN(t) ? 3 : Math.max(0, (Date.now() - t) / (365.25 * 864e5));
-    const wIdx = Math.min(0.7, 0.15 + 0.08 * yrs);
+    const wIdx = Math.min(0.85, 0.15 + 0.08 * yrs);
     anchorValue = Math.round((1 - wIdx) * lastSalePrice + wIdx * appreciated);
   }
+
+  // ── LUXURY WIDENING (geography + time) BEFORE tier-dropping. A $5M+ subject
+  //    rarely has ≥3 same-city trophy comps; rather than let the cheap sub-tier
+  //    comps under-value it (and rather than void the report), widen to whole-CV
+  //    high-end sales over ~48mo and merge them into the pool. Only fires for a
+  //    luxury subject that is actually comp-starved in its own tier band. ──
+  let poolComps = soldComps;
+  const prelimCtx = deriveTierContext({ sqft: subjSqft }, soldComps, { anchorValue });
+  if (prelimCtx && prelimCtx.tier === "5M_plus") {
+    const inBand = soldComps.filter((c) => num(c.price) && num(c.price) >= prelimCtx.bandLo).length;
+    if (inBand < 3) {
+      const lux = await lookupLuxuryCompsCV({ minPrice: Math.max(3e6, prelimCtx.bandLo), monthsBack: 48 }).catch(() => []);
+      if (lux.length) {
+        const seen = new Set(soldComps.map((c) => String(c.address || "").toLowerCase().trim()));
+        poolComps = soldComps.concat(lux.filter((c) => { const k = String(c.address || "").toLowerCase().trim(); if (!k || seen.has(k)) return false; seen.add(k); return true; }));
+      }
+    }
+  }
+
+  // ── Arms-length guard: drop CLEAR non-market transfers (trust deeds, quitclaims,
+  //    probate, nominal/intra-family, same-week re-recordings) BEFORE they can be
+  //    ranked as comps and drag the valuation down. Conservative — keeps real
+  //    sales, even below-median ones. Cohort $/sqft rate computed over this pool. ──
+  const alComps = filterArmsLength(poolComps, { cohortKey: (c) => String(c.city || subjCity || "").toLowerCase().trim() });
+  const cleanSoldComps = alComps.kept;
+
+  // Subject tier band (population-level, centered on the tier midpoint) — passed to
+  // the community ranker so in-tier comps rank into the top-k the engine values
+  // from, and (the same context is re-derived inside the engine) to hard-drop the
+  // dominant cheap comps that were dragging mid/luxury valuations down.
+  const bandCtx = deriveTierContext({ sqft: subjSqft }, cleanSoldComps, { anchorValue });
+  const tierBand = bandCtx ? { lo: bandCtx.bandLo, hi: bandCtx.bandHi === Infinity ? null : bandCtx.bandHi } : null;
+
+  const rankerComps = cleanSoldComps.map((c) => ({
+    address: c.address, city: c.city || subjCity, distance: null,
+    lotSize: c.lotSize ?? null, saleDate: c.date ?? null,
+    propertyType: c.propertyType ?? null, sqft: c.sqft ?? null,
+    price: c.price, beds: c.beds ?? null, baths: c.baths ?? null,
+    yearBuilt: c.yearBuilt ?? null, lat: c.lat ?? null, lon: c.lon ?? null, src: c.src,
+  }));
+  const ranked = rankCompsCommunityFirst(rankSubject, subjectCommunity, rankerComps, { tierBand });
+
+  // Engine input shape { price, sqft, lotSqft, beds, baths, yearBuilt, saleDate }.
+  const engineComps = ranked.map((c) => ({
+    price: c.price, sqft: c.sqft, lotSqft: c.lotSize ?? null,
+    beds: c.beds ?? null, baths: c.baths ?? null, yearBuilt: c.yearBuilt ?? null,
+    saleDate: c.saleDate ?? null,
+  }));
+  const usableCompCount = engineComps.filter((c) => num(c.price) && num(c.sqft) && num(c.sqft) > 400).length;
 
   const engineSubject = { sqft: subjSqft, lotSqft: subjLot, beds: subjBeds, baths: subjBaths, yearBuilt: subjYear };
   // computeValuation returns fairValue=null unless subject.sqft AND >=3 usable comps.
