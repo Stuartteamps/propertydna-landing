@@ -1,0 +1,6 @@
+pyproject.toml
+performance_os_api.egg-info/PKG-INFO
+performance_os_api.egg-info/SOURCES.txt
+performance_os_api.egg-info/dependency_links.txt
+performance_os_api.egg-info/requires.txt
+performance_os_api.egg-info/top_level.txt

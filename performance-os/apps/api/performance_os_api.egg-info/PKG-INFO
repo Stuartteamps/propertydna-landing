@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: performance-os-api
+Version: 0.1.0
+Summary: Performance OS backend — FastAPI health & performance operating system (mock-first).
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: sqlmodel>=0.0.22
+Requires-Dist: pydantic>=2.7
+Requires-Dist: pydantic-settings>=2.3
+Requires-Dist: python-multipart>=0.0.9
+Requires-Dist: pyjwt>=2.8
+Requires-Dist: bcrypt>=4.1
+Requires-Dist: email-validator>=2.1
+Requires-Dist: alembic>=1.13
+Requires-Dist: httpx>=0.27
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23; extra == "dev"
+Requires-Dist: ruff>=0.5; extra == "dev"

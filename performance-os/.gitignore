@@ -1,0 +1,15 @@
+# Python
+apps/api/.venv/
+__pycache__/
+*.pyc
+apps/api/performance_os.db
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
+.env
+# Node / Expo
+apps/mobile/node_modules/
+apps/mobile/.expo/
+apps/mobile/dist/
+# misc
+*.log
+.DS_Store
