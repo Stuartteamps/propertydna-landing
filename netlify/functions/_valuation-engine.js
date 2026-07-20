@@ -95,12 +95,13 @@ function deriveTierContext(subject, comps, { anchorValue = null, listPrice = nul
   const tierMedPsf = psfByTier[tier]
     ?? (sf && guess ? guess / sf : null)
     ?? (() => { const all = (comps || []).map((c) => (num(c.price) && num(c.sqft) > 200) ? num(c.price) / num(c.sqft) : null).filter(Boolean); return all.length ? median(all) : null; })();
-  // Floor basis = MAX of the tier midpoint and the subject's own value guess, so
-  // the cheap-comp floor still ENGAGES when the comp-derived tier under-shoots (a
-  // genuine 1M–2M home read as sub-$1M: guess>midpoint pulls the floor up) yet
-  // stays gentle for a genuinely cheap home (guess≈midpoint). Continuous — no
-  // tier-bucket cliff. Low-side only downstream, so it can never cap a valuation.
-  const floorBasis = Math.max(mid, est || 0);
+  // Floor basis. For MID/LUXURY it is MAX(tier midpoint, own guess) — the midpoint
+  // guarantees an aggressive cheap-comp floor even if the guess under-shoots, and
+  // the guess pulls it higher still for a big home. For UNDER_1M it is the guess
+  // ALONE (no midpoint bump): the cheapest tier is already centered, and bumping
+  // its floor to the midpoint drops the genuinely-comparable cheap sales a modest
+  // home actually needs and over-values it. Continuous, low-side only downstream.
+  const floorBasis = tier === "under_1M" ? (est || mid) : Math.max(mid, est || 0);
   return {
     tier, tierMidpoint: mid,
     bandLo: Math.round(TIER_BAND_LO * floorBasis),
