@@ -23,9 +23,9 @@
   "submit": {
     "production": {
       "ios": {
+        "appleTeamId": "8NR9GCA6GQ",
         "appleId": "YOUR_APPLE_ID_EMAIL",
-        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+        "ascAppId": "AUTO_CREATED_ON_FIRST_SUBMIT"
       }
     }
   }
