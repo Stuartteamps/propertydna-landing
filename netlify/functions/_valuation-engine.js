@@ -245,7 +245,17 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
     const near = pool.map(c => ({ c, d: dist(c) })).sort((a, b) => a.d - b.d).slice(0, k);
     if (!near.length) return null;
     const pairs = near.map(({ c, d }) => {
-      const scale = 0.6 * (sf / c.sqft) + 0.4 * ((c.lotSqft && subject.lotSqft) ? (num(subject.lotSqft) / c.lotSqft) : (sf / c.sqft));
+      // Size-adjust the comp price by sqft (+ lot) ratio. GUARD corrupted data:
+      // a comp (or subject) with a broken lot_sqft — e.g. acres stored where sqft
+      // is expected — otherwise yields a 1000×+ multiplier and a billion-dollar
+      // "valuation". A comp whose lot differs by >4× isn't size-comparable, and no
+      // real home size-adjusts beyond ~3×, so both are clamped. This can never
+      // widen a good estimate; it only removes pathological runaways.
+      const sqftRatio = sf / c.sqft;
+      let lotRatio = (c.lotSqft && subject.lotSqft) ? (num(subject.lotSqft) / c.lotSqft) : sqftRatio;
+      lotRatio = Math.max(0.25, Math.min(4, lotRatio));
+      let scale = 0.6 * sqftRatio + 0.4 * lotRatio;
+      scale = Math.max(0.33, Math.min(3, scale));
       let w = 1 / (d + 0.05);
       if (c.saleDate) { const yrs = Math.max(0, (Date.parse(`${nowYear}-06-30`) - Date.parse(c.saleDate)) / (365.25 * 864e5)); w *= Math.exp(-yrs / 3); }
       return [c.price * scale, w];
