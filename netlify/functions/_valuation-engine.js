@@ -95,9 +95,15 @@ function deriveTierContext(subject, comps, { anchorValue = null, listPrice = nul
   const tierMedPsf = psfByTier[tier]
     ?? (sf && guess ? guess / sf : null)
     ?? (() => { const all = (comps || []).map((c) => (num(c.price) && num(c.sqft) > 200) ? num(c.price) / num(c.sqft) : null).filter(Boolean); return all.length ? median(all) : null; })();
+  // Floor basis = MAX of the tier midpoint and the subject's own value guess, so
+  // the cheap-comp floor still ENGAGES when the comp-derived tier under-shoots (a
+  // genuine 1M–2M home read as sub-$1M: guess>midpoint pulls the floor up) yet
+  // stays gentle for a genuinely cheap home (guess≈midpoint). Continuous — no
+  // tier-bucket cliff. Low-side only downstream, so it can never cap a valuation.
+  const floorBasis = Math.max(mid, est || 0);
   return {
     tier, tierMidpoint: mid,
-    bandLo: Math.round(TIER_BAND_LO * mid),
+    bandLo: Math.round(TIER_BAND_LO * floorBasis),
     bandHi: tier === "5M_plus" ? Infinity : Math.round(TIER_BAND_HI * mid),
     tierMedPsf, estimate: est,
   };
@@ -297,8 +303,13 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
   // pool and drop the comps a mid home needs (that deepened the under-valuation).
   // At $5M+ the high bound opens to 2.5× so real trophy comps (whose $/sqft
   // legitimately runs well above the pool) survive the outlier filter.
+  // The tier-median lift applies to MID/LUXURY tiers only — an under_1M subject
+  // stays on its candidate median (lifting it there merely over-values the cheapest,
+  // already-centered tier). Never lets a mis-detected-low tier pull the center
+  // BELOW the pool (that dropped the high comps a mid home needs).
   const candPsfMed = median(cand.map(c => c.price / c.sqft));
-  const psfCenter = anchorPsf || Math.max((ctx && ctx.tierMedPsf) || 0, candPsfMed || 0) || candPsfMed;
+  const tierPsfLift = ctx && ctx.tier && ctx.tier !== "under_1M" ? (ctx.tierMedPsf || 0) : 0;
+  const psfCenter = anchorPsf || Math.max(tierPsfLift, candPsfMed || 0) || candPsfMed;
   const psfHiMul = ctx && ctx.tier === "5M_plus" ? 2.5 : 1.5;
   let tight = cand.filter(c => { const p = c.price / c.sqft; return p >= 0.65 * psfCenter && p <= psfHiMul * psfCenter; });
   if (tight.length < 3) tight = cand;
