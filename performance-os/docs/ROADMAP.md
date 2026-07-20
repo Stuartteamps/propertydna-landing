@@ -1,6 +1,6 @@
 # Roadmap
 
-Where Performance OS is today and what comes next. The MVP is deliberately **mock-first and
+Where Arete is today and what comes next. The MVP is deliberately **mock-first and
 deterministic-first**: everything works end-to-end with no paid credentials, and the seams for
 real integrations are already in place behind feature flags and provider interfaces.
 

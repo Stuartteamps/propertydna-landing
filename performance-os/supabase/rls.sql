@@ -1,5 +1,5 @@
 -- ============================================================================
--- Performance OS — Row Level Security (RLS) policies
+-- Arete — Row Level Security (RLS) policies
 --
 -- Apply AFTER schema.sql. Enables RLS on every user-owned table so a row is
 -- visible/writable only when it belongs to the authenticated caller.

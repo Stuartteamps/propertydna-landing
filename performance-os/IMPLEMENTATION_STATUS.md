@@ -1,4 +1,4 @@
-# Implementation Status
+# Implementation Status — Arete
 
 Legend: [x] done · [~] partial · [ ] not started
 

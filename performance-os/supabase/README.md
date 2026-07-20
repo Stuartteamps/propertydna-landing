@@ -2,7 +2,7 @@
 
 This directory holds the production Postgres schema and Row Level Security policies that mirror
 the SQLModel tables in `apps/api/app/models/__init__.py`. The local demo uses SQLite and needs
-none of this; use it when running Performance OS against Postgres/Supabase.
+none of this; use it when running Arete against Postgres/Supabase.
 
 | File | Purpose |
 |------|---------|

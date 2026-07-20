@@ -25,7 +25,7 @@ PANELS = {
 
 EDUCATION = (
     "Values shown are what you (or your lab) entered, alongside the lab's own reference range. "
-    "Performance OS does not interpret, diagnose, or recommend medication changes. Discuss any "
+    "Arete does not interpret, diagnose, or recommend medication changes. Discuss any "
     "out-of-range or concerning results with a licensed clinician."
 )
 

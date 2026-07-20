@@ -1,6 +1,6 @@
 # App Store Submission Checklist
 
-Work through this before submitting Performance OS to App Review. Health apps are held to a
+Work through this before submitting Arete to App Review. Health apps are held to a
 higher bar; several items below are hard requirements, not nice-to-haves.
 
 Legend: ☐ = to do. Items marked **(required)** commonly cause rejection if missing.
@@ -10,10 +10,10 @@ Legend: ☐ = to do. Items marked **(required)** commonly cause rejection if mis
 ## Identity & configuration
 
 - ☐ **Bundle identifier** set to your own reverse-DNS id (placeholder:
-  `app.performanceos.mobile`; also `APPLE_BUNDLE_IDENTIFIER` in `.env.example`). **(required)**
+  `com.arete.app`; also `APPLE_BUNDLE_IDENTIFIER` in `.env.example`). **(required)**
 - ☐ **Apple Team ID** configured (`APPLE_TEAM_ID`). **(required)**
 - ☐ App **name**, subtitle, and category chosen (Health & Fitness). Rebrand from the working name
-  "Performance OS" if desired — change `apps/api/app/core/branding.py` and
+  "Arete" if desired — change `apps/api/app/core/branding.py` and
   `packages/shared/branding.ts`.
 - ☐ `version` and incrementing `ios.buildNumber` set in `app.json`.
 
@@ -76,7 +76,7 @@ All strings must be specific and truthful. See [MOBILE_BUILD.md](./MOBILE_BUILD.
 
 - ☐ **Reachable backend** — `EXPO_PUBLIC_API_URL` points at a live **HTTPS** API (not
   `localhost`).
-- ☐ **Demo account** works: `demo@performanceos.app` / `performance123`, with seeded data so the
+- ☐ **Demo account** works: `demo@arete.app` / `performance123`, with seeded data so the
   reviewer sees a populated app.
 - ☐ App handles **permission denial** gracefully (Health/camera/mic declined).
 - ☐ No crashes, no placeholder/debug screens, no broken links.

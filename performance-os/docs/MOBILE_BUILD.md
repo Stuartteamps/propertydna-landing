@@ -96,13 +96,13 @@ App Review rejects submissions missing them.
 
 | Key | Capability | Example string |
 |-----|------------|----------------|
-| `NSHealthShareUsageDescription` | Read HealthKit data | "Performance OS reads your sleep, HRV, heart rate, and activity to calculate readiness and nutrition targets." |
-| `NSHealthUpdateUsageDescription` | Write HealthKit data | "Performance OS can save workouts you log back to Apple Health." |
-| `NSCameraUsageDescription` | Camera (meal photos) | "Performance OS uses the camera to analyze photos of your meals." |
-| `NSPhotoLibraryUsageDescription` | Pick photos | "Performance OS lets you attach food photos from your library." |
-| `NSPhotoLibraryAddUsageDescription` | Save to library | "Performance OS can save meal photos to your library." |
-| `NSMicrophoneUsageDescription` | Voice journal / voice log | "Performance OS uses the microphone for voice journal entries." |
-| `NSUserNotificationsUsageDescription` | Local/push notifications | "Performance OS sends reminders for meals, hydration, workouts, and your morning summary." |
+| `NSHealthShareUsageDescription` | Read HealthKit data | "Arete reads your sleep, HRV, heart rate, and activity to calculate readiness and nutrition targets." |
+| `NSHealthUpdateUsageDescription` | Write HealthKit data | "Arete can save workouts you log back to Apple Health." |
+| `NSCameraUsageDescription` | Camera (meal photos) | "Arete uses the camera to analyze photos of your meals." |
+| `NSPhotoLibraryUsageDescription` | Pick photos | "Arete lets you attach food photos from your library." |
+| `NSPhotoLibraryAddUsageDescription` | Save to library | "Arete can save meal photos to your library." |
+| `NSMicrophoneUsageDescription` | Voice journal / voice log | "Arete uses the microphone for voice journal entries." |
+| `NSUserNotificationsUsageDescription` | Local/push notifications | "Arete sends reminders for meals, hydration, workouts, and your morning summary." |
 
 Also required for HealthKit: the **HealthKit entitlement** (`com.apple.developer.healthkit`) and
 enabling the HealthKit capability for your App ID in the Apple Developer portal. With
@@ -115,7 +115,7 @@ Example `app.json` sketch:
 {
   "expo": {
     "ios": {
-      "bundleIdentifier": "app.performanceos.mobile",
+      "bundleIdentifier": "com.arete.app",
       "infoPlist": {
         "NSHealthShareUsageDescription": "…",
         "NSHealthUpdateUsageDescription": "…",
@@ -133,7 +133,7 @@ Example `app.json` sketch:
 }
 ```
 
-> Bundle id placeholder: `app.performanceos.mobile` (also set as `APPLE_BUNDLE_IDENTIFIER` in
+> Bundle id placeholder: `com.arete.app` (also set as `APPLE_BUNDLE_IDENTIFIER` in
 > `.env.example`). Change it to your own reverse-DNS id before shipping.
 
 ---

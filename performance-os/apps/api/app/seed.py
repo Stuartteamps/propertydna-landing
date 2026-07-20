@@ -41,7 +41,7 @@ from app.services.mock_integrations import (
     mock_sleep_sessions,
 )
 
-DEMO_EMAIL = "demo@performanceos.app"
+DEMO_EMAIL = "demo@arete.app"
 DEMO_PASSWORD = "performance123"
 REF = dt.date(2026, 7, 20)
 

@@ -15,7 +15,7 @@ Get a token:
 ```bash
 curl -s -X POST http://localhost:8000/api/auth/login \
   -H 'content-type: application/json' \
-  -d '{"email":"demo@performanceos.app","password":"performance123"}'
+  -d '{"email":"demo@arete.app","password":"performance123"}'
 ```
 
 ---

@@ -1,6 +1,6 @@
 # Security & Privacy
 
-Performance OS handles personal health data. This document describes the posture as built in the
+Arete handles personal health data. This document describes the posture as built in the
 MVP and where the seams for production hardening are.
 
 > **Not HIPAA compliant.** The architecture is HIPAA-*conscious* — audit logging, least

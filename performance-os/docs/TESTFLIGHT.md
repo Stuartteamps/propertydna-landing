@@ -1,6 +1,6 @@
 # Shipping to TestFlight
 
-Step-by-step guide to get Performance OS onto TestFlight for internal/external testing, using
+Step-by-step guide to get Arete onto TestFlight for internal/external testing, using
 Expo Application Services (EAS). This assumes the app builds locally as a Dev Client already
 (see [MOBILE_BUILD.md](./MOBILE_BUILD.md)).
 
@@ -15,7 +15,7 @@ Expo Application Services (EAS). This assumes the app builds locally as a Dev Cl
 1. **Apple Developer Program membership** ($99/yr) — required to distribute any build.
 2. **An App Store Connect record** for the app (create it under *My Apps → +*).
 3. A **bundle identifier** registered to your team. Placeholder in this repo:
-   `app.performanceos.mobile` (`APPLE_BUNDLE_IDENTIFIER` in `.env.example`). Use your own.
+   `com.arete.app` (`APPLE_BUNDLE_IDENTIFIER` in `.env.example`). Use your own.
 4. Your **Apple Team ID** (`APPLE_TEAM_ID` in `.env.example`).
 5. `eas-cli` installed and logged in:
 
@@ -84,7 +84,7 @@ through Apple's automatic processing (a few minutes to an hour).
 
 Provide **demo credentials** so testers can sign in immediately:
 
-- Email: `demo@performanceos.app`
+- Email: `demo@arete.app`
 - Password: `performance123`
 
 (This requires the tester's app to point at a reachable backend — a deployed API URL via

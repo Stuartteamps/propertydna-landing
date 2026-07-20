@@ -84,7 +84,7 @@ export default function Profile() {
       </Card>
 
       <Text className="text-[11px] text-center text-subtle-light dark:text-subtle-dark mt-6">
-        Performance OS is for education & wellness only and is not a substitute for professional
+        Arete is for education & wellness only and is not a substitute for professional
         medical advice.
       </Text>
     </ScrollView>

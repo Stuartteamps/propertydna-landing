@@ -7,7 +7,7 @@ import { useAuth } from "../../src/store/auth";
 export default function Login() {
   const { login, register } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("demo@performanceos.app");
+  const [email, setEmail] = useState("demo@arete.app");
   const [password, setPassword] = useState("performance123");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -34,7 +34,7 @@ export default function Login() {
       className="flex-1 bg-bg-light dark:bg-bg-dark"
     >
       <ScrollView contentContainerClassName="flex-1 justify-center px-6">
-        <Text className="text-4xl font-bold text-text-light dark:text-text-dark mb-1">Performance OS</Text>
+        <Text className="text-4xl font-bold text-text-light dark:text-text-dark mb-1">Arete</Text>
         <Text className="text-base text-subtle-light dark:text-subtle-dark mb-8">
           Your personal health & performance operating system.
         </Text>
@@ -68,7 +68,7 @@ export default function Login() {
           </View>
         </Card>
         <Text className="text-xs text-center text-subtle-light dark:text-subtle-dark mt-6">
-          Demo: demo@performanceos.app / performance123
+          Demo: demo@arete.app / performance123
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>

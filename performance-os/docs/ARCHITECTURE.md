@@ -1,6 +1,6 @@
 # Architecture
 
-Performance OS is a FastAPI backend plus an Expo/React Native mobile client. The design
+Arete is a FastAPI backend plus an Expo/React Native mobile client. The design
 principle throughout is **deterministic engines first, AI second**: all numbers that matter
 (readiness score, calorie/macro targets, morning routine) come from pure, unit-tested Python.
 AI only augments copy and turns unstructured input (photos, text, voice) into a *validated,

@@ -107,7 +107,7 @@ export default function Onboarding() {
 
       <View className="flex-row items-center justify-between mt-8">
         <Text className="flex-1 text-sm text-subtle-light dark:text-subtle-dark pr-3">
-          I understand Performance OS is for education & wellness only and does not provide medical advice.
+          I understand Arete is for education & wellness only and does not provide medical advice.
         </Text>
         <Switch value={consent} onValueChange={setConsent} />
       </View>

@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Performance OS",
-    "slug": "performance-os",
-    "scheme": "performanceos",
+    "name": "Arete",
+    "slug": "arete",
+    "scheme": "arete",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,19 +16,19 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.performanceos.mobile",
+      "bundleIdentifier": "com.arete.app",
       "buildNumber": "1",
       "infoPlist": {
-        "NSHealthShareUsageDescription": "Performance OS reads your Apple Health data (sleep, HRV, heart rate, workouts, activity) to calculate readiness and personalize recommendations.",
-        "NSHealthUpdateUsageDescription": "Performance OS can write approved workouts and body metrics back to Apple Health.",
-        "NSCameraUsageDescription": "Performance OS uses the camera to photograph meals for automatic nutrition estimation.",
-        "NSPhotoLibraryUsageDescription": "Performance OS lets you upload meal photos from your library for nutrition estimation.",
-        "NSMicrophoneUsageDescription": "Performance OS uses the microphone for voice journal and voice food logging.",
+        "NSHealthShareUsageDescription": "Arete reads your Apple Health data (sleep, HRV, heart rate, workouts, activity) to calculate readiness and personalize recommendations.",
+        "NSHealthUpdateUsageDescription": "Arete can write approved workouts and body metrics back to Apple Health.",
+        "NSCameraUsageDescription": "Arete uses the camera to photograph meals for automatic nutrition estimation.",
+        "NSPhotoLibraryUsageDescription": "Arete lets you upload meal photos from your library for nutrition estimation.",
+        "NSMicrophoneUsageDescription": "Arete uses the microphone for voice journal and voice food logging.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "app.performanceos.mobile",
+      "package": "com.arete.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0F14"
@@ -39,14 +39,14 @@
       "expo-secure-store",
       [
         "expo-camera",
-        { "cameraPermission": "Allow Performance OS to photograph meals for nutrition estimation." }
+        { "cameraPermission": "Allow Arete to photograph meals for nutrition estimation." }
       ],
       [
         "react-native-health",
         {
           "isClinicalDataEnabled": false,
-          "healthSharePermission": "Performance OS reads Health data to compute readiness.",
-          "healthUpdatePermission": "Performance OS writes approved workouts to Health."
+          "healthSharePermission": "Arete reads Health data to compute readiness.",
+          "healthUpdatePermission": "Arete writes approved workouts to Health."
         }
       ]
     ],

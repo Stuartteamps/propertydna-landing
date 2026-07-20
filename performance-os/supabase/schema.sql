@@ -1,5 +1,5 @@
 -- ============================================================================
--- Performance OS — PostgreSQL schema (Supabase-ready)
+-- Arete — PostgreSQL schema (Supabase-ready)
 --
 -- Mirrors the 30 SQLModel tables in apps/api/app/models/__init__.py.
 -- Conventions:

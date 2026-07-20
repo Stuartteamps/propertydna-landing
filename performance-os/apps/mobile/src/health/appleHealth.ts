@@ -1,5 +1,5 @@
 /**
- * Apple HealthKit bridge (device only). Reads the metrics Performance OS uses and posts them
+ * Apple HealthKit bridge (device only). Reads the metrics Arete uses and posts them
  * to the backend's /integrations/apple_health/sync endpoint in the same shape the mock produces.
  *
  * Requires an Expo Dev Client build with `react-native-health` (NOT Expo Go). When the native

@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+performance_os.db
+uploads/*
+.env
+tests/

@@ -1,9 +1,9 @@
-# Performance OS — Project Plan
+# Arete — Project Plan
 
 Personal health & performance operating system. iOS-first (Expo/React Native) +
 Python/FastAPI backend. Mock-first so the full demo runs with **zero paid credentials**.
 
-> Working name: **Performance OS**. Branding is centralized in `packages/shared/branding.ts`
+> Working name: **Arete**. Branding is centralized in `packages/shared/branding.ts`
 > and `apps/api/app/core/branding.py` so it can be renamed in one place later.
 
 ## Architecture (chosen, simplest production-capable)

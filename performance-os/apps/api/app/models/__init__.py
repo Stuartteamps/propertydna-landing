@@ -1,4 +1,4 @@
-"""All SQLModel tables for Performance OS.
+"""All SQLModel tables for Arete.
 
 Conventions:
 - UUID string primary keys (`id`).

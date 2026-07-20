@@ -1,8 +1,8 @@
-# Performance OS
+# Arete
 
 > Your personal health & performance operating system.
 
-Performance OS is an iOS-first personal health and performance app: a single place to
+Arete is an iOS-first personal health and performance app: a single place to
 track training, nutrition, recovery, sleep, readiness, labs, and a daily journal — with
 deterministic, explainable engines doing the math and AI only augmenting the copy. It is
 **mock-first**, so the entire product runs end-to-end with **zero paid credentials**.
@@ -12,7 +12,7 @@ deterministic, explainable engines doing the math and AI only augmenting the cop
 - **Providers:** AI (Vision/Nutrition/Coaching/Transcription), Apple Health, and Google Calendar
   all default to mock implementations behind feature flags.
 
-> **Working name.** "Performance OS" is a placeholder. Rebrand in one place via
+> **Working name.** "Arete" is a placeholder. Rebrand in one place via
 > `apps/api/app/core/branding.py` (server) and `packages/shared/branding.ts` (client).
 
 ---
@@ -98,7 +98,7 @@ HealthKit and the camera require an **Expo Dev Client** build (not Expo Go). See
 
 | Field    | Value                      |
 |----------|----------------------------|
-| Email    | `demo@performanceos.app`   |
+| Email    | `demo@arete.app`   |
 | Password | `performance123`           |
 
 ---
@@ -118,7 +118,7 @@ Set in `.env`. All default to mock so nothing paid is required.
 
 ## Safety & medical disclaimer
 
-Performance OS is for **education, wellness, and fitness tracking only**. It does **not**
+Arete is for **education, wellness, and fitness tracking only**. It does **not**
 diagnose, treat, or prescribe, and is not a substitute for professional medical advice.
 AI-generated nutrition and readiness figures are **estimates**, always shown with a confidence
 value and editable before they are stored. Deterministic engines enforce hard safety bounds
@@ -126,7 +126,7 @@ value and editable before they are stored. Deterministic engines enforce hard sa
 sensitive table and are never written to logs. **Consult a licensed clinician for medical
 decisions.**
 
-Performance OS is **not HIPAA compliant**. The architecture is HIPAA-*conscious* — see
+Arete is **not HIPAA compliant**. The architecture is HIPAA-*conscious* — see
 **[docs/SECURITY.md](./docs/SECURITY.md)**.
 
 ---

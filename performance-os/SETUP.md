@@ -1,6 +1,6 @@
 # Setup
 
-Copy-pasteable setup for Performance OS from a clean checkout. Two parts: the **backend**
+Copy-pasteable setup for Arete from a clean checkout. Two parts: the **backend**
 (required for everything) and the **mobile app** (needs a Mac + Xcode for iOS builds).
 
 The defaults are **mock-first**: the whole product runs with no paid credentials.
@@ -63,7 +63,7 @@ journal, recovery sessions, supplements, and labs.
 
 Demo credentials:
 
-- Email: `demo@performanceos.app`
+- Email: `demo@arete.app`
 - Password: `performance123`
 
 ### 1.4 Run the API
@@ -83,7 +83,7 @@ curl -s http://localhost:8000/api/health | python -m json.tool
 
 curl -s -X POST http://localhost:8000/api/auth/login \
   -H 'content-type: application/json' \
-  -d '{"email":"demo@performanceos.app","password":"performance123"}'
+  -d '{"email":"demo@arete.app","password":"performance123"}'
 ```
 
 ### 1.5 Tests & lint
