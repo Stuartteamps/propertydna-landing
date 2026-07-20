@@ -532,8 +532,11 @@ async function buildEngineValuation({ address, city, state, zip }) {
   // the community ranker so in-tier comps rank into the top-k the engine values
   // from, and (the same context is re-derived inside the engine) to hard-drop the
   // dominant cheap comps that were dragging mid/luxury valuations down.
+  // LOW-SIDE-ONLY band (hi:null) — promote comps at/above the tier floor so the
+  // dominant cheap sales don't crowd the top-k, WITHOUT down-ranking legit high
+  // comps when the tier guess under-shoots (mirrors the engine's low-side pre-band).
   const bandCtx = deriveTierContext({ sqft: subjSqft }, cleanSoldComps, { anchorValue });
-  const tierBand = bandCtx ? { lo: bandCtx.bandLo, hi: bandCtx.bandHi === Infinity ? null : bandCtx.bandHi } : null;
+  const tierBand = bandCtx ? { lo: bandCtx.bandLo, hi: null } : null;
 
   const rankerComps = cleanSoldComps.map((c) => ({
     address: c.address, city: c.city || subjCity, distance: null,

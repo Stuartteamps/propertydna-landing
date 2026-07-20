@@ -252,15 +252,20 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
 
   // (0) TIER PRE-BAND — the single biggest fix for the mid/luxury under-valuation.
   // A city comp pool is dominated by the cheapest (sub-$1M) sales; ungated they
-  // drag every mid/luxury valuation down. We drop comps whose PRICE falls outside
-  // the subject tier's band — centered on the tier MIDPOINT, NOT the subject's own
-  // (possibly stale-low) last sale, so a cold anchor can't veto a well-supported
-  // higher comp set. Skipped when it would starve the estimate (<3 survive) so a
-  // sparse luxury pool never voids the report (geography/time widening upstream
-  // supplies real in-tier luxury comps before we ever get here).
+  // drag every mid/luxury valuation down. We drop comps priced BELOW the subject
+  // tier's FLOOR (0.55× the tier midpoint) — LOW-SIDE ONLY, deliberately. Dropping
+  // cheap cross-tier comps can only lift or leave the estimate, never cap it; a
+  // high-side drop is NOT applied because when the comp-derived tier guess under-
+  // shoots (a genuine 1M–2M home read as sub-$1M) a high ceiling would hard-drop
+  // the very comps it needs and DEEPEN the under-valuation. High outliers are
+  // instead handled downstream by the $/sqft filter and the ±e.mid price refine.
+  // Skipped when it would starve the estimate (<3 survive) so a sparse luxury pool
+  // never voids the report (geography/time widening upstream supplies real in-tier
+  // luxury comps first). When the guess under-shoots, the floor is low and simply
+  // no-ops — so a mis-detected tier can never make a valuation WORSE than baseline.
   const ctx = tierCtx || deriveTierContext(subject, usable, { anchorValue: anchor, listPrice: num(subject.listPrice) });
-  if (ctx) {
-    const banded = usable.filter(c => c.price >= ctx.bandLo && (ctx.bandHi === Infinity || c.price <= ctx.bandHi));
+  if (ctx && ctx.bandLo) {
+    const banded = usable.filter(c => c.price >= ctx.bandLo);
     if (banded.length >= 3) usable = banded;
   }
 
@@ -286,12 +291,14 @@ function compFairValue(subject, comps, { k = 8, nowYear = 2026, anchorValue = nu
   if (recent.length >= 6) cand = recent;
 
   // (3) $/sqft dissimilar filter. Centre on the SUBJECT's own $/sqft when known
-  // (anchorPsf), else the TIER-median $/sqft — so luxury anchors on luxury $/sqft,
-  // not the sub-luxury pool median (which a cheap-volume city pool drags down and
-  // which keeps the wrong homes). Falls back to the candidate median only when we
-  // have neither. At $5M+ the high bound opens to 2.5× so real trophy comps (whose
-  // $/sqft legitimately runs well above the pool) survive the outlier filter.
-  const psfCenter = anchorPsf || (ctx && ctx.tierMedPsf) || median(cand.map(c => c.price / c.sqft));
+  // (anchorPsf), else the MAX of the tier-median $/sqft and the candidate median —
+  // so luxury anchors on luxury $/sqft (tier-median lifts the center, keeping the
+  // high comps) while a mis-detected-LOW tier can never pull the center BELOW the
+  // pool and drop the comps a mid home needs (that deepened the under-valuation).
+  // At $5M+ the high bound opens to 2.5× so real trophy comps (whose $/sqft
+  // legitimately runs well above the pool) survive the outlier filter.
+  const candPsfMed = median(cand.map(c => c.price / c.sqft));
+  const psfCenter = anchorPsf || Math.max((ctx && ctx.tierMedPsf) || 0, candPsfMed || 0) || candPsfMed;
   const psfHiMul = ctx && ctx.tier === "5M_plus" ? 2.5 : 1.5;
   let tight = cand.filter(c => { const p = c.price / c.sqft; return p >= 0.65 * psfCenter && p <= psfHiMul * psfCenter; });
   if (tight.length < 3) tight = cand;
