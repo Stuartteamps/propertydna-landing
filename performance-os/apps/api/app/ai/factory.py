@@ -12,7 +12,7 @@ from app.ai.base import (
 from app.ai.providers import mock, real
 from app.core.config import settings
 
-_REAL = {"openai", "anthropic", "real"}
+_REAL = {"openai", "anthropic", "claude", "real"}
 
 
 @lru_cache

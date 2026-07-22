@@ -33,6 +33,8 @@ class Settings(BaseSettings):
 
     # --- Optional real credentials (never required for demo) ---
     AI_PROVIDER_API_KEY: str | None = None
+    AI_MODEL: str | None = None          # override; sensible per-vendor default otherwise
+    AI_TIMEOUT_SECONDS: float = 45.0
     SUPABASE_URL: str | None = None
     SUPABASE_ANON_KEY: str | None = None
     SUPABASE_SERVICE_ROLE_KEY: str | None = None

@@ -32,14 +32,20 @@ fly ssh console -C "python -m app.seed"     # creates demo@arete.app / performan
 Edit `performance-os/apps/mobile/eas.json` → set `EXPO_PUBLIC_API_URL` to your Fly URL in **both**
 the `preview` and `production` profiles.
 
-## 3. (Recommended) Turn on real food-vision AI
-By default meal photos use a mock that returns canned estimates — fine for review, not for real
-users. To use a real provider, set on the API:
+## 3. Turn on real food-vision AI  (implemented — just add your key)
+Meal photos, meal-text parsing, and coaching use a real model once you set a vendor + key.
+Both Claude and OpenAI are wired (`app/ai/providers/real.py`); output is schema-validated before
+storage. Pick one:
 ```bash
-fly secrets set AI_PROVIDER=openai AI_PROVIDER_API_KEY=<your key>
+# Claude (default model claude-sonnet-5):
+fly secrets set AI_PROVIDER=anthropic AI_PROVIDER_API_KEY=<your-anthropic-key>
+
+# …or OpenAI (default model gpt-4o-mini):
+fly secrets set AI_PROVIDER=openai AI_PROVIDER_API_KEY=<your-openai-key>
 ```
-(Implement the vendor call in `app/ai/providers/real.py` — the interface + validation are already
-there. Ask and this can be wired to a specific vendor.)
+Optionally pin a model with `fly secrets set AI_MODEL=<model-id>`. Voice transcription uses
+OpenAI Whisper when an OpenAI key is present. Keep `AI_PROVIDER=mock` for review if you prefer to
+launch without live AI first.
 
 ## 4. Host the two required URLs
 Publish `legal/PRIVACY_POLICY.md` and `legal/SUPPORT.md` (fill the `<...>` blanks first). Fastest:

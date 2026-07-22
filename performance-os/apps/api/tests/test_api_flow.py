@@ -52,6 +52,7 @@ def test_full_flow(auth_client):
     save = auth_client.post("/api/meals", json={
         "name": analysis["meal_name"], "meal_type": "lunch", "source": "ai_photo",
         "image_id": image_id, "overall_confidence": analysis["overall_confidence"],
+        "eaten_at": "2026-07-20T12:00:00",  # align with the dashboard date asserted below
         "items": analysis["items"],
     })
     assert save.status_code == 201
