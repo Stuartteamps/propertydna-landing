@@ -15,8 +15,16 @@
  * Audit pre-deploy: see docs/architecture/phase1-audit.md and the algorithm
  * map at /tmp/.../a688fb725dbdd6c70.output (Phase 1 valuation audit).
  *
- * Goal: move from current ~85% MdAPE on $2M+ luxury and ~70% on multifamily
- * up toward 97% MdAPE across all property types, especially at $2M+.
+ * GOVERNANCE (see docs/founder-os/03-risk-register.md D2): the percentages
+ * below are internal design TARGETS, not validated results, and must never
+ * appear in any public/user/investor-facing surface until backed by a
+ * reproducible in-repo eval harness with a held-out set and per-segment
+ * reporting.
+ *
+ * Design TARGET (aspirational, not yet independently validated in-repo): move
+ * from the current internal estimates toward a tighter MdAPE across all
+ * property types, especially at $2M+ (the "97%" figure is an unverified goal
+ * pending the eval framework, not an achieved accuracy).
  *
  * EXPORTS:
  *   classifyPropertyType(raw, { beds, baths, sqft, units, lot_sqft })

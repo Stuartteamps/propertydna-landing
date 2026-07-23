@@ -408,3 +408,17 @@
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
+
+# Security hardening (M5 / B-16) — site-wide security headers. Additive block;
+# Netlify merges these with the other "/*" headers above. The CSP is
+# REPORT-ONLY on purpose (observation only) so it can NEVER block the app —
+# it reflects current usage (Supabase, Stripe, Google gtag/places/fonts,
+# Mapbox, OpenStreetMap tiles, Netlify) and errs permissive. No enforcing CSP.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+    Content-Security-Policy-Report-Only = "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://*.supabase.in https://js.stripe.com https://*.stripe.com https://*.stripe.network https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://maps.googleapis.com https://maps.gstatic.com https://*.googleapis.com https://api.mapbox.com https://*.mapbox.com https://*.tiles.mapbox.com https://*.netlify.app https://*.netlify.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://*.stripe.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://api.mapbox.com; connect-src 'self' https: wss:; frame-src 'self' https://js.stripe.com https://*.stripe.com https://*.stripe.network; worker-src 'self' blob:; child-src 'self' blob:; media-src 'self' data: blob: https:; manifest-src 'self'"

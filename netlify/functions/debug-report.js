@@ -22,7 +22,11 @@ exports.handler = async (event) => {
   // Auth check
   const key = event.headers["x-internal-key"] || event.headers["X-Internal-Key"];
   const expectedKey = process.env.INTERNAL_API_KEY;
-  if (expectedKey && key !== expectedKey) {
+  if (!expectedKey) {
+    // Fail closed — do not expose report rows when auth is not configured
+    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "Not configured" }) };
+  }
+  if (key !== expectedKey) {
     return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: "Unauthorized" }) };
   }
 

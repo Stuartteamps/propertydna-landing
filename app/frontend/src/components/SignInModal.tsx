@@ -108,7 +108,7 @@ const SignInModal: React.FC<SignInModalProps> = ({
       notes: 'sign_in_attempt',
     });
 
-    if (result.success) {
+    if (result.success === true) {
       setRequestId(result.requestId);
       setStatus('success');
     } else {
@@ -130,7 +130,7 @@ const SignInModal: React.FC<SignInModalProps> = ({
       notes: 'signup_request',
     });
 
-    if (result.success) {
+    if (result.success === true) {
       setRequestId(result.requestId);
       setStatus('success');
     } else {
@@ -153,7 +153,7 @@ const SignInModal: React.FC<SignInModalProps> = ({
       notes: `sales_inquiry: ${slNotes}`,
     });
 
-    if (result.success) {
+    if (result.success === true) {
       setRequestId(result.requestId);
       setStatus('success');
     } else {

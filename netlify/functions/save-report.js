@@ -99,6 +99,20 @@ async function fetchFemaFlood(lat, lon) {
   if (!feat) return null;
   const zone = feat.FLD_ZONE || null;
   const highRisk = feat.SFHA_TF === 'T';
+  // No real zone data returned for this point — do NOT present a missing zone
+  // as an affirmative "Minimal Hazard" sourced to FEMA. Return explicit unknown.
+  if (!zone && !highRisk) {
+    return {
+      score: null,
+      zone: null,
+      highRisk: false,
+      label: 'Not assessed',
+      status: 'unavailable',
+      subtype: null,
+      summary: 'Hazard data is not available for this location.',
+      source: null,
+    };
+  }
   return {
     zone:   zone || 'X',
     highRisk,
@@ -112,7 +126,9 @@ async function fetchFemaFlood(lat, lon) {
 // For California: hardcoded San Andreas + general fault zone awareness
 function buildEarthquakeRisk(lat, lon, state, city) {
   if (state !== 'CA') {
-    return { score: 25, label: 'Low', summary: 'Outside major US fault zones.' };
+    // No seismic lookup is performed outside CA — do NOT present this as an
+    // affirmative "Low" sourced to USGS. Return explicit unknown state.
+    return { score: null, label: 'Not assessed', status: 'unavailable', summary: 'Hazard data is not available for this location.', source: null };
   }
   // Coachella Valley sits directly atop the San Andreas Fault (M7.5+ potential)
   const valleyCities = ['palm springs','palm desert','indio','la quinta','rancho mirage','indian wells','cathedral city','desert hot springs','coachella','thousand palms','bermuda dunes'];
@@ -137,7 +153,9 @@ function buildEarthquakeRisk(lat, lon, state, city) {
 
 // CalFire wildfire severity zone (CA) — by lat/lon (cached lookup heuristic)
 function buildWildfireRisk(state, city) {
-  if (state !== 'CA') return { score: 20, label: 'Low' };
+  // No CalFire lookup is performed outside CA — do NOT present this as an
+  // affirmative "Low" sourced to CalFire. Return explicit unknown state.
+  if (state !== 'CA') return { score: null, label: 'Not assessed', status: 'unavailable', summary: 'Hazard data is not available for this location.', source: null };
   const desertCities = ['palm springs','palm desert','indio','la quinta','rancho mirage','indian wells','cathedral city','desert hot springs','coachella'];
   const isDesert = desertCities.some(c => (city || '').toLowerCase().includes(c));
   if (isDesert) {
@@ -1210,7 +1228,10 @@ function buildRiskProfile(normalized, freshFlood) {
   const crime = normalized.crime || {};
   const subj  = normalized.subject || {};
 
-  // Flood
+  // Flood — a missing/unlooked-up zone must NOT read as an affirmative
+  // "Minimal Hazard" sourced to FEMA. Treat absent zone + no SFHA flag as unknown.
+  const floodUnavailable = flood.status === 'unavailable' ||
+    (!flood.highRisk && (!flood.zone || flood.zone === '—'));
   const floodScore = flood.highRisk ? 85 : flood.zone === 'X' ? 15 : flood.zone && flood.zone !== '—' ? 45 : 30;
 
   // Crime
@@ -1222,20 +1243,43 @@ function buildRiskProfile(normalized, freshFlood) {
   // Wildfire (CalFire-derived heuristic)
   const wildfire = buildWildfireRisk(subj.state, subj.city);
 
-  const overallScore = Math.round((floodScore + crimeScore + wildfire.score + earthquake.score) / 4);
-  const overallRating = overallScore < 30 ? 'Low Risk' : overallScore < 55 ? 'Moderate Risk' : overallScore < 75 ? 'Elevated Risk' : 'High Risk';
+  // Only average hazards that were actually assessed (skip unknowns).
+  const scoreParts = [
+    floodUnavailable ? null : floodScore,
+    crimeScore,
+    wildfire.score,
+    earthquake.score,
+  ].filter(s => typeof s === 'number');
+  const overallScore = scoreParts.length
+    ? Math.round(scoreParts.reduce((a, b) => a + b, 0) / scoreParts.length)
+    : null;
+  const overallRating = overallScore == null ? 'Not assessed'
+    : overallScore < 30 ? 'Low Risk' : overallScore < 55 ? 'Moderate Risk' : overallScore < 75 ? 'Elevated Risk' : 'High Risk';
+
+  const floodProfile = floodUnavailable ? {
+    score: null,
+    zone: null,
+    label: 'Not assessed',
+    status: 'unavailable',
+    highRisk: false,
+    subtype: null,
+    summary: 'Hazard data is not available for this location.',
+    source: null,
+  } : {
+    score: floodScore,
+    zone: flood.zone || 'X',
+    label: flood.label || (flood.highRisk ? 'High Risk' : 'Minimal Hazard'),
+    highRisk: !!flood.highRisk,
+    subtype: flood.subtype || null,
+    source: flood.source || 'FEMA NFHL',
+  };
+
+  const floodSummaryLabel = floodUnavailable ? 'Not assessed' : (flood.label || 'Minimal');
 
   return {
     overallScore,
     overallRating,
-    flood: {
-      score: floodScore,
-      zone: flood.zone || 'X',
-      label: flood.label || (flood.highRisk ? 'High Risk' : 'Minimal Hazard'),
-      highRisk: !!flood.highRisk,
-      subtype: flood.subtype || null,
-      source: flood.source || 'FEMA NFHL',
-    },
+    flood: floodProfile,
     crime: {
       score: crimeScore,
       label: crimeScore < 35 ? 'Low' : crimeScore < 55 ? 'Moderate' : 'Elevated',
@@ -1244,7 +1288,7 @@ function buildRiskProfile(normalized, freshFlood) {
     },
     wildfire,
     earthquake,
-    summary: `Overall: ${overallRating} (${overallScore}/100). Flood: ${flood.label || 'Minimal'}. Earthquake: ${earthquake.label}. Wildfire: ${wildfire.label}. Crime: ${crimeScore < 35 ? 'Low' : crimeScore < 55 ? 'Moderate' : 'Elevated'}.`,
+    summary: `Overall: ${overallRating}${overallScore == null ? '' : ` (${overallScore}/100)`}. Flood: ${floodSummaryLabel}. Earthquake: ${earthquake.label}. Wildfire: ${wildfire.label}. Crime: ${crimeScore < 35 ? 'Low' : crimeScore < 55 ? 'Moderate' : 'Elevated'}.`,
   };
 }
 

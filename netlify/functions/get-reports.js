@@ -1,12 +1,39 @@
+const https = require("https");
 const db = require("./_supabase");
 
 const CORS = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 const BASE_URL = process.env.APP_BASE_URL || "https://thepropertydna.com";
+const SUPA_URL = process.env.SUPABASE_URL || "https://neccpdfhmfnvyjgyrysy.supabase.co";
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+// Verify a Supabase access token and return its user (mirrors delete-account.js).
+// The verified email — NOT any client-supplied field — is what scopes results.
+function getCurrentUser(accessToken) {
+  return new Promise((resolve) => {
+    const u = new URL(SUPA_URL + "/auth/v1/user");
+    const req = https.request(
+      {
+        hostname: u.hostname,
+        path: u.pathname,
+        method: "GET",
+        headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${accessToken}` },
+      },
+      (res) => {
+        let raw = "";
+        res.on("data", (c) => (raw += c));
+        res.on("end", () => { try { resolve(JSON.parse(raw)); } catch { resolve(null); } });
+      }
+    );
+    req.on("error", () => resolve(null));
+    req.setTimeout(8000, () => { req.destroy(); resolve(null); });
+    req.end();
+  });
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -15,14 +42,25 @@ exports.handler = async (event) => {
   let body;
   try { body = JSON.parse(event.body || "{}"); } catch { return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Invalid JSON" }) }; }
 
-  const { email } = body;
-  if (!email || !email.includes("@")) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Valid email required" }) };
-
   if (!process.env.SUPABASE_SERVICE_KEY) {
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ reports: [], isSubscribed: false, plan: null }) };
   }
 
-  const normalizedEmail = email.toLowerCase().trim();
+  // ── AUTHENTICATION (fixes IDOR C3) ────────────────────────────────────
+  // Previously this endpoint trusted a client-supplied `email` and, under the
+  // service key (RLS bypassed), returned that user's reports + view_token
+  // URLs to anyone who POSTed the address. The owner email also dumped the
+  // ENTIRE corpus. We now require a valid Supabase access token and derive the
+  // email from it; `body.email` is ignored entirely.
+  const accessToken = body.accessToken || (event.headers.authorization || event.headers.Authorization || "").replace(/^Bearer\s+/i, "");
+  if (!accessToken) {
+    return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: "Authentication required" }) };
+  }
+  const user = await getCurrentUser(accessToken);
+  if (!user || !user.email) {
+    return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: "Invalid or expired session" }) };
+  }
+  const normalizedEmail = String(user.email).toLowerCase().trim();
 
   // Owner (site operator) gets a god-view: the dashboard shows EVERY report
   // ever generated, not just reports tied to their own email. Regular users

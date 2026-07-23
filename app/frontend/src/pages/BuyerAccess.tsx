@@ -33,7 +33,7 @@ export default function BuyerAccess() {
     if (!form.email.includes('@')) { setError('Valid email required.'); setStatus('error'); return; }
     setStatus('loading'); setError('');
     const result = await submitLead('BUYER_KEYS', { ...form, interest: 'buyer_access', leadSource: 'buyer_keys_form' });
-    if (result.success) setStatus('success');
+    if (result.success === true) setStatus('success');
     else { setError(result.error); setStatus('error'); }
   };
 
