@@ -1,0 +1,52 @@
+name: CI
+
+# Build-check for the frontend + Netlify functions. Runs on PRs and pushes to
+# main. The production build is the gate (it must pass); typecheck runs as
+# informational only, because the repo carries pre-existing type errors in files
+# unrelated to any given change — gating on it would block every PR on day one.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (gate — must pass)
+        run: pnpm build
+
+      - name: Typecheck (informational)
+        run: pnpm typecheck
+        continue-on-error: true
+
+  functions-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax-check Netlify functions
+        run: |
+          fail=0
+          for f in netlify/functions/*.js; do
+            node -c "$f" || { echo "SYNTAX ERROR: $f"; fail=1; }
+          done
+          exit $fail
