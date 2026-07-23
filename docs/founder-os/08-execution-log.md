@@ -77,3 +77,27 @@ Workflow: 6 agents, 0 errors, all 3 items CONFIRMED_GOOD by adversarial verify.
 ### Rollback
 Revert the cycle-2 files; all changes are additive or behavior-preserving except the
 intended C3 auth requirement (which is matched by the Dashboard token send in the same commit).
+
+---
+
+## Cycle 3 — 2026-07-12 — Finish safely-reversible backlog (orchestrated)
+**Branch:** `claude/propertydna-founder-os-j79t5r` · Workflow: 10 agents, 0 errors, all 5 items CONFIRMED_GOOD.
+
+### Changes shipped
+- **B-05 (governance D2)** — `_valuation-engine.js`, `_valuation_profile.js`, `neighborhood-compare.js`: the unreproducible "97% / 1,459-sold / leave-one-out validated" language is relabeled as an ASPIRATIONAL, not-yet-validated TARGET + a governance guardrail comment. **Comments/doc-strings only** — verified zero non-comment changes; valuation fixtures stay green.
+- **B-10 (data integrity D3)** — `backtest-accuracy.js`: default (non-blind) path now emits a `methodology` field in the JSON output flagging it as a calibration check (blind numbers require `?live=1`); `defensibleAccuracyPct` relabeled non-standard and shown alongside within5/10/20; the self-referential consensus ground-truth filter now defaults **OFF** (opt-in via `?consensusFilter=1`, with an effect note).
+- **B-14 (security M1/M2)** — `stripe-webhook.js` now fails **closed** (400 if secret unset, signature missing, or verify fails); `debug-report.js` denies when `INTERNAL_API_KEY` is unset.
+- **B-16 (security M5)** — `netlify.toml`: additive site-wide `[[headers]]` — HSTS, nosniff, Referrer-Policy, X-Frame-Options, and a **report-only** CSP (non-blocking). CORS tightening (M4) deferred.
+- **B-06 (measurement)** — new `netlify/functions/ops-weekly-metrics.js`: INTERNAL_API_KEY-gated (fails closed), aggregates last-7-day funnel from Supabase `kpi_events`/`property_reports`/`payments`/`subscriptions`; GA4-only stages report the literal `UNKNOWN — GA4 only` (no fabrication); every db call degrades to `UNKNOWN` on error.
+
+### Validation
+```
+node --check (7 functions) → all OK
+npx tsc --noEmit → 0 errors
+npx vitest run   → 61 passed
+npm run build    → exit 0
+```
+Conductor independently verified: webhook fail-closed diff, B-05 comments-only (0 executable-line changes), report-only CSP, metrics fail-closed + UNKNOWN markers.
+
+### Still founder-gated (unchanged)
+Run migration 039 + rotate CC/Google tokens (no prod credentials here). Merge to `main` / production deploy.
