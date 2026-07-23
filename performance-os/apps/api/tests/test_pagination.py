@@ -1,5 +1,4 @@
 """Audit finding #12: list endpoints paginate and avoid N+1."""
-import io
 
 
 def _png():
