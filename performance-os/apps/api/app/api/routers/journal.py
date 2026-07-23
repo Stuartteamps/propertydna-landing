@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 from collections import Counter
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -67,20 +67,21 @@ async def voice_entry(file: UploadFile = File(...), user: User = Depends(get_cur
 
 
 @router.get("")
-def list_entries(days: int = 14, user: User = Depends(get_current_user),
-                 session: Session = Depends(db)) -> dict:
-    end = dt.date.today()
-    start = end - dt.timedelta(days=days)
+def list_entries(days: int = Query(14, ge=1, le=365),
+                 limit: int = Query(100, ge=1, le=366), offset: int = Query(0, ge=0),
+                 user: User = Depends(get_current_user), session: Session = Depends(db)) -> dict:
+    start = dt.date.today() - dt.timedelta(days=days)
     rows = session.exec(
-        select(JournalEntry).where(JournalEntry.user_id == user.id)
-        .order_by(JournalEntry.date.desc())
+        select(JournalEntry)
+        .where(JournalEntry.user_id == user.id, JournalEntry.date >= start)  # filter in SQL
+        .order_by(JournalEntry.date.desc()).limit(limit).offset(offset)
     ).all()
     return {"entries": [
         {"date": e.date.isoformat(), "mood": e.mood, "energy": e.energy, "stress": e.stress,
          "soreness": e.soreness, "gratitude": e.gratitude, "daily_win": e.daily_win,
          "daily_challenge": e.daily_challenge, "notes": e.notes}
-        for e in rows if start <= e.date <= end
-    ]}
+        for e in rows
+    ], "limit": limit, "offset": offset, "count": len(rows)}
 
 
 @router.get("/weekly-summary")

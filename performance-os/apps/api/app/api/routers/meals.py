@@ -5,7 +5,7 @@ import time
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -159,26 +159,32 @@ def parse_text(body: TextLogIn, user: User = Depends(get_current_user),
 
 
 @router.get("")
-def list_meals(on: dt.date | None = None, user: User = Depends(get_current_user),
-               session: Session = Depends(db)) -> dict:
-    meals = session.exec(
-        select(Meal).where(Meal.user_id == user.id).order_by(Meal.eaten_at.desc())
-    ).all()
-    out = []
-    for m in meals:
-        if m.deleted_at is not None:
-            continue
-        if on and m.eaten_at.date() != on:
-            continue
-        items = session.exec(select(MealItem).where(MealItem.meal_id == m.id)).all()
-        out.append({
-            "id": m.id, "name": m.name, "meal_type": m.meal_type,
-            "eaten_at": m.eaten_at.isoformat(), "source": m.source,
-            "overall_confidence": m.overall_confidence, "is_favorite": m.is_favorite,
-            "items": [{"name": i.name, "quantity": i.estimated_quantity, "unit": i.unit,
-                       "confidence": i.confidence} for i in items],
-        })
-    return {"meals": out}
+def list_meals(on: dt.date | None = None,
+               limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0),
+               user: User = Depends(get_current_user), session: Session = Depends(db)) -> dict:
+    q = select(Meal).where(Meal.user_id == user.id, Meal.deleted_at.is_(None))
+    if on:
+        # date() equality expressed as a half-open UTC-day range so it's an indexable SQL filter.
+        start = dt.datetime.combine(on, dt.time.min)
+        end = start + dt.timedelta(days=1)
+        q = q.where(Meal.eaten_at >= start, Meal.eaten_at < end)
+    meals = session.exec(q.order_by(Meal.eaten_at.desc()).limit(limit).offset(offset)).all()
+
+    # Batch-fetch items for all meals in ONE query (no N+1), then group in memory.
+    meal_ids = [m.id for m in meals]
+    items_by_meal: dict[str, list] = {mid: [] for mid in meal_ids}
+    if meal_ids:
+        for i in session.exec(select(MealItem).where(MealItem.meal_id.in_(meal_ids))).all():
+            items_by_meal.setdefault(i.meal_id, []).append(i)
+
+    out = [{
+        "id": m.id, "name": m.name, "meal_type": m.meal_type,
+        "eaten_at": m.eaten_at.isoformat(), "source": m.source,
+        "overall_confidence": m.overall_confidence, "is_favorite": m.is_favorite,
+        "items": [{"name": i.name, "quantity": i.estimated_quantity, "unit": i.unit,
+                   "confidence": i.confidence} for i in items_by_meal.get(m.id, [])],
+    } for m in meals]
+    return {"meals": out, "limit": limit, "offset": offset, "count": len(out)}
 
 
 @router.post("/{meal_id}/favorite")

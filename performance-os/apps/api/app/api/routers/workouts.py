@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -89,28 +89,34 @@ def create_workout(body: WorkoutIn, user: User = Depends(get_current_user),
 
 
 @router.get("")
-def list_workouts(user: User = Depends(get_current_user),
-                  session: Session = Depends(db)) -> dict:
+def list_workouts(limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0),
+                  user: User = Depends(get_current_user), session: Session = Depends(db)) -> dict:
     rows = session.exec(
-        select(Workout).where(Workout.user_id == user.id).order_by(Workout.started_at.desc())
+        select(Workout).where(Workout.user_id == user.id, Workout.deleted_at.is_(None))
+        .order_by(Workout.started_at.desc()).limit(limit).offset(offset)
     ).all()
+    ids = [w.id for w in rows]
+    sets_by, run_by = {i: [] for i in ids}, {}
+    if ids:
+        for s in session.exec(select(WorkoutSet).where(WorkoutSet.workout_id.in_(ids))).all():
+            sets_by.setdefault(s.workout_id, []).append(s)
+        for r in session.exec(select(Run).where(Run.workout_id.in_(ids))).all():
+            run_by[r.workout_id] = r
     out = []
     for w in rows:
-        if w.deleted_at is not None:
-            continue
-        sets = session.exec(select(WorkoutSet).where(WorkoutSet.workout_id == w.id)).all()
-        run = session.exec(select(Run).where(Run.workout_id == w.id)).first()
+        run = run_by.get(w.id)
         out.append({
             "id": w.id, "type": w.type, "title": w.title,
             "started_at": w.started_at.isoformat(), "duration_min": w.duration_min,
             "perceived_effort": w.perceived_effort, "source": w.source,
             "confirmed": w.confirmed,
             "sets": [{"exercise": s.exercise_name, "set": s.set_number, "reps": s.reps,
-                      "load_kg": s.load_kg, "rpe": s.rpe, "is_pr": s.is_pr} for s in sets],
+                      "load_kg": s.load_kg, "rpe": s.rpe, "is_pr": s.is_pr}
+                     for s in sets_by.get(w.id, [])],
             "run": ({"distance_km": run.distance_km, "duration_min": run.duration_min,
                      "avg_hr": run.avg_hr, "zone2_min": run.zone2_min} if run else None),
         })
-    return {"workouts": out}
+    return {"workouts": out, "limit": limit, "offset": offset, "count": len(out)}
 
 
 @router.post("/{workout_id}/confirm")

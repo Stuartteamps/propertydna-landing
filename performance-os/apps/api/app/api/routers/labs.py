@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -71,12 +71,14 @@ def add_lab(body: LabIn, user: User = Depends(get_current_user),
 
 
 @router.get("")
-def list_labs(user: User = Depends(get_current_user), session: Session = Depends(db)) -> dict:
+def list_labs(limit: int = Query(100, ge=1, le=500), offset: int = Query(0, ge=0),
+              user: User = Depends(get_current_user), session: Session = Depends(db)) -> dict:
     rows = session.exec(
         select(LabResult).where(LabResult.user_id == user.id)
-        .order_by(LabResult.collected_on.desc())
+        .order_by(LabResult.collected_on.desc()).limit(limit).offset(offset)
     ).all()
     return {
+        "limit": limit, "offset": offset, "count": len(rows),
         "labs": [{
             "id": r.id, "panel": r.panel, "test_name": r.test_name, "value": r.value,
             "unit": r.unit, "reference_low": r.reference_low, "reference_high": r.reference_high,
