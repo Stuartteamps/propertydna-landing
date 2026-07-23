@@ -11,7 +11,7 @@ from sqlmodel import Session, select
 
 from app.ai.factory import get_nutrition_provider, get_vision_provider
 from app.ai.validation import AIValidationError, validate_food_analysis
-from app.api.deps import db, get_current_user
+from app.api.deps import ai_rate_limit, db, get_current_user
 from app.core.config import settings
 from app.core.timeutil import now_utc
 from app.models import (
@@ -29,12 +29,26 @@ router = APIRouter(prefix="/meals", tags=["meals"])
 
 _MACRO_FIELDS = ["calories", "protein_g", "carbs_g", "fat_g", "fiber_g"]
 
+# Extension is derived from a validated content-type, never from the client filename.
+_ALLOWED_IMAGE_TYPES = {
+    "image/jpeg": "jpg", "image/jpg": "jpg", "image/png": "png",
+    "image/webp": "webp", "image/heic": "heic", "image/heif": "heic",
+}
+
 
 def _store_image(user_id: str, upload: UploadFile) -> tuple[str, bytes]:
-    Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
+    ext = _ALLOWED_IMAGE_TYPES.get((upload.content_type or "").lower())
+    if not ext:
+        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                            "Unsupported image type (allowed: jpeg, png, webp, heic)")
     data = upload.file.read()
-    ext = (upload.filename or "jpg").split(".")[-1][:5]
-    fname = f"{user_id}_{uuid.uuid4().hex}.{ext}"
+    if len(data) > settings.MAX_UPLOAD_BYTES:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                            f"Image exceeds {settings.MAX_UPLOAD_BYTES // (1024 * 1024)}MB limit")
+    if not data:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Empty upload")
+    Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
+    fname = f"{user_id}_{uuid.uuid4().hex}.{ext}"  # no client-controlled path segments
     path = Path(settings.UPLOAD_DIR) / fname
     path.write_bytes(data)
     return str(path), data
@@ -46,11 +60,10 @@ async def analyze_photo(
     meal_type: str | None = Form(default=None),
     user: User = Depends(get_current_user),
     session: Session = Depends(db),
+    _rl: None = Depends(ai_rate_limit),
 ) -> FoodAnalysis:
     """Upload a photo → mock/real vision → validated, editable estimate. Not yet saved."""
-    if not (file.content_type or "").startswith("image/"):
-        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Expected an image")
-    path, data = _store_image(user.id, file)
+    path, data = _store_image(user.id, file)  # validates type/size, rejects bad uploads pre-write
     image = FoodImage(user_id=user.id, path=path, content_type=file.content_type or "image/jpeg")
     session.add(image)
     session.commit()
@@ -132,7 +145,7 @@ class TextLogIn(BaseModel):
 
 @router.post("/parse-text", response_model=FoodAnalysis)
 def parse_text(body: TextLogIn, user: User = Depends(get_current_user),
-               session: Session = Depends(db)) -> FoodAnalysis:
+               session: Session = Depends(db), _rl: None = Depends(ai_rate_limit)) -> FoodAnalysis:
     provider = get_nutrition_provider()
     analysis = validate_food_analysis(provider.parse_meal_text(body.text))
     if body.meal_type:

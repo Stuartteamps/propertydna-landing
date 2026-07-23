@@ -34,19 +34,40 @@ def get_current_user(
     return user
 
 
-# ---- Simple in-memory sliding-window rate limiter (per user/IP) ----
+# ---- Sliding-window rate limiter ----
+# In-process by default (resets on restart, not shared across workers). For multi-worker deploys
+# swap `_check` for a Redis/DB-backed store — the dependency signatures stay the same.
 _hits: dict[str, deque[float]] = defaultdict(deque)
 
 
-def rate_limit(request: Request) -> None:
-    key = request.client.host if request.client else "anon"
+def _check(key: str, per_minute: int) -> None:
     now = time.time()
     window = _hits[key]
     while window and now - window[0] > 60:
         window.popleft()
-    if len(window) >= settings.RATE_LIMIT_PER_MINUTE:
+    if len(window) >= per_minute:
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Rate limit exceeded")
     window.append(now)
+
+
+def _subject_or_ip(request: Request, authorization: str | None) -> str:
+    """Prefer the authenticated user id (fair per-user limits); fall back to client IP."""
+    if authorization and authorization.lower().startswith("bearer "):
+        try:
+            return "u:" + str(decode_access_token(authorization.split(" ", 1)[1]).get("sub"))
+        except Exception:  # noqa: BLE001
+            pass
+    return "ip:" + (request.client.host if request.client else "anon")
+
+
+def rate_limit(request: Request, authorization: str | None = Header(default=None)) -> None:
+    """General per-user/IP limiter."""
+    _check(_subject_or_ip(request, authorization), settings.RATE_LIMIT_PER_MINUTE)
+
+
+def ai_rate_limit(request: Request, authorization: str | None = Header(default=None)) -> None:
+    """Stricter limiter for expensive AI/upload/export routes, keyed by user id."""
+    _check("ai:" + _subject_or_ip(request, authorization), settings.AI_RATE_LIMIT_PER_MINUTE)
 
 
 def audit(session: Session, action: str, user_id: str | None = None,

@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from app.ai.factory import get_coaching_provider, get_transcription_provider
-from app.api.deps import db, get_current_user
+from app.api.deps import ai_rate_limit, db, get_current_user
 from app.core.timeutil import now_utc
 from app.models import JournalEntry, User
 
@@ -48,7 +48,7 @@ def upsert(body: JournalIn, user: User = Depends(get_current_user),
 
 @router.post("/voice")
 async def voice_entry(file: UploadFile = File(...), user: User = Depends(get_current_user),
-                      session: Session = Depends(db)) -> dict:
+                      session: Session = Depends(db), _rl: None = Depends(ai_rate_limit)) -> dict:
     """Transcribe an audio note (mock transcription by default) into the day's journal notes."""
     audio = await file.read()
     text = get_transcription_provider().transcribe(audio)

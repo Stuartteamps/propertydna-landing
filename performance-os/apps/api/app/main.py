@@ -30,6 +30,7 @@ from app.db.base import create_db_and_tables
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     configure_logging("DEBUG" if settings.DEBUG else "INFO")
+    settings.validate_or_die()  # fail-closed on insecure production config (e.g. default SECRET_KEY)
     create_db_and_tables()
     yield
 
@@ -43,9 +44,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten per-environment in production
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=settings.cors_origins,  # '*' only in local; fail-closed in prod (set CORS_ORIGINS)
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 for r in (auth, profile, dashboard, meals, workouts, integrations, readiness, routine,
