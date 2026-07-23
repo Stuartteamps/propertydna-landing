@@ -141,6 +141,12 @@ def save_meal(body: SaveMealIn, user: User = Depends(get_current_user),
     meal = _persist_meal(session, user.id, body)
     tz = get_profile_tz(session, user.id)
     on = local_date(meal.eaten_at, tz)
+    # Opportunistic protein-deficit check (best-effort; never blocks the save).
+    try:
+        from app.services.notifications import evaluate_and_enqueue
+        evaluate_and_enqueue(session, user, only="protein_deficit")
+    except Exception:  # noqa: BLE001
+        pass
     return {"id": meal.id, "totals_today": consumed_totals(session, user.id, on, tz)}
 
 

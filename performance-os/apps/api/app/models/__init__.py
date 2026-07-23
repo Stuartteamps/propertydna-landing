@@ -412,6 +412,25 @@ class NotificationPreference(TimestampMixin, table=True):
     quiet_hours_end: str = "05:00"
 
 
+class DeviceToken(TimestampMixin, table=True):
+    __tablename__ = "device_tokens"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    user_id: str = Field(index=True, foreign_key="users.id")
+    token: str = Field(index=True)
+    platform: str = "ios"                 # ios | android
+
+
+class NotificationLog(TimestampMixin, table=True):
+    __tablename__ = "notification_logs"
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    user_id: str = Field(index=True, foreign_key="users.id")
+    kind: str = Field(index=True)          # protein_deficit | bedtime | workout_reminder | ...
+    scheduled_for: dt.datetime = Field(default_factory=_now)
+    sent_at: dt.datetime | None = None
+    status: str = "pending"                # pending | sent | suppressed_quiet_hours | skipped
+    payload: dict = Field(default_factory=dict, sa_column=Column(SA_JSON))
+
+
 class Integration(TimestampMixin, table=True):
     __tablename__ = "integrations"
     id: str = Field(default_factory=_uuid, primary_key=True)
@@ -464,5 +483,5 @@ __all__ = [
     "ReadinessScore", "CalendarEvent", "MorningRoutine", "RoutineExercise", "RecoverySession",
     "SaunaSession", "ColdPlungeSession", "JournalEntry", "LabResult", "Medication",
     "Supplement", "NotificationPreference", "Integration", "SyncJob", "AIAnalysisRecord",
-    "AuditLog",
+    "AuditLog", "DeviceToken", "NotificationLog",
 ]
