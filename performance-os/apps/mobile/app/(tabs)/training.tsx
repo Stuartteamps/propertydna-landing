@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import { Button, Card, EmptyState, SectionTitle, Skeleton, Stat } from "../../src/components/ui";
 import { useAuth } from "../../src/store/auth";
@@ -18,6 +19,7 @@ interface WorkoutRow {
 
 export default function Training() {
   const { api } = useAuth();
+  const router = useRouter();
   const [workouts, setWorkouts] = useState<WorkoutRow[]>([]);
   const [weekly, setWeekly] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,10 @@ export default function Training() {
       ) : null}
 
       <View className="mt-3">
-        <Button title="Import from Google Calendar" onPress={importCalendar} />
+        <Button title="Log workout" onPress={() => router.push("/workout-log")} />
+      </View>
+      <View className="mt-2">
+        <Button title="Import from Google Calendar" variant="ghost" onPress={importCalendar} />
       </View>
 
       <SectionTitle>Recent workouts</SectionTitle>

@@ -1,7 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 
-import { ApiClient } from "../api/client";
+import { ApiClient, ApiError } from "../api/client";
+import { decideBootstrap, type MeOutcome } from "../lib/session";
 
 const TOKEN_KEY = "performance_os_token";
 
@@ -32,10 +33,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         const saved = await SecureStore.getItemAsync(TOKEN_KEY);
+        let outcome: MeOutcome | null = null;
         if (saved) {
+          try {
+            const me = await api.request<{ onboarded: boolean }>("/auth/me");
+            outcome = { ok: true, onboarded: me.onboarded };
+          } catch (e) {
+            // ApiError (e.g. 401 expired) → clear session; a bare network error → keep + retry.
+            outcome = e instanceof ApiError ? { ok: false, status: e.status } : null;
+          }
+        }
+        const decision = decideBootstrap(saved, outcome);
+        if (decision.keepToken && saved) {
           setToken(saved);
-          const me = await api.request<{ onboarded: boolean }>("/auth/me").catch(() => null);
-          if (me) setOnboarded(me.onboarded);
+          setOnboarded(decision.onboarded);
+        } else {
+          await SecureStore.deleteItemAsync(TOKEN_KEY);
+          setToken(null);
+          setOnboarded(false);
         }
       } finally {
         setLoading(false);

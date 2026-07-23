@@ -150,6 +150,15 @@ export default function Today() {
         </View>
       </Card>
 
+      {/* Journal */}
+      <SectionTitle>Reflect</SectionTitle>
+      <Card>
+        <Text className="text-sm text-subtle-light dark:text-subtle-dark mb-3">
+          A one-minute check-in sharpens tomorrow's readiness read.
+        </Text>
+        <Button title="Journal entry" variant="ghost" onPress={() => router.push("/journal")} />
+      </Card>
+
       {/* Recommendations */}
       <SectionTitle>Recovery tools</SectionTitle>
       <Card>
