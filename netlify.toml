@@ -161,6 +161,16 @@
   schedule = "45 11 * * *"
   timeout = 26
 
+# INDEXER ORCHESTRATOR — the 24/7 catch-up driver. Each indexer requires
+# POST + x-internal-key, which the Netlify scheduler can't send, so scheduling
+# them directly just 401'd. This one scheduled function fires every indexer WITH
+# the internal key each hour, so they all advance in parallel and resume from
+# their kpi_events checkpoints. Watch progress at /.netlify/functions/index-progress.
+# Trigger manually to kickstart/burst: /run-all-indexers?key=INTERNAL_API_KEY
+[functions."run-all-indexers"]
+  schedule = "0 * * * *"
+  timeout = 26
+
 # WEEKLY NEWSLETTER — now sent via our own Resend infra (send-weekly-newsletter),
 # NOT Constant Contact (CC subscription cancelled 2026-06-30).
 #
