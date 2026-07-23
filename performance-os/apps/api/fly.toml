@@ -8,7 +8,11 @@ primary_region = "iad"
 
 [env]
   ENV = "production"
-  AI_PROVIDER = "mock"
+  # Production default: Claude Sonnet 5 for food-vision / coaching. Set the key with
+  # `fly secrets set AI_PROVIDER_API_KEY=<anthropic key>`. Falls back cleanly to a clear
+  # error only if the key is missing; local dev stays on mock via .env.
+  AI_PROVIDER = "anthropic"
+  AI_MODEL = "claude-sonnet-5"
   HEALTH_PROVIDER = "mock"
   CALENDAR_PROVIDER = "mock"
 
