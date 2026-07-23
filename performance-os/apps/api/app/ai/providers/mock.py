@@ -66,27 +66,30 @@ def _compose(meal_type: str, seed: int) -> FoodAnalysis:
             f[1] * factor, f[2] * factor, f[3] * factor,
             f[4] * factor, f[5] * factor, f[6] * factor, f[7] * factor,
         )
+        # Per-item micronutrient estimates (rough, scaled from macros — clearly estimates).
+        micros = {
+            "sugar_g": carb * 0.18, "sodium_mg": sodium, "potassium_mg": potassium,
+            "calcium_mg": cal * 0.12, "iron_mg": cal * 0.006, "magnesium_mg": cal * 0.06,
+            "vitamin_a_ug": cal * 0.5, "vitamin_c_mg": fiber * 4, "vitamin_d_ug": fat * 0.02,
+            "vitamin_b12_ug": pro * 0.02, "folate_ug": carb * 1.2, "cholesterol_mg": pro * 2.5,
+        }
         items.append(FoodItem(
             name=name, estimated_quantity=_round(grams, 0), unit="g",
             calories=_round(cal), protein_g=_round(pro), carbohydrates_g=_round(carb),
             fat_g=_round(fat), fiber_g=_round(fiber), confidence=_round(conf, 2),
+            **{k: _round(v) for k, v in micros.items()},
         ))
         totals.calories += cal
         totals.protein_g += pro
         totals.carbohydrates_g += carb
         totals.fat_g += fat
         totals.fiber_g += fiber
-        totals.sodium_mg += sodium
-        totals.potassium_mg += potassium
-    # micro estimates scaled from calories (rough, clearly an estimate)
-    totals.sugar_g = _round(totals.carbohydrates_g * 0.18)
-    totals.calcium_mg = _round(totals.calories * 0.12)
-    totals.iron_mg = _round(totals.calories * 0.006)
-    totals.magnesium_mg = _round(totals.calories * 0.06)
-    totals.vitamin_c_mg = _round(totals.fiber_g * 4)
-    totals.cholesterol_mg = _round(totals.protein_g * 2.5)
-    for field in ("calories", "protein_g", "carbohydrates_g", "fat_g", "fiber_g",
-                  "sodium_mg", "potassium_mg"):
+        for k, v in micros.items():
+            setattr(totals, k, getattr(totals, k) + v)
+    for field in ("calories", "protein_g", "carbohydrates_g", "fat_g", "fiber_g", "sugar_g",
+                  "sodium_mg", "potassium_mg", "calcium_mg", "iron_mg", "magnesium_mg",
+                  "vitamin_a_ug", "vitamin_c_mg", "vitamin_d_ug", "vitamin_b12_ug",
+                  "folate_ug", "cholesterol_mg"):
         setattr(totals, field, _round(getattr(totals, field)))
     overall = _round(sum(i.confidence for i in items) / len(items), 2)
     return FoodAnalysis(

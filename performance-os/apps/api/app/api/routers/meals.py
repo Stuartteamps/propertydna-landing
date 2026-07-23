@@ -123,6 +123,11 @@ def _persist_meal(session: Session, user_id: str, body: SaveMealIn) -> Meal:
         session.add(NutrientValue(
             meal_item_id=mi.id, calories=it.calories, protein_g=it.protein_g,
             carbs_g=it.carbohydrates_g, fat_g=it.fat_g, fiber_g=it.fiber_g,
+            sugar_g=it.sugar_g, sodium_mg=it.sodium_mg, potassium_mg=it.potassium_mg,
+            calcium_mg=it.calcium_mg, iron_mg=it.iron_mg, magnesium_mg=it.magnesium_mg,
+            vitamin_a_ug=it.vitamin_a_ug, vitamin_c_mg=it.vitamin_c_mg,
+            vitamin_d_ug=it.vitamin_d_ug, vitamin_b12_ug=it.vitamin_b12_ug,
+            folate_ug=it.folate_ug, cholesterol_mg=it.cholesterol_mg,
         ))
     session.commit()
     return meal
@@ -200,11 +205,15 @@ def copy_meal(meal_id: str, user: User = Depends(get_current_user),
         nv = session.exec(
             select(NutrientValue).where(NutrientValue.meal_item_id == i.id)
         ).first()
+        micros = {f: getattr(nv, f) for f in (
+            "sugar_g", "sodium_mg", "potassium_mg", "calcium_mg", "iron_mg", "magnesium_mg",
+            "vitamin_a_ug", "vitamin_c_mg", "vitamin_d_ug", "vitamin_b12_ug", "folate_ug",
+            "cholesterol_mg")} if nv else {}
         body_items.append(FoodItem(
             name=i.name, estimated_quantity=i.estimated_quantity or 0, unit=i.unit or "g",
             calories=nv.calories if nv else 0, protein_g=nv.protein_g if nv else 0,
             carbohydrates_g=nv.carbs_g if nv else 0, fat_g=nv.fat_g if nv else 0,
-            fiber_g=nv.fiber_g if nv else 0, confidence=i.confidence or 0.5,
+            fiber_g=nv.fiber_g if nv else 0, confidence=i.confidence or 0.5, **micros,
         ))
     meal = _persist_meal(session, user.id, SaveMealIn(
         name=src.name, meal_type=src.meal_type, source="saved", items=body_items,

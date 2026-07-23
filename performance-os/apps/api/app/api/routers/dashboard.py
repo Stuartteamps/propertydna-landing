@@ -34,8 +34,14 @@ def _upsert_targets(session: Session, user_id: str, on: dt.date) -> NutritionTar
     row = existing or NutritionTarget(user_id=user_id, date=on, calories=0, protein_g=0,
                                       carbs_g=0, fat_g=0, fiber_g=0, hydration_ml=0,
                                       bmr=0, tdee=0)
-    row.calories, row.protein_g, row.carbs_g = result.calories, result.protein_g, result.carbs_g
-    row.fat_g, row.fiber_g, row.hydration_ml = result.fat_g, result.fiber_g, result.hydration_ml
+    # Preserve any persisted weekly adjustment and add it on top of the fresh baseline
+    # (carbs absorb the delta; protein/fat stay bodyweight-driven). This stops the dashboard
+    # from clobbering the weekly nudge on every call.
+    adj = row.adjustment_kcal or 0
+    row.calories = result.calories + adj
+    row.protein_g, row.fat_g, row.fiber_g = result.protein_g, result.fat_g, result.fiber_g
+    row.carbs_g = max(0, round(result.carbs_g + adj / 4))
+    row.hydration_ml = result.hydration_ml
     row.bmr, row.tdee, row.rationale = result.bmr, result.tdee, result.rationale
     row.updated_at = now_utc()
     session.add(row)
@@ -89,7 +95,9 @@ def today(on: dt.date | None = None, user: User = Depends(get_current_user),
         "nutrition": {
             "targets": {"calories": targets.calories, "protein_g": targets.protein_g,
                         "carbs_g": targets.carbs_g, "fat_g": targets.fat_g,
-                        "fiber_g": targets.fiber_g, "hydration_ml": targets.hydration_ml},
+                        "fiber_g": targets.fiber_g, "hydration_ml": targets.hydration_ml,
+                        "adjustment_kcal": targets.adjustment_kcal,
+                        "adjustment_reasons": targets.adjustment_reasons},
             "consumed": consumed,
             "remaining": remaining,
         },

@@ -14,6 +14,7 @@ from app.api.routers import (
     labs,
     meals,
     notifications,
+    nutrition,
     profile,
     readiness,
     recovery,
@@ -51,7 +52,7 @@ app.add_middleware(
 )
 
 for r in (auth, profile, dashboard, meals, workouts, integrations, readiness, routine,
-          journal, recovery, labs, trends, notifications, account):
+          journal, recovery, labs, trends, notifications, nutrition, account):
     app.include_router(r.router, prefix="/api")
 
 

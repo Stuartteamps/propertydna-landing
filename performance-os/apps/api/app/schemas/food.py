@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field, field_validator
 
+MICRONUTRIENT_FIELDS = [
+    "sugar_g", "sodium_mg", "potassium_mg", "calcium_mg", "iron_mg", "magnesium_mg",
+    "vitamin_a_ug", "vitamin_c_mg", "vitamin_d_ug", "vitamin_b12_ug", "folate_ug", "cholesterol_mg",
+]
+
 
 class FoodItem(BaseModel):
     name: str
@@ -14,6 +19,19 @@ class FoodItem(BaseModel):
     carbohydrates_g: float = Field(ge=0, default=0)
     fat_g: float = Field(ge=0, default=0)
     fiber_g: float = Field(ge=0, default=0)
+    # Full micronutrient set (per item; estimates, default 0 when unknown).
+    sugar_g: float = Field(ge=0, default=0)
+    sodium_mg: float = Field(ge=0, default=0)
+    potassium_mg: float = Field(ge=0, default=0)
+    calcium_mg: float = Field(ge=0, default=0)
+    iron_mg: float = Field(ge=0, default=0)
+    magnesium_mg: float = Field(ge=0, default=0)
+    vitamin_a_ug: float = Field(ge=0, default=0)
+    vitamin_c_mg: float = Field(ge=0, default=0)
+    vitamin_d_ug: float = Field(ge=0, default=0)
+    vitamin_b12_ug: float = Field(ge=0, default=0)
+    folate_ug: float = Field(ge=0, default=0)
+    cholesterol_mg: float = Field(ge=0, default=0)
     confidence: float = 0.5  # clamped to [0,1] in app.ai.validation
 
 

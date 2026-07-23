@@ -90,6 +90,8 @@ class NutritionTarget(TimestampMixin, table=True):
     hydration_ml: int
     bmr: int
     tdee: int
+    adjustment_kcal: int = 0                       # persisted weekly nudge (added to baseline)
+    adjustment_reasons: str | None = None
     rationale: dict = Field(default_factory=dict, sa_column=Column(SA_JSON))
     source: str = "engine"
 

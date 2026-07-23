@@ -96,10 +96,17 @@ def primary_goal(session: Session, user_id: str) -> str:
     return g.objective if g else "general_health"
 
 
+_TOTAL_FIELDS = [
+    "calories", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugar_g", "sodium_mg",
+    "potassium_mg", "calcium_mg", "iron_mg", "magnesium_mg", "vitamin_a_ug", "vitamin_c_mg",
+    "vitamin_d_ug", "vitamin_b12_ug", "folate_ug", "cholesterol_mg",
+]
+
+
 def consumed_totals(session: Session, user_id: str, on: dt.date) -> dict:
     meals = session.exec(select(Meal).where(Meal.user_id == user_id)).all()
     meal_ids = [m.id for m in meals if m.eaten_at.date() == on and m.deleted_at is None]
-    totals = {"calories": 0.0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0, "fiber_g": 0.0}
+    totals = {f: 0.0 for f in _TOTAL_FIELDS}
     if not meal_ids:
         return {k: round(v) for k, v in totals.items()}
     items = session.exec(select(MealItem).where(MealItem.meal_id.in_(meal_ids))).all()
@@ -109,11 +116,8 @@ def consumed_totals(session: Session, user_id: str, on: dt.date) -> dict:
             select(NutrientValue).where(NutrientValue.meal_item_id.in_(item_ids))
         ).all()
         for nv in nvs:
-            totals["calories"] += nv.calories
-            totals["protein_g"] += nv.protein_g
-            totals["carbs_g"] += nv.carbs_g
-            totals["fat_g"] += nv.fat_g
-            totals["fiber_g"] += nv.fiber_g
+            for f in _TOTAL_FIELDS:
+                totals[f] += getattr(nv, f)
     return {k: round(v) for k, v in totals.items()}
 
 
