@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import datetime as dt
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, field_validator
 from sqlmodel import Session, select
 
 from app.api.deps import audit, db, get_current_user
 from app.core.branding import DISCLAIMER
-from app.core.timeutil import now_utc
+from app.core.timeutil import is_valid_tz, now_utc
 from app.models import Goal, Medication, Profile, Supplement, User
 
 router = APIRouter(prefix="/profile", tags=["profile"])
@@ -37,10 +37,18 @@ class OnboardingIn(BaseModel):
     wake_time: str | None = None
     bedtime: str | None = None
     units: str = "imperial"
+    tz: str = "UTC"                       # IANA timezone (validated below)
     supplements: list[str] = []
     medications: list[str] = []          # sensitive; stored in dedicated table
     goals: list[GoalIn] = []
     consent_accepted: bool = False
+
+    @field_validator("tz")
+    @classmethod
+    def _valid_tz(cls, v: str) -> str:
+        if v and not is_valid_tz(v):
+            raise ValueError(f"Unknown timezone '{v}' (expected an IANA name like 'America/Denver')")
+        return v or "UTC"
 
 
 def _get_or_create_profile(session: Session, user_id: str) -> Profile:
@@ -106,6 +114,14 @@ class ProfileUpdateIn(BaseModel):
     wake_time: str | None = None
     bedtime: str | None = None
     units: str | None = None
+    tz: str | None = None
+
+    @field_validator("tz")
+    @classmethod
+    def _valid_tz(cls, v: str | None) -> str | None:
+        if v and not is_valid_tz(v):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, f"Unknown timezone '{v}'")
+        return v
 
 
 @router.patch("")

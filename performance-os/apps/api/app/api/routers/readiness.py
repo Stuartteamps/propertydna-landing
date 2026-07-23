@@ -15,7 +15,8 @@ router = APIRouter(prefix="/readiness", tags=["readiness"])
 
 
 def compute_and_store(session: Session, user_id: str, on: dt.date) -> ReadinessScore:
-    inp = build_readiness_input(session, user_id, on)
+    from app.services.daily import get_profile_tz
+    inp = build_readiness_input(session, user_id, on, tz=get_profile_tz(session, user_id))
     result = compute_readiness(inp)
     existing = session.exec(
         select(ReadinessScore).where(
@@ -39,7 +40,9 @@ def compute_and_store(session: Session, user_id: str, on: dt.date) -> ReadinessS
 @router.get("")
 def get_readiness(on: dt.date | None = None, user: User = Depends(get_current_user),
                   session: Session = Depends(db)) -> dict:
-    on = on or dt.date.today()
+    from app.core.timeutil import user_today
+    from app.services.daily import get_profile_tz
+    on = on or user_today(get_profile_tz(session, user.id))
     row = compute_and_store(session, user.id, on)
     return {
         "date": on.isoformat(), "score": row.score, "band": row.band,

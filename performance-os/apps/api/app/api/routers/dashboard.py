@@ -10,11 +10,12 @@ from app.api.deps import db, get_current_user
 from app.api.routers.readiness import compute_and_store
 from app.api.routers.routine import today_routine
 from app.core.branding import DISCLAIMER
-from app.core.timeutil import now_utc
+from app.core.timeutil import now_utc, user_today
 from app.models import NutritionTarget, Profile, User
 from app.services.daily import (
     compute_nutrition_targets,
     consumed_totals,
+    get_profile_tz,
     latest_metric,
     metric_baseline,
     sleep_for,
@@ -24,8 +25,8 @@ from app.services.daily import (
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
-def _upsert_targets(session: Session, user_id: str, on: dt.date) -> NutritionTarget:
-    result = compute_nutrition_targets(session, user_id, on)
+def _upsert_targets(session: Session, user_id: str, on: dt.date, tz: str = "UTC") -> NutritionTarget:
+    result = compute_nutrition_targets(session, user_id, on, tz)
     existing = session.exec(
         select(NutritionTarget).where(
             NutritionTarget.user_id == user_id, NutritionTarget.date == on,
@@ -53,12 +54,13 @@ def _upsert_targets(session: Session, user_id: str, on: dt.date) -> NutritionTar
 @router.get("/today")
 def today(on: dt.date | None = None, user: User = Depends(get_current_user),
           session: Session = Depends(db)) -> dict:
-    on = on or dt.date.today()
+    tz = get_profile_tz(session, user.id)
+    on = on or user_today(tz)
     profile = session.exec(select(Profile).where(Profile.user_id == user.id)).first()
 
     readiness = compute_and_store(session, user.id, on)
-    targets = _upsert_targets(session, user.id, on)
-    consumed = consumed_totals(session, user.id, on)
+    targets = _upsert_targets(session, user.id, on, tz)
+    consumed = consumed_totals(session, user.id, on, tz)
     remaining = {
         "calories": targets.calories - consumed["calories"],
         "protein_g": targets.protein_g - consumed["protein_g"],
@@ -67,7 +69,7 @@ def today(on: dt.date | None = None, user: User = Depends(get_current_user),
         "fiber_g": targets.fiber_g - consumed["fiber_g"],
     }
 
-    workout = todays_workout(session, user.id, on)
+    workout = todays_workout(session, user.id, on, tz)
     sleep = sleep_for(session, user.id, on)
     routine = today_routine(on=on, user=user, session=session)
 

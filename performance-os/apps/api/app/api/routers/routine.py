@@ -29,7 +29,10 @@ def _progression_week(session: Session, user_id: str, on: dt.date) -> int:
 @router.get("/today")
 def today_routine(on: dt.date | None = None, user: User = Depends(get_current_user),
                   session: Session = Depends(db)) -> dict:
-    on = on or dt.date.today()
+    from app.core.timeutil import user_today
+    from app.services.daily import get_profile_tz
+    tz = get_profile_tz(session, user.id)
+    on = on or user_today(tz)
     existing = session.exec(
         select(MorningRoutine).where(
             MorningRoutine.user_id == user.id, MorningRoutine.date == on,
@@ -40,7 +43,7 @@ def today_routine(on: dt.date | None = None, user: User = Depends(get_current_us
 
     readiness = compute_and_store(session, user.id, on)
     week = _progression_week(session, user.id, on)
-    result = generate_routine_for(session, user.id, on, readiness.band, week)
+    result = generate_routine_for(session, user.id, on, readiness.band, week, tz)
 
     routine = MorningRoutine(
         user_id=user.id, date=on, progression_week=result.progression_week,

@@ -64,6 +64,7 @@ class Profile(TimestampMixin, table=True):
     wake_time: str | None = None          # "05:00"
     bedtime: str | None = None            # "21:30"
     units: str = "imperial"                  # imperial | metric
+    tz: str = "UTC"                          # IANA timezone; day-scoped queries use it
     consent_accepted_at: dt.datetime | None = None
     source: str = "manual"
 

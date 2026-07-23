@@ -13,7 +13,7 @@ from app.ai.factory import get_nutrition_provider, get_vision_provider
 from app.ai.validation import AIValidationError, validate_food_analysis
 from app.api.deps import ai_rate_limit, db, get_current_user
 from app.core.config import settings
-from app.core.timeutil import now_utc
+from app.core.timeutil import local_date, now_utc, user_today
 from app.models import (
     AIAnalysisRecord,
     FoodImage,
@@ -23,7 +23,7 @@ from app.models import (
     User,
 )
 from app.schemas.food import FoodAnalysis, FoodItem
-from app.services.daily import consumed_totals
+from app.services.daily import consumed_totals, get_profile_tz
 
 router = APIRouter(prefix="/meals", tags=["meals"])
 
@@ -139,8 +139,9 @@ def save_meal(body: SaveMealIn, user: User = Depends(get_current_user),
     if not body.items:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "A meal needs at least one item")
     meal = _persist_meal(session, user.id, body)
-    on = meal.eaten_at.date()
-    return {"id": meal.id, "totals_today": consumed_totals(session, user.id, on)}
+    tz = get_profile_tz(session, user.id)
+    on = local_date(meal.eaten_at, tz)
+    return {"id": meal.id, "totals_today": consumed_totals(session, user.id, on, tz)}
 
 
 class TextLogIn(BaseModel):
@@ -242,5 +243,6 @@ def delete_meal(meal_id: str, user: User = Depends(get_current_user),
 @router.get("/totals")
 def totals(on: dt.date | None = None, user: User = Depends(get_current_user),
            session: Session = Depends(db)) -> dict:
-    on = on or dt.date.today()
-    return {"date": on.isoformat(), "consumed": consumed_totals(session, user.id, on)}
+    tz = get_profile_tz(session, user.id)
+    on = on or user_today(tz)
+    return {"date": on.isoformat(), "consumed": consumed_totals(session, user.id, on, tz)}
