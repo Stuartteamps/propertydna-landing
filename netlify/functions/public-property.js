@@ -149,9 +149,29 @@ function bundleFromParcel(p, slug) {
   };
 }
 
-const REPORT_COLS =
-  'id,address,city,state,zip,full_address,report_data,status,public_slug,is_public,apn,created_at,updated_at';
+// BASE_COLS lists ONLY columns guaranteed to exist pre-migration-038. The
+// full_address fallback (the migration-independent path) selects exactly these,
+// so it never 400s even when public_slug/is_public don't exist yet.
+const BASE_COLS =
+  'id,address,city,state,zip,full_address,report_data,status,apn,created_at,updated_at';
+// SLUG_COLS augments with the 038 columns. Used ONLY by the public_slug fast-path,
+// whose WHERE already references public_slug — so pre-038 it 400s → [] → we fall
+// through to the full_address scan. Post-038 it's a fast indexed hit.
+const SLUG_COLS = BASE_COLS + ',public_slug,is_public';
 const NOT_READY = "&status=not.in.(pending,generating,failed)";
+
+/** Pure slug matcher — a report matches when its public_slug equals the slug OR
+ *  its slugified full_address (or address) does. Migration-independent: works on
+ *  rows that have no public_slug field at all. Exported for tests. */
+function findReportForSlug(rows, slug) {
+  return (
+    (rows || []).find((r) => {
+      if (r && r.public_slug && String(r.public_slug) === slug) return true;
+      const fa = (r && (r.full_address || [r.address, r.city, r.state].filter(Boolean).join(', '))) || '';
+      return slugify(fa) === slug || slugify((r && r.address) || '') === slug;
+    }) || null
+  );
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS, body: '' };
@@ -166,24 +186,24 @@ exports.handler = async (event) => {
   const slug = slugify(rawSlug);
 
   try {
-    // 1. Direct public_slug hit (newest completed first).
+    // 1. Direct public_slug hit (newest completed first). Pre-038 this query
+    //    400s (column absent) → sbGet returns [] → we fall through to step 2.
     let rows = await sbGet(
-      `property_reports?select=${REPORT_COLS}&public_slug=eq.${encodeURIComponent(slug)}${NOT_READY}` +
+      `property_reports?select=${SLUG_COLS}&public_slug=eq.${encodeURIComponent(slug)}${NOT_READY}` +
         `&order=created_at.desc&limit=1`
     );
     if (rows && rows.length) {
       return { statusCode: 200, headers: CORS, body: JSON.stringify(bundleFromReport(rows[0])) };
     }
 
-    // 2. Fallback: scan recent completed reports and match a JS-slugified full_address.
+    // 2. MIGRATION-INDEPENDENT fallback: scan recent completed/ready reports and
+    //    match a JS-slugified full_address. Selects BASE_COLS only, so it works
+    //    whether or not migration 038 has run.
     const recent = await sbGet(
-      `property_reports?select=${REPORT_COLS}&status=eq.completed&full_address=not.is.null` +
+      `property_reports?select=${BASE_COLS}${NOT_READY}&full_address=not.is.null` +
         `&order=created_at.desc&limit=500`
     );
-    const hit = (recent || []).find((r) => {
-      const fa = r.full_address || [r.address, r.city, r.state].filter(Boolean).join(', ');
-      return slugify(fa) === slug || slugify(r.address || '') === slug;
-    });
+    const hit = findReportForSlug(recent, slug);
     if (hit) {
       return { statusCode: 200, headers: CORS, body: JSON.stringify(bundleFromReport(hit)) };
     }
@@ -217,3 +237,9 @@ exports.handler = async (event) => {
     };
   }
 };
+
+// ── Named exports for offline tests (handler behavior unchanged) ──────────────
+exports.slugify = slugify;
+exports.findReportForSlug = findReportForSlug;
+exports.bundleFromReport = bundleFromReport;
+exports.bundleFromParcel = bundleFromParcel;

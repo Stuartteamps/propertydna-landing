@@ -134,9 +134,23 @@ function slugify(s) {
   return String(s).toLowerCase().replace(/\./g, '').replace(/\s+/g, '-');
 }
 
+// Canonical address slug — MUST match app/frontend slugifyAddress() and the
+// slugify() in public-property.js / api-property.js so a /property/<slug> URL in
+// this sitemap resolves to the same report the public-property function returns.
+function slugifyAddress(address) {
+  return String(address || '')
+    .toLowerCase()
+    .replace(/[.,#]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-')
+    .slice(0, 120);
+}
+
 // Public property pages — indexable, non-PII summary pages driven by public_slug.
-// Guarded: if the public_slug column doesn't exist yet the query returns [] and
-// the sitemap still builds cleanly.
+// Guarded: if the public_slug column doesn't exist yet (migration 038 not run)
+// the query 400s → get() returns [] and the sitemap still builds cleanly. The
+// completed-reports query below is the MIGRATION-INDEPENDENT source of these URLs.
 async function getPublicProperties() {
   try {
     return (await get('/rest/v1/property_reports?select=public_slug,updated_at,created_at,status&public_slug=not.is.null&status=not.in.(pending,generating,failed)&order=created_at.desc&limit=5000')) || [];
@@ -145,12 +159,46 @@ async function getPublicProperties() {
   }
 }
 
+// MIGRATION-INDEPENDENT: every COMPLETED report gets a /property/<slugify(full_address)>
+// URL even when public_slug is null (or the column doesn't exist yet). Selects ONLY
+// columns guaranteed to exist pre-038 (no public_slug/is_public), so it never 400s.
+// Guarded/try-catch so the sitemap never 500s.
+async function getCompletedReports() {
+  try {
+    return (await get('/rest/v1/property_reports?select=full_address,address,city,state,zip,updated_at,created_at,status&status=not.in.(pending,generating,failed)&full_address=not.is.null&order=created_at.desc&limit=5000')) || [];
+  } catch {
+    return [];
+  }
+}
+
+// Pure builder — turns public_slug rows + completed rows into <url> entries,
+// deduping so a report with a real public_slug isn't also emitted by full_address.
+// Exported for tests. `full_address` fallback mirrors save-report's full_address.
+function buildPropertyUrls(publicProps, completed) {
+  const urls = [];
+  const seen = new Set();
+  (publicProps || []).forEach((p) => {
+    if (!p.public_slug || seen.has(p.public_slug)) return;
+    seen.add(p.public_slug);
+    urls.push(url(`${SITE}/property/${p.public_slug}`, { changefreq: 'weekly', priority: 0.85, lastmod: p.updated_at || p.created_at }));
+  });
+  (completed || []).forEach((r) => {
+    const fa = r.full_address || [r.address, r.city, r.state, r.zip].filter(Boolean).join(', ');
+    const slug = slugifyAddress(fa);
+    if (!slug || seen.has(slug)) return;
+    seen.add(slug);
+    urls.push(url(`${SITE}/property/${slug}`, { changefreq: 'weekly', priority: 0.85, lastmod: r.updated_at || r.created_at }));
+  });
+  return urls;
+}
+
 exports.handler = async () => {
-  const [dossiers, tickers, architects, publicProps] = await Promise.all([
+  const [dossiers, tickers, architects, publicProps, completedReports] = await Promise.all([
     getDossiers(),
     getTickerCandidates(),
     getArchitects(),
     getPublicProperties(),
+    getCompletedReports(),
   ]);
   const blogSlugs = await getBlogSlugs();
 
@@ -204,11 +252,9 @@ exports.handler = async () => {
     urls.push(url(`${SITE}/research/${s}`, { changefreq: 'monthly', priority: 0.8 }));
   });
 
-  // Public property pages (non-PII summary pages)
-  publicProps.forEach(p => {
-    if (!p.public_slug) return;
-    urls.push(url(`${SITE}/property/${p.public_slug}`, { changefreq: 'weekly', priority: 0.85, lastmod: p.updated_at || p.created_at }));
-  });
+  // Public property pages (non-PII summary pages). public_slug rows (post-038)
+  // PLUS every completed report by slugify(full_address) (works pre-038), deduped.
+  buildPropertyUrls(publicProps, completedReports).forEach(u => urls.push(u));
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -224,3 +270,7 @@ ${urls.join('\n')}
     body: xml,
   };
 };
+
+// ── Named exports for offline tests (handler behavior unchanged) ──────────────
+exports.slugifyAddress = slugifyAddress;
+exports.buildPropertyUrls = buildPropertyUrls;

@@ -88,9 +88,11 @@ exports.handler = async (event) => {
   };
 
   try {
-    // 1. Public reports (best — they have a real page).
+    // 1. Public reports (best — they have a real page). MIGRATION-INDEPENDENT:
+    //    does NOT select public_slug (absent pre-038 → 400 → no results); the URL
+    //    slug is derived from full_address, which equals 038's backfilled slug.
     const reports = await sbGet(
-      `property_reports?select=address,city,state,zip,full_address,public_slug,apn` +
+      `property_reports?select=address,city,state,zip,full_address,apn` +
         `&status=eq.completed&or=(full_address.ilike.${encodeURIComponent(like)},address.ilike.${encodeURIComponent(like)})` +
         `&order=created_at.desc&limit=25`
     );

@@ -88,28 +88,34 @@ function parseDna(rd) {
   return dna && typeof dna === 'object' ? dna : null;
 }
 
-const REPORT_COLS =
-  'id,address,city,state,zip,full_address,report_data,enrichment_data,status,public_slug,is_public,apn,created_at,updated_at';
+// BASE_COLS = only columns guaranteed to exist pre-migration-038, so the uuid /
+// apn / full_address queries (the migration-independent paths) never 400.
+const BASE_COLS =
+  'id,address,city,state,zip,full_address,report_data,enrichment_data,status,apn,created_at,updated_at';
+// SLUG_COLS augments with the 038 columns; used only by the public_slug fast-path
+// whose WHERE already references public_slug (pre-038 → 400 → [] → falls through).
+const SLUG_COLS = BASE_COLS + ',public_slug,is_public';
 
 /** Resolve :id (uuid | public_slug | apn) → a property_reports row (or null). */
 async function resolveReport(id) {
   if (!id) return null;
   const NR = "&status=not.in.(pending,generating)";
   const queries = [];
-  if (UUID_RE.test(id)) queries.push(`property_reports?select=${REPORT_COLS}&id=eq.${encodeURIComponent(id)}&limit=1`);
+  if (UUID_RE.test(id)) queries.push(`property_reports?select=${BASE_COLS}&id=eq.${encodeURIComponent(id)}&limit=1`);
   queries.push(
-    `property_reports?select=${REPORT_COLS}&public_slug=eq.${encodeURIComponent(slugify(id))}${NR}&order=created_at.desc&limit=1`
+    `property_reports?select=${SLUG_COLS}&public_slug=eq.${encodeURIComponent(slugify(id))}${NR}&order=created_at.desc&limit=1`
   );
   queries.push(
-    `property_reports?select=${REPORT_COLS}&apn=eq.${encodeURIComponent(id)}${NR}&order=created_at.desc&limit=1`
+    `property_reports?select=${BASE_COLS}&apn=eq.${encodeURIComponent(id)}${NR}&order=created_at.desc&limit=1`
   );
   for (const q of queries) {
     const rows = await sbGet(q);
     if (rows && rows.length) return rows[0];
   }
-  // Last resort: slug-match recent completed reports.
+  // Last resort (MIGRATION-INDEPENDENT): slug-match recent ready reports by
+  // slugified full_address. BASE_COLS only, so it works with or without 038.
   const recent = await sbGet(
-    `property_reports?select=${REPORT_COLS}&status=eq.completed&full_address=not.is.null&order=created_at.desc&limit=500`
+    `property_reports?select=${BASE_COLS}&status=eq.completed&full_address=not.is.null&order=created_at.desc&limit=500`
   );
   const target = slugify(id);
   return (
