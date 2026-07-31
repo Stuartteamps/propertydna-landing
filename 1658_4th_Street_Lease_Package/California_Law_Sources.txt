@@ -1,0 +1,216 @@
+================================================================================
+CALIFORNIA LAW SOURCES AND DRAFTING NOTES
+Month-to-Month Residential Rental Agreement — 1658 4th Street, Coachella, CA 92236
+Compiled: July 31, 2026
+================================================================================
+
+PURPOSE
+-------
+This file lists the California statutes and legal authorities used to draft the
+lease package for the above property, with drafting notes on what was left blank
+or optional and why. It is a research aid for the property owner and any attorney
+who reviews the package. It is NOT legal advice, and this package has not been
+prepared, approved, or reviewed by an attorney.
+
+IMPORTANT VERIFICATION CAVEAT
+-----------------------------
+The statutory substance below was checked using automated research against
+current (2024-2026) California code and legislative materials. During that
+research, direct access to the primary legislative website
+(leginfo.legislature.ca.gov) was intermittently blocked, so several rules rest on
+corroboration across multiple secondary sources that quote the current code.
+BEFORE this template is signed, delivered, or relied upon, confirm the exact,
+current statutory text — especially any VERBATIM notice — against the primary
+source. Character-for-character confirmation is specifically recommended for:
+  - the Tenant Protection Act single-family/condominium EXEMPTION notice;
+  - the Megan's Law notice (Civil Code section 2079.10a); and
+  - any methamphetamine/fentanyl contamination acknowledgment.
+
+================================================================================
+1. TENANT PROTECTION ACT — JUST CAUSE, RENT CAP, TERMINATION NOTICE
+================================================================================
+- Cal. Civ. Code section 1946.2 — Just cause for termination after a tenant has
+  continuously and lawfully occupied a unit for 12 months. Just cause must be
+  stated in the written termination notice. Waivers of just cause are void
+  (section 1946.2(h)). At-fault and no-fault grounds are defined by statute.
+  https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1946.2.&lawCode=CIV
+
+- Cal. Civ. Code section 1947.12 — Rent cap: over any 12-month period, no increase
+  above the LOWER of (5% + regional CPI) or 10% of the lowest rent in the prior
+  12 months; no more than two increases per 12 months within the cap.
+  https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1947.12.&lawCode=CIV
+
+- Cal. Civ. Code section 1946.1 (and section 1946 default 30-day rule) —
+  Month-to-month termination notice periods: owner must give 60 days if any tenant
+  has resided one year or more, otherwise 30 days; tenant generally gives 30 days.
+  https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1946.1.&lawCode=CIV
+
+- SB 567 (2023-2024) — Amended section 1946.2 effective April 1, 2024: added the
+  90-day move-in / 12-month primary-residence conditions for owner/relative
+  move-in no-fault terminations, tightened "substantially remodel"/demolition
+  requirements (permit copies, 30-day-vacancy test), and enhanced remedies
+  (actual damages, up to treble damages for willful conduct, attorney's fees,
+  offer-back obligation).
+  https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240SB567
+
+- No-fault relocation assistance = one month's rent, paid within 15 days of the
+  notice or by written waiver of the final month's rent (section 1946.2(d)).
+
+- EXEMPTIONS (section 1946.2(e) and section 1947.12(d)) are fact-dependent:
+  single-family homes/condominiums (only if the owner is NOT a REIT, corporation,
+  or LLC with a corporate member, AND the required exemption notice is given);
+  owner-occupied duplex; certificate of occupancy within the last 15 years
+  (rolling); deed-restricted affordable; certain owner-occupied room/ADU rentals;
+  and units under a more protective local ordinance.
+
+- Sunset: the Tenant Protection Act sunsets January 1, 2030 absent renewal
+  (sections 1946.2(g), 1947.12(j)). It is a FLOOR; stricter local ordinances
+  control.
+
+- EXEMPTION NOTICE (verbatim; include ONLY in the optional exemption addendum and
+  ONLY after confirming the property qualifies) — sections 1946.2(e)(8)(B) and
+  1947.12(d)(5)(B):
+  "This property is not subject to the rent limits imposed by Section 1947.12 of
+   the Civil Code and is not subject to the just cause requirements of Section
+   1946.2 of the Civil Code. This property meets the requirements of Sections
+   1947.12 (d)(5) and 1946.2 (e)(8) of the Civil Code and the owner is not any of
+   the following: (1) a real estate investment trust, as defined by Section 856 of
+   the Internal Revenue Code; (2) a corporation; or (3) a limited liability company
+   in which at least one member is a corporation."
+  For tenancies commenced/renewed on or after July 1, 2020, this must appear in the
+  written agreement. If it is not given, the unit is NOT exempt.
+
+DRAFTING NOTE: The lease does NOT assume any exemption and does NOT bake in any
+termination reason or notice period. Section 24 references both the 30-day and
+60-day thresholds and defers just-cause/relocation to the applicable law at the
+time of termination.
+
+================================================================================
+2. SECURITY DEPOSIT
+================================================================================
+- Cal. Civ. Code section 1950.5 — Governs residential security deposits.
+  https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1950.5.&lawCode=CIV
+
+- AB 12 (2023, operative July 1, 2024) — Deposit cap = ONE month's rent (furnished
+  or unfurnished). Small-landlord exception = up to TWO months if the landlord is a
+  natural person (or an LLC of all natural persons) owning no more than two
+  residential rental properties totaling no more than four units; never two months
+  for an active-duty service-member tenant.
+
+- 21-calendar-day return/itemization after the tenant surrenders possession
+  (section 1950.5(g)). Deductions over $125 require attached receipts/invoices.
+
+- AB 2801 (2024) — Photographic documentation (move-out before and after
+  repairs/cleaning; move-in photos for tenancies beginning on or after July 1,
+  2025) and limits on cleaning-related charges (no blanket "professional cleaning"
+  charge).
+
+- AB 414 (2025, effective January 1, 2026) — If the deposit or rent was received
+  electronically, the refund is generally returned electronically, and electronic
+  delivery of the itemized statement requires the tenant's express written consent
+  to the specific method.
+
+DRAFTING NOTE: The deposit AMOUNT is left blank; Section 5 references the statutory
+cap and instructs the parties to confirm the applicable limit and not exceed it.
+
+================================================================================
+3. REQUIRED / POSSIBLE DISCLOSURES
+================================================================================
+Always applicable to residential leases:
+- Megan's Law database notice — Cal. Civ. Code section 2079.10a. Verbatim statutory
+  text, included in the lease body.
+- Bedbug information — Cal. Civ. Code section 1954.603 (before creating a new
+  tenancy).
+
+Fact-dependent (complete the Disclosure Worksheet):
+- Lead-based paint (pre-1978 housing) — 42 U.S.C. section 4852d; 40 C.F.R. Part 745
+  / 24 C.F.R. Part 35 (federal). EPA pamphlet + Lead Warning Statement.
+- Mold — Cal. Health & Safety Code sections 26147, 26148; Civ. Code section 1941.7.
+- Death on the premises — Cal. Civ. Code section 1710.2 (safe harbor for deaths
+  more than three years before the offer; HIV/AIDS never disclosed).
+- Flood hazard — Cal. Gov. Code section 8589.45 (knowledge-triggered; no separate
+  2025/2026 flood statute exists — AB 646, operative July 1, 2018, governs).
+- Pest control — Cal. Civ. Code section 1940.8 (periodic company notice) and
+  section 1940.8.5 (landlord-applied pesticides).
+- Demolition permit applied for — Cal. Civ. Code section 1940.6.
+- Military ordnance (within one mile, known to owner) — Cal. Civ. Code section
+  1940.7.
+- Methamphetamine/fentanyl contamination order — Cal. Health & Safety Code section
+  25400.28 (fentanyl added by AB 1596, operative January 1, 2020).
+- Shared gas/electric meter — Cal. Civ. Code section 1940.9; water submeter billing
+  — Cal. Civ. Code sections 1954.201-1954.219 (disclosure at 1954.204, SB 7).
+- Smoking policy — Cal. Civ. Code section 1947.5.
+
+================================================================================
+4. FEES
+================================================================================
+- Late fees — Cal. Civ. Code section 1671(c)-(d); Orozco v. Casimiro (2004)
+  121 Cal.App.4th Supp. 7. A residential late fee is valid only as a good-faith
+  pre-estimate of the landlord's actual costs; a percentage-of-rent or penalty late
+  fee is an unenforceable penalty. No fixed statewide dollar cap.
+- Returned-payment / NSF fee — Cal. Civ. Code section 1719(a): statutory service
+  charge up to $25 for the first returned item and up to $35 for each subsequent
+  item (or, alternatively, statutory damages after a proper written demand).
+
+DRAFTING NOTE: Section 7 leaves the late fee, grace period, and returned-payment
+amount blank and states the charges must be legally permissible amounts, with the
+NSF charge tied to the Civil Code section 1719 maximum.
+
+================================================================================
+5. SELF-HELP PROHIBITION AND NON-WAIVER
+================================================================================
+- No self-help eviction — Cal. Civ. Code section 789.3 (no willful utility
+  interruption or blocking of access to force a tenant out; liability includes
+  actual damages plus up to $100/day, minimum $250, plus attorney's fees).
+- No harassment / constructive eviction — Cal. Civ. Code section 1940.2 (no force,
+  threats, or menacing conduct; civil penalty up to $2,000 per violation).
+- Recovery of possession requires the unlawful detainer process (Code of Civil
+  Procedure section 1159 et seq.), a judgment, and a sheriff-performed lockout.
+- Non-waivable tenant rights — Cal. Civ. Code section 1953 (clauses purporting to
+  waive certain statutory rights are void).
+
+DRAFTING NOTE: Section 23 (Breach and Remedies) and Section 24 (Termination), plus
+the Owner Guidance page, expressly state the landlord will not lock out, remove
+belongings, shut off utilities, or otherwise use self-help, and must use the lawful
+court process. No clause grants the landlord any such power.
+
+================================================================================
+6. LOCAL — CITY OF COACHELLA / RIVERSIDE COUNTY
+================================================================================
+Research indicated (verify before serving any notice):
+- The parcel is inside the incorporated CITY OF COACHELLA; unincorporated Riverside
+  County ordinances do not apply.
+- No local residential rent-control or rent-stabilization ordinance was found for
+  the City of Coachella. State law (section 1947.12) is the only rent cap.
+- No local just-cause eviction ordinance beyond state law (section 1946.2) was
+  found.
+- No long-term residential rental-registration or landlord-licensing requirement
+  was found. (City licensing rules found apply to SHORT-TERM / vacation rentals of
+  30 days or less — not this lease.)
+- No crime-free housing addendum mandate and no supplemental local tenant-protection
+  ordinance were found.
+Sources checked include the City of Coachella site (coachella.org) and the Coachella
+municipal code on municode (library.municode.com/ca/coachella). Confirm the exact
+parcel and current ordinances before relying on this.
+
+DRAFTING NOTE: No local ordinance was invented or inserted. Section 20 requires
+compliance with any applicable City of Coachella or Riverside County ordinance and
+makes such an ordinance control over any conflicting lease term to the extent
+required by law.
+
+================================================================================
+7. PRIMARY-SOURCE STARTING POINTS
+================================================================================
+- California Legislative Information (statute text):
+  https://leginfo.legislature.ca.gov/
+- California Courts self-help (landlord-tenant / eviction):
+  https://selfhelp.courts.ca.gov/
+- California Civil Code (Division 3, Part 4, Title 5 — Hiring of Real Property)
+- City of Coachella: https://www.coachella.org/
+- Coachella Municipal Code: https://library.municode.com/ca/coachella
+- U.S. EPA lead disclosure rule (pre-1978 housing):
+  https://www.epa.gov/lead/real-estate-disclosure
+
+================================================================================
+END OF SOURCES
+================================================================================
