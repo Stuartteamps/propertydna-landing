@@ -111,14 +111,18 @@ exports.handler = async (event) => {
     }
   } catch { /* non-critical */ }
 
-  // Suppression list — global unsubscribes + bounced
+  // Suppression list — global unsubscribes + admin marketing toggle + bounced
   let unsubSet = new Set();
   let bounceSet = new Set();
   try {
-    const us = await db.from('campaign_unsubscribes').select('email').get();
-    (us || []).forEach(u => unsubSet.add((u.email || '').toLowerCase()));
-    const bc = await db.from('campaign_contacts').select('email').eq('status', 'bounced').get();
-    (bc || []).forEach(b => bounceSet.add((b.email || '').toLowerCase()));
+    const [us, toggled, bc] = await Promise.all([
+      db.from('campaign_unsubscribes').select('email').get(),
+      db.from('marketing_consent').select('email').eq('opted_in', false).get(),
+      db.from('campaign_contacts').select('email').eq('status', 'bounced').get(),
+    ]);
+    (us      || []).forEach(u => unsubSet.add((u.email || '').toLowerCase()));
+    (toggled || []).forEach(u => unsubSet.add((u.email || '').toLowerCase()));
+    (bc      || []).forEach(b => bounceSet.add((b.email || '').toLowerCase()));
   } catch { /* non-critical */ }
 
   let sent = 0, skipped = 0, failed = 0;

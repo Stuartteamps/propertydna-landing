@@ -191,11 +191,15 @@ exports.handler = async (event) => {
     await db.update('campaigns', { id: campaignId }, { status: 'sending', launched_at: new Date().toISOString() }).catch(() => {});
   }
 
-  // Global unsubscribes
+  // Global unsubscribes (permanent CAN-SPAM list + admin marketing toggle)
   let unsubSet = new Set();
   try {
-    const unsubs = await db.from('campaign_unsubscribes').select('email').get();
-    if (Array.isArray(unsubs)) unsubs.forEach(u => unsubSet.add(u.email.toLowerCase()));
+    const [unsubs, toggled] = await Promise.all([
+      db.from('campaign_unsubscribes').select('email').get(),
+      db.from('marketing_consent').select('email').eq('opted_in', false).get(),
+    ]);
+    if (Array.isArray(unsubs))  unsubs.forEach(u  => unsubSet.add(u.email.toLowerCase()));
+    if (Array.isArray(toggled)) toggled.forEach(u => unsubSet.add(u.email.toLowerCase()));
   } catch { /* non-critical */ }
 
   // Next pending batch

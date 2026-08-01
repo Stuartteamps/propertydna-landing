@@ -214,9 +214,15 @@ exports.handler = async (event) => {
     return { statusCode: 404, body: 'Campaign not found' };
   }
 
-  // 3. Load unsubscribes
-  const unsubs = await db.from('campaign_unsubscribes').select('email').get().catch(() => []);
-  const unsubSet = new Set((unsubs || []).map(u => (u.email || '').toLowerCase()));
+  // 3. Load unsubscribes (permanent CAN-SPAM list + admin marketing toggle)
+  const [unsubs, toggled] = await Promise.all([
+    db.from('campaign_unsubscribes').select('email').get().catch(() => []),
+    db.from('marketing_consent').select('email').eq('opted_in', false).get().catch(() => []),
+  ]);
+  const unsubSet = new Set([
+    ...(unsubs  || []).map(u => (u.email || '').toLowerCase()),
+    ...(toggled || []).map(u => (u.email || '').toLowerCase()),
+  ]);
 
   // 3b. Load this week's FlexMLS share links ONCE per run (row id=1). Without
   //     this, buildHtml falls back to generic site URLs and the weekly listing
