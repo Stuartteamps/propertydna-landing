@@ -172,7 +172,10 @@ exports.handler = async (event) => {
     const peers = Array.isArray(neighborRows) ? neighborRows : [];
 
     // ── 4. Minimum data gate — refuse comparison if peers are insufficient ────
-    // 97%+ accuracy requires a real peer group. Under 5 peers = meaningless stats.
+    // Reliable comparison stats require a real peer group. Under 5 peers =
+    // meaningless stats. (GOVERNANCE, docs/founder-os/03-risk-register.md D2: no
+    // accuracy percentage may be stated as fact or shown to users/investors
+    // until backed by a reproducible eval harness + holdout + segmentation.)
     const validPeerCount = peers.filter(p =>
       p.data?.renovationRatio != null || p.data?.conditionScore != null
     ).length;

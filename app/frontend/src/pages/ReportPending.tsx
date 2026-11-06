@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import { track } from '@/lib/track';
 
 type Status = 'verifying' | 'generating' | 'done' | 'error';
 
@@ -101,6 +102,14 @@ export default function ReportPending() {
           setErrorMsg('Payment not confirmed. Please contact hello@thepropertydna.com.');
           return;
         }
+
+        // ── Conversion event: the only client-side point where revenue is
+        // confirmed. Previously untracked, so GA4 could not see a single
+        // dollar. Coarse, non-PII params only. ──
+        track('purchase', {
+          kind: verifyData.isSubscription || isSub ? 'subscription' : 'report',
+          plan: verifyData.plan ?? null,
+        });
 
         // For subscriptions, show confirmation without re-running report
         if (verifyData.isSubscription || isSub) {

@@ -87,7 +87,10 @@ function score(pairs) {
     within10Pct: +(within(0.1) * 100).toFixed(1),
     within20Pct: +(within(0.2) * 100).toFixed(1),
     biasPct: +(median(signeds) * 100).toFixed(2),
-    defensibleAccuracyPct: Math.max(0, Math.round((1 - mdape) * 100)),
+    // NON-STANDARD, generous "accuracy" = 100 - MdAPE. Not an industry metric.
+    // Read within5/within10/within20 (already surfaced above) for a defensible
+    // read of accuracy. Key renamed from the old flattering "defensibleAccuracyPct".
+    nonStandardAccuracyPct_100_minus_MdAPE: Math.max(0, Math.round((1 - mdape) * 100)),
   };
 }
 
@@ -560,12 +563,15 @@ exports.handler = async (event) => {
     // ≥ 1/CONSENSUS_THRESHOLD of the recorded sale, drop it as non-arms-length.
     // Default 0.60 → if both AVMs say >$1.66×actual, drop. Strict consensus
     // — single AVM disagreement is NOT enough (could be model error).
-    // Toggle via ?consensusFilter=0 to disable. Threshold default tightened
-    // from 0.60 → 0.70 on 2026-06-29 after sensitivity sweep showed even
-    // sales at 60-70% of both AVMs are predominantly non-arms-length. The
-    // 0.70 default cuts under-$1M MdAPE from 24% → 12% (still on the same
-    // 137-sample base; consensus drops grow from 17 → 33).
-    const consensusFilter = (q.consensusFilter || "1") !== "0";
+    // DEFAULT OFF (B-10 data-integrity fix, 2026-07-23): this filter drops
+    // GROUND-TRUTH sales using the model's OWN output (both AVMs > 1/threshold ×
+    // sale), which is self-referential and can INFLATE measured accuracy by
+    // silently discarding sales the model disagrees with. Opt in explicitly with
+    // ?consensusFilter=1. When enabled, the effect is reported (consensusDropped
+    // + consensusFlaggedSamples + a report line). Threshold via ?consensusThreshold
+    // (0.70 default when enabled). Previously this defaulted ON and cut under-$1M
+    // MdAPE from 24% → 12% — that improvement was measurement-hiding, not model gain.
+    const consensusFilter = (q.consensusFilter || "0") === "1";
     const CONSENSUS_THRESHOLD = Number(q.consensusThreshold || 0.70);
     let consensusDropped = 0;
     const flaggedSamples = []; // first 10 dropped — surfaced for audit
@@ -660,7 +666,7 @@ exports.handler = async (event) => {
     if (medianAgeYrs != null) lines.push(`Median sale age: ${medianAgeYrs} yrs${appreciate > 0 ? ` | time-adjusted forward at ${(appreciate * 100).toFixed(1)}%/yr` : ` | NOT time-adjusted (old sales inflate error — add &appreciate=6)`}`);
     if (propertydna.n) {
       lines.push("");
-      lines.push(`PropertyDNA  → MdAPE ${propertydna.mdapePct}% | within10 ${propertydna.within10Pct}% | bias ${propertydna.biasPct > 0 ? "+" : ""}${propertydna.biasPct}% | DEFENSIBLE ${propertydna.defensibleAccuracyPct}%`);
+      lines.push(`PropertyDNA  → MdAPE ${propertydna.mdapePct}% | within5 ${propertydna.within5Pct}% | within10 ${propertydna.within10Pct}% | within20 ${propertydna.within20Pct}% | bias ${propertydna.biasPct > 0 ? "+" : ""}${propertydna.biasPct}% | nonStandardAcc(100-MdAPE) ${propertydna.nonStandardAccuracyPct_100_minus_MdAPE}%`);
     }
     if (rentcast.n) lines.push(`RentCast AVM → MdAPE ${rentcast.mdapePct}% | within10 ${rentcast.within10Pct}% | bias ${rentcast.biasPct > 0 ? "+" : ""}${rentcast.biasPct}%  (independent benchmark)`);
     if (indexEstimate.n) lines.push(`Index est.   → MdAPE ${indexEstimate.mdapePct}% | within10 ${indexEstimate.within10Pct}%  (properties.current_estimated_value)`);
@@ -706,6 +712,15 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         ok: true,
         ranAt: new Date().toISOString(),
+        methodology: {
+          mode: "calibration_check_NOT_blind_holdout",
+          note: "DEFAULT path: predictions are stored pdna_value_mid values that were computed with the home's OWN prior sale as an anchor. This is a calibration check, NOT a leakage-free blind holdout — the headline MdAPE here is optimistic and must not be presented as blind out-of-sample accuracy.",
+          leakageSafeMode: "Add ?live=1 for the leakage-safe back-test: it recomputes with the current engine as-of each sale date, excludes the subject, uses only comps sold strictly before the sale, and feeds anchorValue=null (blind comp fair value).",
+          accuracyMetric: "nonStandardAccuracyPct_100_minus_MdAPE is a non-standard, generous definition (100 - MdAPE), not an industry metric. Prefer within5Pct / within10Pct / within20Pct and MdAPE for a defensible read.",
+          consensusFilter: consensusFilter
+            ? `ENABLED (?consensusFilter=1): dropped ${consensusDropped} ground-truth sales using the model's OWN AVM output (both PDNA + RC > ${(1 / CONSENSUS_THRESHOLD).toFixed(2)}× sale). Self-referential — can inflate measured accuracy.`
+            : "OFF by default: the self-referential consensus ground-truth filter is NOT applied (no ground truth silently dropped). Enable with ?consensusFilter=1.",
+        },
         targetMdapePct: TARGET_MDAPE_PCT,
         params: { months, limit, floor, cutoff, appreciatePct: appreciate * 100, armsLength: armsLengthOn, psfFilter, consensusFilter, consensusThreshold: CONSENSUS_THRESHOLD },
         soldsPulled: solds.length,

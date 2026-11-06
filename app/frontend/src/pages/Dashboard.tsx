@@ -71,9 +71,15 @@ export default function Dashboard() {
     setLoadStatus('loading');
     setError('');
     try {
+      // Send the verified session token — get-reports now derives the caller's
+      // email from the token (fixes IDOR C3) and ignores any client-supplied
+      // email, so a bearer is required.
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) { setError('Please sign in again to view your reports.'); setLoadStatus('error'); return; }
       const res  = await fetch('/.netlify/functions/get-reports', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify({ email }),
       });
       const data = await res.json();

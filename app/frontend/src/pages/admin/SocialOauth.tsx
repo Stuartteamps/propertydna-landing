@@ -23,6 +23,7 @@ interface Platform {
   account_name?: string | null;
   expires_at?: string | null;
   updated_at?: string | null;
+  created_at?: string | null;
   connect_url: string;
   setup_doc: string;
 }

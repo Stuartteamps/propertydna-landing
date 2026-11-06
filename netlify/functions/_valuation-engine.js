@@ -1,20 +1,34 @@
 /**
  * _valuation-engine.js — PropertyDNA's RentCast-free valuation core.
  *
- * Two models, both validated leave-one-out on 1,459 real MLS solds (MdAPE):
+ * GOVERNANCE GUARDRAIL (see docs/founder-os/03-risk-register.md D2):
+ *   No accuracy percentage, MdAPE figure, or "N-sold corpus" claim below may be
+ *   presented as validated fact — and NONE may appear in any public, user-, or
+ *   investor-facing surface — until it is backed by a reproducible in-repo eval
+ *   harness with a held-out set and per-segment (price-tier / property-type)
+ *   reporting. The numbers below are internal design TARGETS, not measured
+ *   results. Do not quote them as achieved.
+ *
+ * Two models. TARGET (not yet independently validated in-repo — pending the
+ * eval framework) is a leave-one-out MdAPE measured against real MLS solds:
  *   A) FAIR VALUE (independent): feature-rich weighted-kNN comp model. Judges
  *      what a home is worth from comparable sales alone — NO list price. This is
- *      the number that exposes an over-listed home. (overall ~12%, luxury ~22%)
+ *      the number that exposes an over-listed home. (design target: overall
+ *      ~12%, luxury ~22% MdAPE — unverified)
  *   B) EXPECTED SALE (list-anchored): list_price x market sale/list ratio for the
- *      tier. When a listing exists (the buyer's real situation) this predicts the
- *      sale price to <=3% MdAPE across EVERY price tier — the 97% line.
+ *      tier. When a listing exists (the buyer's real situation) the ASPIRATIONAL
+ *      GOAL is to predict the sale price to <=3% MdAPE across every price tier
+ *      (the "97% line"). This remains an UNVERIFIED target pending the eval
+ *      harness; it must not be stated as an achieved accuracy.
  *
  * The product power is the GAP between them: expected-sale tells the buyer what
  * they'll likely pay; fair-value tells them what it's actually worth; the spread
  * is the overpricing/negotiation signal that defends the human from a predatory
  * list price. All deterministic, all from owned data (MLS solds + assessor).
  *
- * Market sale/list ratios by tier (median, from the 1,459-sold CMA corpus):
+ * Market sale/list ratios by tier (median, derived internally from the CMA
+ * corpus; the underlying corpus size and accuracy are not independently
+ * reproducible in-repo and must not be cited as validated):
  */
 const TIER_SP_LP = { under_1M: 1.000, "1M_2M": 0.980, "2M_5M": 0.960, "5M_plus": 0.960 };
 const TIERS = [["under_1M", 0, 1e6], ["1M_2M", 1e6, 2e6], ["2M_5M", 2e6, 5e6], ["5M_plus", 5e6, 1e15]];

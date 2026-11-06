@@ -19,7 +19,7 @@ const crypto = require("crypto");
 const db = require("./_supabase");
 
 function verifyStripeSignature(payload, sigHeader, secret) {
-  if (!secret) return true; // Skip in dev
+  if (!secret || !sigHeader) return false; // Fail closed
   const parts = sigHeader.split(",").reduce((acc, part) => {
     const [k, v] = part.split("=");
     if (k === "t") acc.timestamp = v;
@@ -233,12 +233,14 @@ exports.handler = async (event) => {
   const rawBody = event.body;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  // Verify signature
-  if (sig && webhookSecret) {
-    if (!verifyStripeSignature(rawBody, sig, webhookSecret)) {
-      console.error("[stripe-webhook] Invalid signature");
-      return { statusCode: 400, body: JSON.stringify({ error: "Invalid signature" }) };
-    }
+  // Verify signature — fail closed if secret unset, signature missing, or verification fails
+  if (!webhookSecret) {
+    console.error("[stripe-webhook] STRIPE_WEBHOOK_SECRET is not configured");
+    return { statusCode: 400, body: JSON.stringify({ error: "Webhook not configured" }) };
+  }
+  if (!sig || !verifyStripeSignature(rawBody, sig, webhookSecret)) {
+    console.error("[stripe-webhook] Invalid signature");
+    return { statusCode: 400, body: JSON.stringify({ error: "Invalid signature" }) };
   }
 
   let stripeEvent;

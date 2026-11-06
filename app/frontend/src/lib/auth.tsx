@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 import { supabase } from './supabase';
 import { planToTier, fetchUserTier, type Tier } from './tier';
+import { track } from '@/lib/track';
 
 // Robust native detection — multiple signals because Capacitor's bridge
 // can be slow/unreliable when loading a remote URL via server.url.
@@ -56,6 +57,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [plan, setPlan]       = useState<string | null>(null);
   const [reportCount, setReportCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  // Guards the funnel event so it fires at most once per SIGNED_IN transition
+  // (onAuthStateChange can re-emit SIGNED_IN on tab focus / token events).
+  const lastSignedInUserId = useRef<string | null>(null);
+
+  // Fire the funnel event for a sign-up vs sign-in. Non-PII only: we send a
+  // coarse provider/method signal and never email, name, or user id.
+  function trackAuthEvent(authUser: User) {
+    try {
+      const method = authUser.app_metadata?.provider ?? 'email';
+      const createdAt = authUser.created_at ? Date.parse(authUser.created_at) : NaN;
+      const lastSignInAt = authUser.last_sign_in_at ? Date.parse(authUser.last_sign_in_at) : NaN;
+
+      let isNew: boolean | null = null;
+      if (!Number.isNaN(createdAt)) {
+        // Brand-new account: first sign-in coincides with account creation, or
+        // the account was created within the last ~60s.
+        const closeToLastSignIn =
+          !Number.isNaN(lastSignInAt) && Math.abs(lastSignInAt - createdAt) < 5000;
+        const createdRecently = Date.now() - createdAt < 60000;
+        isNew = closeToLastSignIn || createdRecently;
+      }
+
+      if (isNew === true) track('sign_up', { method });
+      else if (isNew === false) track('sign_in', { method });
+      else track('signed_in', { method, is_new: null });
+    } catch {
+      /* analytics must never break auth */
+    }
+  }
 
   async function loadTier(email: string) {
     try { sessionStorage.setItem('pdna_email', email.toLowerCase().trim()); } catch { /* sessionStorage unavailable */ }
@@ -101,11 +131,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (s?.user?.email) {
         loadTier(s.user.email);
         // Capture every sign-in in our database
-        if (event === 'SIGNED_IN' && s.user) upsertProfile(s.user);
+        if (event === 'SIGNED_IN' && s.user) {
+          upsertProfile(s.user);
+          // Funnel stage 7: fire once per SIGNED_IN transition (SIGNED_IN can
+          // re-emit for the same user on focus/token events).
+          if (lastSignedInUserId.current !== s.user.id) {
+            lastSignedInUserId.current = s.user.id;
+            trackAuthEvent(s.user);
+          }
+        }
       } else {
         setTier('free');
         setPlan(null);
         setReportCount(0);
+        lastSignedInUserId.current = null;
       }
     });
 

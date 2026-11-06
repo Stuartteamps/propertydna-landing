@@ -239,7 +239,7 @@ export default function OpenHouse() {
       leadSource: params.get('source') === 'qr' ? 'qr_open_house' : 'web_open_house',
     });
 
-    if (result.success) {
+    if (result.success === true) {
       if (result.data?.matches && Array.isArray(result.data.matches)) {
         setMatches(result.data.matches);
       }

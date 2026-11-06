@@ -57,7 +57,9 @@ export default function MarketHeatMapPreview({ isPremium = false, onUpgrade }: P
           live.push({ label: GEO_KEYS[r.geo_key], heat, yoy: Number(r.appreciation_rate_yoy) || 0, color: heatColor(heat) });
         }
         if (live.length >= 3) setZones(live.sort((a, b) => b.heat - a.heat));
-      }).catch(() => {});
+      // Supabase's builder resolves to PromiseLike<void>, which has no `.catch`;
+      // `.then(undefined, fn)` is the equivalent rejection handler.
+      }).then(undefined, () => {});
   }, []);
 
   return (
